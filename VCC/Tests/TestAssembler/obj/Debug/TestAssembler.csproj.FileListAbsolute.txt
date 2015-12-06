@@ -1,0 +1,8 @@
+D:\Research\Vatu\Vatu\VCC\Tests\TestAssembler\bin\Debug\TestAssembler.exe.config
+D:\Research\Vatu\Vatu\VCC\Tests\TestAssembler\bin\Debug\TestAssembler.exe
+D:\Research\Vatu\Vatu\VCC\Tests\TestAssembler\bin\Debug\TestAssembler.pdb
+D:\Research\Vatu\Vatu\VCC\Tests\TestAssembler\obj\Debug\TestAssembler.csprojResolveAssemblyReference.cache
+D:\Research\Vatu\Vatu\VCC\Tests\TestAssembler\obj\Debug\TestAssembler.exe
+D:\Research\Vatu\Vatu\VCC\Tests\TestAssembler\obj\Debug\TestAssembler.pdb
+D:\Research\Vatu\Vatu\VCC\Tests\TestAssembler\bin\Debug\Vasm.dll
+D:\Research\Vatu\Vatu\VCC\Tests\TestAssembler\bin\Debug\Vasm.pdb
