@@ -5,3 +5,5 @@
 			mov word CX, 0x0
 			mov word DX, 0x20
 			Int 16
+
+		Test:

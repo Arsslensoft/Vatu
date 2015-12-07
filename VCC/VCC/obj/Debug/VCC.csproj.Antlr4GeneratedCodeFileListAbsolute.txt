@@ -1,6 +1,0 @@
-D:\Research\Vatu\Vatu\VCC\VCC\obj\Debug\VatuLexer.cs
-D:\Research\Vatu\Vatu\VCC\VCC\obj\Debug\VatuParser.cs
-D:\Research\Vatu\Vatu\VCC\VCC\obj\Debug\VatuListener.cs
-D:\Research\Vatu\Vatu\VCC\VCC\obj\Debug\VatuBaseListener.cs
-D:\Research\Vatu\Vatu\VCC\VCC\obj\Debug\VatuVisitor.cs
-D:\Research\Vatu\Vatu\VCC\VCC\obj\Debug\VatuBaseVisitor.cs

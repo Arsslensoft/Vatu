@@ -52,6 +52,7 @@
     <Compile Include="Base\OpCodeAttribute.cs" />
     <Compile Include="Base\StackContents.cs" />
     <Compile Include="Base\TypeComparer.cs" />
+    <Compile Include="IEmit.cs" />
     <Compile Include="x86\Add.cs" />
     <Compile Include="x86\AddWithCarry.cs" />
     <Compile Include="x86\And.cs" />

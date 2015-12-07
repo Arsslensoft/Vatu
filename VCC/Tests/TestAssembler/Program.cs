@@ -14,12 +14,14 @@ namespace TestAssembler
             using (AssemblyWriter str = new AssemblyWriter(@"D:\Research\Vatu\Vatu\VCC\Tests\Test.asm"))
             {
                 Vasm.EmitContext asm = new Vasm.EmitContext(str);
-                asm.Add(new Instruction[5] {
+                asm.Add(new Instruction[6] {
             new Vasm.x86.Mov { SourceValue = 0x4F07, DestinationReg = Vasm.x86.Registers.AX },
             new Vasm.x86.Mov { SourceValue = 0, DestinationReg = Vasm.x86.Registers.BL },
             new Vasm.x86.Mov { SourceValue = 0, DestinationReg = Vasm.x86.Registers.CX },
             new Vasm.x86.Mov { SourceValue = 0x20, DestinationReg = Vasm.x86.Registers.DX },
-            new Vasm.x86.INT { DestinationValue = 0x10 }});
+            new Vasm.x86.INT { DestinationValue = 0x10 },
+                new Vasm.Label("Test")
+            });
 
 
                 asm.Emit(asm.AssemblerWriter);
