@@ -52,16 +52,16 @@ namespace Vasm
 #endif
 
 
-        public virtual void UpdateAddress(EmitContext ec, ref ulong aAddress)
+        public virtual void UpdateAddress(AsmContext ec, ref ulong aAddress)
         {
             StartAddress = aAddress;
         }
 
-        public abstract bool IsComplete(EmitContext ec);
+        public abstract bool IsComplete(AsmContext ec);
 
-        public abstract void WriteData(EmitContext ec, Stream aOutput);
+        public abstract void WriteData(AsmContext ec, Stream aOutput);
 
-        public abstract void WriteText( EmitContext ec, AssemblyWriter aOutput );
+        public abstract void WriteText( AsmContext ec, AssemblyWriter aOutput );
 
         public sealed override string ToString()
         {

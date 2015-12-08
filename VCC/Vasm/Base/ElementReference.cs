@@ -56,7 +56,7 @@ namespace Vasm
     private static Dictionary<string, BaseAssemblerElement> mCache;// = new SortedList<string, BaseAssemblerElement>(StringComparer.InvariantCultureIgnoreCase);
     private static int? mThreadId = null;
 
-    private static BaseAssemblerElement DoResolve(EmitContext ec, string aName) {
+    private static BaseAssemblerElement DoResolve(AsmContext ec, string aName) {
       if (!mThreadId.HasValue) {
         mThreadId = Thread.CurrentThread.ManagedThreadId;
       } else {
@@ -122,7 +122,7 @@ namespace Vasm
       }
     }
 
-    public bool Resolve(EmitContext ec, out ulong aAddress)
+    public bool Resolve(AsmContext ec, out ulong aAddress)
     {
       //
       if (mActualAddress != null) {

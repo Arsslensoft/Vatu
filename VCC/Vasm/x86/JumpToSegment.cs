@@ -16,7 +16,7 @@ namespace Vasm.x86 {
             set;
         }
 
-        public override void WriteText( Vasm.EmitContext aAssembler, AssemblyWriter aOutput )
+        public override void WriteText( Vasm.AsmContext aAssembler, AssemblyWriter aOutput )
         {
                 if (DestinationRef != null) {
                     aOutput.Write("jmp ");
@@ -42,19 +42,19 @@ namespace Vasm.x86 {
             }
         }
 
-        public override bool IsComplete( Vasm.EmitContext aAssembler )
+        public override bool IsComplete( Vasm.AsmContext aAssembler )
         {
             ulong xAddress;
             return DestinationRef == null || DestinationRef.Resolve(aAssembler, out xAddress);
         }
 
-        public override void UpdateAddress(Vasm.EmitContext aAssembler, ref ulong aAddress) {
+        public override void UpdateAddress(Vasm.AsmContext aAssembler, ref ulong aAddress) {
             base.UpdateAddress(aAssembler, ref aAddress);
             aAddress += 7;
         }
 
         //public override byte[] GetData(Assembler aAssembler) {
-        public override void WriteData( Vasm.EmitContext aAssembler, System.IO.Stream aOutput )
+        public override void WriteData( Vasm.AsmContext aAssembler, System.IO.Stream aOutput )
         {
             aOutput.WriteByte(0xEA);
             ulong xAddress = 0;

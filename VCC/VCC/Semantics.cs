@@ -107,7 +107,6 @@ namespace VCC
             return rc;
         }
     }
-
     public abstract class Expression : SimpleToken,IEmitExpr,IEmit
     {
         protected Location loc;
@@ -119,6 +118,12 @@ namespace VCC
             set { type = value; }
         }
         public Location Location { get { return loc; } }
+
+        public Expression(TypeSpec tp, Location lc)
+        {
+            type = tp;
+            loc = lc;
+        }
 
         public abstract bool Resolve(ResolveContext rc);
 

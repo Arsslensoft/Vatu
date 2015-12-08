@@ -74,7 +74,7 @@ namespace Vasm.x86 {
             }
         }
 
-        public override bool IsComplete( Vasm.EmitContext aAssembler )
+        public override bool IsComplete( Vasm.AsmContext aAssembler )
         {
             if (SourceRef != null) {
                 ulong xAddress;
@@ -83,7 +83,7 @@ namespace Vasm.x86 {
             return base.IsComplete(aAssembler);
         }
 
-        public override void UpdateAddress( Vasm.EmitContext aAssembler, ref ulong aAddress )
+        public override void UpdateAddress( Vasm.AsmContext aAssembler, ref ulong aAddress )
         {
             if (SourceRef != null) {
                 SourceValue = 0xFFFFFFFF;
@@ -91,7 +91,7 @@ namespace Vasm.x86 {
             base.UpdateAddress(aAssembler, ref aAddress);
         }
 
-        public override void WriteText( Vasm.EmitContext aAssembler, AssemblyWriter aOutput )
+        public override void WriteText( Vasm.AsmContext aAssembler, AssemblyWriter aOutput )
         {
             aOutput.Write(mMnemonic);
             String destination=this.GetDestinationAsString();

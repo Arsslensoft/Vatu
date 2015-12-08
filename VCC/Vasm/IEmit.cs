@@ -16,12 +16,12 @@ namespace Vasm
        /// Emit code
        /// </summary>
        /// <returns>Success or fail</returns>
-       bool EmitFromStack(EmitContext ec);
+       bool EmitFromStack(AsmContext ec);
        /// <summary>
        /// Emit code to stack [push]
        /// </summary>
        /// <returns>Success or fail</returns>
-       bool EmitToStack(EmitContext ec);
+       bool EmitToStack(AsmContext ec);
     }
 
 
@@ -34,7 +34,7 @@ namespace Vasm
        /// Emit code
        /// </summary>
        /// <returns>Success or fail</returns>
-       bool Emit(EmitContext ec);
+       bool Emit(AsmContext ec);
       
    }
 }

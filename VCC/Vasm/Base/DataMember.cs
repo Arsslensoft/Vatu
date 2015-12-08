@@ -102,7 +102,7 @@ namespace Vasm {
       return String.Intern(xTempResult);
     }
 
-    public override void WriteText(EmitContext ec, AssemblyWriter aOutput) {
+    public override void WriteText(AsmContext ec, AssemblyWriter aOutput) {
       if (RawAsm != null) {
         aOutput.WriteLine(RawAsm);
         return;
@@ -186,7 +186,7 @@ namespace Vasm {
       }
     }
 
-    public override void UpdateAddress(EmitContext ec, ref ulong xAddress) {
+    public override void UpdateAddress(AsmContext ec, ref ulong xAddress) {
       if (Alignment > 0) {
         if (xAddress % Alignment != 0) {
           xAddress += Alignment - (xAddress % Alignment);
@@ -202,7 +202,7 @@ namespace Vasm {
       }
     }
 
-    public override bool IsComplete(EmitContext ec) {
+    public override bool IsComplete(AsmContext ec) {
       if (RawAsm != null) {
         return true;
       }
@@ -223,7 +223,7 @@ namespace Vasm {
       return true;
     }
 
-    public override void WriteData(EmitContext ec, Stream aOutput) {
+    public override void WriteData(AsmContext ec, Stream aOutput) {
       if (UntypedDefaultValue != null &&
           UntypedDefaultValue.LongLength > 0) {
         //var xBuff = (byte[])Array.CreateInstance(typeof(byte), UntypedDefaultValue.LongLength * 4);

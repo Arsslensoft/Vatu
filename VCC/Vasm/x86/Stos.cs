@@ -12,7 +12,7 @@ namespace Vasm.x86 {
             set;
         }
 
-        public override void WriteText( Vasm.EmitContext aAssembler, AssemblyWriter aOutput )
+        public override void WriteText( Vasm.AsmContext aAssembler, AssemblyWriter aOutput )
         {
             if ((Prefixes & InstructionPrefixes.Repeat) != 0) {
                 aOutput.Write("rep ");

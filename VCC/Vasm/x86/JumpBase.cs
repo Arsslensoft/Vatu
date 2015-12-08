@@ -30,7 +30,7 @@ namespace Vasm.x86 {
       }
     }
 
-    public override void WriteData(Vasm.EmitContext aAssembler, Stream aOutput) {
+    public override void WriteData(Vasm.AsmContext aAssembler, Stream aOutput) {
       if (mCorrectAddress) {
         if (IsRelativeJump) {
           if (DestinationValue.HasValue && !DestinationIsIndirect) {

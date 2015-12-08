@@ -67,7 +67,7 @@
       get { return mName; }
     }
 
-      public override void WriteText(EmitContext aAssembler, AssemblyWriter aOutput)
+      public override void WriteText(AsmContext aAssembler, AssemblyWriter aOutput)
       {
           if (IsGlobal)
           {
@@ -83,10 +83,10 @@
           }
       }
 
-      public override bool IsComplete(EmitContext aAssembler) {
+      public override bool IsComplete(AsmContext aAssembler) {
       return true;
     }
 
-    public override void WriteData(EmitContext ec, System.IO.Stream aOutput) { }
+    public override void WriteData(AsmContext ec, System.IO.Stream aOutput) { }
   }
 }

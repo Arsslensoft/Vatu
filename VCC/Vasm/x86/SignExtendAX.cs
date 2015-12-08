@@ -6,7 +6,7 @@ using System.Text;
 namespace Vasm.x86 {
     [Vasm.OpCode("cdq")]
     public class SignExtendAX : InstructionWithSize {
-        public override void WriteText( Vasm.EmitContext aAssembler, AssemblyWriter aOutput )
+        public override void WriteText( Vasm.AsmContext aAssembler, AssemblyWriter aOutput )
         {
             switch (Size) {
                 case 32:

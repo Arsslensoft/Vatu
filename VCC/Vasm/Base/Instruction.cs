@@ -24,7 +24,7 @@ namespace Vasm {
       get { return mAsmMethodIdx; }
     }
 
-    public override void WriteText(EmitContext ec, AssemblyWriter aOutput)
+    public override void WriteText(AsmContext ec, AssemblyWriter aOutput)
     {
       aOutput.Write(mMnemonic);
     }
@@ -76,16 +76,16 @@ namespace Vasm {
       }
     }
 
-    public override void UpdateAddress(EmitContext ec, ref ulong aAddress)
+    public override void UpdateAddress(AsmContext ec, ref ulong aAddress)
     {
       base.UpdateAddress(ec, ref aAddress);
     }
 
-    public override bool IsComplete( EmitContext aAssembler) {
+    public override bool IsComplete( AsmContext aAssembler) {
       throw new NotImplementedException("Method not implemented for instruction " + this.GetType().FullName.Substring(typeof(Instruction).Namespace.Length + 1));
     }
 
-    public override void WriteData(EmitContext aAssembler, Stream aOutput)
+    public override void WriteData(AsmContext aAssembler, Stream aOutput)
     {
       throw new NotImplementedException("Method not implemented for instruction " + this.GetType().FullName.Substring(typeof(Instruction).Namespace.Length + 1));
     }

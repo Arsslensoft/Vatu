@@ -56,7 +56,7 @@ namespace Vasm.x86 {
 
         }
 
-        public override void WriteText(Vasm.EmitContext aAssembler, AssemblyWriter aOutput)
+        public override void WriteText(Vasm.AsmContext aAssembler, AssemblyWriter aOutput)
         {
             if (Size == 0)
             {

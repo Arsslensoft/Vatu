@@ -18,7 +18,7 @@ namespace Vasm
             set;
         }
 
-        public override void WriteText(EmitContext aAssembler, AssemblyWriter aOutput)
+        public override void WriteText(AsmContext aAssembler, AssemblyWriter aOutput)
         {
             aOutput.Write(Code);
         }

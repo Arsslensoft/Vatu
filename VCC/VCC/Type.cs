@@ -32,8 +32,8 @@ namespace VJay
     /// </summary>
     public enum BuiltinTypes : byte
     {
-        Char, // 8 bits unsigned
-        SChar, // 8 bits signed
+        Char, // 8 bits unsigned [unsigned char]
+        Byte, // 8 bits signed [signed char]
         Int, // 32 bits signed [long int]
         Long, // 64 bits signed [long long]
         Short, // 16 bits signed [short int]
@@ -85,7 +85,7 @@ namespace VJay
                 case TypeCode.Boolean:
                     return BuiltinTypes.Bool;
                 case TypeCode.SByte:
-                    return BuiltinTypes.SChar;
+                    return BuiltinTypes.Byte;
                 case TypeCode.Byte:
                     return  BuiltinTypes.Char;
                 case TypeCode.Int16:
@@ -241,7 +241,7 @@ namespace VJay
                 {
                     case BuiltinTypes.Bool:
                     case BuiltinTypes.Char:
-                    case BuiltinTypes.SChar:
+                    case BuiltinTypes.Byte:
                         return 1;
                     case BuiltinTypes.Short:
                     case BuiltinTypes.UShort:
@@ -275,7 +275,49 @@ namespace VJay
 
         }
 
+        public TypeSpec MakePointer()
+        {
+            return new TypeSpec(_name, _bt, _flags | TypeFlags.Pointer, _sig.Location, this);
+        }
+        public TypeSpec MakeArray()
+        {
+            return new TypeSpec(_name, _bt, _flags | TypeFlags.Pointer | TypeFlags.Array, _sig.Location);
+        }
+        public string GetTypeName(TypeSpec tp)
+        {
+            if (tp.BaseType != null && tp.IsBuiltinType && tp.IsPointer)
+                return GetTypeName(tp.BaseType) + "*";
+            else return tp.Name;
+        }
 
+        public override string ToString()
+        {
+            return base.ToString();
+        }
+       
+    }
+
+    public class BuiltinTypeSpec : TypeSpec
+    {
+        public BuiltinTypeSpec(string name, BuiltinTypes bt)
+            : base(name, bt, TypeFlags.Builtin, Location.Null)
+        {
+
+        }
+
+        public static BuiltinTypeSpec Char = new BuiltinTypeSpec("char", BuiltinTypes.Char);
+        public static BuiltinTypeSpec Byte = new BuiltinTypeSpec("byte", BuiltinTypes.Byte);
+        public static BuiltinTypeSpec Short = new BuiltinTypeSpec("short", BuiltinTypes.Short);
+        public static BuiltinTypeSpec UShort = new BuiltinTypeSpec("ushort", BuiltinTypes.UShort);
+        public static BuiltinTypeSpec Int = new BuiltinTypeSpec("int", BuiltinTypes.Int);
+        public static BuiltinTypeSpec UInt = new BuiltinTypeSpec("uint", BuiltinTypes.UInt);
+
+        public static BuiltinTypeSpec Long = new BuiltinTypeSpec("long", BuiltinTypes.Long);
+        public static BuiltinTypeSpec ULong = new BuiltinTypeSpec("ulong", BuiltinTypes.ULong);
+        public static BuiltinTypeSpec Float = new BuiltinTypeSpec("float", BuiltinTypes.Float);
+        public static BuiltinTypeSpec Double = new BuiltinTypeSpec("double", BuiltinTypes.Double);
+        public static BuiltinTypeSpec Extended = new BuiltinTypeSpec("extended", BuiltinTypes.Extended);
+        public static BuiltinTypeSpec Bool = new BuiltinTypeSpec("bool", BuiltinTypes.Bool);
 
     }
 }

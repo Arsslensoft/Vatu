@@ -5,18 +5,18 @@ using System.Text;
 
 namespace Vasm
 {
-   public class EmitContext
+   public class AsmContext
     {
-       private static EmitContext mCurrentInstance;
+       private static AsmContext mCurrentInstance;
 
        public AssemblyWriter AssemblerWriter { get; set; }
 
-       public EmitContext(string file)
+       public AsmContext(string file)
        {
            AssemblerWriter = new AssemblyWriter(file);
            mCurrentInstance = this;
        }
-       public EmitContext(AssemblyWriter writer)
+       public AsmContext(AssemblyWriter writer)
        {
            AssemblerWriter = writer;
            mCurrentInstance = this;
@@ -42,7 +42,7 @@ namespace Vasm
             set { mInstructions = value; }
         }
 
-        public static EmitContext CurrentInstance
+        public static AsmContext CurrentInstance
         {
             get { return mCurrentInstance; }
         }

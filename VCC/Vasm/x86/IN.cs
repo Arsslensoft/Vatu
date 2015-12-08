@@ -6,7 +6,7 @@ using System.Text;
 namespace Vasm.x86 {
     [Vasm.OpCode("in")]
     public class IN : InstructionWithDestinationAndSize {
-        public override void WriteText( Vasm.EmitContext aAssembler, AssemblyWriter aOutput )
+        public override void WriteText( Vasm.AsmContext aAssembler, AssemblyWriter aOutput )
         {
             base.WriteText(aAssembler, aOutput);
             aOutput.Write(", DX");

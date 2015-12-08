@@ -7,7 +7,7 @@ namespace Vasm
     {
         public readonly string Text;
 
-        public Comment( EmitContext aAssembler, string aText )
+        public Comment( AsmContext aAssembler, string aText )
             : base() //HACK
         {
           if (aText.StartsWith(";")) {
@@ -16,18 +16,18 @@ namespace Vasm
           Text = String.Intern(aText);
         }
       
-        public override void WriteText(EmitContext aAssembler, AssemblyWriter aOutput)
+        public override void WriteText(AsmContext aAssembler, AssemblyWriter aOutput)
         {
             aOutput.Write( "; " );
             aOutput.Write( Text );
         }
 
-        public override void UpdateAddress( EmitContext aAssembler, ref ulong aAddress )
+        public override void UpdateAddress( AsmContext aAssembler, ref ulong aAddress )
         {
             base.UpdateAddress( aAssembler, ref aAddress );
         }
 
-        public override bool IsComplete(EmitContext aAssembler)
+        public override bool IsComplete(AsmContext aAssembler)
         {
             return true;
         }

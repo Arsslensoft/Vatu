@@ -12,7 +12,7 @@ namespace Vasm.x86.SSE
             get;
             set;
         }
-        public override void WriteText(Vasm.EmitContext aAssembler, AssemblyWriter aOutput)
+        public override void WriteText(Vasm.AsmContext aAssembler, AssemblyWriter aOutput)
         {
             aOutput.Write(mMnemonic);
             aOutput.Write(" ");
