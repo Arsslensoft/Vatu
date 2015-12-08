@@ -58,7 +58,8 @@ namespace VJay
         Pointer = 1 << 4,
         Array   = 1 << 5,
         Missing = 1 << 6,
-        Void    = 1 << 7
+        Void    = 1 << 7,
+        Null    = 1 << 8
     }
   
 
@@ -304,7 +305,11 @@ namespace VJay
         {
 
         }
+        public BuiltinTypeSpec(string name, BuiltinTypes bt, TypeFlags tf)
+            : base(name, bt, TypeFlags.Builtin | tf, Location.Null)
+        {
 
+        }
         public static BuiltinTypeSpec Char = new BuiltinTypeSpec("char", BuiltinTypes.Char);
         public static BuiltinTypeSpec Byte = new BuiltinTypeSpec("byte", BuiltinTypes.Byte);
         public static BuiltinTypeSpec Short = new BuiltinTypeSpec("short", BuiltinTypes.Short);
@@ -318,6 +323,7 @@ namespace VJay
         public static BuiltinTypeSpec Double = new BuiltinTypeSpec("double", BuiltinTypes.Double);
         public static BuiltinTypeSpec Extended = new BuiltinTypeSpec("extended", BuiltinTypes.Extended);
         public static BuiltinTypeSpec Bool = new BuiltinTypeSpec("bool", BuiltinTypes.Bool);
-
+      
+        public static BuiltinTypeSpec Null = new BuiltinTypeSpec("null", BuiltinTypes.Int, TypeFlags.Null);
     }
 }

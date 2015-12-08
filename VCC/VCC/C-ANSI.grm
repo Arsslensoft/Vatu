@@ -196,7 +196,7 @@ Comment Line  = '//'
 <Var>      ::= ID <Array>
              | ID <Array> '=' <Op If> 
 
-<Array>    ::= '[' <Expr> ']'
+<Array>    ::= '[' <Expression> ']'
              | '[' ']'
              |
              
@@ -269,29 +269,29 @@ Comment Line  = '//'
 
 <Stm>        ::= <Var Decl>
                | Id ':'                            !Label
-               | if '(' <Expr> ')' <Stm>          
-               | if '(' <Expr> ')' <Then Stm> else <Stm>         
-               | while '(' <Expr> ')' <Stm> 
+               | if '(' <Expression> ')' <Stm>          
+               | if '(' <Expression> ')' <Then Stm> else <Stm>         
+               | while '(' <Expression> ')' <Stm> 
                | for '(' <Arg> ';' <Arg> ';' <Arg> ')' <Stm>
                | <Normal Stm>
 
-<Then Stm>   ::= if '(' <Expr> ')' <Then Stm> else <Then Stm> 
-               | while '(' <Expr> ')' <Then Stm> 
+<Then Stm>   ::= if '(' <Expression> ')' <Then Stm> else <Then Stm> 
+               | while '(' <Expression> ')' <Then Stm> 
                | for '(' <Arg> ';' <Arg> ';' <Arg> ')' <Then Stm>
                | <Normal Stm>
 
-<Normal Stm> ::= do <Stm> while '(' <Expr> ')'
-               | switch '(' <Expr> ')' '{' <Case Stms> '}'
+<Normal Stm> ::= do <Stm> while '(' <Expression> ')'
+               | switch '(' <Expression> ')' '{' <Case Stms> '}'
                | <Block>
-               | <Expr> ';'               
+               | <Expression> ';'               
                | goto Id ';'
                | break ';'
                | continue ';'
-               | return <Expr> ';'
+               | return <Expression> ';'
                | ';'              !Null statement
 
 
-<Arg>       ::= <Expr> 
+<Arg>       ::= <Expression> 
               | 
 
 <Case Stms> ::= case <Value> ':' <Stm List> <Case Stms>
@@ -308,7 +308,7 @@ Comment Line  = '//'
 ! Here begins the C's 15 levels of operator precedence.
 ! ===================================================================
 
-<Expr>       ::= <Expr> ',' <Op Assign>   
+<Expression>       ::= <Expression> ',' <Op Assign>   
                | <Op Assign>
 
 <Op Assign>  ::= <Op If> '='   <Op Assign>
@@ -380,7 +380,7 @@ Comment Line  = '//'
 
 <Op Pointer> ::= <Op Pointer> '.' <Value>
                | <Op Pointer> '->' <Value>
-               | <Op Pointer> '[' <Expr> ']'
+               | <Op Pointer> '[' <Expression> ']'
                | <Value>
 
 <Value>      ::= OctLiteral
@@ -389,8 +389,8 @@ Comment Line  = '//'
                | StringLiteral
                | CharLiteral
                | FloatLiteral
-               | Id '(' <Expr> ')'
+               | Id '(' <Expression> ')'
                | Id '(' ')'          
 
                | Id
-               | '(' <Expr> ')'
+               | '(' <Expression> ')'
