@@ -9,3 +9,6 @@
 	Emit const to var ref
 * ResolveContext, EmitContext
 * Report
+
+* IF OPERATOR IS NULL
+	IT'S a semantic extension

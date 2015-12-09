@@ -1,5 +1,6 @@
 ﻿using bsn.GoldParser.Semantic;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,39 +12,57 @@ namespace VCC
     [Terminal("(EOF)")]
     [Terminal("(Error)")]
     [Terminal("(Whitespace)")]
+    [Terminal("(Comment)")]
+    [Terminal("(NewLine)")]
+    [Terminal("(*/)")]
+    [Terminal("(//)")]
+    [Terminal("(/*)")]
     [Terminal("(")]
     [Terminal(")")]
-    [Terminal("=")]
+    [Terminal("{")]
+    [Terminal("}")]
+    [Terminal("[")]
+    [Terminal("]")]
+    [Terminal(":")]
+    [Terminal(";")]
+    [Terminal("?")]
+    [Terminal(",")]
     public class SimpleToken : SemanticToken
     {
+        public string Name { get { return symbol.Name; } }
     }
 
-    [Terminal("auto")]
     [Terminal("break")]
     [Terminal("case")]
-    [Terminal("const")]
     [Terminal("continue")]
     [Terminal("default")]
     [Terminal("do")]
     [Terminal("else")]
-    [Terminal("enum")]
-    [Terminal("extern")]
     [Terminal("for")]
     [Terminal("goto")]
     [Terminal("if")]
-    [Terminal("register")]
     [Terminal("return")]
-    [Terminal("signed")]
     [Terminal("sizeof")]
-    [Terminal("static")]
-    [Terminal("struct")]
     [Terminal("switch")]
     [Terminal("typedef")]
-    [Terminal("union")]
-    [Terminal("unsigned")]
     [Terminal("while")]
-    [Terminal("volatile")]
     // types
+  /*  [Terminal("void")]
+    [Terminal("char")]
+    [Terminal("schar")]
+    [Terminal("short")]
+    [Terminal("ushort")]
+    [Terminal("int")]
+    [Terminal("uint")]
+    [Terminal("long")]
+    [Terminal("ulong")]
+    [Terminal("double")]
+    [Terminal("float")]
+    [Terminal("extended")]
+    [Terminal("bool")]*/
+    public class KeywordToken : SimpleToken
+    {
+    }
     [Terminal("void")]
     [Terminal("char")]
     [Terminal("schar")]
@@ -57,30 +76,119 @@ namespace VCC
     [Terminal("float")]
     [Terminal("extended")]
     [Terminal("bool")]
-    public class KeywordToken : SimpleToken
+    public class TypeToken : SimpleToken, IResolve
     {
-    }
-
-
-    public class ResolveContext : IDisposable
-    {
-       
-
-        #region IDisposable Members
-
-        public void Dispose()
+        public Location loc;
+        public Location Location { get { return loc; } }
+        public TypeSpec Type { get; set; }
+        public TypeToken()
         {
-         
+            loc = CompilerContext.TranslateLocation(position);
+
         }
 
-        #endregion
+        public virtual bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+    }
+    [Terminal("Id")]
+    public class Identifier : Expr
+    {
+        protected readonly string _idName;
+        public string Name { get { return _idName; } }
+       
+        public Identifier(string idName)
+        {
+            _idName = idName;
+        }
 
+       
     }
 
+    public class TypePointer : SimpleToken
+    {
+        public Location loc;
+        public Location Location { get { return loc; } }
 
-    public abstract class Statement : SimpleToken, IEmit
+        TypePointer _next;
+        [Rule(@"<Pointers> ::= ~'*' <Pointers>")]
+        public TypePointer(TypePointer ptr)
+        {
+            loc = CompilerContext.TranslateLocation(position);
+            _next = ptr;
+        }
+        [Rule(@"<Pointers> ::=  ")]
+        public TypePointer()
+        {
+            loc = CompilerContext.TranslateLocation(position);
+            _next = null;
+        }
+
+
+    }
+    public class Definition : SimpleToken, IEmitExpr, IEmit, IResolve
+    {
+        public Location loc;
+        public Location Location { get { return loc; } }
+
+        public Definition()
+        {
+            loc = CompilerContext.TranslateLocation(position);
+        }
+        public virtual bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+        public virtual bool Emit(EmitContext ec)
+        {
+            return true;
+        }
+        public virtual bool EmitFromStack(EmitContext ec)
+        {
+            return true;
+        }
+        public virtual bool EmitToStack(EmitContext ec)
+        {
+            return true;
+        }
+    }
+    public abstract class Operator : SimpleToken, IEmitExpr, IEmit, IResolve
     {
 
+          public Location loc;
+        public Location Location { get { return loc; } }
+
+        public Operator()
+        {
+            loc = CompilerContext.TranslateLocation(position);
+        }
+        public virtual bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+        public virtual bool Emit(EmitContext ec)
+        {
+            return true;
+        }
+        public virtual bool EmitFromStack(EmitContext ec)
+        {
+            return true;
+        }
+        public virtual bool EmitToStack(EmitContext ec)
+        {
+            return true;
+        }
+
+    }
+    public abstract class Statement : SimpleToken, IEmit, IResolve
+    {
+  
+
+        public Statement()
+        {
+            loc = CompilerContext.TranslateLocation(position);
+        }
         public Location loc;
 
         public Location Location { get { return loc; } }
@@ -95,9 +203,14 @@ namespace VCC
         }
 
 
-        public abstract bool Resolve(ResolveContext rc);
-       
-        public abstract bool Emit(EmitContext ec);
+        public virtual bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+        public virtual bool Emit(EmitContext ec)
+        {
+            return true;
+        }
 
         public virtual Reachability MarkReachable(Reachability rc)
         {
@@ -107,7 +220,7 @@ namespace VCC
             return rc;
         }
     }
-    public abstract class Expression : SimpleToken,IEmitExpr,IEmit
+    public class Expression : SimpleToken, IEmitExpr, IEmit, IResolve
     {
         protected Location loc;
         protected TypeSpec type;
@@ -124,20 +237,240 @@ namespace VCC
             type = tp;
             loc = lc;
         }
+        public Expression(Location lc)
+        {
+            type = null;
+            loc = lc;
+        }
+        public Expression()
+            : this(Location.Null)
+        {
+            loc = CompilerContext.TranslateLocation(position);
+        }
+        public virtual bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+        public virtual bool Emit(EmitContext ec)
+        {
+            return true;
+        }
+        public virtual bool EmitFromStack(EmitContext ec)
+        {
+            return true;
+        }
+        public virtual bool EmitToStack(EmitContext ec)
+        {
+            return true;
+        }
+    }
+    public class Expr : SimpleToken, IEmitExpr, IEmit, IResolve
+    {
+        Expr next;
+        Expr current;
+        [Rule("<Expression> ::= <Op Assign>")]
+        public Expr(Expr expr)
+        {
+            current = expr;
 
-        public abstract bool Resolve(ResolveContext rc);
+        }
 
-        public abstract bool Emit(EmitContext ec);
-        public abstract bool EmitFromStack(EmitContext ec);
-        public abstract bool EmitToStack(EmitContext ec);
+          [Rule("<Expression> ::= <Expression> ~',' <Op Assign>")]
+        public Expr(Expr expr, Expr n)
+        {
+            current = expr;
+            next = n;
+        }
+           protected Location loc;
+        protected TypeSpec type;
+
+        public TypeSpec Type
+        {
+            get { return type; }
+            set { type = value; }
+        }
+        public Location Location { get { return loc; } }
+
+        public Expr(TypeSpec tp, Location lc)
+        {
+            type = tp;
+            loc = lc;
+        }
+        public Expr(Location lc)
+        {
+            type = null;
+            loc = lc;
+        }
+        public Expr()
+            : this(Location.Null)
+        {
+            loc = CompilerContext.TranslateLocation(position);
+        }
+        public virtual bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+        public virtual bool Emit(EmitContext ec)
+        {
+            return true;
+        }
+        public virtual bool EmitFromStack(EmitContext ec)
+        {
+            return true;
+        }
+        public virtual bool EmitToStack(EmitContext ec)
+        {
+            return true;
+        }
+
+
+    }
+  
+    public abstract class DeclarationToken : SimpleToken, IEmit, IResolve
+    {
+
+        public Location loc;
+
+        public Location Location { get { return loc; } }
+
+        public DeclarationToken(Location lc)
+        {
+            loc = lc;
+        }
+        public DeclarationToken()
+           :this(Location.Null)
+        {
+            loc = CompilerContext.TranslateLocation(position);
+        }
+
+        public virtual bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+        public virtual bool Emit(EmitContext ec)
+        {
+            return true;
+        }
+        public virtual bool EmitFromStack(EmitContext ec)
+        {
+            return true;
+        }
+        public virtual bool EmitToStack(EmitContext ec)
+        {
+            return true;
+        }
+
+     
+    }
+    public abstract class ModifierToken : SimpleToken, IResolve
+    {
+        public Location loc;
+        public Location Location { get { return loc; } }
+        public TypeSpec Type { get; set; }
+        public ModifierToken()
+        {
+            loc = CompilerContext.TranslateLocation(position);
+
+        }
+
+        public virtual bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
     }
 
-
-    public enum Operator : byte
+    public class AccessOp : Operator
     {
-        // Unary Operators
+        private readonly AccessOperator _op;
 
-        // Binary Operators
+   
+    }
+    public class BinaryOp : Operator
+    {
+        private readonly BinaryOperator _op;
+
+     
+    }
+    public class UnaryOp : Operator
+    {
+        private readonly UnaryOperator _op;
+
+    
+    }
+    public class AssignOp : Operator
+    {
+        private readonly BinaryOperator _op;
+
+     
+    }
+
+    [Flags]
+    public enum BinaryOperator
+    {
+        Multiply = 0 | ArithmeticMask,
+        Division = 1 | ArithmeticMask,
+        Modulus = 2 | ArithmeticMask,
+        Addition = 3 | ArithmeticMask | AdditionMask,
+        Subtraction = 4 | ArithmeticMask | SubtractionMask,
+
+        LeftShift = 5 | ShiftMask,
+        RightShift = 6 | ShiftMask,
+
+        LessThan = 7 | ComparisonMask | RelationalMask,
+        GreaterThan = 8 | ComparisonMask | RelationalMask,
+        LessThanOrEqual = 9 | ComparisonMask | RelationalMask,
+        GreaterThanOrEqual = 10 | ComparisonMask | RelationalMask,
+        Equality = 11 | ComparisonMask | EqualityMask,
+        Inequality = 12 | ComparisonMask | EqualityMask,
+
+        BitwiseAnd = 13 | BitwiseMask,
+        ExclusiveOr = 14 | BitwiseMask,
+        BitwiseOr = 15 | BitwiseMask,
+
+        LogicalAnd = 16 | LogicalMask,
+        LogicalOr = 17 | LogicalMask,
+
+        //
+        // Operator masks
+        //
+        ValuesOnlyMask = ArithmeticMask - 1,
+        ArithmeticMask = 1 << 5,
+        ShiftMask = 1 << 6,
+        ComparisonMask = 1 << 7,
+        EqualityMask = 1 << 8,
+        BitwiseMask = 1 << 9,
+        LogicalMask = 1 << 10,
+        AdditionMask = 1 << 11,
+        SubtractionMask = 1 << 12,
+        RelationalMask = 1 << 13,
+
+        DecomposedMask = 1 << 19,
+        NullableMask = 1 << 20
+    }
+    public enum UnaryOperator : byte
+    {
+        UnaryPlus, UnaryNegation, LogicalNot, OnesComplement,
+        AddressOf, ValueOf, PostfixIncrement, PostfixDecrement, PrefixIncrement, PrefixDecrement
+    }
+    public enum AccessOperator : byte
+    {
+       ByValue,
+       ByAddress,
+       ByIndex
+    }
+    public enum AssignOperator : byte
+    {
+        Equal,
+        AddAssign,
+        SubAssign,
+        MulAssign,
+        DivAssign,
+        XorAssign,
+        AndAssign,
+        OrAssign,
+        RightShiftAssign,
+        LeftShiftAssign
+
     }
     public struct Reachability
     {
@@ -170,5 +503,134 @@ namespace VCC
         {
             return new Reachability(a.unreachable | b.unreachable);
         }
+    }
+
+    public class StatementSequence<T> : SimpleToken, IEnumerable<T> where T : SimpleToken
+    {
+        private readonly T item;
+        private readonly StatementSequence<T> next;
+
+
+   
+    
+        public StatementSequence()
+            : this(null, null)
+        {
+        }
+
+
+    //    [Rule("<Stm List>  ::=  <Statement> <Stm List> ", typeof(Statement))]
+        public StatementSequence(T item, StatementSequence<T> next)
+        {
+            this.item = item;
+            this.next = next;
+        }
+
+        #region IEnumerable<T> Members
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            for (StatementSequence<T> sequence = this; sequence != null; sequence = sequence.next)
+            {
+                if (sequence.item != null)
+                {
+                    yield return sequence.item;
+                }
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        #endregion
+    }
+    public class ExpressionSequence<T> : SimpleToken, IEnumerable<T> where T : SimpleToken
+    {
+        private readonly T item;
+        private readonly ExpressionSequence<T> next;
+
+
+        public ExpressionSequence()
+            : this(null, null)
+        {
+        }
+
+    //    [Rule("<Expression> ::= <Op Assign>", typeof(Expr))]
+        public ExpressionSequence(T item)
+            : this(item, null)
+        {
+        }
+
+
+     //   [Rule("<Expression> ::= <Expression> ~',' <Op Assign>", typeof(Expr))]
+        public ExpressionSequence(T item, ExpressionSequence<T> next)
+        {
+            this.item = item;
+            this.next = next;
+        }
+
+        #region IEnumerable<T> Members
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            for (ExpressionSequence<T> sequence = this; sequence != null; sequence = sequence.next)
+            {
+                if (sequence.item != null)
+                {
+                    yield return sequence.item;
+                }
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        #endregion
+    }
+    public class DeclarationSequence<T> : SimpleToken, IEnumerable<T> where T : SimpleToken
+    {
+        private readonly T item;
+        private readonly DeclarationSequence<T> next;
+
+
+   
+
+        [Rule("<Decls> ::= ", typeof(Declaration))]
+        public DeclarationSequence()
+            : this(null, null)
+        {
+        }
+
+
+        [Rule("<Decls> ::= <Decl> <Decls>", typeof(Declaration))]
+        public DeclarationSequence(T item, DeclarationSequence<T> next)
+        {
+            this.item = item;
+            this.next = next;
+        }
+
+        #region IEnumerable<T> Members
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            for (DeclarationSequence<T> sequence = this; sequence != null; sequence = sequence.next)
+            {
+                if (sequence.item != null)
+                {
+                    yield return sequence.item;
+                }
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        #endregion
     }
 }

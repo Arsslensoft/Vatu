@@ -97,6 +97,9 @@ OctLiteral       = 0{Oct Digit}*
 HexLiteral       = 0x{Hex Digit}+
 FloatLiteral     = {Digit}*'.'{Digit}+
 
+BooleanLiteral   = true | false
+NullLiteral      = null
+
 StringLiteral    = '"'( {String Ch} | '\'{Printable} )* '"'
 CharLiteral      = '' ( {Char Ch} | '\'{Printable} )''
 
@@ -194,11 +197,12 @@ Comment Line  = '//'
                  | <Mod>        <Var> <Var List>  ';'
              
 <Var>      ::= ID <Array>
+             | ID
              | ID <Array> '=' <Op If> 
+             | ID '=' <Op If> 
 
 <Array>    ::= '[' <Expression> ']'
              | '[' ']'
-             |
              
 <Var List> ::=  ',' <Var Item> <Var List>
              | 
@@ -234,27 +238,22 @@ Comment Line  = '//'
 
 <Type>     ::= <Base> <Pointers> 
 
-<Base>     ::= <Sign> <Scalar>
+<Base>     ::= <Scalar>
              | struct Id 
              | struct '{' <Struct Def> '}' 
              | union Id
              | union '{' <Struct Def> '}' 
              | enum Id  
 
-
-<Sign>     ::= signed 
-             | unsigned
-             |
-
 <Scalar>   ::= char
              | int
-			 | uint
+             | uint
              | short
              | long
-			 | ushort
+             | ushort
              | ulong
              | schar
-			 | bool
+             | bool
              | extended
              | float
              | double
@@ -267,12 +266,12 @@ Comment Line  = '//'
 ! Statements
 ! ===================================================================
 
-<Stm>        ::= <Var Decl>
+<Statement>        ::= <Var Decl>
                | Id ':'                            !Label
-               | if '(' <Expression> ')' <Stm>          
-               | if '(' <Expression> ')' <Then Stm> else <Stm>         
-               | while '(' <Expression> ')' <Stm> 
-               | for '(' <Arg> ';' <Arg> ';' <Arg> ')' <Stm>
+               | if '(' <Expression> ')' <Statement>          
+               | if '(' <Expression> ')' <Then Stm> else <Statement>         
+               | while '(' <Expression> ')' <Statement> 
+               | for '(' <Arg> ';' <Arg> ';' <Arg> ')' <Statement>
                | <Normal Stm>
 
 <Then Stm>   ::= if '(' <Expression> ')' <Then Stm> else <Then Stm> 
@@ -280,7 +279,7 @@ Comment Line  = '//'
                | for '(' <Arg> ';' <Arg> ';' <Arg> ')' <Then Stm>
                | <Normal Stm>
 
-<Normal Stm> ::= do <Stm> while '(' <Expression> ')'
+<Normal Stm> ::= do <Statement> while '(' <Expression> ')'
                | switch '(' <Expression> ')' '{' <Case Stms> '}'
                | <Block>
                | <Expression> ';'               
@@ -300,7 +299,7 @@ Comment Line  = '//'
 
 <Block>     ::= '{' <Stm List> '}' 
 
-<Stm List>  ::=  <Stm> <Stm List> 
+<Stm List>  ::=  <Statement> <Stm List> 
               | 
 
 
@@ -341,8 +340,10 @@ Comment Line  = '//'
 <Op BinAND>  ::= <Op BinAND> '&' <Op Equate>
                | <Op Equate>
 
-<Op Equate>  ::= <Op Equate> '==' <Op Compare>
-               | <Op Equate> '!=' <Op Compare>
+<Op Equate>  ::= <Op Equate> '==' <Op NEqual>
+               | <Op NEqual>
+
+<Op NEqual>  ::= <Op NEqual> '!=' <Op Compare>
                | <Op Compare>
 
 <Op Compare> ::= <Op Compare> '<'  <Op Shift>
@@ -389,6 +390,8 @@ Comment Line  = '//'
                | StringLiteral
                | CharLiteral
                | FloatLiteral
+               | BooleanLiteral
+               | NullLiteral
                | Id '(' <Expression> ')'
                | Id '(' ')'          
 

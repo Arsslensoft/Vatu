@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using VJay;
 
 namespace VCC
 {
@@ -38,10 +39,39 @@ namespace VCC
 
     }
 
+
+    public interface IResolve
+    {
+        bool Resolve(ResolveContext rc);
+    }
+
     /// <summary>
     /// Emit Context
     /// </summary>
    public class EmitContext
     {
     }
+
+   public class ResolveContext : IDisposable
+   {
+
+
+       #region IDisposable Members
+
+       public void Dispose()
+       {
+
+       }
+
+       #endregion
+
+   }
+
+   public class CompilerContext
+   {
+       public static Location TranslateLocation(bsn.GoldParser.Parser.LineInfo li)
+       {
+           return new Location(new SourceFile("this", "null", 0), li.Line, li.Column);
+       }
+   }
 }

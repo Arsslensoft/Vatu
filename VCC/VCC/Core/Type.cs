@@ -13,11 +13,18 @@ namespace VJay
         public string Signature { get; set; }
         public Location Location { get; set; }
 
-        public MemberSignature(string name,Location loc,string type, params string[] parameters)
+        public MemberSignature(string name,Location loc,string type, params TypeSpec[] parameters)
         {
             Signature =type  + "_" +name;
-            foreach (string param in parameters)
-                Signature += "_" + param;
+            foreach (TypeSpec param in parameters)
+                Signature += "_" + param.Name;
+            Location = loc;
+
+        }
+        public MemberSignature(string name, Location loc)
+        {
+            Signature = name;
+          
             Location = loc;
 
         }
@@ -27,6 +34,7 @@ namespace VJay
         }
 
     }
+
     /// <summary>
     /// Builtin Types [Not like C99 Specs]
     /// </summary>
@@ -47,23 +55,90 @@ namespace VJay
         Bool,
         Unknown
     }
-  
+    /// <summary>
+    /// Type Flags
+    /// </summary>
     [Flags]
     public enum TypeFlags
     {
         Struct = 1,
         TypeDef = 1 << 1,
         Builtin = 1 << 2,
-        Enum    = 1 << 3,
+        Enum = 1 << 3,
         Pointer = 1 << 4,
-        Array   = 1 << 5,
+        Array = 1 << 5,
         Missing = 1 << 6,
-        Void    = 1 << 7,
-        Null    = 1 << 8
+        Void = 1 << 7,
+        Null = 1 << 8
     }
-  
-
     /// <summary>
+    /// Member Modifiers
+    /// </summary>
+    [Flags]
+    public enum Modifiers
+    {
+        Static = 1,
+        Extern = 1 << 1,
+        NoModifier = 1 << 2,
+        Prototype = 1 << 3,
+        Register  = 1 << 4,
+        Auto = 1 << 5,
+        Volatile = 1 << 6,
+        Const = 1 << 7
+    }
+
+    public abstract class MemberSpec
+    {
+       protected MemberSignature _sig;
+       protected Modifiers _mod;
+       string _name;
+
+
+       public MemberSpec(string name,MemberSignature sig, Modifiers mod)
+       {
+           _mod = mod;
+           _name = name;
+           _sig = sig;
+       }
+
+       /// <summary>
+       /// Member name
+       /// </summary>
+       public virtual string Name
+       {
+           get { return _name; }
+       }
+       /// <summary>
+       /// Member Signature for struct_node_
+       /// </summary>
+       public MemberSignature Signature
+       {
+           get { return _sig; }
+
+       }
+        /// <summary>
+        /// Member Modifiers
+        /// </summary>
+       public Modifiers Modifiers
+       {
+           get { return _mod; }
+
+       }
+
+
+       public bool IsExtern
+       {
+           get { return (_mod & Modifiers.Extern) != 0; }
+       }
+       public bool IsStatic
+       {
+           get
+           {
+               return (_mod & Modifiers.Static) != 0;
+           }
+       }
+    }
+        /// <summary>
     /// Basic Type Checker
     /// </summary>
     internal static class TypeChecker
@@ -131,16 +206,16 @@ namespace VJay
 
     }
 
+
     /// <summary>
     /// Basic type specs
     /// </summary>
-    public class TypeSpec
+    public class TypeSpec : MemberSpec
     {
         BuiltinTypes _bt;
         TypeSpec _base;
-        MemberSignature _sig;
         TypeFlags _flags;
-        string _name;
+
 
      
         public bool IsBuiltinType
@@ -214,21 +289,15 @@ namespace VJay
         {
             get { return _bt; }
         }
-
         /// <summary>
-        /// Type Signature for struct_node_
+        /// Type Flags
         /// </summary>
-        public MemberSignature TypeSignature
+        public TypeFlags Flags
         {
-            get { return _sig; }
-
+            get { return _flags; }
         }
-        /// <summary>
-        /// Type name
-        /// </summary>
-        public string Name { 
-       get { return _name; } 
-        }
+     
+  
 
 
         //
@@ -265,10 +334,9 @@ namespace VJay
             return 0;
         }
 
-        public TypeSpec(string name, BuiltinTypes bt, TypeFlags flags,Location loc, TypeSpec basetype = null)
+        public TypeSpec(string name, BuiltinTypes bt, TypeFlags flags,Modifiers mods,Location loc, TypeSpec basetype = null)
+            : base(name,  new MemberSignature(name, loc),mods)
         {
-            _name = name;
-            _sig = new MemberSignature(name, loc, "type");
             _bt = bt;
             _flags = flags;
             _base = basetype;
@@ -278,11 +346,11 @@ namespace VJay
 
         public TypeSpec MakePointer()
         {
-            return new TypeSpec(_name, _bt, _flags | TypeFlags.Pointer, _sig.Location, this);
+            return new TypeSpec(Name, _bt, _flags | TypeFlags.Pointer,Modifiers, _sig.Location, this);
         }
         public TypeSpec MakeArray()
         {
-            return new TypeSpec(_name, _bt, _flags | TypeFlags.Pointer | TypeFlags.Array, _sig.Location);
+            return new TypeSpec(Name, _bt, _flags | TypeFlags.Pointer | TypeFlags.Array,Modifiers, _sig.Location);
         }
         public string GetTypeName(TypeSpec tp)
         {
@@ -298,15 +366,56 @@ namespace VJay
        
     }
 
+    /// <summary>
+    /// Pointer Type
+    /// </summary>
+    public class PointerTypeSpec : TypeSpec
+    {   
+        public PointerTypeSpec(TypeSpec _basetype)
+            : this(_basetype,0)
+        {
+
+        }
+        public PointerTypeSpec(TypeSpec _basetype,TypeFlags _flags)
+            : base(_basetype.Name, _basetype.BuiltinType, _basetype.Flags | TypeFlags.Pointer | _flags, _basetype.Modifiers, _basetype.Signature.Location, _basetype)
+        {
+
+        }
+    }
+
+    /// <summary>
+    /// Array type
+    /// </summary>
+    public class ArrayTypeSpec : PointerTypeSpec
+    {
+        private readonly int _size;
+
+        public int Size
+        {
+            get
+            {
+                return _size;
+            }
+        }
+        public ArrayTypeSpec(TypeSpec _basetype, int size = 0)
+            : base(_basetype, TypeFlags.Array)
+        {
+            _size = size;
+        }
+    }
+
+    /// <summary>
+    /// Base Type
+    /// </summary>
     public class BuiltinTypeSpec : TypeSpec
     {
         public BuiltinTypeSpec(string name, BuiltinTypes bt)
-            : base(name, bt, TypeFlags.Builtin, Location.Null)
+            : base(name, bt, TypeFlags.Builtin,Modifiers.NoModifier, Location.Null)
         {
 
         }
         public BuiltinTypeSpec(string name, BuiltinTypes bt, TypeFlags tf)
-            : base(name, bt, TypeFlags.Builtin | tf, Location.Null)
+            : base(name, bt, TypeFlags.Builtin | tf,Modifiers.NoModifier, Location.Null)
         {
 
         }
@@ -325,5 +434,55 @@ namespace VJay
         public static BuiltinTypeSpec Bool = new BuiltinTypeSpec("bool", BuiltinTypes.Bool);
       
         public static BuiltinTypeSpec Null = new BuiltinTypeSpec("null", BuiltinTypes.Int, TypeFlags.Null);
+    }
+    /// <summary>
+    /// Global Variable Specs
+    /// </summary>
+    public class FieldSpec : MemberSpec
+    {
+        TypeSpec memberType;
+
+
+        public TypeSpec MemberType
+        {
+            get
+            {
+                return memberType;
+            }
+        }
+
+        public FieldSpec(string name, Modifiers mods, TypeSpec type, Location loc)
+            : base(name, new MemberSignature(name, loc, type.Name), mods)
+        {
+
+        }
+    }
+    /// <summary>
+    /// Method Specs Specs
+    /// </summary>
+    public class MethodSpec : MemberSpec
+    {
+        TypeSpec memberType;
+
+
+        public TypeSpec MemberType
+        {
+            get
+            {
+                return memberType;
+            }
+        }
+        public bool IsPrototype
+        {
+            get
+            {
+                return (Modifiers & Modifiers.Prototype) == VJay.Modifiers.Prototype;
+            }
+        }
+        public MethodSpec(string name, Modifiers mods, TypeSpec type,TypeSpec[] parameters,  Location loc)
+            : base(name, new MemberSignature(name, loc, type.Name, parameters), mods)
+        {
+
+        }
     }
 }

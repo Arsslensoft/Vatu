@@ -1,0 +1,63 @@
+"Name"    = 'Simple'
+"Author"  = 'Devin Cook'
+"Version" = '2.0' 
+"About"   = 'This is a very simple grammar designed for use in examples'
+
+"Case Sensitive" = False 
+"Start Symbol"   = <Statements>
+
+{String Ch 1} = {Printable} - ['']
+{String Ch 2} = {Printable} - ["]
+{Hex Digit}   = {Digit} + [abcdefABCDEF]
+Id            = {Letter}{AlphaNumeric}*
+
+! String allows either single or double quotes
+
+StringLiteral = ''   {String Ch 1}* ''
+              | '"'  {String Ch 2}* '"'
+BooleanLiteral= true 
+              | false
+NullLiteral   = null
+NumberLiteral = {Digit}+('.'{Digit}+)?
+HexLiteral    = 0x{Hex Digit}+
+<Statements> ::= <Statement> <Statements>
+               | <Statement>
+
+<Statement>  ::= display <Expression>
+               | display <Expression> read ID
+               | assign Id '=' <Expression>
+               | while <Expression> do <Statements> end
+               | if <Expression> then <Statements> end
+               | if <Expression> then <Statements> else <Statements> end
+               
+<Expression>   ::= <Expression> '>'  <Add Exp> 
+                 | <Expression> '<'  <Add Exp> 
+                 | <Expression> '<=' <Add Exp> 
+                 | <Expression> '>=' <Add Exp>
+                 | <Expression> '==' <Add Exp>
+                 | <Expression> '<>' <Add Exp>
+                 | <Add Exp> 
+
+<Add Exp>      ::= <Add Exp> '+' <Mult Exp>
+                 | <Add Exp> '-' <Mult Exp>
+                 | <Add Exp> '&' <Mult Exp>
+                 | <Mult Exp> 
+
+<Mult Exp>    ::= <Mult Exp> '*' <Pow Exp> 
+                | <Mult Exp> '/' <Pow Exp> 
+                | <Pow  Exp>
+                
+<Pow Exp>     ::= <Pow Exp>  '**'<Negate Exp>                 
+                | <Negate Exp> 
+
+<Negate Exp>  ::= '-' <Value> 
+                | <Value> 
+
+<Value>       ::= ID           
+                | StringLiteral
+                | NumberLiteral
+                | HexLiteral
+                | NullLiteral
+                | BooleanLiteral
+                | '(' <Expression> ')'
+                | Id '(' <Expression> ')'

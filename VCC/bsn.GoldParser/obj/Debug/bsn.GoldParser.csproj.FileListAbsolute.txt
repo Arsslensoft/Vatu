@@ -3,3 +3,7 @@ C:\Users\Arsslen\Desktop\GoldParser\bsn.GoldParser\bin\Debug\bsn.GoldParser.dll
 C:\Users\Arsslen\Desktop\GoldParser\bsn.GoldParser\bin\Debug\bsn.GoldParser.pdb
 C:\Users\Arsslen\Desktop\GoldParser\bsn.GoldParser\obj\Debug\bsn.GoldParser.dll
 C:\Users\Arsslen\Desktop\GoldParser\bsn.GoldParser\obj\Debug\bsn.GoldParser.pdb
+D:\Research\Vatu\Vatu\VCC\bsn.GoldParser\bin\Debug\bsn.GoldParser.dll
+D:\Research\Vatu\Vatu\VCC\bsn.GoldParser\bin\Debug\bsn.GoldParser.pdb
+D:\Research\Vatu\Vatu\VCC\bsn.GoldParser\obj\Debug\bsn.GoldParser.dll
+D:\Research\Vatu\Vatu\VCC\bsn.GoldParser\obj\Debug\bsn.GoldParser.pdb

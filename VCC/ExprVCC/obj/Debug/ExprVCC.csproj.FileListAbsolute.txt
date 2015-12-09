@@ -1,0 +1,9 @@
+D:\Research\Vatu\Vatu\VCC\ExprVCC\bin\Debug\ExprVCC.exe
+D:\Research\Vatu\Vatu\VCC\ExprVCC\bin\Debug\ExprVCC.pdb
+D:\Research\Vatu\Vatu\VCC\ExprVCC\bin\Debug\bsn.GoldParser.dll
+D:\Research\Vatu\Vatu\VCC\ExprVCC\bin\Debug\bsn.GoldParser.pdb
+D:\Research\Vatu\Vatu\VCC\ExprVCC\obj\Debug\ExprVCC.csprojResolveAssemblyReference.cache
+D:\Research\Vatu\Vatu\VCC\ExprVCC\obj\Debug\ExprVCC.exe
+D:\Research\Vatu\Vatu\VCC\ExprVCC\obj\Debug\ExprVCC.pdb
+D:\Research\Vatu\Vatu\VCC\ExprVCC\bin\Debug\VCC.exe
+D:\Research\Vatu\Vatu\VCC\ExprVCC\bin\Debug\VCC.pdb
