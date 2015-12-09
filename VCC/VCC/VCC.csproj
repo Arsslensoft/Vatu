@@ -47,9 +47,10 @@
     <Compile Include="exprs.cs" />
     <Compile Include="Core\location.cs" />
     <Compile Include="Core\Report.cs" />
-    <Compile Include="decl.cs" />
-    <Compile Include="defs.cs" />
+    <Compile Include="Compiler\decl.cs" />
+    <Compile Include="Compiler\defs.cs" />
     <Compile Include="Compiler\Literals.cs" />
+    <Compile Include="Compiler\identifiers.cs" />
     <Compile Include="operators.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -1,14 +1,6 @@
-﻿* Constants
-	BuiltinTypes Constants
-	Null Constants
-* Variable Reference
-	Local
-	Global
-* Literals
-	Builtin Literals
-	Emit const to var ref
-* ResolveContext, EmitContext
-* Report
+﻿Add to each non basic class
 
-* IF OPERATOR IS NULL
-	IT'S a semantic extension
+public override bool Resolve(ResolveContext rc)
+{
+return true;
+}

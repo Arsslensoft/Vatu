@@ -7,3 +7,5 @@ D:\Research\Vatu\Vatu\VCC\ExprVCC\obj\Debug\ExprVCC.exe
 D:\Research\Vatu\Vatu\VCC\ExprVCC\obj\Debug\ExprVCC.pdb
 D:\Research\Vatu\Vatu\VCC\ExprVCC\bin\Debug\VCC.exe
 D:\Research\Vatu\Vatu\VCC\ExprVCC\bin\Debug\VCC.pdb
+D:\Research\Vatu\Vatu\VCC\ExprVCC\bin\Debug\Vasm.dll
+D:\Research\Vatu\Vatu\VCC\ExprVCC\bin\Debug\Vasm.pdb

@@ -9,27 +9,16 @@ namespace VCC
 {
     // START TYPE
   
-    public class TypeIdentifier : TypeToken
-    {
-        BaseTypeIdentifier _base;
-        TypePointer _pointers;
-        [Rule(@"<Type>     ::= <Base> <Pointers>")]
-        public TypeIdentifier(BaseTypeIdentifier tbase, TypePointer pointers)
-        {
-            _base = tbase;
-            _pointers = pointers;
-        }
 
-
-
-    }
     public class ScalarTypeIdentifier : TypeToken
     {
        TypeToken _type;
 
         public bool Resolve(ResolveContext rc)
         {
-       
+            Type = rc.ResolveType(_type.Name);
+
+            Console.WriteLine(Type.ToString());
             return true;
         }
 
@@ -89,6 +78,12 @@ namespace VCC
         {
             _sdef = sdef;
             isstruct = false;
+        }
+
+        public override bool Resolve(ResolveContext rc)
+        {
+            _typeid.Resolve(rc);
+            return base.Resolve(rc);
         }
     }
 

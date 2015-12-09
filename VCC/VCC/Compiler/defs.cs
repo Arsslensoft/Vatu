@@ -51,6 +51,24 @@ namespace VCC
             _id = id;
             _value = null;
         }
+
+
+        public override bool Emit(EmitContext ec)
+        {
+            return base.Emit(ec);
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            return base.EmitFromStack(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            return base.EmitToStack(ec);
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return base.Resolve(rc);
+        }
     }
     public class EnumDefinition : Definition
     {
@@ -67,6 +85,24 @@ namespace VCC
         {
                 _value = val;
             next_def = null;
+        }
+
+
+        public override bool Emit(EmitContext ec)
+        {
+            return base.Emit(ec);
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            return base.EmitFromStack(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            return base.EmitToStack(ec);
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return base.Resolve(rc);
         }
     }
 
@@ -98,6 +134,23 @@ namespace VCC
             _vardef = var;
             _ptr = ptr;
         }
+
+        public override bool Emit(EmitContext ec)
+        {
+            return base.Emit(ec);
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            return base.EmitFromStack(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            return base.EmitToStack(ec);
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return base.Resolve(rc);
+        }
     }
     public class VariableListDefinition : Definition
     {
@@ -115,6 +168,23 @@ namespace VCC
         {
 
         }
+
+        public override bool Emit(EmitContext ec)
+        {
+            return base.Emit(ec);
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            return base.EmitFromStack(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            return base.EmitToStack(ec);
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return base.Resolve(rc);
+        }
     }
     public class ArrayVariableDefinition : Definition
     {
@@ -131,6 +201,23 @@ namespace VCC
              _expr = null;
          }
 
+
+        public override bool Emit(EmitContext ec)
+        {
+            return base.Emit(ec);
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            return base.EmitFromStack(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            return base.EmitToStack(ec);
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return base.Resolve(rc);
+        }
     }
     public class VariableDefinition : Definition
     {
@@ -167,6 +254,23 @@ namespace VCC
             _id = id;
             _avd = null;
         }
+
+        public override bool Emit(EmitContext ec)
+        {
+            return base.Emit(ec);
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            return base.EmitFromStack(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            return base.EmitToStack(ec);
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return base.Resolve(rc);
+        }
     }
 
     // STRUCT
@@ -185,6 +289,23 @@ namespace VCC
         {
             _var = var;
             _next_sdef = null;
+        }
+
+        public override bool Emit(EmitContext ec)
+        {
+            return base.Emit(ec);
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            return base.EmitFromStack(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            return base.EmitToStack(ec);
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return base.Resolve(rc);
         }
     }
 
@@ -206,6 +327,23 @@ namespace VCC
         {
 
         }
+
+        public override bool Emit(EmitContext ec)
+        {
+            return base.Emit(ec);
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            return base.EmitFromStack(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            return base.EmitToStack(ec);
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return base.Resolve(rc);
+        }
     }
     public class TypeIdentifierListDefinition : Definition
     {
@@ -223,6 +361,23 @@ namespace VCC
             : this(id, null)
         {
 
+        }
+
+        public override bool Emit(EmitContext ec)
+        {
+            return base.Emit(ec);
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            return base.EmitFromStack(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            return base.EmitToStack(ec);
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return base.Resolve(rc);
         }
     }
     public class ParameterDefinition : Definition
@@ -245,6 +400,24 @@ namespace VCC
             _type = ptr;
             constant = false;
         }
+
+
+         public override bool Emit(EmitContext ec)
+         {
+             return base.Emit(ec);
+         }
+         public override bool EmitFromStack(EmitContext ec)
+         {
+             return base.EmitFromStack(ec);
+         }
+         public override bool EmitToStack(EmitContext ec)
+         {
+             return base.EmitToStack(ec);
+         }
+         public override bool Resolve(ResolveContext rc)
+         {
+             return base.Resolve(rc);
+         }
     }
     public class ParameterListDefinition : Definition
     {
@@ -263,6 +436,23 @@ namespace VCC
         {
 
         }
+
+       public override bool Emit(EmitContext ec)
+       {
+           return base.Emit(ec);
+       }
+       public override bool EmitFromStack(EmitContext ec)
+       {
+           return base.EmitFromStack(ec);
+       }
+       public override bool EmitToStack(EmitContext ec)
+       {
+           return base.EmitToStack(ec);
+       }
+       public override bool Resolve(ResolveContext rc)
+       {
+           return base.Resolve(rc);
+       }
     }
 
 }

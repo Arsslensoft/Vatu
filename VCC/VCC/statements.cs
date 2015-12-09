@@ -17,6 +17,14 @@ namespace VCC
         {
             _statements = stmt;
         }
+
+        public override bool Resolve(ResolveContext rc)
+        {
+            if (_statements != null)
+                _statements.Resolve(rc);
+
+            return base.Resolve(rc);
+        }
     }
 
     public class Case : Statement
@@ -182,6 +190,15 @@ namespace VCC
        
 
        }
+
+       public override bool Resolve(ResolveContext rc)
+       {
+           if (current != null)
+               current.Resolve(rc);
+           if (_next != null)
+               _next.Resolve(rc);
+           return base.Resolve(rc);
+       }
     }
     // <Then Stm>
     public class IfThenStatement : ThenStatement
@@ -264,6 +281,12 @@ namespace VCC
         public VarDeclStatement(VariableDeclaration vardecl)
         {
             _vadecl = vardecl;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            if (_vadecl != null)
+                _vadecl.Resolve(rc);
+            return base.Resolve(rc);
         }
     }
     public class LabelStatement : BaseStatement

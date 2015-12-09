@@ -6,60 +6,6 @@ using System.Text;
 
 namespace VCC
 {
-    public class Declaration : DeclarationToken
-    {
-      protected  Identifier _name;
-       protected TypeToken _type;
-
-       public TypeToken Type
-       {
-           get { return _type; }
-       }
-       public Identifier Identifier
-       {
-           get { return _name; }
-       }
-
-       public Declaration()
-       {
-
-       }
-
-        [Rule(@"<Decl>  ::= <Func Decl>")]
-        [Rule(@"<Decl>  ::= <Func Proto>")]
-        [Rule(@"<Decl>  ::= <Struct Decl>")]
-        [Rule(@"<Decl>  ::= <Union Decl>")]
-        [Rule(@"<Decl>  ::= <Enum Decl>")]
-        [Rule(@"<Decl>  ::= <Var Decl>")]
-        [Rule(@"<Decl>  ::= <Typedef Decl>")]
-        public Declaration(Declaration decl)
-        {
-
-        }
-
-  
-    }
-    public class MethodIdentifier : Identifier
-    {
-        public Identifier Id { get; set; }
-        public TypeToken Type { get; set; }
-
-        [Rule(@"<Func ID> ::= <Type> Id")]
-        public MethodIdentifier(TypeToken type, Identifier id)
-            : base(id.Name)
-        {
-            Id = id;
-            Type = type;
-        }
-
-                [Rule(@"<Func ID> ::= Id")]
-        public MethodIdentifier( Identifier id)
-            : base(id.Name)
-        {
-            Id = id;
-            Type = null;
-        }
-    }
 
   
     public class EnumDeclaration : Declaration
@@ -72,6 +18,23 @@ namespace VCC
             _name = id;
             _def = edef;
 
+        }
+
+        public override bool Emit(EmitContext ec)
+        {
+            return base.Emit(ec);
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            return base.EmitFromStack(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            return base.EmitToStack(ec);
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return base.Resolve(rc);
         }
 
     }
@@ -113,7 +76,25 @@ namespace VCC
 
 
         }
-     
+
+        public override bool Resolve(ResolveContext rc)
+        {
+            _type.Resolve(rc);
+            return base.Resolve(rc);
+        }
+        public override bool Emit(EmitContext ec)
+        {
+            return base.Emit(ec);
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            return base.EmitFromStack(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            return base.EmitToStack(ec);
+        }
+      
       
     }
     public class TypeDefDeclaration : Declaration
@@ -128,7 +109,22 @@ namespace VCC
             _typedef = type;
 
         }
-
+        public override bool Emit(EmitContext ec)
+        {
+            return base.Emit(ec);
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            return base.EmitFromStack(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            return base.EmitToStack(ec);
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return base.Resolve(rc);
+        }
     }
     public class StructDeclaration : Declaration
     {
@@ -141,7 +137,22 @@ namespace VCC
             _def = sdef;
 
         }
-
+        public override bool Emit(EmitContext ec)
+        {
+            return base.Emit(ec);
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            return base.EmitFromStack(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            return base.EmitToStack(ec);
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return base.Resolve(rc);
+        }
     }
     public class UnionDeclaration : Declaration
     {
@@ -154,9 +165,23 @@ namespace VCC
             _def = sdef;
 
         }
-
+        public override bool Emit(EmitContext ec)
+        {
+            return base.Emit(ec);
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            return base.EmitFromStack(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            return base.EmitToStack(ec);
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return base.Resolve(rc);
+        }
     }
-
     public class MethodDeclaration : Declaration
     {
       
@@ -188,8 +213,26 @@ namespace VCC
             _pal = null;
             _b = b;
         }
+        public override bool Emit(EmitContext ec)
+        {
+            return base.Emit(ec);
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            return base.EmitFromStack(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+     
+            return base.EmitToStack(ec);
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            if (_b != null)
+                _b.Resolve(rc);
+            return base.Resolve(rc);
+        }
     }
-
     public class MethodPrototypeDeclaration : Declaration
     {
 
@@ -216,6 +259,23 @@ namespace VCC
             _id = id;
             _pal = null;
     
+        }
+
+        public override bool Emit(EmitContext ec)
+        {
+            return base.Emit(ec);
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            return base.EmitFromStack(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            return base.EmitToStack(ec);
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return base.Resolve(rc);
         }
     }
 

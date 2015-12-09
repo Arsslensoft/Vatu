@@ -99,7 +99,6 @@ namespace Vasm
            }
            mInstructions.Add(aReader);
        }
-
        public void Add(params Instruction[] aReaders)
        {
            mInstructions.Capacity += aReaders.Length;
@@ -107,6 +106,47 @@ namespace Vasm
            {
                mInstructions.Add(xInstruction);
            }
+       }
+
+       public DataMember Declare(string name,byte[] data)
+       {
+           return new DataMember(name, data);
+       }
+       public bool DefineData(DataMember data)
+       {
+           if (!IsDataDefined(data.Name))
+               DataMembers.Add(data);
+           else return false;
+
+           return true;
+       }
+
+       public Label DefineGlobal(string name)
+       {
+           return new Label(name,true);
+       }
+       public Label DefineLabel(string name)
+       {
+           return new Label(name);
+       }
+       public void MarkLabel(Label lb)
+       {
+           if(!Instructions.Contains(lb))
+           Instructions.Add(lb);
+       }
+
+       public bool IsDataDefined(string name)
+       {
+           foreach (DataMember dm in DataMembers)
+               if (dm.Name == name)
+                   return true;
+
+           return false;
+       }
+
+       public void Emit(Instruction ins)
+       {
+           Instructions.Add(ins);
        }
 
        public virtual void EmitPrepare(AssemblyWriter writer)

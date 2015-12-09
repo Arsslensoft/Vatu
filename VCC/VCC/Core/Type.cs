@@ -361,7 +361,7 @@ namespace VJay
 
         public override string ToString()
         {
-            return base.ToString();
+            return Name;
         }
        
     }
@@ -434,6 +434,11 @@ namespace VJay
         public static BuiltinTypeSpec Bool = new BuiltinTypeSpec("bool", BuiltinTypes.Bool);
       
         public static BuiltinTypeSpec Null = new BuiltinTypeSpec("null", BuiltinTypes.Int, TypeFlags.Null);
+
+        public override string ToString()
+        {
+            return "[BUILTIN] "+base.ToString();
+        }
     }
     /// <summary>
     /// Global Variable Specs

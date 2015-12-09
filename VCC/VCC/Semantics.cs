@@ -89,21 +89,15 @@ namespace VCC
 
         public virtual bool Resolve(ResolveContext rc)
         {
+            if (this is ScalarTypeIdentifier)
+            {
+                ((ScalarTypeIdentifier)this).Resolve(rc);
+                //Type = rc.ResolveType(((ScalarTypeIdentifier)this).t);
+
+                //Console.WriteLine(Type.ToString());
+            }
             return true;
         }
-    }
-    [Terminal("Id")]
-    public class Identifier : Expr
-    {
-        protected readonly string _idName;
-        public string Name { get { return _idName; } }
-       
-        public Identifier(string idName)
-        {
-            _idName = idName;
-        }
-
-       
     }
 
     public class TypePointer : SimpleToken
@@ -205,6 +199,7 @@ namespace VCC
 
         public virtual bool Resolve(ResolveContext rc)
         {
+
             return true;
         }
         public virtual bool Emit(EmitContext ec)
@@ -374,6 +369,55 @@ namespace VCC
         }
 
         public virtual bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+    }
+
+
+    public class Declaration : DeclarationToken
+    {
+        protected Identifier _name;
+        protected Declaration _dcl;
+
+     
+        public Identifier Identifier
+        {
+            get { return _name; }
+        }
+
+        public Declaration()
+        {
+
+        }
+
+        [Rule(@"<Decl>  ::= <Func Decl>")]
+        [Rule(@"<Decl>  ::= <Func Proto>")]
+        [Rule(@"<Decl>  ::= <Struct Decl>")]
+        [Rule(@"<Decl>  ::= <Union Decl>")]
+        [Rule(@"<Decl>  ::= <Enum Decl>")]
+        [Rule(@"<Decl>  ::= <Var Decl>")]
+        [Rule(@"<Decl>  ::= <Typedef Decl>")]
+        public Declaration(Declaration decl)
+        {
+            _dcl = decl;
+        }
+
+        public virtual bool Resolve(ResolveContext rc)
+        {
+            if (_dcl != null)
+                return _dcl.Resolve(rc);
+            else return true;
+        }
+        public virtual bool Emit(EmitContext ec)
+        {
+            return true;
+        }
+        public virtual bool EmitFromStack(EmitContext ec)
+        {
+            return true;
+        }
+        public virtual bool EmitToStack(EmitContext ec)
         {
             return true;
         }

@@ -35,12 +35,13 @@ namespace VCC
                 {
 
                     Console.WriteLine("Ok.\n");
-
+                    ResolveContext rc = new ResolveContext(null, null);
                     var stmts = processor.CurrentToken as DeclarationSequence<Declaration>;
                     if (stmts != null)
                     {
                         foreach (Declaration stmt in stmts)
                         {
+                            stmt.Resolve(rc);
                             // stmt.Execute(ctx);
                         }
                     }
