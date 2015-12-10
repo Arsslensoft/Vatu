@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Vasm;
-using VJay;
 
-[assembly: RuleTrim("<Value> ::= '(' <Expression> ')'", "<Expression>", SemanticTokenType = typeof(VCC.SimpleToken))]
-namespace VCC
+
+[assembly: RuleTrim("<Value> ::= '(' <Expression> ')'", "<Expression>", SemanticTokenType = typeof(VCC.Core.SimpleToken))]
+namespace VCC.Core
 {
    public class ConstantExpression : Expr
     {
@@ -31,70 +31,60 @@ namespace VCC
        }
 
 
-        public virtual ConstantExpression ConvertImplicitly(TypeSpec type)
+        public virtual ConstantExpression ConvertImplicitly(ResolveContext rc,TypeSpec type)
         {
             if (this.type == type)
                 return this;
 
-            // TODO CONSTANT CONVERSION
-            return null;
+            if (!type.IsBuiltinType)
+            {
+                rc.Report.Error("Cannot convert type " +this. type.Name + " to " + type.Name);
+                return null;
+            }
+            if(type.IsPointer && (this.type != BuiltinTypeSpec.Int && this.type != BuiltinTypeSpec.Short))
+            {
+                rc.Report.Error("Cannot convert pointer type " + this.type.Name + " to " + type.Name);
+                return null;
+            }
+      
+            return ConstantExpression.CreateConstantFromValue(type,this.GetValue(), loc);
         }
 
-    /*  public static Constant CreateConstantFromValue(TypeSpec t, object v, Location loc)
+     public static ConstantExpression CreateConstantFromValue(TypeSpec t, object v, Location loc)
         {
             switch (t.BuiltinType)
             {
-                case BuiltinTypeSpec.Type.Int:
-                    return new IntConstant(t, (int)v, loc);
-                case BuiltinTypeSpec.Type.String:
-                    return new StringConstant(t, (string)v, loc);
-                case BuiltinTypeSpec.Type.UInt:
-                    return new UIntConstant(t, (uint)v, loc);
-                case BuiltinTypeSpec.Type.Long:
-                    return new LongConstant(t, (long)v, loc);
-                case BuiltinTypeSpec.Type.ULong:
-                    return new ULongConstant(t, (ulong)v, loc);
-                case BuiltinTypeSpec.Type.Float:
-                    return new FloatConstant(t, (float)v, loc);
-                case BuiltinTypeSpec.Type.Double:
-                    return new DoubleConstant(t, (double)v, loc);
-                case BuiltinTypeSpec.Type.Short:
-                    return new ShortConstant(t, (short)v, loc);
-                case BuiltinTypeSpec.Type.UShort:
-                    return new UShortConstant(t, (ushort)v, loc);
-                case BuiltinTypeSpec.Type.SByte:
-                    return new SByteConstant(t, (sbyte)v, loc);
-                case BuiltinTypeSpec.Type.Byte:
-                    return new ByteConstant(t, (byte)v, loc);
-                case BuiltinTypeSpec.Type.Char:
-                    return new CharConstant(t, (char)v, loc);
-                case BuiltinTypeSpec.Type.Bool:
-                    return new BoolConstant(t, (bool)v, loc);
-                case BuiltinTypeSpec.Type.Decimal:
-                    return new DecimalConstant(t, (decimal)v, loc);
+                case BuiltinTypes.Int:
+                    return new IntConstant((int)v, loc);
+                case BuiltinTypes.String:
+                    return new StringConstant((string)v, loc);
+                case BuiltinTypes.UInt:
+                    return new UIntConstant((uint)v, loc);
+                case BuiltinTypes.Long:
+                    return new LongConstant((long)v, loc);
+                case BuiltinTypes.ULong:
+                    return new ULongConstant((ulong)v, loc);
+                case BuiltinTypes.Float:
+                    return new FloatConstant((float)v, loc);
+                case BuiltinTypes.Double:
+                    return new DoubleConstant((double)v, loc);
+                case BuiltinTypes.Short:
+                    return new ShortConstant((short)v, loc);
+                case BuiltinTypes.UShort:
+                    return new UShortConstant((ushort)v, loc);
+                case BuiltinTypes.Byte:
+                    return new ByteConstant((sbyte)v, loc);
+                case BuiltinTypes.Char:
+                    return new CharConstant((byte)v, loc);
+                case BuiltinTypes.Bool:
+                    return new BoolConstant((bool)v, loc);
+      
             }
 
-            if (t.IsEnum)
-            {
-                var real_type = EnumSpec.GetUnderlyingType(t);
-                return new EnumConstant(CreateConstantFromValue(real_type, v, loc), t);
-            }
-
-            if (v == null)
-            {
-                if (t.IsNullableType)
-                    return Nullable.LiftedNull.Create(t, loc);
-
-                if (TypeSpec.IsReferenceType(t))
-                    return new NullConstant(t, loc);
-            }
-
-#if STATIC
-			throw new InternalErrorException ("Constant value `{0}' has unexpected underlying type `{1}'", v, t.GetSignatureForError ());
-#else
+          
             return null;
-#endif
-        }*/
+
+        }
     }
 
    // START SEMANTIC IMPLEMENTATION
@@ -107,6 +97,8 @@ namespace VCC
      */
    public class MethodExpression : Expr
    {
+       public MethodSpec Method { get; set; }
+
        protected Identifier _id;
        protected Expr _param;
        [Rule(@"<Value>       ::= Id ~'(' <Expression> ~')'")]
@@ -121,12 +113,24 @@ namespace VCC
            _id = id;
            _param = null;
        }
+
+       public override bool Resolve(ResolveContext rc)
+       {
+           Method = rc.ResolveMethod(_id.Name);
+           return base.Resolve(rc);
+       }
+       public override SimpleToken DoResolve(ResolveContext rc)
+       {
+           return this            ;
+       }
    }
+
    /// <summary>
     /// Variable Expr
     /// </summary>
    public class VariableExpression : Identifier
    {
+       VarSpec variable;
 
        [Rule(@"<Value>       ::= Id")]
        public VariableExpression(Identifier id)
@@ -134,25 +138,17 @@ namespace VCC
        {
         
        }
-    
-   }
-
-    // TO DO COMPLETE
-   /// <summary>
-   /// Variable Expr
-   /// </summary>
-   public class ValueExpression : Expr
-   {
-
-       public ValueExpression(Identifier id)
-          
+       public override SimpleToken DoResolve(ResolveContext rc)
        {
-
+           return this;
        }
-
+       public override bool Resolve(ResolveContext rc)
+       {
+          variable= rc.ResolveVar(_idName);
+           return base.Resolve(rc);
+       }
    }
 
-   
 
     // a.b | a->b | a[5]
     /// <summary>
@@ -160,16 +156,17 @@ namespace VCC
     /// </summary>
    public class AccessOperation : Expr
    {
-       private readonly Expr _left;
+       
+
        private readonly AccessOp _op;
-       private readonly Expr _right;
        [Rule(@"<Op Pointer> ::= <Op Pointer> '.' <Value>")]
        [Rule(@"<Op Pointer> ::= <Op Pointer> '->' <Value>")]
        public AccessOperation(Expr left,AccessOp op, Expr target)
        {
-           _left = left;
-           _right = target;
            _op = op;
+           _op.Left = left;
+           _op.Right = target;
+      
 
        }
 
@@ -177,9 +174,10 @@ namespace VCC
        [Rule(@"<Op Pointer> ::= <Op Pointer> ~'[' <Expression> ~']'")]
        public AccessOperation(Expr left, Expr target)
        {
-           _left = left;
-           _right = target;
            _op = new ByIndexOperator();
+           _op.Left = left;
+           _op.Right = target;
+          
 
        }
 #if IMPL
@@ -194,6 +192,21 @@ namespace VCC
 
        }
 #endif
+
+       public override SimpleToken DoResolve(ResolveContext rc)
+       {
+           _op.Right = (Expr)_op.Right.DoResolve(rc);
+           _op.Left = (Expr)_op.Left.DoResolve(rc);
+
+           return this;
+       }
+       public override bool Resolve(ResolveContext rc)
+       { 
+           bool ok =          _op.Left.Resolve(rc);
+          ok &= _op.Right.Resolve(rc);
+
+           return base.Resolve(rc) && ok;
+       }
    }
 
    /// <summary>
@@ -201,7 +214,7 @@ namespace VCC
    /// </summary>
    public class UnaryOperation : Expr
    {
-       private readonly Expr _target;
+
        private readonly Operator _op;
 
        [Rule(@"<Op Unary>   ::= '!'    <Op Unary>")]
@@ -213,8 +226,9 @@ namespace VCC
        [Rule(@"<Op Unary>   ::= '++'   <Op Unary>")]
        public UnaryOperation(Operator op, Expr target)
        {
-           _target = target;
            _op = op;
+           _op.Right = target;
+    
      
        }
 
@@ -223,9 +237,24 @@ namespace VCC
        [Rule(@"<Op Unary>   ::= <Op Pointer> '++'")]
        public UnaryOperation(Expr target,UnaryOp op)
        {
-           _target = target;
            _op = op;
+           _op.Right = target;
 
+       }
+
+       public override SimpleToken DoResolve(ResolveContext rc)
+       {
+           
+           _op.Right = (Expr)_op.Right.DoResolve(rc);
+
+
+           return this;
+       }
+       public override bool Resolve(ResolveContext rc)
+       {
+           bool           ok = _op.Right.Resolve(rc);
+
+           return base.Resolve(rc) && ok;
        }
 
 #if IMPL
@@ -245,8 +274,7 @@ namespace VCC
    /// </summary>
    public class BinaryOperation : Expr
    {
-       protected readonly Expr _left;
-       protected readonly Expr _right;
+
        protected readonly BinaryOp _op;
 
 
@@ -273,11 +301,27 @@ namespace VCC
        [Rule(@"<Op Mult>    ::= <Op Mult> '%' <Op Unary>")]
        public BinaryOperation(Expr left, BinaryOp op, Expr right)
        {
-           _left = left;
            _op = op;
-           _right = right;
+           _op.Left = left;
+
+           _op.Right = right;
        }
 
+
+       public override SimpleToken DoResolve(ResolveContext rc)
+       {
+           _op.Right = (Expr)_op.Right.DoResolve(rc);
+           _op.Left = (Expr)_op.Left.DoResolve(rc);
+
+           return this;
+       }
+       public override bool Resolve(ResolveContext rc)
+       {
+           bool ok = _op.Left.Resolve(rc);
+           ok &= _op.Right.Resolve(rc);
+
+           return base.Resolve(rc) && ok;
+       }
        #if IMPL
        [Rule(@"<Op Mult>    ::= <Op Unary>")]
        public BinaryOperation(UnaryOperation left)
@@ -294,9 +338,9 @@ namespace VCC
    /// </summary>
    public class IfExpression : Expr
    {
-       private readonly Expr _cond;
-       private readonly Expr _true;
-       private readonly Expr _false;
+       private Expr _cond;
+       private Expr _true;
+       private Expr _false;
 
        [Rule(@"<Op If>      ::= <Op Or> ~'?' <Op If> ~':' <Op If>")]
        public IfExpression(Expr cnd, Expr tr, Expr fl)
@@ -314,7 +358,20 @@ namespace VCC
            _false = null;
        }
 #endif
-
+       public override SimpleToken DoResolve(ResolveContext rc)
+       {
+           _cond = (Expr)_cond.DoResolve(rc);
+           _true = (Expr)_true.DoResolve(rc);
+           _false = (Expr)_false.DoResolve(rc);
+           return this;
+       }
+       public override bool Resolve(ResolveContext rc)
+       {
+           bool ok = _cond.Resolve(rc);
+           ok &= _true.Resolve(rc);
+           ok &= _false.Resolve(rc);
+           return base.Resolve(rc) && ok;
+       }
    }
 
    /// <summary>
@@ -322,12 +379,11 @@ namespace VCC
    /// </summary>
    public class AssignExpression : Expr
    {
-       Expr _src;
-       AssignOp _op;
-       Expr _target;
 
-       public Expr Source { get { return _src; } }
-       public Expr Target { get { return _target; } }
+       AssignOp _op;
+  
+
+
 
        [Rule(@"<Op Assign>  ::= <Op If> '='   <Op Assign>")]
        [Rule(@"<Op Assign>  ::= <Op If> '+='  <Op Assign>")]
@@ -341,9 +397,26 @@ namespace VCC
        [Rule(@"<Op Assign>  ::= <Op If> '<<=' <Op Assign>")]
        public AssignExpression(Expr src, AssignOp op, Expr target)
        {
-           _src = src;
+          
            _op = op;
-           _target = target;
+           _op.Left = src;
+           _op.Right = target;
+       }
+
+
+       public override SimpleToken DoResolve(ResolveContext rc)
+       {
+           _op.Right = (Expr)_op.Right.DoResolve(rc);
+           _op.Left = (Expr)_op.Left.DoResolve(rc);
+
+           return this;
+       }
+       public override bool Resolve(ResolveContext rc)
+       {
+           bool ok = _op.Left.Resolve(rc);
+           ok &= _op.Right.Resolve(rc);
+
+           return base.Resolve(rc) && ok;
        }
 #if IMPL
        [Rule(@"<Op Assign>  ::= <Op If>")]
@@ -362,16 +435,35 @@ namespace VCC
    /// </summary>
    public class ArgumentExpression : Expr
    {
+       Expr argexpr;
        [Rule(@"<Arg>       ::= <Expression> ")]
        public ArgumentExpression(Expr expr)
        {
-
+           argexpr = expr;
        }
 
        [Rule(@"<Arg>       ::= ")]
        public ArgumentExpression()
        {
 
+       }
+
+       public override SimpleToken DoResolve(ResolveContext rc)
+       {
+           if(argexpr != null)
+               argexpr = (Expr)argexpr.DoResolve(rc);
+           
+
+           return this;
+       }
+       public override bool Resolve(ResolveContext rc)
+       {        if(argexpr != null){
+           bool ok = argexpr.Resolve(rc);
+         
+
+           return base.Resolve(rc) && ok;
+       }
+       else return false;
        }
 
    }

@@ -10,9 +10,9 @@ namespace VCC
     /// <summary>
     /// Basic Literal
     /// </summary>
-    public class Literal : Expr
+    public class Literal : Expression
     {
-        protected string _value;
+        protected string _strvalue;
         protected bool _unsigned;
         protected bool _numeric;
 
@@ -24,7 +24,7 @@ namespace VCC
         public bool IsString { get { return !_numeric; } }
         public Literal(string value, bool num = false)
         {
-            _value = value;
+            _strvalue = value;
             _numeric = num;
         }
     
@@ -71,21 +71,21 @@ namespace VCC
 		}
         public string GetSuffix()
         {
-            if (_value == null)
+            if (_strvalue == null)
                 return null;
-            
-            if(_value.Length > 2)
+
+            if (_strvalue.Length > 2)
             {
 
-           string suffix =  _value.Substring(0,_value.Length -2);
+                string suffix = _strvalue.Substring(0, _strvalue.Length - 2);
                 if(char.IsLetter(suffix[0]) && char.IsLetter(suffix[1]))
                     return suffix;
                 else return null;
             }
-            else  if(_value.Length == 1)
+            else if (_strvalue.Length == 1)
             {
 
-           string suffix =  _value.Substring(0,_value.Length -1);
+                string suffix = _strvalue.Substring(0, _strvalue.Length - 1);
                 if(char.IsLetter(suffix[0]))
                     return suffix;
                 else return null;
@@ -115,9 +115,9 @@ namespace VCC
         {
             string suffix = GetSuffix();
             // decimals first
-            if (_value.Contains(".") && suffix != null&& suffix.Length == 1)
+            if (_strvalue.Contains(".") && suffix != null && suffix.Length == 1)
                     return real_type_suffix(suffix[0]);
-            else if (!_value.Contains(".") && suffix != null && suffix.Length <= 2)
+            else if (!_strvalue.Contains(".") && suffix != null && suffix.Length <= 2)
             {
                 if (suffix.Length == 1)
                     return integer_type_suffix(suffix[0], '#');
@@ -129,6 +129,7 @@ namespace VCC
         }
     }
 
+
     [Terminal("StringLiteral")]
     public class StringLiteral : Literal
     {
@@ -139,7 +140,18 @@ namespace VCC
             _value = new StringConstant(value, CompilerContext.TranslateLocation(position));
         }
 
+        public override Expression DoResolve(ResolveContext rc)
+        {
+            return _value;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            if (_value == null)
+                return false;
 
+            return _value.Resolve(rc);
+   
+        }
       
     }
     [Terminal("CharLiteral")]
@@ -152,7 +164,18 @@ namespace VCC
             _value = new CharConstant(Encoding.UTF8.GetBytes(value)[0], CompilerContext.TranslateLocation(position));
   
         }
+        public override Expression DoResolve(ResolveContext rc)
+        {
+            return _value;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            if (_value == null)
+                return false;
 
+            return _value.Resolve(rc);
+
+        }
 
 
     }
@@ -165,8 +188,18 @@ namespace VCC
         {
             _value = new BoolConstant(bool.Parse(value), CompilerContext.TranslateLocation(position));
         }
+        public override Expression DoResolve(ResolveContext rc)
+        {
+            return _value;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            if (_value == null)
+                return false;
 
+            return _value.Resolve(rc);
 
+        }
 
     }
     [Terminal("NullLiteral")]
@@ -178,8 +211,18 @@ namespace VCC
         {
             _value = new NullConstant(CompilerContext.TranslateLocation(position));
         }
+        public override Expression DoResolve(ResolveContext rc)
+        {
+            return _value;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            if (_value == null)
+                return false;
 
+            return _value.Resolve(rc);
 
+        }
 
     }
     [Terminal("HexLiteral")]
@@ -202,8 +245,18 @@ namespace VCC
            
         }
 
+        public override Expression DoResolve(ResolveContext rc)
+        {
+            return _value;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            if (_value == null)
+                return false;
 
+            return _value.Resolve(rc);
 
+        }
     }
     [Terminal("OctLiteral")]
     public class OctLiteral : Literal
@@ -225,8 +278,18 @@ namespace VCC
 
         }
 
+        public override Expression DoResolve(ResolveContext rc)
+        {
+            return _value;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            if (_value == null)
+                return false;
 
+            return _value.Resolve(rc);
 
+        }
     }
     [Terminal("DecLiteral")]
     public class DecLiteral : Literal
@@ -293,10 +356,19 @@ namespace VCC
             else throw new ArgumentOutOfRangeException(value + "Decimal value cannot be larger than 64 bits");
         }
 
+        public override Expression DoResolve(ResolveContext rc)
+        {
+            return _value;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            if (_value == null)
+                return false;
 
+            return _value.Resolve(rc);
 
+        }
     }
-
     [Terminal("FloatLiteral")]
     public class FloatLiteral : Literal
     {
@@ -328,13 +400,19 @@ namespace VCC
             else throw new ArgumentOutOfRangeException(value + "float value cannot be larger than 64 bits");
           
         }
+        public override Expression DoResolve(ResolveContext rc)
+        {
+            return _value;
+        }
 
+        public override bool Resolve(ResolveContext rc)
+        {
+            if (_value == null)
+                return false;
 
+            return _value.Resolve(rc);
 
+        }
     }
-
-
-
-
 
 }

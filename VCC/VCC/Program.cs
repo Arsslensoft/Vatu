@@ -7,9 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Vasm;
 
 
-namespace VCC
+namespace VCC.Core
 {
     class Program
     {
@@ -18,43 +19,68 @@ namespace VCC
 
         
             // grab an execution context to be used for the entire 'session'
-
-            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VCC.C-ANSI.cgt"))
+            using (AssemblyWriter asmw = new AssemblyWriter(Console.OpenStandardOutput(), Encoding.ASCII))
             {
-
-
-                // compile/run each statement one entry at a time
-                CompiledGrammar grammar = CompiledGrammar.Load(stream);
-                var actions = new SemanticTypeActions<SimpleToken>(grammar);
-
-
-                var processor = new SemanticProcessor<SimpleToken>(new StringReader(input), actions);
-
-                ParseMessage parseMessage = processor.ParseAll();
-                if (parseMessage == ParseMessage.Accept)
+                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VCC.C-ANSI.cgt"))
                 {
 
-                    Console.WriteLine("Ok.\n");
-                    ResolveContext rc = new ResolveContext(null, null);
-                    var stmts = processor.CurrentToken as DeclarationSequence<Declaration>;
-                    if (stmts != null)
+
+                    // compile/run each statement one entry at a time
+                    CompiledGrammar grammar = CompiledGrammar.Load(stream);
+                    var actions = new SemanticTypeActions<SimpleToken>(grammar);
+
+
+                    var processor = new SemanticProcessor<SimpleToken>(new StringReader(input), actions);
+
+                    ParseMessage parseMessage = processor.ParseAll();
+                    if (parseMessage == ParseMessage.Accept)
                     {
-                        foreach (Declaration stmt in stmts)
+
+                        Console.WriteLine("Ok.\n");
+
+                        var stmts = processor.CurrentToken as DeclarationSequence<Declaration>;
+                        ResolveContext RootCtx = ResolveContext.CreateRootContext(stmts);
+                        if (stmts != null)
                         {
-                            stmt.Resolve(rc);
-                            // stmt.Execute(ctx);
+                            List<Declaration> Resolved = new List<Declaration>();
+                            foreach (Declaration stmt in stmts)
+                            {
+
+                                if (stmt.BaseDeclaration is MethodDeclaration)
+                                {
+                                    MethodDeclaration md = (MethodDeclaration)stmt.BaseDeclaration;
+                                    ResolveContext childctx = RootCtx.CreateAsChild(md);
+                                    stmt.Resolve(childctx);
+                                    MethodDeclaration d = (MethodDeclaration)md.DoResolve(childctx);
+                                   // RootCtx.UpdateChildContext("<method-decl>", childctx);
+                                    Resolved.Add(d);
+                                }
+                                else
+                                {
+                                    stmt.Resolve(RootCtx);
+                                    Declaration d = (Declaration)stmt.DoResolve(RootCtx);
+                                    Resolved.Add(d);
+                                }
+                            }
+                            EmitContext ec = new EmitContext(asmw);
+                            foreach (Declaration stmt in Resolved)
+                            {
+                                stmt.Emit(ec);
+                            }
+                            Console.WriteLine("Asm Code : ");
+                            ec.Emit();
                         }
                     }
+                    else
+                    {
+
+
+                        IToken token = processor.CurrentToken;
+                        Console.WriteLine("At index: {0} [{1}]", token.Position.Index, parseMessage);
+                        //Console.WriteLine(string.Format("{0} {1}", "^".PadLeft(token.Position.Index + 1), parseMessage));
+                    }
+
                 }
-                else
-                {
-
-
-                    IToken token = processor.CurrentToken;
-                    Console.WriteLine("At index: {0} [{1}]", token.Position.Index, parseMessage);
-                    //Console.WriteLine(string.Format("{0} {1}", "^".PadLeft(token.Position.Index + 1), parseMessage));
-                }
-
             }
         }
         static void Init()
@@ -85,7 +111,7 @@ namespace VCC
             Console.WriteLine("By Abd Al Moez Bouraoui and Arsslen Idadi");
             Init();
             Console.WriteLine("Runing..");
-            string input = "void main() {int a = 0; uint c = 45;}";
+            string input = "void main() {int a = 14599845; ushort v = 32762; bool x = false; char c = 5;}";
             Run(input);
 
 

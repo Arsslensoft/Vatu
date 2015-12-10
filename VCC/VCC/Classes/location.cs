@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace VJay
+namespace VCC
 {
     //
     //  This is one single source file.

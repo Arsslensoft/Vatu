@@ -1,6 +1,14 @@
-﻿Add to each non basic class
+﻿* Constants
+	BuiltinTypes Constants
+	Null Constants
+* Variable Reference
+	Local
+	Global
+* Literals
+	Builtin Literals
+	Emit const to var ref
+* ResolveContext, EmitContext
+* Report
 
-public override bool Resolve(ResolveContext rc)
-{
-return true;
-}
+* IF OPERATOR IS NULL
+	IT'S a semantic extension

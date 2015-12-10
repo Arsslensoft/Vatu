@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Vasm;
 
 namespace VCC
 {
@@ -188,9 +189,9 @@ namespace VCC
     }
     public class ArrayVariableDefinition : Definition
     {
-        Expr _expr;
+       internal Expression _expr;
          [Rule(@"<Array>    ::= ~'[' <Expression> ~']'")]
-        public ArrayVariableDefinition(Expr expr)
+        public ArrayVariableDefinition(Expression expr)
         {
             _expr = expr;
         }
@@ -216,6 +217,8 @@ namespace VCC
         }
         public override bool Resolve(ResolveContext rc)
         {
+            if (_expr != null)
+               _expr =  _expr.DoResolve(rc);
             return base.Resolve(rc);
         }
     }
@@ -223,7 +226,7 @@ namespace VCC
     {
         ArrayVariableDefinition _avd;
         Identifier _id;
-        Expr expr;
+        Expression expr;
 
         [Rule(@"<Var>      ::= Id <Array>")]
         public VariableDefinition(Identifier id, ArrayVariableDefinition avd)
@@ -241,14 +244,14 @@ namespace VCC
         }
 
         [Rule(@"<Var>      ::= Id <Array> ~'=' <Op If> ")]
-        public VariableDefinition(Identifier id, ArrayVariableDefinition avd, Expr ifexpr)
+        public VariableDefinition(Identifier id, ArrayVariableDefinition avd, Expression ifexpr)
         {
             expr = ifexpr;
             _id = id;
             _avd = avd;
         }
         [Rule(@"<Var>      ::= Id ~'=' <Op If> ")]
-        public VariableDefinition(Identifier id, Expr ifexpr)
+        public VariableDefinition(Identifier id, Expression ifexpr)
         {
             expr = ifexpr;
             _id = id;
@@ -257,6 +260,24 @@ namespace VCC
 
         public override bool Emit(EmitContext ec)
         {
+            if (_avd == null)
+            {
+                DataMember vardata = null;
+                if (expr is ConstantExpression)
+                {
+                    vardata = new DataMember(_id.Name, ((ConstantExpression)expr).GetValue());
+                    ec.EmitData(vardata);
+                }
+                else if (expr != null)
+                {
+                    //TODO:ADD ASSIGN
+
+                }
+            }
+            else
+            {
+                
+            }
             return base.Emit(ec);
         }
         public override bool EmitFromStack(EmitContext ec)
@@ -269,6 +290,13 @@ namespace VCC
         }
         public override bool Resolve(ResolveContext rc)
         {
+        
+
+            if (expr != null)
+                expr = expr.DoResolve(rc);
+
+        
+
             return base.Resolve(rc);
         }
     }

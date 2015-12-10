@@ -1,84 +1,7 @@
-! -----------------------------------------------------------------------
-! ANSI C
-!
-! The C programming language evolved at Bell Labs from a series of 
-! programming languages: 'CPL', 'BCPL', and then 'B'. As a result, C's
-! development was a combined effort between Dennis Ritchie, Ken Thompson,
-! and Martin Richards.  
-!
-! C was designed for the creation and implementation of low-level systems
-! such as operating systems, device drivers, firmware, etc... To realize 
-! this goal, the language contains the ability to perform operations 
-! directly on memory and has direct access to system pointers. While this 
-! gives an enormous amount of control and flexibility, it also makes C a 
-! professional programming language - not to be used by an inexperienced
-! programmer.
-!
-! C (and later C++) quickly became the de facto standard for developing
-! operating systems, applications and most other large projects. UNIX as 
-! well as Windows, Linux, and Mac-OS X were developed using this 
-! language (and its successors).
-!
-! More information is available at Dennis Ritchie's website:
-!     http://cm.bell-labs.com/cm/cs/who/dmr/
-!
-! The C grammar is inherently ambigious and requires a large number of
-! LALR(1) states to parse. As a result, the time required by the GOLD 
-! Parser Builder to compile this grammar is extensive.
-! 
-! C is not a line-based grammar with the notable exception of compiler
-! directives (which are preceeded by a '#' character). These are usually not
-! handled directly by the actual parser, but, rather, the pre-processor. 
-! Before the program is analyzed by the parser, C compilers scan the code and
-! act on these commands. The final C program is then passed to the parser.
-! -----------------------------------------------------------------------
-
-! -----------------------------------------------------------------------
-! This grammar does not contain the compiler directives.
-!
-! Note: This is an ad hoc version of the language. If there are any flaws, 
-! please visit the contact page and tell me.
-!
-! SPECIAL THANKS TO:
-!     BOB MEAGHER
-!     MIKE WISDOM
-!     VLADIMIR MOROZOV
-!     TOM VAN DIJCK
-!
-! Modified 06/14/2002
-!   * The correct definition for "return" was added. Thanks to Bob Meagher.
-!   * Added the missing rules for labels, storage specifications, etc...
-!     which were left out. Thanks to Mike Wisdom for calling this to
-!     my attention.
-!
-! Modified 06/21/2002
-!   * I fixed an error in the grammar for declaring functions. 
-!
-! Modified 06/15/2003
-!   * Vladimir Morozov fixed an error for calling functions with no parameters
-!
-! Modified 01/31/2004
-!   * Tom van Dijck found a bug in the grammar concerning variable 
-!     initialization.
-!
-! Modified 04/26/2004
-!   * Some errors in the grammar were fixed.
-!
-! Modified 01/19/2005
-!   * The definition for comments was modified. In ANSI C, block comments
-!     cannot be nested. As a result, they are defined using the whitespace
-!     terminal.
-!
-! Modified 03/28/2007
-!   * The commented-out definition for non-nested comments was updated. The
-!     previous version did not work in all cases.
-! -----------------------------------------------------------------------
-
-
-"Name"    = 'ANSI C' 
-"Version" = '1973'
-"Author"  = 'Dennis Ritchie, Ken Thompson, Martin Richards' 
-"About"   = 'C is one of the most common, and complex, programming languages in use today.'
+"Name"    = 'VATU' 
+"Version" = '2015'
+"Author"  = 'Arsslen Idadi' 
+"About"   = 'Based on ANSI-C.'
 
 "Case Sensitive" = True
 "Start Symbol"   = <Decls>
@@ -141,7 +64,6 @@ Comment Line  = '//'
 <Decl>  ::= <Func Decl>
           | <Func Proto>
           | <Struct Decl>
-          | <Union Decl>
           | <Enum Decl>
           | <Var Decl>    
           | <Typedef Decl>
@@ -155,7 +77,6 @@ Comment Line  = '//'
                | <Func ID> '(' ')' ';'
 
 <Func Decl>  ::= <Func ID> '(' <Params>  ')' <Block>
-               | <Func ID> '(' <Id List> ')' <Struct Def> <Block>
                | <Func ID> '(' ')' <Block>
 
 
@@ -181,8 +102,6 @@ Comment Line  = '//'
 <Typedef Decl> ::= typedef <Type> ID ';'
 
 <Struct Decl>  ::= struct Id '{' <Struct Def> '}'  ';' 
-
-<Union Decl>   ::= union Id '{' <Struct Def> '}'  ';' 
 
 
 <Struct Def>   ::= <Var Decl> <Struct Def>

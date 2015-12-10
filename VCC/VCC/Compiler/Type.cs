@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace VJay
+namespace VCC
 {
     /// <summary>
     /// Member Signature [Types, member, variable]
@@ -16,8 +16,11 @@ namespace VJay
         public MemberSignature(string name,Location loc,string type, params TypeSpec[] parameters)
         {
             Signature =type  + "_" +name;
-            foreach (TypeSpec param in parameters)
-                Signature += "_" + param.Name;
+            if (parameters != null)
+            {
+                foreach (TypeSpec param in parameters)
+                    Signature += "_" + param.Name;
+            }
             Location = loc;
 
         }
@@ -53,6 +56,7 @@ namespace VJay
         UShort, // 16 bits unsigned
         Extended, // 80 bits floating point
         Bool,
+        String,
         Unknown
     }
     /// <summary>
@@ -361,7 +365,7 @@ namespace VJay
 
         public override string ToString()
         {
-            return Name;
+            return base.ToString();
         }
        
     }
@@ -432,13 +436,9 @@ namespace VJay
         public static BuiltinTypeSpec Double = new BuiltinTypeSpec("double", BuiltinTypes.Double);
         public static BuiltinTypeSpec Extended = new BuiltinTypeSpec("extended", BuiltinTypes.Extended);
         public static BuiltinTypeSpec Bool = new BuiltinTypeSpec("bool", BuiltinTypes.Bool);
-      
+        public static BuiltinTypeSpec Void = new BuiltinTypeSpec("void", BuiltinTypes.Void);
+        public static BuiltinTypeSpec String = new BuiltinTypeSpec("char*", BuiltinTypes.String, TypeFlags.Pointer);
         public static BuiltinTypeSpec Null = new BuiltinTypeSpec("null", BuiltinTypes.Int, TypeFlags.Null);
-
-        public override string ToString()
-        {
-            return "[BUILTIN] "+base.ToString();
-        }
     }
     /// <summary>
     /// Global Variable Specs
@@ -463,7 +463,7 @@ namespace VJay
         }
     }
     /// <summary>
-    /// Method Specs Specs
+    /// Method Specs
     /// </summary>
     public class MethodSpec : MemberSpec
     {
@@ -481,13 +481,57 @@ namespace VJay
         {
             get
             {
-                return (Modifiers & Modifiers.Prototype) == VJay.Modifiers.Prototype;
+                return (Modifiers & Modifiers.Prototype) == Modifiers.Prototype;
             }
         }
         public MethodSpec(string name, Modifiers mods, TypeSpec type,TypeSpec[] parameters,  Location loc)
-            : base(name, new MemberSignature(name, loc, type.Name, parameters), mods)
+            : base(name, new MemberSignature(name, loc, (type != null)?type.Name:"null", parameters), mods)
         {
+            memberType = type;
+        }
+    }
 
+    /// <summary>
+    /// Global Variable Specs
+    /// </summary>
+    public class VarSpec : MemberSpec
+    {
+        TypeSpec memberType;
+        MethodSpec method;
+        bool isparam;
+
+        public TypeSpec MemberType
+        {
+            get
+            {
+                return memberType;
+            }
+        }
+        public MethodSpec MethodHost
+        {
+            get
+            {
+                return method;
+            }
+        }
+        public bool IsParameter
+        {
+            get
+            {
+                return isparam;
+            }
+        }
+        public VarSpec(string name, MethodSpec host, TypeSpec type, Location loc)
+            : base(name, new MemberSignature(host.Name + "_"+name, loc, type.Name),  Modifiers.NoModifier)
+        {
+            method = host;
+            isparam = false;
+        }
+        public VarSpec(string name,  TypeSpec type, Location loc)
+            : base(name, new MemberSignature("param_" + name, loc, type.Name), Modifiers.NoModifier)
+        {
+            method = null;
+            isparam = true;
         }
     }
 }

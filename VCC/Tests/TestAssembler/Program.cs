@@ -23,7 +23,8 @@ namespace TestAssembler
                 new Vasm.Label("Test")
             });
 
-
+                asm.DefineData(new DataMember("a", new byte[2] { 65, 89 }));
+                asm.DefineData(new DataMember("b", new uint[1] { 9 }));
                 asm.Emit(asm.AssemblerWriter);
 
             }

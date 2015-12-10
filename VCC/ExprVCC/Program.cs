@@ -215,6 +215,10 @@ namespace ExprVCC
         {
             return true;
         }
+        public virtual Expression DoResolve(ResolveContext rc)
+        {
+            return null;
+        }
         public abstract object GetValue(SimpleExecutionContext ctx);
     }
  /*   public abstract class Expression : SimpleToken{

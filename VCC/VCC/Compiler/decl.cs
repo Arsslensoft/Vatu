@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Vasm;
+using VJay;
 
 namespace VCC
 {
@@ -79,21 +81,28 @@ namespace VCC
 
         public override bool Resolve(ResolveContext rc)
         {
-            _type.Resolve(rc);
-            return base.Resolve(rc);
+            if (_type != null)
+                _type.Resolve(rc);
+            if (_vadef != null)
+                _vadef.Resolve(rc);
+            if (_valist != null)
+                _valist.Resolve(rc);
+            if (_mod != null)
+                _mod.Resolve(rc);
+     
+          return  base.Resolve(rc);
         }
         public override bool Emit(EmitContext ec)
         {
+            if (_vadef != null)
+                _vadef.Emit(ec);
+
+            if (_valist != null)
+                _valist.Emit(ec);
+
             return base.Emit(ec);
         }
-        public override bool EmitFromStack(EmitContext ec)
-        {
-            return base.EmitFromStack(ec);
-        }
-        public override bool EmitToStack(EmitContext ec)
-        {
-            return base.EmitToStack(ec);
-        }
+   
       
       
     }
@@ -184,7 +193,7 @@ namespace VCC
     }
     public class MethodDeclaration : Declaration
     {
-      
+        MethodSpec m;
 
         MethodIdentifier _id; ParameterListDefinition _pal; Block _b;
         [Rule(@"<Func Decl> ::= <Func ID> ~'(' <Params> ~')' <Block>")]
@@ -215,7 +224,10 @@ namespace VCC
         }
         public override bool Emit(EmitContext ec)
         {
-            return base.Emit(ec);
+            Label mlb = ec.DefineLabel(m.Signature.ToString());
+            ec.MarkLabel(mlb);
+            _b.Emit(ec);
+            return true;
         }
         public override bool EmitFromStack(EmitContext ec)
         {
@@ -230,6 +242,7 @@ namespace VCC
         {
             if (_b != null)
                 _b.Resolve(rc);
+            m = new MethodSpec(_id.Name, Modifiers.NoModifier, BuiltinTypeSpec.Int, null,loc);
             return base.Resolve(rc);
         }
     }

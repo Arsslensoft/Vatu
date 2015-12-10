@@ -1,9 +1,8 @@
 
+	int_main_a dd 14599845
+	uint_main_c db 45
+	bool_main_x db 0
+	char_main_c db 5
 
-			mov word AX, 0x4F07
-			mov byte BL, 0x0
-			mov word CX, 0x0
-			mov word DX, 0x20
-			Int 16
 
-		Test:
+		void_main:

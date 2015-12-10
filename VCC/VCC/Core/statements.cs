@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace VCC
+namespace VCC.Core
 {
 
     // START STMT
@@ -18,12 +18,19 @@ namespace VCC
             _statements = stmt;
         }
 
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            _statements = (NormalStatment)_statements.DoResolve(rc);
+            return this;
+        }
         public override bool Resolve(ResolveContext rc)
         {
-            if (_statements != null)
-                _statements.Resolve(rc);
-
+            _statements.Resolve(rc);
             return base.Resolve(rc);
+        }
+        public override bool Emit(EmitContext ec)
+        {
+            return _statements.Emit(ec);
         }
     }
 
@@ -191,13 +198,30 @@ namespace VCC
 
        }
 
+       public override SimpleToken DoResolve(ResolveContext rc)
+       {
+           if (current != null)
+               current = (Statement)current.DoResolve(rc);
+           if (_next != null)
+               _next = (Statement)_next.DoResolve(rc);
+           return this;
+       }
        public override bool Resolve(ResolveContext rc)
        {
            if (current != null)
-               current.Resolve(rc);
+             current.Resolve(rc);
            if (_next != null)
                _next.Resolve(rc);
            return base.Resolve(rc);
+       }
+       public override bool Emit(EmitContext ec)
+       {
+           if (current != null)
+               current.Emit(ec);
+           if (_next != null)
+               _next.Emit(ec);
+
+           return base.Emit(ec);
        }
     }
     // <Then Stm>
@@ -282,11 +306,21 @@ namespace VCC
         {
             _vadecl = vardecl;
         }
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            _vadecl = (VariableDeclaration)_vadecl.DoResolve(rc);
+
+            return this;
+        }
         public override bool Resolve(ResolveContext rc)
         {
-            if (_vadecl != null)
-                _vadecl.Resolve(rc);
+            _vadecl.Resolve(rc);
             return base.Resolve(rc);
+        }
+        public override bool Emit(EmitContext ec)
+        {
+
+            return _vadecl.Emit(ec);
         }
     }
     public class LabelStatement : BaseStatement

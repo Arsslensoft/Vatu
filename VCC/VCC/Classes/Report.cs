@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace VJay
+namespace VCC
 {
     public abstract class Report
     {
@@ -18,7 +18,7 @@ namespace VJay
             error_count = 0;
             quiet = false;
         }
-        
+
         protected string GetListing(string listing)
         {
             if (listing == null)
@@ -49,7 +49,7 @@ namespace VJay
             Error(Location.Null, message);
         }
 
-                
+
         public void Warning(string message)
         {
             Warning(Location.Null, message);
@@ -68,7 +68,7 @@ namespace VJay
 
     }
 
-  
+
     public class InternalErrorException : Exception
     {
         public InternalErrorException()

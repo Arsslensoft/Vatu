@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Vasm;
-using VJay;
 
-namespace VCC
+
+namespace VCC.Core
 {
     [Terminal("(EOF)")]
     [Terminal("(Error)")]
@@ -89,39 +89,17 @@ namespace VCC
 
         public virtual bool Resolve(ResolveContext rc)
         {
-            if (this is ScalarTypeIdentifier)
-            {
-                ((ScalarTypeIdentifier)this).Resolve(rc);
-                //Type = rc.ResolveType(((ScalarTypeIdentifier)this).t);
-
-                //Console.WriteLine(Type.ToString());
-            }
+        
             return true;
         }
+        public virtual SimpleToken DoResolve(ResolveContext rc)
+        {
+            Type = rc.ResolveType(this.symbol.Name);
+            return this ;
+        }
     }
 
-    public class TypePointer : SimpleToken
-    {
-        public Location loc;
-        public Location Location { get { return loc; } }
-
-        TypePointer _next;
-        [Rule(@"<Pointers> ::= ~'*' <Pointers>")]
-        public TypePointer(TypePointer ptr)
-        {
-            loc = CompilerContext.TranslateLocation(position);
-            _next = ptr;
-        }
-        [Rule(@"<Pointers> ::=  ")]
-        public TypePointer()
-        {
-            loc = CompilerContext.TranslateLocation(position);
-            _next = null;
-        }
-
-
-    }
-    public class Definition : SimpleToken, IEmitExpr, IEmit, IResolve
+    public class Definition : SimpleToken, IEmit, IResolve
     {
         public Location loc;
         public Location Location { get { return loc; } }
@@ -138,18 +116,15 @@ namespace VCC
         {
             return true;
         }
-        public virtual bool EmitFromStack(EmitContext ec)
+        public virtual SimpleToken DoResolve(ResolveContext rc)
         {
-            return true;
-        }
-        public virtual bool EmitToStack(EmitContext ec)
-        {
-            return true;
+            return this;
         }
     }
-    public abstract class Operator : SimpleToken, IEmitExpr, IEmit, IResolve
+    public abstract class Operator : SimpleToken, IEmit, IResolve
     {
-
+        public Expr Left { get; set; }
+        public Expr Right { get; set; }
           public Location loc;
         public Location Location { get { return loc; } }
 
@@ -165,13 +140,9 @@ namespace VCC
         {
             return true;
         }
-        public virtual bool EmitFromStack(EmitContext ec)
+        public virtual SimpleToken DoResolve(ResolveContext rc)
         {
-            return true;
-        }
-        public virtual bool EmitToStack(EmitContext ec)
-        {
-            return true;
+            return this;
         }
 
     }
@@ -199,7 +170,6 @@ namespace VCC
 
         public virtual bool Resolve(ResolveContext rc)
         {
-
             return true;
         }
         public virtual bool Emit(EmitContext ec)
@@ -214,52 +184,12 @@ namespace VCC
 
             return rc;
         }
-    }
-    public class Expression : SimpleToken, IEmitExpr, IEmit, IResolve
-    {
-        protected Location loc;
-        protected TypeSpec type;
-
-        public TypeSpec Type
+        public virtual SimpleToken DoResolve(ResolveContext rc)
         {
-            get { return type; }
-            set { type = value; }
+            return this;
         }
-        public Location Location { get { return loc; } }
-
-        public Expression(TypeSpec tp, Location lc)
-        {
-            type = tp;
-            loc = lc;
-        }
-        public Expression(Location lc)
-        {
-            type = null;
-            loc = lc;
-        }
-        public Expression()
-            : this(Location.Null)
-        {
-            loc = CompilerContext.TranslateLocation(position);
-        }
-        public virtual bool Resolve(ResolveContext rc)
-        {
-            return true;
-        }
-        public virtual bool Emit(EmitContext ec)
-        {
-            return true;
-        }
-        public virtual bool EmitFromStack(EmitContext ec)
-        {
-            return true;
-        }
-        public virtual bool EmitToStack(EmitContext ec)
-        {
-            return true;
-        }
-    }
-    public class Expr : SimpleToken, IEmitExpr, IEmit, IResolve
+    } 
+    public class Expr : SimpleToken, IEmit, IResolve
     {
         Expr next;
         Expr current;
@@ -309,19 +239,14 @@ namespace VCC
         {
             return true;
         }
-        public virtual bool EmitFromStack(EmitContext ec)
+        public virtual SimpleToken DoResolve(ResolveContext rc)
         {
-            return true;
-        }
-        public virtual bool EmitToStack(EmitContext ec)
-        {
-            return true;
+            return this;
         }
 
 
     }
-  
-    public abstract class DeclarationToken : SimpleToken, IEmit, IResolve
+      public abstract class DeclarationToken : SimpleToken, IEmit, IResolve
     {
 
         public Location loc;
@@ -346,15 +271,11 @@ namespace VCC
         {
             return true;
         }
-        public virtual bool EmitFromStack(EmitContext ec)
-        {
-            return true;
-        }
-        public virtual bool EmitToStack(EmitContext ec)
-        {
-            return true;
-        }
 
+        public virtual SimpleToken DoResolve(ResolveContext rc)
+        {
+            return this;
+        }
      
     }
     public abstract class ModifierToken : SimpleToken, IResolve
@@ -372,57 +293,96 @@ namespace VCC
         {
             return true;
         }
+        public virtual SimpleToken DoResolve(ResolveContext rc)
+        {
+            return this;
+        }
     }
 
 
-    public class Declaration : DeclarationToken
+    [Terminal("Id")]
+    public class Identifier : Expr
     {
-        protected Identifier _name;
-        protected Declaration _dcl;
+        protected readonly string _idName;
+        public string Name { get { return _idName; } }
 
-     
-        public Identifier Identifier
+        public Identifier(string idName)
         {
-            get { return _name; }
-        }
-
-        public Declaration()
-        {
-
+            _idName = idName;
         }
 
-        [Rule(@"<Decl>  ::= <Func Decl>")]
-        [Rule(@"<Decl>  ::= <Func Proto>")]
-        [Rule(@"<Decl>  ::= <Struct Decl>")]
-        [Rule(@"<Decl>  ::= <Union Decl>")]
-        [Rule(@"<Decl>  ::= <Enum Decl>")]
-        [Rule(@"<Decl>  ::= <Var Decl>")]
-        [Rule(@"<Decl>  ::= <Typedef Decl>")]
-        public Declaration(Declaration decl)
+
+    }
+    public class MethodIdentifier : Identifier
+    {
+        public Identifier Id { get; set; }
+        public TypeToken Type { get; set; }
+    
+        [Rule(@"<Func ID> ::= <Type> Id")]
+        public MethodIdentifier(TypeToken type, Identifier id)
+            : base(id.Name)
         {
-            _dcl = decl;
+            Id = id;
+            Type = type;
         }
 
-        public virtual bool Resolve(ResolveContext rc)
+        [Rule(@"<Func ID> ::= Id")]
+        public MethodIdentifier(Identifier id)
+            : base(id.Name)
         {
-            if (_dcl != null)
-                return _dcl.Resolve(rc);
-            else return true;
+            Id = id;
+            Type = null;
         }
-        public virtual bool Emit(EmitContext ec)
+
+        public override SimpleToken DoResolve(ResolveContext rc)
         {
-            return true;
+          Type = (TypeToken) Type.DoResolve(rc);
+          base.Type = Type.Type;
+            return this;
         }
-        public virtual bool EmitFromStack(EmitContext ec)
+        public override bool Resolve(ResolveContext rc)
         {
-            return true;
-        }
-        public virtual bool EmitToStack(EmitContext ec)
-        {
-            return true;
+            Type.Resolve(rc);
+
+            return base.Resolve(rc);
         }
     }
 
+
+    public class TypePointer : SimpleToken
+    {
+        public Location loc;
+        public Location Location { get { return loc; } }
+       
+        public int PointerCount { get; set; }
+
+        TypePointer _next;
+        [Rule(@"<Pointers> ::= ~'*' <Pointers>")]
+        public TypePointer(TypePointer ptr)
+        {
+            loc = CompilerContext.TranslateLocation(position);
+            _next = ptr;
+        }
+        [Rule(@"<Pointers> ::=  ")]
+        public TypePointer()
+        {
+            loc = CompilerContext.TranslateLocation(position);
+            _next = null;
+        }
+
+        public TypePointer DoResolve(ResolveContext rc)
+        {
+            if (_next == null)
+            {
+                PointerCount = 0;
+                return this;
+            }
+            PointerCount = 1 + (_next.DoResolve(rc)).PointerCount;
+            return this;
+        }
+        
+
+    }
     public class AccessOp : Operator
     {
         private readonly AccessOperator _op;

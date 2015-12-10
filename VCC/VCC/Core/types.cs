@@ -3,22 +3,46 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using VJay;
 
-namespace VCC
+
+namespace VCC.Core
 {
     // START TYPE
   
+    public class TypeIdentifier : TypeToken
+    {
+        BaseTypeIdentifier _base;
+        TypePointer _pointers;
+        [Rule(@"<Type>     ::= <Base> <Pointers>")]
+        public TypeIdentifier(BaseTypeIdentifier tbase, TypePointer pointers)
+        {
+            _base = tbase;
+            _pointers = pointers;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+           
+            _base.Resolve(rc);
+            return true;
+        }
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            if (_pointers != null)
+                _pointers = _pointers.DoResolve(rc);
 
+            _base = (BaseTypeIdentifier)_base.DoResolve(rc);
+            Type = _base.Type;
+            return this;
+        }
+
+    }
     public class ScalarTypeIdentifier : TypeToken
     {
        TypeToken _type;
 
         public bool Resolve(ResolveContext rc)
         {
-            Type = rc.ResolveType(_type.Name);
-
-            Console.WriteLine(Type.ToString());
+            _type.Resolve(rc);
             return true;
         }
 
@@ -41,8 +65,14 @@ namespace VCC
           _type = type;
         }
 
-
-
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+           _type = (TypeToken)_type.DoResolve(rc);
+           Type = _type.Type;
+            return  this;
+        }
+       
+        
     }
  
     public class BaseTypeIdentifier : TypeToken
@@ -59,7 +89,7 @@ namespace VCC
         {
             _ident = type;
         }
-        
+      
         [Rule(@"<Base>     ::= <Scalar>")]
         public BaseTypeIdentifier(ScalarTypeIdentifier type)
         {
@@ -80,9 +110,24 @@ namespace VCC
             isstruct = false;
         }
 
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            if (_typeid != null)
+            {
+                _typeid = (TypeToken)_typeid.DoResolve(rc);
+                Type = _typeid.Type;
+            }
+            if (_ident != null)
+                Type = rc.ResolveType(_ident.Name);
+            return this;
+        }
         public override bool Resolve(ResolveContext rc)
         {
-            _typeid.Resolve(rc);
+            if (_typeid != null)
+              _typeid.Resolve(rc);
+
+            if (_ident != null)
+                Type = rc.ResolveType(_ident.Name);
             return base.Resolve(rc);
         }
     }
@@ -107,6 +152,8 @@ namespace VCC
     // START MODIFIERs
     public class Modifier : ModifierToken
     {
+        public Modifiers ModifierList { get; set; }
+
         /*<Mod>      ::= extern 
              | static
              | register
@@ -126,7 +173,27 @@ namespace VCC
            
         }
 
-     
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            if (_mod.Name == "extern")
+                ModifierList = Modifiers.Extern;
+            else if (_mod.Name == "static")
+                ModifierList = Modifiers.Static;
+            else if (_mod.Name == "register")
+                ModifierList = Modifiers.Register;
+            else if (_mod.Name == "auto")
+                ModifierList = Modifiers.Auto;
+            else if (_mod.Name == "volatile")
+                ModifierList = Modifiers.Volatile;
+            else if (_mod.Name == "const")
+                ModifierList = Modifiers.Const;
+            else ModifierList = Modifiers.NoModifier;
+            return this;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return base.Resolve(rc);
+        }
     }
 
     [Terminal("extern")]

@@ -7,7 +7,7 @@ using System.Text;
 namespace VCC
 {
     [Terminal("Id")]
-    public class Identifier : Expr
+    public class Identifier : Expression
     {
         protected readonly string _idName;
         public string Name { get { return _idName; } }

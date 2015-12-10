@@ -3,163 +3,353 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using VJay;
 
-namespace VCC
+
+namespace VCC.Core
 {
-    [Terminal("CharLiteral")]//To check
-    public class CharLiteral : CharConstant
+    /// <summary>
+    /// Basic Literal
+    /// </summary>
+    public class Literal : Expr
     {
-        private readonly byte _value;
-        public CharLiteral(byte value, Location loc)
-            : base(value, loc)
-        {
-            _value = value;
-        }
-    }
-   
-    [Terminal("StringLiteral")]
-    public class StringLiteral : StringConstant
-    {
-        private readonly string _value;
-        public StringLiteral(string value, Location loc)
-            : base(value, loc)
-        {
-            _value = value;
-        }
-    }
+        protected ConstantExpression _value;
+        protected string _strvalue;
+        protected bool _unsigned;
+        protected bool _numeric;
 
-    [Terminal("")]//To check
-    public class ByteLiteral : ByteConstant
-    {
-        private readonly byte _value;
-        public ByteLiteral(byte value, Location loc)
-            : base(value, loc)
+        public bool HasSuffix
         {
-            _value = value;
+            get { return GetSuffix() != null; }
         }
-    }
-
-    [Terminal("")]//To check
-    public class ShortLiteral : ShortConstant
-    {
-        private readonly short _value;
-        public ShortLiteral(short value, Location loc)
-            : base(value, loc)
+        public bool IsNumber { get { return _numeric; } }
+        public bool IsString { get { return !_numeric; } }
+        public Literal(string value, bool num = false)
         {
-            _value = value;
+            _strvalue = value;
+            _numeric = num;
         }
-    }
-
-    [Terminal("")]//To check
-    public class UShortLiteral : UShortConstant
-    {
-        private readonly ushort _value;
-        public UShortLiteral(ushort value, Location loc)
-            : base(value, loc)
-        {
-            _value = value;
-        }
-    }
-
-    [Terminal("")]//To check
-    public class IntLiteral : IntConstant
-    {
-        private readonly int _value;
-        public IntLiteral(int value, Location loc)
-            : base(value, loc)
-        {
-            _value = value;
-        }
-    }
-
-    [Terminal("")]//To check
-    public class UIntLiteral : UIntConstant
-    {
-        private readonly uint _value;
-        public UIntLiteral(uint value, Location loc)
-            : base(value, loc)
-        {
-            _value = value;
-        }
-    }
-
-    [Terminal("")]//To check
-    public class LongLiteral : LongConstant
-    {
-        private readonly long _value;
-        public LongLiteral(long value, Location loc)
-            : base(value, loc)
-        {
-            _value = value;
-        }
-    }
-
-    [Terminal("")]//To check
-    public class ULongLiteral : ULongConstant
-    {
-        private readonly ulong _value;
-        public ULongLiteral(ulong value, Location loc)
-            : base(value, loc)
-        {
-            _value = value;
-        }
-    }
-
-    [Terminal("")]//To check
-    public class FloatLiteral : FloatConstant
-    {
-        private readonly float _value;
-        public FloatLiteral(float value, Location loc)
-            : base(value, loc)
-        {
-            _value = value;
-        }
-    }
-
-    [Terminal("")]//To check
-    public class BoolLiteral : BoolConstant
-    {
-        private readonly bool _value;
-        public BoolLiteral(bool value, Location loc)
-            : base(value, loc)
-        {
-            _value = value;
-        }
-    }
     
-    [Terminal("")]//To check
-    public class DoubleLiteral : DoubleConstant
-    {
-        private readonly double _value;
-        public DoubleLiteral(double value, Location loc)
-            : base(value, loc)
+        TypeCode real_type_suffix(char c)
+		{
+            
+			switch (c){
+			case 'F': case 'f':
+				return TypeCode.Single;
+			case 'D': case 'd':
+				return TypeCode.Double;
+		
+          
+			default:
+      
+				return TypeCode.Empty;
+			}
+		}
+		TypeCode integer_type_suffix (char c,char nxt)
+		{
+			
+					switch (c)
+                    {
+					case 'U': case 'u':
+						_unsigned = true;
+                            return integer_type_suffix(nxt,'#');
+					case 'i':
+					case 'I': 
+						return  (_unsigned)? TypeCode.UInt32:TypeCode.Int32;
+		            case 's':
+					case 'S': 
+						return  (_unsigned)? TypeCode.UInt16:TypeCode.Int16;
+                    case 'b':
+					case 'B': 
+						return  (_unsigned)? TypeCode.Byte:TypeCode.SByte;
+					case 'l':
+					case 'L': 
+						return  (_unsigned)? TypeCode.UInt64:TypeCode.Int64;
+						
+					default:
+					   return real_type_suffix(c);
+					}
+
+		}
+        public string GetSuffix()
         {
-            _value = value;
+            if (_strvalue == null)
+                return null;
+
+            if (_strvalue.Length > 2)
+            {
+
+                string suffix = _strvalue.Substring(0, _strvalue.Length - 2);
+                if(char.IsLetter(suffix[0]) && char.IsLetter(suffix[1]))
+                    return suffix;
+                else return null;
+            }
+            else if (_strvalue.Length == 1 && char.IsLetter(_strvalue[0]))
+            {
+
+                string suffix = _strvalue.Substring(0, _strvalue.Length - 1);
+                if(char.IsLetter(suffix[0]))
+                    return suffix;
+                else return null;
+            }
+            else return null;
         }
+        public bool IsValidNumber(string num)
+        {
+     
+            long l;
+            decimal d;
+            string suffix = "";
+            if (num.Contains("."))
+            {
+                if((suffix=GetSuffix()) == null)
+                  return decimal.TryParse(num, out d);
+                else return decimal.TryParse(num.Substring(0,num.Length-suffix.Length), out d);
+            }
+            else
+            {
+                if ((suffix=GetSuffix()) == null)
+                    return long.TryParse(num, out l);
+                else return long.TryParse(num.Substring(0, num.Length - suffix.Length), out l);
+            }
+        }
+        public TypeCode GetTypeBySuffix()
+        {
+            string suffix = GetSuffix();
+            // decimals first
+            if (_strvalue.Contains(".") && suffix != null && suffix.Length == 1)
+                    return real_type_suffix(suffix[0]);
+            else if (!_strvalue.Contains(".") && suffix != null && suffix.Length <= 2)
+            {
+                if (suffix.Length == 1)
+                    return integer_type_suffix(suffix[0], '#');
+
+                else
+                    return integer_type_suffix(suffix[0], suffix[1]);
+            }
+            else return TypeCode.Empty;
+        }
+
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            return _value;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+   
     }
 
-    [Terminal("")]//To check
-    public class ExtendedLiteral : ExtendedConstant
+    [Terminal("StringLiteral")]
+    public class StringLiteral : Literal
     {
-        private readonly decimal _value;
-        public ExtendedLiteral(decimal value, Location loc)
-            : base(value, loc)
+     
+        public StringLiteral(string value) 
+            : base(value)
         {
-            _value = value;
+            _value = new StringConstant(value, CompilerContext.TranslateLocation(position));
+
         }
+
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            return _value;
+        }
+      
+    }
+    [Terminal("CharLiteral")]
+    public class CharLiteral : Literal
+    {
+      
+        public CharLiteral(string value)
+            : base(value, true)
+        {
+            _value = new CharConstant(Encoding.UTF8.GetBytes(value)[0], CompilerContext.TranslateLocation(position));
+  
+        }
+
+
+
+    }
+    [Terminal("BooleanLiteral")]
+    public class BooleanLiteral : Literal
+    {
+       
+        public BooleanLiteral(string value)
+            : base(value)
+        {
+            _value = new BoolConstant(bool.Parse(value), CompilerContext.TranslateLocation(position));
+        }
+
+
+
+    }
+    [Terminal("NullLiteral")]
+    public class NullLiteral : Literal
+    {
+      
+        public NullLiteral(string value)
+            : base(value)
+        {
+            _value = new NullConstant(CompilerContext.TranslateLocation(position));
+        }
+
+
+
+    }
+    [Terminal("HexLiteral")]
+    public class HexLiteral : Literal
+    {
+     
+        public HexLiteral(string value)
+            : base(value)
+        {
+            
+            if (value.Length <= 4)
+                _value = new CharConstant(Convert.ToByte(value, 16), CompilerContext.TranslateLocation(position));
+            else if (value.Length <= 6)
+                _value = new UShortConstant(Convert.ToUInt16(value, 16), CompilerContext.TranslateLocation(position));
+            else if (value.Length <= 10)
+                _value = new UIntConstant(Convert.ToUInt32(value, 16), CompilerContext.TranslateLocation(position));
+            else if (value.Length <= 18)
+                _value = new ULongConstant(Convert.ToUInt64(value, 16), CompilerContext.TranslateLocation(position));
+            else throw new ArgumentOutOfRangeException(value + "Hex value cannot be larger than 64 bits");
+           
+        }
+
+
+
+    }
+    [Terminal("OctLiteral")]
+    public class OctLiteral : Literal
+    {
+    
+        public OctLiteral(string value)
+            : base(value)
+        {
+
+            if (value.Length <= 4)
+                _value = new CharConstant(Convert.ToByte(value, 8), CompilerContext.TranslateLocation(position));
+            else if (value.Length <= 6)
+                _value = new UShortConstant(Convert.ToUInt16(value, 8), CompilerContext.TranslateLocation(position));
+            else if (value.Length <= 10)
+                _value = new UIntConstant(Convert.ToUInt32(value, 8), CompilerContext.TranslateLocation(position));
+            else if (value.Length <= 18)
+                _value = new ULongConstant(Convert.ToUInt64(value, 8), CompilerContext.TranslateLocation(position));
+            else throw new ArgumentOutOfRangeException(value + "Hex value cannot be larger than 64 bits");
+
+        }
+
+
+
+    }
+    [Terminal("DecLiteral")]
+    public class DecLiteral : Literal
+    {
+      
+        public DecLiteral(string value)
+            : base(value, true)
+        {
+            ulong v;
+            if (HasSuffix)
+            {
+                TypeCode tpc = GetTypeBySuffix();
+                switch (tpc)
+                {
+                    case TypeCode.Byte:
+                        _value = new CharConstant(byte.Parse(value), CompilerContext.TranslateLocation(position));
+                        break;
+                    case TypeCode.SByte:
+                        _value = new ByteConstant(sbyte.Parse(value), CompilerContext.TranslateLocation(position));
+                        break;
+
+                    case TypeCode.Int16:
+                        _value = new ShortConstant(short.Parse(value), CompilerContext.TranslateLocation(position));
+                        break;
+                    case TypeCode.UInt16:
+                        _value = new UShortConstant(ushort.Parse(value), CompilerContext.TranslateLocation(position));
+                        break;
+
+                    case TypeCode.Int32:
+                        _value = new IntConstant(int.Parse(value), CompilerContext.TranslateLocation(position));
+                        break;
+                    case TypeCode.UInt32:
+                        _value = new UIntConstant(uint.Parse(value), CompilerContext.TranslateLocation(position));
+                        break;
+
+                    case TypeCode.Int64:
+                        _value = new LongConstant(long.Parse(value), CompilerContext.TranslateLocation(position));
+                        break;
+                    case TypeCode.UInt64:
+                        _value = new ULongConstant(ulong.Parse(value), CompilerContext.TranslateLocation(position));
+                        break;
+
+                    case TypeCode.Single:
+                        _value = new FloatConstant(float.Parse(value), CompilerContext.TranslateLocation(position));
+                        break;
+                    case TypeCode.Double:
+                        _value = new DoubleConstant(double.Parse(value), CompilerContext.TranslateLocation(position));
+                        break;
+
+                    
+                }
+            }
+            else if (ulong.TryParse(value, out v))
+            {
+                if (v <= byte.MaxValue)
+                    _value = new CharConstant((byte)v, CompilerContext.TranslateLocation(position));
+                else if (v <= ushort.MaxValue)
+                    _value = new UShortConstant((ushort)v, CompilerContext.TranslateLocation(position));
+                else if (v <= uint.MaxValue)
+                    _value = new UIntConstant((uint)v, CompilerContext.TranslateLocation(position));
+                else
+                    _value = new ULongConstant(v, CompilerContext.TranslateLocation(position));
+            }
+            else throw new ArgumentOutOfRangeException(value + "Decimal value cannot be larger than 64 bits");
+        }
+
+
+
+    }
+
+    [Terminal("FloatLiteral")]
+    public class FloatLiteral : Literal
+    {
+  
+        public FloatLiteral(string value)
+            : base(value, true)
+        {
+            double v;
+            if (HasSuffix)
+            {
+                TypeCode tpc = GetTypeBySuffix();
+                switch(tpc)
+                {
+                    case TypeCode.Single:
+                        _value = new FloatConstant(float.Parse(value), CompilerContext.TranslateLocation(position));
+                        break;
+                    default:
+                        _value = new DoubleConstant(double.Parse(value), CompilerContext.TranslateLocation(position));
+                        break;
+                }
+            }
+            else if (double.TryParse(value, out v))
+            {
+                if (v <= float.MaxValue)
+                    _value = new FloatConstant((float)v, CompilerContext.TranslateLocation(position));
+                else
+                    _value = new DoubleConstant(v, CompilerContext.TranslateLocation(position));
+            }
+            else throw new ArgumentOutOfRangeException(value + "float value cannot be larger than 64 bits");
+          
+        }
+
+
+
     }
 
 
-    [Terminal("")]//To check
-    public class NullLiteral : NullConstant
-    {
-        
-        public NullLiteral(Location loc)
-            : base(loc)
-        {
-        
-        }
-    }
+
+
 
 }

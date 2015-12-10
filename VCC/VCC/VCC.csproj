@@ -42,22 +42,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\Reports.cs" />
     <Compile Include="constants.cs" />
     <Compile Include="Core\Context.cs" />
     <Compile Include="exprs.cs" />
-    <Compile Include="Core\location.cs" />
-    <Compile Include="Core\Report.cs" />
-    <Compile Include="Compiler\decl.cs" />
-    <Compile Include="Compiler\defs.cs" />
-    <Compile Include="Compiler\Literals.cs" />
-    <Compile Include="Compiler\identifiers.cs" />
-    <Compile Include="operators.cs" />
+    <Compile Include="Classes\location.cs" />
+    <Compile Include="Classes\Report.cs" />
+    <Compile Include="decl.cs" />
+    <Compile Include="defs.cs" />
+    <Compile Include="Literals.cs" />
+    <Compile Include="Core\operators.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Semantics.cs" />
-    <Compile Include="Core\Type.cs" />
-    <Compile Include="statements.cs" />
-    <Compile Include="types.cs" />
+    <Compile Include="Core\Semantics.cs" />
+    <Compile Include="Compiler\Type.cs" />
+    <Compile Include="Core\statements.cs" />
+    <Compile Include="Core\types.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="C-ANSI.cgt" />
@@ -78,6 +78,7 @@
     <Content Include="SyntaxImpl.txt" />
     <Content Include="TODO.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
