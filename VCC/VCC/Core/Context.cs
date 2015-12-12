@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Vasm;
+using Vasm.x86;
 using VCC.Core;
 
 namespace VCC
@@ -13,12 +14,14 @@ namespace VCC
         public List<FieldSpec> KnownGlobals { get; set; }
         public List<MethodSpec> KnownMethods { get; set; }
         public List<VarSpec> KnownLocalVars { get; set; }
+        public List<ParameterSpec> KnownParameters { get; set; }
         public Known()
         {
             KnownGlobals = new List<FieldSpec>();
             KnownMethods = new List<MethodSpec>();
             KnownTypes = new List<TypeSpec>();
             KnownLocalVars = new List<VarSpec>();
+            KnownParameters = new List<ParameterSpec>();
         }
     }
     public enum LabelType
@@ -35,7 +38,12 @@ namespace VCC
     }
 
 
-
+    public interface IEmitExpr
+    {
+        bool EmitToStack(EmitContext ec);
+        bool EmitFromStack(EmitContext ec);
+        bool EmitToRegister(EmitContext ec, RegistersEnum rg);
+    }
 
     /// <summary>
     /// Basic Emit for CodeGen
@@ -47,6 +55,8 @@ namespace VCC
         /// </summary>
         /// <returns>Success or fail</returns>
         bool Emit(EmitContext ec);
+
+      
 
     }
 
@@ -61,16 +71,29 @@ namespace VCC
     /// </summary>
     public class EmitContext
     {
+
         Vasm.AsmContext ag;
         List<string> _names;
         Label enterLoop, exitLoop;
+        Dictionary<string, VarSpec> Variables = new Dictionary<string, VarSpec>();
+    
+       public RegistersEnum GetNextRegister()
+        {
+            return ag.GetNextRegister();
+        }
+
+        public ResolveContext CurrentResolve { get; set; }
 
         public static Dictionary<LabelType, int> Labels = new Dictionary<LabelType, int>();
         EmitContext()
         {
+
             _names = new List<string>();
         }
-
+        public void SetCurrentResolve(ResolveContext rc)
+        {
+            CurrentResolve = rc;
+        }
         string GenerateLabelName(LabelType lb)
         {
             if (Labels.ContainsKey(lb))
@@ -84,7 +107,10 @@ namespace VCC
                 return lb.ToString() + "_" + Labels[lb].ToString();
             }
         }
-
+        public void SetEntry(string name)
+        {
+            ag.EntryPoint = name;
+        }
         public EmitContext(Vasm.AssemblyWriter asmw)
         {
             ag = new Vasm.AsmContext(asmw);
@@ -95,23 +121,25 @@ namespace VCC
             ag = ac;
         }
 
-        public void EmitInstruction(Instruction ins)
+        public void EmitInstruction(Vasm.Instruction ins)
         {
             ag.Emit(ins);
         }
+        public void EmitComment(string str)
+        {
+            ag.Emit(new Comment(ag, str));
+        }
+        public void EmitData(DataMember dm, MemberSpec v)
+        {
+            if (!Variables.ContainsKey(v.Signature.ToString()))
+            {
+                v.Reference =  ElementReference.New(v.Signature.ToString());
+                ag.DefineData(dm);
 
-        public void EmitData(DataMember dm)
-        {
-            ag.DefineData(dm);
+            }
         }
-        public void EmitData(string name, byte[] data)
-        {
-            ag.DefineData(DefineData(name, data));
-        }
-        public DataMember DefineData(string name, byte[] data)
-        {
-            return ag.Declare(name, data);
-        }
+      
+
 
         public void MarkLabel(Label lb)
         {
@@ -145,6 +173,36 @@ namespace VCC
         {
             ag.Emit(ag.AssemblerWriter);
         }
+
+        public void EmitDataWithConv(string name, object value, MemberSpec v)
+        {
+            DataMember dm;
+            if (value is string)
+                dm = new DataMember(name, Encoding.ASCII.GetBytes(value.ToString()));
+            else if (value is bool)
+                dm = new DataMember(name, ((bool)value) ? (new byte[1] { 255 }) : (new byte[1] { 0 }));
+            else if (value is byte)
+                dm = new DataMember(name, new byte[1] { (byte)value });
+            else if (value is ushort)
+                dm = new DataMember(name, new ushort[1] { (ushort)value });
+            else dm = new DataMember(name, new object[1] { value });
+
+            EmitData(dm,v);
+        }
+        public void EmitStruct(StructElement strct)
+        {
+            ag.DefineStruct(strct);
+        }
+        public bool AddInstanceOfStruct(string varname, TypeSpec st)
+        {
+            if (st.IsStruct && !ag.DeclaredStructVars.ContainsKey(varname))
+                return ag.DefineStructInstance(varname, st.Signature.ToString());
+            else return false;
+        }
+        public void DefineExtern(MethodSpec method)
+        {
+            ag.AddExtern(method.Signature.ToString());
+        }
     }
 
     public class ResolveContext : IDisposable
@@ -152,31 +210,29 @@ namespace VCC
         Block current_block;
        public Report Report { get; set; }
        public List<ResolveContext> ChildContexts { get; set; }
+       public bool IsInTypeDef { get; set; }
+       public bool IsInStruct { get; set; }
         MethodSpec current_member;
         public MethodSpec CurrentMethod { get { return current_member; } }
-        Known _known;
+       public Known _known;
         void FillKnown()
         {
             _known.KnownTypes.Add(BuiltinTypeSpec.Bool);
-            _known.KnownTypes.Add(BuiltinTypeSpec.Char);
             _known.KnownTypes.Add(BuiltinTypeSpec.Byte);
-            _known.KnownTypes.Add(BuiltinTypeSpec.Short);
-            _known.KnownTypes.Add(BuiltinTypeSpec.UShort);
+            _known.KnownTypes.Add(BuiltinTypeSpec.SByte);
             _known.KnownTypes.Add(BuiltinTypeSpec.Int);
             _known.KnownTypes.Add(BuiltinTypeSpec.UInt);
-            _known.KnownTypes.Add(BuiltinTypeSpec.Long);
-            _known.KnownTypes.Add(BuiltinTypeSpec.ULong);
-            _known.KnownTypes.Add(BuiltinTypeSpec.Float);
-            _known.KnownTypes.Add(BuiltinTypeSpec.Double);
             _known.KnownTypes.Add(BuiltinTypeSpec.String);
             _known.KnownTypes.Add(BuiltinTypeSpec.Void);
         }
+    
         public ResolveContext(Block b, MethodSpec cm, Known known)
         {
             _known = known;
             current_block = b;
             current_member = cm;
-       
+            IsInTypeDef = false;
+            IsInStruct = false;
 
         }
         public ResolveContext(Block b, MethodSpec cm)
@@ -185,22 +241,32 @@ namespace VCC
             current_block = b;
             current_member = cm;
             FillKnown();
+            IsInTypeDef = false;
+            IsInStruct = false;
         }
         public ResolveContext(DeclarationSequence<Declaration> decl)
         {
             _known = new Known();
-            current_member = new MethodSpec("<root-decl-list>", Modifiers.NoModifier, null, null, Location.Null);
+            current_member = new MethodSpec("<root-decl-list>", Modifiers.NoModifier, null, Location.Null);
             FillKnown();
             ChildContexts = new List<ResolveContext>();
+            IsInTypeDef = false;
+            IsInStruct = false;
         }
         public ResolveContext(MethodDeclaration decl)
         {
             _known = new Known();
-            current_member = new MethodSpec(decl.Identifier.Name, Modifiers.NoModifier, null, null, Location.Null);
+            current_member = new MethodSpec(decl.Identifier.Name, Modifiers.NoModifier, null, Location.Null);
             FillKnown();
             ChildContexts = new List<ResolveContext>();
+            IsInTypeDef = false;
+            IsInStruct = false;
         }
 
+        public List<VarSpec> GetLocals()
+        {
+            return _known.KnownLocalVars;
+        }
 
         public void FillKnownByKnown(Known kn)
         {
@@ -229,6 +295,11 @@ namespace VCC
 
             }
             else return null;
+        }
+        public void UpdateFather(ResolveContext rc)
+        {
+            foreach (MethodSpec m in rc._known.KnownMethods)
+                KnowMethod(m);
         }
         public void UpdateChildContext(string name, ResolveContext crc)
         {
@@ -285,6 +356,15 @@ namespace VCC
 
             return null;
         }
+        public ParameterSpec ResolveParameter(string name)
+        {
+            foreach (ParameterSpec kt in _known.KnownParameters)
+                if (kt.Name == name)
+                    return kt;
+
+            return null;
+        }
+
 
         public void KnowMethod(MethodSpec mtd)
         {
@@ -302,6 +382,10 @@ namespace VCC
         {
             _known.KnownGlobals.Add(mtd);
         }
+        public void KnowParameter(ParameterSpec mtd)
+        {
+            _known.KnownParameters.Add(mtd);
+        }
         #region IDisposable Members
 
         public void Dispose()
@@ -311,6 +395,18 @@ namespace VCC
 
         #endregion
 
+    }
+
+    public class AtomicContext
+    {
+        public Dictionary<RegistersEnum, Expr> RegistersInUse { get; set; }
+        public AtomicContext()
+        {
+         RegistersInUse = new Dictionary<RegistersEnum,Expr>();
+
+        }
+
+      
     }
 
     public class CompilerContext

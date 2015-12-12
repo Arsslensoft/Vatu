@@ -21,7 +21,7 @@ namespace VCC.Core
             // grab an execution context to be used for the entire 'session'
             using (AssemblyWriter asmw = new AssemblyWriter(Console.OpenStandardOutput(), Encoding.ASCII))
             {
-                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VCC.C-ANSI.cgt"))
+                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VCC.VATU.cgt"))
                 {
 
 
@@ -43,6 +43,7 @@ namespace VCC.Core
                         if (stmts != null)
                         {
                             List<Declaration> Resolved = new List<Declaration>();
+                            List<ResolveContext> ResolveCtx = new List<ResolveContext>();
                             foreach (Declaration stmt in stmts)
                             {
 
@@ -53,19 +54,27 @@ namespace VCC.Core
                                     stmt.Resolve(childctx);
                                     MethodDeclaration d = (MethodDeclaration)md.DoResolve(childctx);
                                    // RootCtx.UpdateChildContext("<method-decl>", childctx);
+                                    RootCtx.UpdateFather(childctx);
                                     Resolved.Add(d);
+                                    ResolveCtx.Add(childctx);
                                 }
                                 else
                                 {
+                                    RootCtx.IsInTypeDef = stmt.IsTypeDef;
+                                    RootCtx.IsInStruct = stmt.IsStruct;
                                     stmt.Resolve(RootCtx);
+                                    ResolveCtx.Add(RootCtx);
                                     Declaration d = (Declaration)stmt.DoResolve(RootCtx);
                                     Resolved.Add(d);
                                 }
                             }
-                            EmitContext ec = new EmitContext(asmw);
+                          int i = 0;
+                          EmitContext ec = new EmitContext(asmw);
                             foreach (Declaration stmt in Resolved)
                             {
+                             ec.SetCurrentResolve( ResolveCtx[i]);
                                 stmt.Emit(ec);
+                                i++;
                             }
                             Console.WriteLine("Asm Code : ");
                             ec.Emit();
@@ -85,7 +94,7 @@ namespace VCC.Core
         }
         static void Init()
         {
-            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VCC.C-ANSI.cgt"))
+            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VCC.VATU.cgt"))
             {
                 CompiledGrammar grammar = CompiledGrammar.Load(stream);
                 var actions = new SemanticTypeActions<SimpleToken>(grammar);
@@ -108,10 +117,11 @@ namespace VCC.Core
         static void Main(string[] args)
         {
             Console.WriteLine("Copyright (c) 2015 Arsslensoft Research. All rights reserved");
-            Console.WriteLine("By Abd Al Moez Bouraoui and Arsslen Idadi");
+        
             Init();
             Console.WriteLine("Runing..");
-            string input = "void main() {int a = 14599845; ushort v = 32762; bool x = false; char c = 5;}";
+           // string input = "int GLOBALVAR = 789; void main() {int a = 14599845; ushort v = 32762; bool x = false; char c = 5;}";
+            string input = "void printf(string);int a(int x) {} entry void main(int g){string hello = \"HELLO\";}";
             Run(input);
 
 

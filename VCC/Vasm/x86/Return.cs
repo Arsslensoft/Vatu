@@ -10,4 +10,12 @@ namespace Vasm.x86 {
             DestinationValue = 0;
         }
     }
+    [Vasm.OpCode("ret")]
+    public class SimpleReturn : Instruction
+    {
+        public SimpleReturn()
+        {
+         
+        }
+    }
 }

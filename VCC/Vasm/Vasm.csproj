@@ -39,12 +39,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Base\AsmGenerator.cs" />
     <Compile Include="Base\AssemblyWriter.cs" />
     <Compile Include="Base\BaseAssemblerElement.cs" />
     <Compile Include="Base\Comment.cs" />
     <Compile Include="Base\DataMember.cs" />
     <Compile Include="Base\ElementReference.cs" />
-    <Compile Include="Base\EmitContext.cs" />
+    <Compile Include="Base\AsmContext.cs" />
     <Compile Include="Base\Instruction.cs" />
     <Compile Include="Base\Label.cs" />
     <Compile Include="Base\LabelName.cs" />
@@ -53,6 +54,7 @@
     <Compile Include="Base\StackContents.cs" />
     <Compile Include="Base\TypeComparer.cs" />
     <Compile Include="IEmit.cs" />
+    <Compile Include="StructElement.cs" />
     <Compile Include="x86\Add.cs" />
     <Compile Include="x86\AddWithCarry.cs" />
     <Compile Include="x86\And.cs" />
@@ -84,6 +86,7 @@
     <Compile Include="x86\JumpAlways.cs" />
     <Compile Include="x86\JumpBase.cs" />
     <Compile Include="x86\JumpToSegment.cs" />
+    <Compile Include="x86\Leave.cs" />
     <Compile Include="x86\Lgdt.cs" />
     <Compile Include="x86\Lidt.cs" />
     <Compile Include="x86\LoadStatusFlags.cs" />

@@ -46,19 +46,13 @@ namespace VCC.Core
             return true;
         }
 
-        [Rule(@"<Scalar>   ::= char")]
+        [Rule(@"<Scalar>   ::= byte")]
         [Rule(@"<Scalar>   ::= int")]
         [Rule(@"<Scalar>   ::= uint")]
-        [Rule(@"<Scalar>   ::= short")]
-        [Rule(@"<Scalar>   ::= long")]
-        [Rule(@"<Scalar>   ::= ushort")]
-        [Rule(@"<Scalar>   ::= ulong")]
-        [Rule(@"<Scalar>   ::= schar")]
+        [Rule(@"<Scalar>   ::= sbyte")]
         [Rule(@"<Scalar>   ::= bool")]
-        [Rule(@"<Scalar>   ::= extended")]
-        [Rule(@"<Scalar>   ::= float")]
-        [Rule(@"<Scalar>   ::= double")]
         [Rule(@"<Scalar>   ::= void")]
+        [Rule(@"<Scalar>   ::= string")]
         public ScalarTypeIdentifier(TypeToken type)
         {
           
@@ -84,7 +78,6 @@ namespace VCC.Core
 
         [Rule(@"<Base>     ::= struct Id")]
         [Rule(@"<Base>     ::= enum Id")]  
-        [Rule(@"<Base>     ::= union Id")]
         public BaseTypeIdentifier(SimpleToken tok,Identifier type)
         {
             _ident = type;
@@ -97,18 +90,6 @@ namespace VCC.Core
         }
 
      
-        [Rule(@"<Base>     ::= ~struct ~'{' <Struct Def> ~'}'")]
-        public BaseTypeIdentifier(StructDefinition sdef)
-        {
-            isstruct = true;
-        _sdef = sdef;
-        }
-        [Rule(@"<Base>     ::= union ~'{' <Struct Def> ~'}'")]
-        public BaseTypeIdentifier(SimpleToken tok,StructDefinition sdef)
-        {
-            _sdef = sdef;
-            isstruct = false;
-        }
 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -119,6 +100,12 @@ namespace VCC.Core
             }
             if (_ident != null)
                 Type = rc.ResolveType(_ident.Name);
+            if (_sdef != null)
+            {
+                _sdef = (StructDefinition)_sdef.DoResolve(rc);
+                if (_sdef._var != null)
+                    Type = _sdef._var.Type;
+            }
             return this;
         }
         public override bool Resolve(ResolveContext rc)
@@ -128,6 +115,8 @@ namespace VCC.Core
 
             if (_ident != null)
                 Type = rc.ResolveType(_ident.Name);
+            if (_sdef != null)
+                _sdef.Resolve(rc);
             return base.Resolve(rc);
         }
     }
@@ -142,11 +131,7 @@ namespace VCC.Core
     {
 
     }
-    [Terminal("union")]
-    public class UnionTypeIdentifer : SimpleToken
-    {
-
-    }
+ 
 
     // END TYPE
     // START MODIFIERs
@@ -163,9 +148,6 @@ namespace VCC.Core
        protected SimpleToken _mod;
         [Rule(@"<Mod>      ::= extern")]
         [Rule(@"<Mod>      ::= static")]
-        [Rule(@"<Mod>      ::= register")]
-        [Rule(@"<Mod>      ::= auto")]
-        [Rule(@"<Mod>      ::= volatile")]
         [Rule(@"<Mod>      ::= const")]
         public Modifier(SimpleToken mod)
         {
@@ -179,12 +161,6 @@ namespace VCC.Core
                 ModifierList = Modifiers.Extern;
             else if (_mod.Name == "static")
                 ModifierList = Modifiers.Static;
-            else if (_mod.Name == "register")
-                ModifierList = Modifiers.Register;
-            else if (_mod.Name == "auto")
-                ModifierList = Modifiers.Auto;
-            else if (_mod.Name == "volatile")
-                ModifierList = Modifiers.Volatile;
             else if (_mod.Name == "const")
                 ModifierList = Modifiers.Const;
             else ModifierList = Modifiers.NoModifier;
@@ -206,23 +182,14 @@ namespace VCC.Core
     {
 
     }
-    [Terminal("register")]
-    public class RegisterModifier : SimpleToken
-    {
-
-    }
-    [Terminal("auto")]
-    public class AutoModifier : SimpleToken
-    {
-
-    }
-    [Terminal("volatile")]
-    public class VolatileModifier : SimpleToken
-    {
-
-    }
+ 
     [Terminal("const")]
     public class ConstModifier : SimpleToken
+    {
+
+    }
+    [Terminal("entry")]
+    public class EntryCode : SimpleToken
     {
 
     }

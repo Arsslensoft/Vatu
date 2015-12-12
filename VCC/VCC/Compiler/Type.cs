@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Vasm;
 
 namespace VCC
 {
@@ -13,9 +14,9 @@ namespace VCC
         public string Signature { get; set; }
         public Location Location { get; set; }
 
-        public MemberSignature(string name,Location loc,string type, params TypeSpec[] parameters)
+        public MemberSignature(string name,Location loc, params TypeSpec[] parameters)
         {
-            Signature =type  + "_" +name;
+            Signature = "_" +name;
             if (parameters != null)
             {
                 foreach (TypeSpec param in parameters)
@@ -24,13 +25,7 @@ namespace VCC
             Location = loc;
 
         }
-        public MemberSignature(string name, Location loc)
-        {
-            Signature = name;
-          
-            Location = loc;
-
-        }
+   
         public override string ToString()
         {
             return Signature;
@@ -43,18 +38,11 @@ namespace VCC
     /// </summary>
     public enum BuiltinTypes : byte
     {
-        Char, // 8 bits unsigned [unsigned char]
-        Byte, // 8 bits signed [signed char]
+        Byte, // 8 bits unsigned [unsigned char]
+        SByte, // 8 bits signed [signed char]
         Int, // 32 bits signed [long int]
-        Long, // 64 bits signed [long long]
-        Short, // 16 bits signed [short int]
         Void, // void
-        Double, // 64 bits float
-        Float, // 32 bits float
-        ULong, // 64 bits unsigned
         UInt, // 32 bits unsigned
-        UShort, // 16 bits unsigned
-        Extended, // 80 bits floating point
         Bool,
         String,
         Unknown
@@ -85,10 +73,8 @@ namespace VCC
         Extern = 1 << 1,
         NoModifier = 1 << 2,
         Prototype = 1 << 3,
-        Register  = 1 << 4,
-        Auto = 1 << 5,
-        Volatile = 1 << 6,
-        Const = 1 << 7
+      
+        Const = 1 << 4
     }
 
     public abstract class MemberSpec
@@ -96,7 +82,9 @@ namespace VCC
        protected MemberSignature _sig;
        protected Modifiers _mod;
        string _name;
+ 
 
+     
 
        public MemberSpec(string name,MemberSignature sig, Modifiers mod)
        {
@@ -105,6 +93,8 @@ namespace VCC
            _sig = sig;
        }
 
+
+       public ElementReference Reference { get; set; }
        /// <summary>
        /// Member name
        /// </summary>
@@ -155,37 +145,20 @@ namespace VCC
         {
             switch (Type.GetTypeCode(obj.GetType()))
             {
-                case TypeCode.Empty:
-                case TypeCode.Char:
-                case TypeCode.Object:
-                case TypeCode.DBNull:
-                case TypeCode.DateTime:
+            
                 case TypeCode.String:
-                    return BuiltinTypes.Unknown;
+                    return BuiltinTypes.String;
                 case TypeCode.Boolean:
                     return BuiltinTypes.Bool;
                 case TypeCode.SByte:
-                    return BuiltinTypes.Byte;
+                    return BuiltinTypes.SByte;
                 case TypeCode.Byte:
-                    return  BuiltinTypes.Char;
+                    return  BuiltinTypes.Byte;
                 case TypeCode.Int16:
-                    return BuiltinTypes.Short;
-                case TypeCode.UInt16:
-                    return BuiltinTypes.UShort;
-                case TypeCode.Int32:
                     return BuiltinTypes.Int;
-                case TypeCode.UInt32:
+                case TypeCode.UInt16:
                     return BuiltinTypes.UInt;
-                case TypeCode.Int64:
-                    return BuiltinTypes.Long;
-                case TypeCode.UInt64:
-                    return BuiltinTypes.ULong;
-                case TypeCode.Single:
-                    return BuiltinTypes.Float;
-                case TypeCode.Double:
-                    return BuiltinTypes.Double;
-                case TypeCode.Decimal:
-                    return  BuiltinTypes.Extended;
+            
 
                 default:
                     return BuiltinTypes.Unknown;
@@ -219,9 +192,13 @@ namespace VCC
         BuiltinTypes _bt;
         TypeSpec _base;
         TypeFlags _flags;
+        int _size;
 
 
-     
+        public int Size
+        {
+            get { return _size; }
+        }
         public bool IsBuiltinType
         {
             get
@@ -307,29 +284,20 @@ namespace VCC
         //
         // Returns the size of type if known, otherwise, 0
         //
-        public static int GetSize(TypeSpec type)
+        private int GetSize(TypeSpec type)
         {
             if (type.IsBuiltinType)
             {
                 switch (type.BuiltinType)
                 {
                     case BuiltinTypes.Bool:
-                    case BuiltinTypes.Char:
+                    case BuiltinTypes.SByte:
                     case BuiltinTypes.Byte:
                         return 1;
-                    case BuiltinTypes.Short:
-                    case BuiltinTypes.UShort:
-                        return 2;
                     case BuiltinTypes.Int:
                     case BuiltinTypes.UInt:
-                    case BuiltinTypes.Float:
-                        return 4;
-                    case BuiltinTypes.Long:
-                    case BuiltinTypes.ULong:
-                    case BuiltinTypes.Double:
-                        return 8;
-                    case BuiltinTypes.Extended:
-                        return 10;
+                        return 2;
+
 
                     default:
                         return 0;
@@ -344,7 +312,16 @@ namespace VCC
             _bt = bt;
             _flags = flags;
             _base = basetype;
+            _size = GetSize(this);
 
+        }
+        public TypeSpec(string name,int size, BuiltinTypes bt, TypeFlags flags, Modifiers mods, Location loc, TypeSpec basetype = null)
+            : base(name, new MemberSignature(name, loc), mods)
+        {
+            _bt = bt;
+            _flags = flags;
+            _base = basetype;
+            _size = size;
 
         }
 
@@ -381,7 +358,7 @@ namespace VCC
 
         }
         public PointerTypeSpec(TypeSpec _basetype,TypeFlags _flags)
-            : base(_basetype.Name, _basetype.BuiltinType, _basetype.Flags | TypeFlags.Pointer | _flags, _basetype.Modifiers, _basetype.Signature.Location, _basetype)
+            : base(_basetype.Name, _basetype.Size,_basetype.BuiltinType, _basetype.Flags | TypeFlags.Pointer | _flags, _basetype.Modifiers, _basetype.Signature.Location, _basetype)
         {
 
         }
@@ -413,31 +390,25 @@ namespace VCC
     /// </summary>
     public class BuiltinTypeSpec : TypeSpec
     {
-        public BuiltinTypeSpec(string name, BuiltinTypes bt)
-            : base(name, bt, TypeFlags.Builtin,Modifiers.NoModifier, Location.Null)
+        public BuiltinTypeSpec(string name, BuiltinTypes bt, TypeSpec baset = null)
+            : base(name, bt, TypeFlags.Builtin, Modifiers.NoModifier, Location.Null,baset)
         {
 
         }
-        public BuiltinTypeSpec(string name, BuiltinTypes bt, TypeFlags tf)
-            : base(name, bt, TypeFlags.Builtin | tf,Modifiers.NoModifier, Location.Null)
+        public BuiltinTypeSpec(string name, BuiltinTypes bt, TypeFlags tf, TypeSpec baset = null)
+            : base(name, bt, TypeFlags.Builtin | tf,Modifiers.NoModifier, Location.Null, baset)
         {
-
+          
         }
-        public static BuiltinTypeSpec Char = new BuiltinTypeSpec("char", BuiltinTypes.Char);
+  
         public static BuiltinTypeSpec Byte = new BuiltinTypeSpec("byte", BuiltinTypes.Byte);
-        public static BuiltinTypeSpec Short = new BuiltinTypeSpec("short", BuiltinTypes.Short);
-        public static BuiltinTypeSpec UShort = new BuiltinTypeSpec("ushort", BuiltinTypes.UShort);
+        public static BuiltinTypeSpec SByte = new BuiltinTypeSpec("sbyte", BuiltinTypes.SByte);
         public static BuiltinTypeSpec Int = new BuiltinTypeSpec("int", BuiltinTypes.Int);
         public static BuiltinTypeSpec UInt = new BuiltinTypeSpec("uint", BuiltinTypes.UInt);
 
-        public static BuiltinTypeSpec Long = new BuiltinTypeSpec("long", BuiltinTypes.Long);
-        public static BuiltinTypeSpec ULong = new BuiltinTypeSpec("ulong", BuiltinTypes.ULong);
-        public static BuiltinTypeSpec Float = new BuiltinTypeSpec("float", BuiltinTypes.Float);
-        public static BuiltinTypeSpec Double = new BuiltinTypeSpec("double", BuiltinTypes.Double);
-        public static BuiltinTypeSpec Extended = new BuiltinTypeSpec("extended", BuiltinTypes.Extended);
         public static BuiltinTypeSpec Bool = new BuiltinTypeSpec("bool", BuiltinTypes.Bool);
         public static BuiltinTypeSpec Void = new BuiltinTypeSpec("void", BuiltinTypes.Void);
-        public static BuiltinTypeSpec String = new BuiltinTypeSpec("char*", BuiltinTypes.String, TypeFlags.Pointer);
+        public static BuiltinTypeSpec String = new BuiltinTypeSpec("string", BuiltinTypes.String, TypeFlags.Pointer, Byte.MakePointer());
         public static BuiltinTypeSpec Null = new BuiltinTypeSpec("null", BuiltinTypes.Int, TypeFlags.Null);
     }
     /// <summary>
@@ -457,9 +428,9 @@ namespace VCC
         }
 
         public FieldSpec(string name, Modifiers mods, TypeSpec type, Location loc)
-            : base(name, new MemberSignature(name, loc, type.Name), mods)
+            : base(name, new MemberSignature(name, loc), mods)
         {
-
+            memberType = type;
         }
     }
     /// <summary>
@@ -469,6 +440,7 @@ namespace VCC
     {
         TypeSpec memberType;
 
+        public List<ParameterSpec> Parameters { get; set; }
 
         public TypeSpec MemberType
         {
@@ -484,21 +456,60 @@ namespace VCC
                 return (Modifiers & Modifiers.Prototype) == Modifiers.Prototype;
             }
         }
-        public MethodSpec(string name, Modifiers mods, TypeSpec type,TypeSpec[] parameters,  Location loc)
-            : base(name, new MemberSignature(name, loc, (type != null)?type.Name:"null", parameters), mods)
+      
+        public MethodSpec(string name, Modifiers mods, TypeSpec type,  Location loc)
+            : base(name, new MemberSignature(name, loc), mods)
         {
             memberType = type;
+            Parameters = new List<ParameterSpec>();
         }
     }
 
     /// <summary>
-    /// Global Variable Specs
+    /// Local Variable Specs
     /// </summary>
     public class VarSpec : MemberSpec
     {
         TypeSpec memberType;
         MethodSpec method;
-        bool isparam;
+        public int StackIndex { get; set; }
+        public bool Initialized { get; set; }
+        public TypeSpec MemberType
+        {
+            get
+            {
+                return memberType;
+            }
+        }
+        public MethodSpec MethodHost
+        {
+            get
+            {
+                return method;
+            }
+        }
+  
+        public VarSpec(string name, MethodSpec host, TypeSpec type, Location loc)
+            : base(name, new MemberSignature(host.Name + "_"+name, loc),  Modifiers.NoModifier)
+        {
+            method = host;
+            memberType = type;
+      
+            Initialized = false;
+            StackIndex = 0;
+        }
+     
+    }
+
+    /// <summary>
+    /// Local Variable Specs
+    /// </summary>
+    public class ParameterSpec : MemberSpec
+    {
+        TypeSpec memberType;
+        MethodSpec method;
+        public bool IsConstant { get; set; }
+        public int StackIndex { get; set; }
 
         public TypeSpec MemberType
         {
@@ -518,20 +529,17 @@ namespace VCC
         {
             get
             {
-                return isparam;
+                return true;
             }
         }
-        public VarSpec(string name, MethodSpec host, TypeSpec type, Location loc)
-            : base(name, new MemberSignature(host.Name + "_"+name, loc, type.Name),  Modifiers.NoModifier)
+        public ParameterSpec(string name, MethodSpec host, TypeSpec type,bool constant, Location loc)
+            : base(name, new MemberSignature(host.Name + "_param_" + name, loc), Modifiers.NoModifier)
         {
             method = host;
-            isparam = false;
+            memberType = type;
+            IsConstant = constant;
+            StackIndex = 2;
         }
-        public VarSpec(string name,  TypeSpec type, Location loc)
-            : base(name, new MemberSignature("param_" + name, loc, type.Name), Modifiers.NoModifier)
-        {
-            method = null;
-            isparam = true;
-        }
+     
     }
 }

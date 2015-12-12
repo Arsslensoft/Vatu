@@ -20,12 +20,12 @@ namespace Vasm.x86 {
                     xDest = Registers.GetRegisterName(aThis.DestinationReg.Value);
                 } else {
                     if (aThis.DestinationValue.HasValue)
-                        xDest = "0x" + aThis.DestinationValue.GetValueOrDefault().ToString("X").ToUpperInvariant();
+                        xDest =  aThis.DestinationValue.GetValueOrDefault().ToString().ToUpperInvariant();
                 }
             }
             if (aThis.DestinationDisplacement != 0) {
                 if (aThis.DestinationDisplacement > 255) {
-                    xDest += " + 0x" + aThis.DestinationDisplacement.ToString("X");
+                    xDest += " + " + aThis.DestinationDisplacement.ToString();
                 } else {
                   xDest += (aThis.DestinationDisplacement < 0 ? " - " : " + ") + Math.Abs(aThis.DestinationDisplacement);
                 }

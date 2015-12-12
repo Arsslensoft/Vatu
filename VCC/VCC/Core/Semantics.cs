@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Vasm;
+using Vasm.x86;
 
 
 namespace VCC.Core
@@ -64,17 +65,11 @@ namespace VCC.Core
     {
     }
     [Terminal("void")]
-    [Terminal("char")]
-    [Terminal("schar")]
-    [Terminal("short")]
-    [Terminal("ushort")]
+    [Terminal("byte")]
+    [Terminal("sbyte")]
     [Terminal("int")]
     [Terminal("uint")]
-    [Terminal("long")]
-    [Terminal("ulong")]
-    [Terminal("double")]
-    [Terminal("float")]
-    [Terminal("extended")]
+    [Terminal("string")]
     [Terminal("bool")]
     public class TypeToken : SimpleToken, IResolve
     {
@@ -189,10 +184,10 @@ namespace VCC.Core
             return this;
         }
     } 
-    public class Expr : SimpleToken, IEmit, IResolve
+    public class Expr : SimpleToken, IEmit, IResolve, IEmitExpr
     {
-        Expr next;
-        Expr current;
+       public Expr next;
+       public Expr current;
         [Rule("<Expression> ::= <Op Assign>")]
         public Expr(Expr expr)
         {
@@ -233,17 +228,44 @@ namespace VCC.Core
         }
         public virtual bool Resolve(ResolveContext rc)
         {
-            return true;
+            bool ok = true;
+            if (current != null)
+               ok &=  current.Resolve(rc);
+            if (next != null)
+                ok &= next.Resolve(rc);
+
+            return ok;
         }
         public virtual bool Emit(EmitContext ec)
         {
+            current.Emit(ec);
+            if (next != null)
+                next.Emit(ec);
             return true;
         }
         public virtual SimpleToken DoResolve(ResolveContext rc)
         {
+            current = (Expr)current.DoResolve(rc);
+            if (next != null)
+                next = (Expr)next.DoResolve(rc);
             return this;
         }
+        public virtual bool EmitToStack(EmitContext ec)
+        {
 
+
+            return current.EmitToStack(ec);
+        }
+        public virtual bool EmitFromStack(EmitContext ec)
+        {
+       
+
+            return current.EmitToStack(ec);
+        }
+        public virtual bool EmitToRegister(EmitContext ec, RegistersEnum rg)
+        {
+            return current.EmitToRegister(ec,rg);
+        }
 
     }
       public abstract class DeclarationToken : SimpleToken, IEmit, IResolve

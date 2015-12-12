@@ -205,7 +205,10 @@ namespace VCC.Core
     public class SimpleAssignOperator : AssignOp
     {
 
-
+        public override bool Emit(EmitContext ec)
+        {
+            return base.Emit(ec);
+        }
     }
     [Terminal("+=")]
     public class AddAssignOperator : AssignOp

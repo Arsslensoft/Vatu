@@ -147,13 +147,13 @@ namespace VCC.Core
         public StringLiteral(string value) 
             : base(value)
         {
-            _value = new StringConstant(value, CompilerContext.TranslateLocation(position));
+            _value = new StringConstant(value.Remove(0,1).Remove(value.Length -2,1) + "\0", CompilerContext.TranslateLocation(position));
 
         }
 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-            return _value;
+            return _value.DoResolve(rc);
         }
       
     }
@@ -164,7 +164,7 @@ namespace VCC.Core
         public CharLiteral(string value)
             : base(value, true)
         {
-            _value = new CharConstant(Encoding.UTF8.GetBytes(value)[0], CompilerContext.TranslateLocation(position));
+            _value = new ByteConstant(Encoding.UTF8.GetBytes(value)[0], CompilerContext.TranslateLocation(position));
   
         }
 
@@ -206,14 +206,10 @@ namespace VCC.Core
         {
             
             if (value.Length <= 4)
-                _value = new CharConstant(Convert.ToByte(value, 16), CompilerContext.TranslateLocation(position));
+                _value = new ByteConstant(Convert.ToByte(value, 16), CompilerContext.TranslateLocation(position));
             else if (value.Length <= 6)
-                _value = new UShortConstant(Convert.ToUInt16(value, 16), CompilerContext.TranslateLocation(position));
-            else if (value.Length <= 10)
-                _value = new UIntConstant(Convert.ToUInt32(value, 16), CompilerContext.TranslateLocation(position));
-            else if (value.Length <= 18)
-                _value = new ULongConstant(Convert.ToUInt64(value, 16), CompilerContext.TranslateLocation(position));
-            else throw new ArgumentOutOfRangeException(value + "Hex value cannot be larger than 64 bits");
+                _value = new UIntConstant(Convert.ToUInt16(value, 16), CompilerContext.TranslateLocation(position));
+            else throw new ArgumentOutOfRangeException(value + "Hex value cannot be larger than 16 bits");
            
         }
 
@@ -229,14 +225,11 @@ namespace VCC.Core
         {
 
             if (value.Length <= 4)
-                _value = new CharConstant(Convert.ToByte(value, 8), CompilerContext.TranslateLocation(position));
+                _value = new ByteConstant(Convert.ToByte(value, 8), CompilerContext.TranslateLocation(position));
             else if (value.Length <= 6)
-                _value = new UShortConstant(Convert.ToUInt16(value, 8), CompilerContext.TranslateLocation(position));
-            else if (value.Length <= 10)
-                _value = new UIntConstant(Convert.ToUInt32(value, 8), CompilerContext.TranslateLocation(position));
-            else if (value.Length <= 18)
-                _value = new ULongConstant(Convert.ToUInt64(value, 8), CompilerContext.TranslateLocation(position));
-            else throw new ArgumentOutOfRangeException(value + "Hex value cannot be larger than 64 bits");
+                _value = new UIntConstant(Convert.ToUInt16(value, 8), CompilerContext.TranslateLocation(position));
+        
+            else throw new ArgumentOutOfRangeException(value + "Hex value cannot be larger than 16 bits");
 
         }
 
@@ -257,39 +250,21 @@ namespace VCC.Core
                 switch (tpc)
                 {
                     case TypeCode.Byte:
-                        _value = new CharConstant(byte.Parse(value), CompilerContext.TranslateLocation(position));
+                        _value = new ByteConstant(byte.Parse(value), CompilerContext.TranslateLocation(position));
                         break;
                     case TypeCode.SByte:
-                        _value = new ByteConstant(sbyte.Parse(value), CompilerContext.TranslateLocation(position));
+                        _value = new SByteConstant(sbyte.Parse(value), CompilerContext.TranslateLocation(position));
                         break;
 
                     case TypeCode.Int16:
-                        _value = new ShortConstant(short.Parse(value), CompilerContext.TranslateLocation(position));
+                        _value = new IntConstant(short.Parse(value), CompilerContext.TranslateLocation(position));
                         break;
                     case TypeCode.UInt16:
-                        _value = new UShortConstant(ushort.Parse(value), CompilerContext.TranslateLocation(position));
+                        _value = new UIntConstant(ushort.Parse(value), CompilerContext.TranslateLocation(position));
                         break;
 
-                    case TypeCode.Int32:
-                        _value = new IntConstant(int.Parse(value), CompilerContext.TranslateLocation(position));
-                        break;
-                    case TypeCode.UInt32:
-                        _value = new UIntConstant(uint.Parse(value), CompilerContext.TranslateLocation(position));
-                        break;
-
-                    case TypeCode.Int64:
-                        _value = new LongConstant(long.Parse(value), CompilerContext.TranslateLocation(position));
-                        break;
-                    case TypeCode.UInt64:
-                        _value = new ULongConstant(ulong.Parse(value), CompilerContext.TranslateLocation(position));
-                        break;
-
-                    case TypeCode.Single:
-                        _value = new FloatConstant(float.Parse(value), CompilerContext.TranslateLocation(position));
-                        break;
-                    case TypeCode.Double:
-                        _value = new DoubleConstant(double.Parse(value), CompilerContext.TranslateLocation(position));
-                        break;
+                 
+                    
 
                     
                 }
@@ -297,56 +272,19 @@ namespace VCC.Core
             else if (ulong.TryParse(value, out v))
             {
                 if (v <= byte.MaxValue)
-                    _value = new CharConstant((byte)v, CompilerContext.TranslateLocation(position));
+                    _value = new ByteConstant((byte)v, CompilerContext.TranslateLocation(position));
                 else if (v <= ushort.MaxValue)
-                    _value = new UShortConstant((ushort)v, CompilerContext.TranslateLocation(position));
-                else if (v <= uint.MaxValue)
-                    _value = new UIntConstant((uint)v, CompilerContext.TranslateLocation(position));
-                else
-                    _value = new ULongConstant(v, CompilerContext.TranslateLocation(position));
+                    _value = new UIntConstant((ushort)v, CompilerContext.TranslateLocation(position));
+                else throw new ArgumentOutOfRangeException(value + "Decimal value cannot be larger than 16 bits");
+              
             }
-            else throw new ArgumentOutOfRangeException(value + "Decimal value cannot be larger than 64 bits");
+            else throw new ArgumentOutOfRangeException(value + "Decimal value cannot be larger than 16 bits");
         }
 
 
 
     }
 
-    [Terminal("FloatLiteral")]
-    public class FloatLiteral : Literal
-    {
-  
-        public FloatLiteral(string value)
-            : base(value, true)
-        {
-            double v;
-            if (HasSuffix)
-            {
-                TypeCode tpc = GetTypeBySuffix();
-                switch(tpc)
-                {
-                    case TypeCode.Single:
-                        _value = new FloatConstant(float.Parse(value), CompilerContext.TranslateLocation(position));
-                        break;
-                    default:
-                        _value = new DoubleConstant(double.Parse(value), CompilerContext.TranslateLocation(position));
-                        break;
-                }
-            }
-            else if (double.TryParse(value, out v))
-            {
-                if (v <= float.MaxValue)
-                    _value = new FloatConstant((float)v, CompilerContext.TranslateLocation(position));
-                else
-                    _value = new DoubleConstant(v, CompilerContext.TranslateLocation(position));
-            }
-            else throw new ArgumentOutOfRangeException(value + "float value cannot be larger than 64 bits");
-          
-        }
-
-
-
-    }
 
 
 

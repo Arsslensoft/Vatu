@@ -2,15 +2,35 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Vasm.x86;
 
 namespace Vasm
 {
    public class AsmContext
     {
        private static AsmContext mCurrentInstance;
-
+        List<RegistersEnum> rg = new List<RegistersEnum>();
+       public RegistersEnum GetNextRegister()
+        {
+         // AX>BX>CX>DX>STACK
+            if (rg.Contains(RegistersEnum.AX))
+            {
+                if (rg.Contains(RegistersEnum.BX))
+                {
+                    if (rg.Contains(RegistersEnum.CX))
+                    {
+                        if (rg.Contains(RegistersEnum.DX))
+                            return RegistersEnum.SP;
+                        else { rg.Add(RegistersEnum.DX); return RegistersEnum.DX; }
+                    }
+                    else { rg.Add(RegistersEnum.CX); return RegistersEnum.CX; }
+                }
+                else { rg.Add(RegistersEnum.BX); return RegistersEnum.BX; }
+            }
+            else { rg.Add(RegistersEnum.AX); return RegistersEnum.AX; }
+        }
        public AssemblyWriter AssemblerWriter { get; set; }
-
+       public string EntryPoint { get; set; }
        public AsmContext(string file)
        {
            AssemblerWriter = new AssemblyWriter(file);
@@ -20,6 +40,7 @@ namespace Vasm
        {
            AssemblerWriter = writer;
            mCurrentInstance = this;
+          
        }
        public bool EmitAsmLabels { get; set; }
        protected int mAsmIlIdx;
@@ -28,6 +49,16 @@ namespace Vasm
             get { return mAsmIlIdx; }
         }
 
+        public Dictionary<string, StructElement> DeclaredStructVars = new Dictionary<string, StructElement>();
+
+        public StructElement GetStruct(string name)
+        {
+            foreach (StructElement se in mStructs)
+                if (se.Name == name)
+                    return se;
+
+            return null;
+        }
         protected List<DataMember> mDataMembers = new List<DataMember>();
         public List<DataMember> DataMembers
         {
@@ -35,6 +66,19 @@ namespace Vasm
             set { mDataMembers = value; }
         }
 
+        protected List<string> mextern = new List<string>();
+        public List<string> Externals
+        {
+            get { return mextern; }
+            set { mextern = value; }
+        }
+
+        protected List<StructElement> mStructs = new List<StructElement>();
+        public List<StructElement> Structs
+        {
+            get { return mStructs; }
+            set { mStructs = value; }
+        }
         protected internal List<Instruction> mInstructions = new List<Instruction>();
         public List<Instruction> Instructions
         {
@@ -135,6 +179,15 @@ namespace Vasm
            Instructions.Add(lb);
        }
 
+       public bool DefineStruct(StructElement data)
+       {
+         
+               Structs.Add(data);
+        
+
+           return true;
+       }
+
        public bool IsDataDefined(string name)
        {
            foreach (DataMember dm in DataMembers)
@@ -143,15 +196,43 @@ namespace Vasm
 
            return false;
        }
-
+       public bool DefineStructInstance(string varname, string type)
+       {
+           StructElement se = GetStruct(varname);
+           if (se != null && !DeclaredStructVars.ContainsKey(varname))
+           { DeclaredStructVars.Add(varname, se); return true; }
+           else return false;
+       }
        public void Emit(Instruction ins)
        {
            Instructions.Add(ins);
        }
 
+       public void AddExtern(string func)
+       {
+           Externals.Add(func);
+       }
        public virtual void EmitPrepare(AssemblyWriter writer)
        {
+           // Emit
 
+           writer.WriteLine("bits 16");
+           // define
+           foreach (StructElement xMember in mStructs)
+           {
+               xMember.Emit(writer);
+              
+               writer.WriteLine();
+           }
+           // declare vars
+           writer.WriteLine("section .bss");
+           writer.WriteLine();
+           foreach (KeyValuePair<string,StructElement> p in DeclaredStructVars)
+           {
+               p.Value.EmitDecl(writer, p.Key);
+               writer.WriteLine();
+           }
+           writer.WriteLine();
        }
        public virtual void EmitFinalize(AssemblyWriter writer)
        {
@@ -162,6 +243,7 @@ namespace Vasm
            // prepare emit
            EmitPrepare(writer);
            // Write out data declarations
+           writer.WriteLine("section .data");
            writer.WriteLine();
            foreach (DataMember xMember in mDataMembers)
            {
@@ -177,7 +259,12 @@ namespace Vasm
                writer.WriteLine();
            }
            writer.WriteLine();
-
+           writer.WriteLine("section .text");
+           // define externs
+           foreach (string ex in Externals)
+               writer.WriteLine("extern\t" + ex);
+           writer.WriteLine();
+           writer.Write("global	" + EntryPoint);
            // Write out code
            for (int i = 0; i < mInstructions.Count; i++)
            {

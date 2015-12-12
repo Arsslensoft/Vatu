@@ -3,38 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Vasm;
 
 namespace VCC.Core
 {
 
     // START STMT
 
-    public class Block : Statement
-    {
-        private NormalStatment _statements;
-        [Rule("<Block>     ::= ~'{' <Stm List> ~'}' ")]
-        public Block(NormalStatment stmt)
-        {
-            _statements = stmt;
-        }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            _statements = (NormalStatment)_statements.DoResolve(rc);
-            return this;
-        }
-        public override bool Resolve(ResolveContext rc)
-        {
-            _statements.Resolve(rc);
-            return base.Resolve(rc);
-        }
-        public override bool Emit(EmitContext ec)
-        {
-            return _statements.Emit(ec);
-        }
-    }
-
-    public class Case : Statement
+    public class Case : NormalStatment
     {
         private NormalStatment _statements;
         private Expr _val;
@@ -93,45 +70,6 @@ namespace VCC.Core
             _expr = sw;
         }
     }
-
-    public class BlockStatement : NormalStatment
-    {
-  
-        private Block _bloc;
-
-        [Rule("<Normal Stm> ::= <Block>")]
-        public BlockStatement(Block b)
-        {
-            _bloc = b;
-       
-        }
-    }
-
-    public class ExpressionStatement : NormalStatment
-    {
-
-        private Expr _expr;
-
-        [Rule("<Normal Stm> ::= <Expression> ~';' ")]
-        public ExpressionStatement(Expr b)
-        {
-            _expr = b;
-
-        }
-    }
-
-    public class GotoStatement : NormalStatment
-    {
-
-        private Identifier _id;
-
-        [Rule("<Normal Stm> ::= ~goto Id ~';'")]
-        public GotoStatement(Identifier id)
-        {
-            _id = id;
-
-        }
-    }
     public class ContinueStatement : NormalStatment
     {
 
@@ -151,79 +89,9 @@ namespace VCC.Core
         }
     }
 
-    public class ReturnStatement : NormalStatment
-    {
-
-        private Expr _expr;
-
-        [Rule("<Normal Stm> ::= ~return <Expression> ~';' ")]
-        public ReturnStatement(Expr b)
-        {
-            _expr = b;
-
-        }
-    }
-    public class EmptyStatement : NormalStatment
-    {
 
 
-
-        [Rule("<Normal Stm> ::= ~';'")]
-        public EmptyStatement()
-        {
-         
-
-        }
-    }
-
-    public class NormalStatment : Statement
-    {
-        private Statement _next;
-        private Statement current;
-
-      
-       [Rule("<Stm List>  ::=  <Statement> <Stm List> ")]
-        public NormalStatment(Statement stm, Statement next)
-        {
-            current = stm;
-            _next = next;
-
-        }
-       [Rule("<Stm List>  ::=  ")]
-       public NormalStatment()
-           :
-           this(null,null)
-       {
-       
-
-       }
-
-       public override SimpleToken DoResolve(ResolveContext rc)
-       {
-           if (current != null)
-               current = (Statement)current.DoResolve(rc);
-           if (_next != null)
-               _next = (Statement)_next.DoResolve(rc);
-           return this;
-       }
-       public override bool Resolve(ResolveContext rc)
-       {
-           if (current != null)
-             current.Resolve(rc);
-           if (_next != null)
-               _next.Resolve(rc);
-           return base.Resolve(rc);
-       }
-       public override bool Emit(EmitContext ec)
-       {
-           if (current != null)
-               current.Emit(ec);
-           if (_next != null)
-               _next.Emit(ec);
-
-           return base.Emit(ec);
-       }
-    }
+ 
     // <Then Stm>
     public class IfThenStatement : ThenStatement
     {
@@ -298,40 +166,8 @@ namespace VCC.Core
                | <Normal Stm>
       */
 
-    public class VarDeclStatement : BaseStatement
-    {
-        VariableDeclaration _vadecl;
-        [Rule(@"<Statement>        ::= <Var Decl>")]
-        public VarDeclStatement(VariableDeclaration vardecl)
-        {
-            _vadecl = vardecl;
-        }
-        public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            _vadecl = (VariableDeclaration)_vadecl.DoResolve(rc);
 
-            return this;
-        }
-        public override bool Resolve(ResolveContext rc)
-        {
-            _vadecl.Resolve(rc);
-            return base.Resolve(rc);
-        }
-        public override bool Emit(EmitContext ec)
-        {
 
-            return _vadecl.Emit(ec);
-        }
-    }
-    public class LabelStatement : BaseStatement
-    {
-        Identifier _label;
-        [Rule(@"<Statement> ::= Id ~':'")]
-        public LabelStatement(Identifier id)
-        {
-            _label = id;
-        }
-    }
 
     public class IfStatement : BaseStatement
     {
@@ -391,18 +227,7 @@ namespace VCC.Core
         }
     }
     // <Statement>  
-    public class BaseStatement : NormalStatment
-    {
-        public BaseStatement()
-        {
 
-        }
-         [Rule(@"<Statement>   ::=  <Normal Stm>")]
-        public BaseStatement(NormalStatment normal)
-        {
-
-        }
-    }
 
     // 
 }

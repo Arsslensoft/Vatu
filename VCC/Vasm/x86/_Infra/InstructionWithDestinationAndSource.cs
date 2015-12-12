@@ -61,7 +61,7 @@ namespace Vasm.x86 {
                     xDest = Registers.GetRegisterName(SourceReg.Value);
                 } else {
                     if (SourceValue.HasValue)
-                        xDest = "0x" + SourceValue.GetValueOrDefault().ToString("X").ToUpperInvariant();
+                        xDest =  SourceValue.GetValueOrDefault().ToString().ToUpperInvariant();
                 }
             }
             if (SourceDisplacement != 0) {

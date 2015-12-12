@@ -18,7 +18,6 @@
 DecLiteral       = [123456789]{digit}*
 OctLiteral       = 0{Oct Digit}*
 HexLiteral       = 0x{Hex Digit}+
-FloatLiteral     = {Digit}*'.'{Digit}+
 
 BooleanLiteral   = true | false
 NullLiteral      = null
@@ -78,7 +77,8 @@ Comment Line  = '//'
 
 <Func Decl>  ::= <Func ID> '(' <Params>  ')' <Block>
                | <Func ID> '(' ')' <Block>
-
+               | 'entry' <Func ID> '(' <Params>  ')' <Block>
+               | 'entry' <Func ID> '(' ')' <Block>
 
 <Params>     ::= <Param> ',' <Params>
                | <Param>
@@ -88,10 +88,7 @@ Comment Line  = '//'
                
 <Types>      ::= <Type>  ',' <Types>
                | <Type> 
-   
-<Id List>    ::= Id ',' <Id List>
-               | Id
-
+  
 <Func ID>    ::= <Type> ID
                | ID
 
@@ -131,9 +128,6 @@ Comment Line  = '//'
              
 <Mod>      ::= extern 
              | static
-             | register
-             | auto
-             | volatile
              | const   
 
 ! ===================================================================
@@ -159,24 +153,15 @@ Comment Line  = '//'
 
 <Base>     ::= <Scalar>
              | struct Id 
-             | struct '{' <Struct Def> '}' 
-             | union Id
-             | union '{' <Struct Def> '}' 
              | enum Id  
 
-<Scalar>   ::= char
+<Scalar>   ::= byte
              | int
              | uint
-             | short
-             | long
-             | ushort
-             | ulong
-             | schar
+             | sbyte
              | bool
-             | extended
-             | float
-             | double
              | void           
+             | string
 
 <Pointers> ::= '*' <Pointers>
              |
@@ -308,7 +293,6 @@ Comment Line  = '//'
                | DecLiteral  
                | StringLiteral
                | CharLiteral
-               | FloatLiteral
                | BooleanLiteral
                | NullLiteral
                | Id '(' <Expression> ')'
