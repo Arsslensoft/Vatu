@@ -265,71 +265,7 @@ namespace VCC.Core
         }
     }
 
-    public class StructDefinition : Definition
-    {
-
-
-        public VariableDeclaration _var;
-        public StructDefinition _next_sdef;
-        public int Size { get; set; }
-        public StructVar SVar { get; set; }
-        public List<StructVar> Variables { get; set; }
-        [Rule(@"<Struct Def>   ::= <Var Decl> <Struct Def>")]
-        public StructDefinition(VariableDeclaration var, StructDefinition sdef)
-        {
-            _var = var;
-            _next_sdef = sdef;
-            Size = 0;
-            Variables = new List<StructVar>();
-        }
-        [Rule(@"<Struct Def>   ::= <Var Decl>")]
-        public StructDefinition(VariableDeclaration var)
-        {
-            Variables = new List<StructVar>();
-            _var = var;
-            _next_sdef = null;
-            Size = 0;
-        }
-
-        public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            SVar = new StructVar();
-            _var = (VariableDeclaration)_var.DoResolve(rc);
-            if (_var != null)
-                Size += _var.Type.Size;
-            SVar.IsStruct = _var.Type.IsStruct;
-            SVar.Size = (_var.Type.Size == 2) ? 1 : _var.Type.Size;
-            SVar.IsByte = (_var.Type.Size == 1) ;
-            SVar.Name = _var.FieldOrLocal.Signature.ToString() ;
-            Variables.Add(SVar);
-          
-            if (_var.Type.IsStruct)
-            {
-                
-            }
-            if (_next_sdef != null){
-
-
-                _next_sdef = (StructDefinition)_next_sdef.DoResolve(rc);
-                  foreach(StructVar sv in _next_sdef.Variables)
-                      Variables.Add(sv);
-            }
-            return this;
-        }
-        public override bool Resolve(ResolveContext rc)
-        {
-           
-          bool ok =  _var.Resolve(rc);
-            if (_next_sdef != null)
-            ok &=    _next_sdef.Resolve(rc);
-
-            return ok;
-        }
-        public override bool Emit(EmitContext ec)
-        {
-            return true;
-        }
-    }
+  
 
 
 
@@ -373,6 +309,9 @@ namespace VCC.Core
             return true;
         }
     }
+
+    // Ready
+
     public class ParameterDefinition : Definition
     {
         public TypeSpec ParameterType { get; set; }
@@ -454,4 +393,67 @@ namespace VCC.Core
         }
     }
 
+
+    // Emited and Resolved
+    public class StructDefinition : Definition
+    {
+
+
+        public VariableDeclaration _var;
+        public StructDefinition _next_sdef;
+        public int Size { get; set; }
+        public List<TypeMemberSpec> Members { get; set; }
+
+
+        [Rule(@"<Struct Def>   ::= <Var Decl> <Struct Def>")]
+        public StructDefinition(VariableDeclaration var, StructDefinition sdef)
+        {
+            _var = var;
+            _next_sdef = sdef;
+            Size = 0;
+
+        }
+        [Rule(@"<Struct Def>   ::= <Var Decl>")]
+        public StructDefinition(VariableDeclaration var)
+        {
+
+            _var = var;
+            _next_sdef = null;
+            Size = 0;
+        }
+
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            Members = new List<TypeMemberSpec>();
+            _var = (VariableDeclaration)_var.DoResolve(rc);
+            if (_var != null)
+                Size += _var.Type.Size;
+
+            foreach (TypeMemberSpec sv in _var.Members)
+                Members.Add(sv);
+
+            if (_next_sdef != null)
+            {
+
+
+                _next_sdef = (StructDefinition)_next_sdef.DoResolve(rc);
+                foreach (TypeMemberSpec sv in _next_sdef.Members)
+                    Members.Add(sv);
+            }
+            return this;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+
+            bool ok = _var.Resolve(rc);
+            if (_next_sdef != null)
+                ok &= _next_sdef.Resolve(rc);
+
+            return ok;
+        }
+        public override bool Emit(EmitContext ec)
+        {
+            return true;
+        }
+    }
     }

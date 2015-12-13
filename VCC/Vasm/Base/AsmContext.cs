@@ -9,26 +9,36 @@ namespace Vasm
    public class AsmContext
     {
        private static AsmContext mCurrentInstance;
-        List<RegistersEnum> rg = new List<RegistersEnum>();
+       Stack<RegistersEnum> rg = new Stack<RegistersEnum>();
        public RegistersEnum GetNextRegister()
         {
          // AX>BX>CX>DX>STACK
             if (rg.Contains(RegistersEnum.AX))
             {
-                if (rg.Contains(RegistersEnum.BX))
+                if (rg.Contains(RegistersEnum.CX))
                 {
-                    if (rg.Contains(RegistersEnum.CX))
+                    if (rg.Contains(RegistersEnum.DX))
                     {
-                        if (rg.Contains(RegistersEnum.DX))
+                        if (rg.Contains(RegistersEnum.BX))
                             return RegistersEnum.SP;
-                        else { rg.Add(RegistersEnum.DX); return RegistersEnum.DX; }
+                        else { rg.Push(RegistersEnum.BX); return RegistersEnum.BX; }
                     }
-                    else { rg.Add(RegistersEnum.CX); return RegistersEnum.CX; }
+                    else { rg.Push(RegistersEnum.DX); return RegistersEnum.DX; }
                 }
-                else { rg.Add(RegistersEnum.BX); return RegistersEnum.BX; }
+                else { rg.Push(RegistersEnum.CX); return RegistersEnum.CX; }
             }
-            else { rg.Add(RegistersEnum.AX); return RegistersEnum.AX; }
+            else { rg.Push(RegistersEnum.AX); return RegistersEnum.AX; }
         }
+       public void FreeRegister()
+       {
+          // if (rg.Contains(reg))
+               rg.Pop();
+           
+       }
+       public RegistersEnum PeekRegister()
+       {
+           return (rg.Count > 0)?rg.Peek():GetNextRegister();
+       }
        public AssemblyWriter AssemblerWriter { get; set; }
        public string EntryPoint { get; set; }
        public AsmContext(string file)
@@ -49,6 +59,63 @@ namespace Vasm
             get { return mAsmIlIdx; }
         }
 
+        bool SameOperands(InstructionWithDestinationAndSource a, InstructionWithDestinationAndSource b)
+        {
+            bool m = false;
+            if (a.DestinationDisplacement == b.DestinationDisplacement)
+                if (a.DestinationIsIndirect == b.DestinationIsIndirect)
+                    if (a.DestinationRef == b.DestinationRef)
+                        if (a.DestinationReg == b.DestinationReg)
+                            if (a.DestinationValue == b.DestinationValue)
+                                m = true;
+            if (a.SourceDisplacement == b.SourceDisplacement)
+                if (a.SourceIsIndirect == b.SourceIsIndirect)
+                    if (a.SourceRef == b.SourceRef)
+                        if (a.SourceReg == b.SourceReg)
+                            if (a.SourceValue == b.SourceValue)
+                                m &= true;
+            return m;
+        }
+        bool SameOperands(InstructionWithDestinationAndSize a, InstructionWithDestinationAndSize b)
+        {
+            bool m = false;
+            if (a.DestinationDisplacement == b.DestinationDisplacement)
+                if (a.DestinationIsIndirect == b.DestinationIsIndirect)
+                    if (a.DestinationRef == b.DestinationRef)
+                        if (a.DestinationReg == b.DestinationReg)
+                            if (a.DestinationValue == b.DestinationValue)
+                                m = true;
+            if (a.Size == b.Size)
+             
+                                m &= true;
+            return m;
+        }
+     
+       public void Optimize()
+        {
+   
+            int i = 0;
+            for (i = 0; i < mInstructions.Count; i++ )
+            {
+                Instruction ins = mInstructions[i];
+                if (i > 0)
+                {
+                    // Push Pop optimize
+                    if (ins is Pop && mInstructions[i - 1] is Push)
+                    {
+                        if (SameOperands((Pop)ins, (Push)mInstructions[i - 1]))
+                        {
+                             mInstructions[i].Emit = false;
+                            mInstructions[i-1].Emit = false;
+                        }
+                    }
+
+                }
+                i++;
+            }
+
+              
+        }
         public Dictionary<string, StructElement> DeclaredStructVars = new Dictionary<string, StructElement>();
 
         public StructElement GetStruct(string name)
@@ -59,6 +126,9 @@ namespace Vasm
 
             return null;
         }
+
+
+
         protected List<DataMember> mDataMembers = new List<DataMember>();
         public List<DataMember> DataMembers
         {
@@ -198,7 +268,7 @@ namespace Vasm
        }
        public bool DefineStructInstance(string varname, string type)
        {
-           StructElement se = GetStruct(varname);
+           StructElement se = GetStruct(type);
            if (se != null && !DeclaredStructVars.ContainsKey(varname))
            { DeclaredStructVars.Add(varname, se); return true; }
            else return false;
@@ -224,12 +294,13 @@ namespace Vasm
               
                writer.WriteLine();
            }
-           // declare vars
+       
+           // alloc vars
            writer.WriteLine("section .bss");
            writer.WriteLine();
            foreach (KeyValuePair<string,StructElement> p in DeclaredStructVars)
            {
-               p.Value.EmitDecl(writer, p.Key);
+               p.Value.EmitAlloc(writer, p.Key);
                writer.WriteLine();
            }
            writer.WriteLine();
@@ -240,6 +311,9 @@ namespace Vasm
        }
        public virtual void Emit(AssemblyWriter writer)
        {
+           // Optimize
+           Optimize();
+
            // prepare emit
            EmitPrepare(writer);
            // Write out data declarations
@@ -258,6 +332,13 @@ namespace Vasm
                }
                writer.WriteLine();
            }
+           // declare vars
+           writer.WriteLine();
+           foreach (KeyValuePair<string, StructElement> p in DeclaredStructVars)
+           {
+               p.Value.EmitDecl(writer, p.Key);
+               writer.WriteLine();
+           }
            writer.WriteLine();
            writer.WriteLine("section .text");
            // define externs
@@ -268,22 +349,26 @@ namespace Vasm
            // Write out code
            for (int i = 0; i < mInstructions.Count; i++)
            {
+
                var xOp = mInstructions[i];
-               string prefix = "\t\t\t";
-               if (xOp is Label)
+               if (xOp.Emit)
                {
-                   var xLabel = (Label)xOp;
-                   writer.WriteLine();
-                   prefix = "\t\t";
-                   writer.Write(prefix);
-                   xLabel.WriteText(this, writer);
-                   writer.WriteLine();
-               }
-               else
-               {
-                   writer.Write(prefix);
-                   xOp.WriteText(this, writer);
-                   writer.WriteLine();
+                   string prefix = "\t\t\t";
+                   if (xOp is Label)
+                   {
+                       var xLabel = (Label)xOp;
+                       writer.WriteLine();
+                       prefix = "\t\t";
+                       writer.Write(prefix);
+                       xLabel.WriteText(this, writer);
+                       writer.WriteLine();
+                   }
+                   else
+                   {
+                       writer.Write(prefix);
+                       xOp.WriteText(this, writer);
+                       writer.WriteLine();
+                   }
                }
            }
 

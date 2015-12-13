@@ -58,6 +58,17 @@ namespace VCC.Core
                                     Resolved.Add(d);
                                     ResolveCtx.Add(childctx);
                                 }
+                                else if (stmt.BaseDeclaration is StructDeclaration)
+                                {
+                                    StructDeclaration md = (StructDeclaration)stmt.BaseDeclaration;
+                                    ResolveContext childctx = RootCtx.CreateAsChild(md);
+                                    stmt.Resolve(childctx);
+                                    StructDeclaration d = (StructDeclaration)md.DoResolve(childctx);
+                                    // RootCtx.UpdateChildContext("<method-decl>", childctx);
+                                    RootCtx.UpdateFather(childctx);
+                                    Resolved.Add(d);
+                                    ResolveCtx.Add(childctx);
+                                }
                                 else
                                 {
                                     RootCtx.IsInTypeDef = stmt.IsTypeDef;
@@ -121,7 +132,7 @@ namespace VCC.Core
             Init();
             Console.WriteLine("Runing..");
            // string input = "int GLOBALVAR = 789; void main() {int a = 14599845; ushort v = 32762; bool x = false; char c = 5;}";
-            string input = "void printf(string);int a(int x) {} entry void main(int g){string hello = \"HELLO\";}";
+            string input = "struct CD { int cda;}; struct ABC {int ab; struct CD bc;}; int a(int x) {} struct ABC ez; entry void main(int g){int b; b +=2;}";
             Run(input);
 
 

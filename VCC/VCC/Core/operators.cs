@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Vasm.x86;
 
 
 namespace VCC.Core
@@ -92,12 +93,28 @@ namespace VCC.Core
     public class AdditionOperator : BinaryOp
     {
 
+        public override bool Emit(EmitContext ec)
+        {
+          
+            Left.Emit(ec);
+            Right.Emit(ec);
+            ec.EmitComment(Left.CommentString()+" + " + Right.CommentString());
+            CheckRegister(ec,Left);
+            CheckRegister(ec,Right);
+            
+            ec.EmitInstruction(new Add() { DestinationReg = RegistersEnum.AX, SourceReg = RegistersEnum.CX, Size = 80 });
+            ec.EmitPush(RegistersEnum.AX);
+            ec.FreeRegister();
+            ec.FreeRegister();
+            return true;
+        }
      
     }
+
     [Terminal("-")]
     public class SubtractionOperator : BinaryOp
     {
-
+     
       
     }
     [Terminal("*")]
@@ -207,13 +224,29 @@ namespace VCC.Core
 
         public override bool Emit(EmitContext ec)
         {
-            return base.Emit(ec);
+            Right.EmitToStack(ec);
+
+           Left.EmitFromStack(ec);
+            return true;
         }
     }
     [Terminal("+=")]
     public class AddAssignOperator : AssignOp
     {
-
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            Right = (Expr)Right.DoResolve(rc);
+             _op = new AdditionOperator();
+             Right = new BinaryOperation(Left, _op, Right);
+             Right = (Expr)Right.DoResolve(rc);
+             return base.DoResolve(rc);
+        }
+        public override bool Emit(EmitContext ec)
+        {
+            Right.Emit(ec);
+            Left.EmitFromStack(ec);
+            return true;
+        }
     }
     [Terminal("-=")]
     public class SubAssignOperator : AssignOp

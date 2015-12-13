@@ -27,7 +27,10 @@ namespace VCC.Core
         }
         public override bool Emit(EmitContext ec)
         {
+            RegistersEnum acc = ec.GetNextRegister();
+         
 
+            ec.EmitInstruction(new Mov() { DestinationReg = acc,SourceValue = (uint)_value, Size = 80 });
             return true;
         }
         public override bool Resolve(ResolveContext rc)
@@ -40,13 +43,17 @@ namespace VCC.Core
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            ec.EmitInstruction(new Push() { DestinationValue = (uint)_value, Size = 16 });
+            ec.EmitInstruction(new Push() { DestinationValue = (uint)_value, Size = 80 });
             return true;
         }
         public override bool EmitToRegister(EmitContext ec,RegistersEnum rg)
         {
-            ec.EmitInstruction(new Mov() { DestinationReg = rg,SourceValue = (uint)_value, Size = 16 });
+            ec.EmitInstruction(new Mov() { DestinationReg = rg,SourceValue = (uint)_value, Size = 80 });
             return true;
+        }
+        public override string CommentString()
+        {
+            return _value.ToString();
         }
     }
     public class StringConstant : StringConst
@@ -97,6 +104,10 @@ namespace VCC.Core
             ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.AX, Size = 16, SourceRef = ElementReference.New(ConstVar.Signature.ToString()) });
             return true;
         }
+        public override string CommentString()
+        {
+            return _value.ToString();
+        }
     }
     public class SByteConstant : CharConst
     {
@@ -107,7 +118,10 @@ namespace VCC.Core
             _value = value;
         }
 
-
+        public override string CommentString()
+        {
+            return _value.ToString();
+        }
         public override string ToString()
         {
             return "[" + Type.GetTypeName(type) + "] " + GetValue();
@@ -149,7 +163,10 @@ namespace VCC.Core
             _value = value;
         }
 
-
+        public override string CommentString()
+        {
+            return _value.ToString();
+        }
         public override string ToString()
         {
             return "[" + Type.GetTypeName(type) + "] " + GetValue();
@@ -192,7 +209,10 @@ namespace VCC.Core
             _value = value;
         }
 
-
+        public override string CommentString()
+        {
+            return _value.ToString();
+        }
         public override string ToString()
         {
             return "[" + Type.GetTypeName(type) + "] " + GetValue();
@@ -234,7 +254,10 @@ namespace VCC.Core
         {
             _value = value;
         }
-
+        public override string CommentString()
+        {
+            return _value.ToString();
+        }
 
         public override string ToString()
         {
@@ -279,7 +302,10 @@ namespace VCC.Core
             _value = 0;
         }
 
-
+        public override string CommentString()
+        {
+            return _value.ToString();
+        }
         public override string ToString()
         {
             return "[" + Type.GetTypeName(type) + "] " + GetValue();

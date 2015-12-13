@@ -87,6 +87,7 @@ namespace VCC.Core
         public Modifiers mods;
         public TypeSpec Type { get; set; }
         public MemberSpec FieldOrLocal { get; set; }
+        public List<TypeMemberSpec> Members { get; set; }
 
         Modifier _mod;
         TypeIdentifier _type;
@@ -150,7 +151,7 @@ namespace VCC.Core
                 }
                 rc.KnowField((FieldSpec)FieldOrLocal);
             }
-            else if (!rc.IsInTypeDef)
+            else if (!rc.IsInTypeDef && !rc.IsInStruct)
             {
                 FieldOrLocal = new VarSpec(_vadef._id.Name, rc.CurrentMethod, Type, loc);
                 ((VarSpec)FieldOrLocal).Initialized = (_vadef.expr != null);
@@ -166,16 +167,17 @@ namespace VCC.Core
             }
             else if (rc.IsInStruct)
             {
-                FieldOrLocal = new FieldSpec(_vadef._id.Name, mods, Type, loc);
+                Members = new List<TypeMemberSpec>();
+             
                 // Childs
 
                 VariableListDefinition c = _valist;
-               /* while (c != null)
+               while (c != null)
                 {
-                    rc.KnowField(new FieldSpec(c._vardef.Name, mods, Type, loc));
+                    Members.Add(new TypeMemberSpec(c._vardef.Name, rc.CurrentType, Type, loc,0));
                     c = _valist._nextvars;
                 }
-                rc.KnowField((FieldSpec)FieldOrLocal);*/
+               Members.Add(new TypeMemberSpec(_vadef._id.Name, rc.CurrentType, Type, loc, 0));
             }
             return this;
         }
@@ -193,23 +195,31 @@ namespace VCC.Core
 
         public override bool Emit(EmitContext ec)
         {
-
+        
             _vadef.Emit(ec);
             // handle const
             if (_vadef.expr is ConstantExpression)
             {
                 VarSpec v = (VarSpec)FieldOrLocal;
+                ec.EmitComment("Var decl assign " + v.Name + " stack index "+v.StackIndex);
                 // push const
                 _vadef.expr.EmitToRegister(ec, RegistersEnum.AX);               
                 ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.BP, DestinationDisplacement = (int)v.StackIndex,DestinationIsIndirect = true, SourceReg = RegistersEnum.AX ,Size = 80});
             }
             else if (_vadef.expr == null && Type.IsBuiltinType)
             {
-             //VarSpec v = (VarSpec)   FieldOrLocal;
-             //if (Type.Size == 2)
-             //    ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.BP, DestinationDisplacement = (int)v.StackIndex, SourceValue = 0, Size = 16 });
-             //else
-             //    ec.EmitInstruction(new Mov() { DestinationIsIndirect = true, DestinationReg = RegistersEnum.BP, DestinationDisplacement = (int)v.StackIndex, SourceValue = 0, Size = 8 });
+
+                VarSpec v = (VarSpec)FieldOrLocal;
+                ec.EmitComment("Var decl assign " + v.Name + " stack index " + v.StackIndex);
+                // push const
+                ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.BP, DestinationDisplacement = (int)v.StackIndex, DestinationIsIndirect = true, SourceValue =0, Size = 80 });
+            }
+            else if (_vadef.expr == null && Type.IsStruct  && FieldOrLocal is FieldSpec)
+                ec.AddInstanceOfStruct(FieldOrLocal.Signature.ToString(), ((FieldSpec)FieldOrLocal).MemberType);
+            else if (Type.IsStruct && (_vadef.expr == null || !(FieldOrLocal is FieldSpec)))
+            {
+                // error struct cannot be a local var
+               
             }
               
 
@@ -250,44 +260,7 @@ namespace VCC.Core
         }
 
     }
-    public class StructDeclaration : Declaration
-    {
-        public TypeSpec TypeName { get; set; }
-        public int Size { get; set; }
-        StructDefinition _def;
-        [Rule(@"<Struct Decl>  ::= ~struct Id ~'{' <Struct Def> ~'}'  ~';' ")]
-        public StructDeclaration(Identifier id, StructDefinition sdef)
-        {
-            _name = id;
-            _def = sdef;
-            Size = 0;
-        }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            _def = (StructDefinition)_def.DoResolve(rc);
-            if (_def != null)
-                Size = _def.Size;
-            TypeName = new TypeSpec(_name.Name, Size, BuiltinTypes.Unknown, TypeFlags.Struct, Modifiers.NoModifier, loc);
-            rc.KnowType(TypeName);
-            return this;
-        }
-        public override bool Resolve(ResolveContext rc)
-        {
- 
-
-           return _def.Resolve(rc);
-        }
-        public override bool Emit(EmitContext ec)
-        {
-            StructElement st = new StructElement();
-            st.Vars = _def.Variables;
-            st.Name = TypeName.Signature.ToString();
-            ec.EmitStruct(st);
-
-            return true;
-        }
-    }
 
 
 
@@ -343,7 +316,9 @@ namespace VCC.Core
         {
             _id = (MethodIdentifier)_id.DoResolve(rc);
             base._type = _id.Type;
-
+         
+    
+     
             Params = new Stack<ParameterSpec>();
             Parameters = new List<ParameterSpec>();
             if (_pal != null)
@@ -359,9 +334,9 @@ namespace VCC.Core
                 }
             }
             method = new MethodSpec(_id.Name, mods, _id.Type.Type, this.loc);
-
+            method.Parameters = Parameters;
             rc.KnowMethod(method);
-
+            rc.CurrentMethod = method;
             if (_b != null)
                 _b = (Block)_b.DoResolve(rc);
             return this;
@@ -390,10 +365,8 @@ namespace VCC.Core
 
             uint size = 0;
             foreach (VarSpec v in ec.CurrentResolve.GetLocals())
-            {
                 size += (uint)v.MemberType.Size;
-                v.StackIndex -= (int)size;
-            }
+        
             if (size != 0)         // no allocation
                 ec.EmitInstruction(new Sub() { DestinationReg = RegistersEnum.SP, SourceValue = size, Size = 80 });
             //EMit params
@@ -425,7 +398,6 @@ namespace VCC.Core
             return true;
         }
     }
-
     public class MethodPrototypeDeclaration : Declaration
     {
         MethodSpec method;
@@ -516,6 +488,42 @@ namespace VCC.Core
         public override bool Emit(EmitContext ec)
         {
             ec.DefineExtern(method);
+            return true;
+        }
+    }
+    public class StructDeclaration : Declaration
+    {
+        public StructTypeSpec TypeName { get; set; }
+        public int Size { get; set; }
+        StructDefinition _def;
+        [Rule(@"<Struct Decl>  ::= ~struct Id ~'{' <Struct Def> ~'}'  ~';' ")]
+        public StructDeclaration(Identifier id, StructDefinition sdef)
+        {
+            _name = id;
+            _def = sdef;
+            Size = 0;
+        }
+
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            _def = (StructDefinition)_def.DoResolve(rc);
+            if (_def != null)
+                Size = _def.Size;
+            TypeName = new StructTypeSpec(_name.Name, Size, _def.Members, loc);
+            rc.KnowType(TypeName);
+            return this;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+
+
+            return _def.Resolve(rc);
+        }
+        public override bool Emit(EmitContext ec)
+        {
+
+            ec.EmitStructDef(TypeName);
+
             return true;
         }
     }

@@ -141,22 +141,25 @@ namespace VCC.Core
                 {
                     foreach (Expr e in Parameters)
                     {
-                        e.EmitToStack(ec);
+                    
+                          e.EmitToStack(ec);
                         size += 2;
                     }
 
                 }
+
                 if (Method.MemberType.IsBuiltinType)
                 {
 
 
                     // call
-                    ec.EmitInstruction(new Call() { DestinationLabel = Method.Signature.ToString() });
+                    ec.EmitCall(Method);
                     // clean params 
                     if (size > 0)
                         ec.EmitInstruction(new Sub() { DestinationReg = RegistersEnum.SP, SourceValue = (uint)size,Size = 80});
 
-                    // value in acc = AX
+
+                    ec.EmitPush( RegistersEnum.AX );
 
                 }
                 else
@@ -167,7 +170,22 @@ namespace VCC.Core
        
             return true;
         }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            Emit(ec);
+            ec.EmitPush(RegistersEnum.AX);
+            return true;
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            throw new NotImplementedException();
+            return base.EmitFromStack(ec);
+        }
 
+        public override string CommentString()
+        {
+            return _id.Name + ((_param!= null)?"()":"(" + _param.CommentString()+ ")");
+        }
     }
 
     /// <summary>
@@ -195,14 +213,27 @@ namespace VCC.Core
         }
         public override bool Emit(EmitContext ec)
         {
-            if (variable.MemberType.IsBuiltinType)
-            {
-
-                ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.AX, SourceRef = variable.Reference  });
-
-            }
+            RegistersEnum acc = ec.GetNextRegister();
+            if (variable.MemberType.IsBuiltinType && variable.Reference != null)
+                ec.EmitInstruction(new Mov() { DestinationReg = acc, SourceRef = variable.Reference });
+            else if (variable.MemberType.IsBuiltinType && variable.StackIndex < 0)
+                ec.EmitInstruction(new Mov() { DestinationReg = acc, SourceReg = RegistersEnum.BP, SourceDisplacement = variable.StackIndex, Size = 80, SourceIsIndirect = true });
             //TODO:Non builtin
             return true;
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            ec.EmitPop(variable);
+            return true;
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            ec.EmitPush(variable);
+            return true;
+        }
+        public override string CommentString()
+        {
+            return variable.Name ;
         }
     }
 
@@ -240,7 +271,7 @@ namespace VCC.Core
         {
             _op.Right = (Expr)_op.Right.DoResolve(rc);
             _op.Left = (Expr)_op.Left.DoResolve(rc);
-
+           _op = (AssignOp)_op.DoResolve(rc);
             return this;
         }
         public override bool Resolve(ResolveContext rc)
@@ -252,6 +283,7 @@ namespace VCC.Core
         }
         public override bool Emit(EmitContext ec)
         {
+            ec.EmitComment("Assign expression: " + _op.Left.CommentString() + _op.Name + ((BinaryOperation)_op.Right)._op.Right.CommentString());
             return _op.Emit(ec);
         }
 #if IMPL
@@ -396,7 +428,7 @@ namespace VCC.Core
     public class BinaryOperation : Expr
     {
 
-        protected readonly BinaryOp _op;
+        public readonly BinaryOp _op;
 
 
 
@@ -446,6 +478,11 @@ namespace VCC.Core
         public override bool Emit(EmitContext ec)
         {
             return _op.Emit(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            Emit(ec);
+            return true;
         }
 #if IMPL
        [Rule(@"<Op Mult>    ::= <Op Unary>")]

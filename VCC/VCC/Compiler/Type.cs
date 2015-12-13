@@ -542,4 +542,59 @@ namespace VCC
         }
      
     }
+
+    /// <summary>
+    /// TypeMemberSpec Specs
+    /// </summary>
+    public class TypeMemberSpec : MemberSpec
+    {
+        TypeSpec memberType;
+        TypeSpec th;
+        public int Index { get; set; }
+        public TypeSpec MemberType
+        {
+            get
+            {
+                return memberType;
+            }
+        }
+        public TypeSpec TypeHost
+        {
+            get
+            {
+                return th;
+            }
+        }
+
+        public TypeMemberSpec(string name, TypeSpec host, TypeSpec type, Location loc, int idx)
+            : base(name, new MemberSignature(host.Name + "_" + name, loc), Modifiers.NoModifier)
+        {
+            th = host;
+            memberType = type;
+            Index = 0;
+        }
+
+    }
+
+    public class StructTypeSpec : TypeSpec
+    {
+        public List<TypeMemberSpec> Members { get; set; }
+
+        public StructTypeSpec(string name,int size, List<TypeMemberSpec> mem, Location loc)
+            : base(name,size, BuiltinTypes.Unknown, TypeFlags.Struct, Modifiers.NoModifier, loc)
+        {
+            Members = mem;
+        }
+
+        public TypeMemberSpec ResolveMember(string name)
+        {
+            foreach (TypeMemberSpec kt in Members)
+                if (kt.Name == name)
+                    return kt;
+
+            return null;
+        }
+    }
+
+    
 }

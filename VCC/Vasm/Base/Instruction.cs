@@ -8,7 +8,7 @@ namespace Vasm {
       /// Cache for the default mnemonics.
       /// </summary>
       public static Dictionary<Type, string> defaultMnemonicsCache = new Dictionary<Type,string>();
-
+      public bool Emit = true;
     protected string mMnemonic;
     public string Mnemonic {
       get { return mMnemonic; }

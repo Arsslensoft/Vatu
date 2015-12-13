@@ -14,14 +14,15 @@ namespace VCC
         public List<FieldSpec> KnownGlobals { get; set; }
         public List<MethodSpec> KnownMethods { get; set; }
         public List<VarSpec> KnownLocalVars { get; set; }
-        public List<ParameterSpec> KnownParameters { get; set; }
+
         public Known()
         {
             KnownGlobals = new List<FieldSpec>();
             KnownMethods = new List<MethodSpec>();
             KnownTypes = new List<TypeSpec>();
             KnownLocalVars = new List<VarSpec>();
-            KnownParameters = new List<ParameterSpec>();
+          
+      
         }
     }
     public enum LabelType
@@ -79,9 +80,19 @@ namespace VCC
     
        public RegistersEnum GetNextRegister()
         {
-            return ag.GetNextRegister();
+            RegistersEnum acc = ag.GetNextRegister();
+            if (acc == RegistersEnum.SP)
+                throw new ArgumentException("All Registers used");
+            return acc;
         }
-
+       public void FreeRegister()
+       {
+           ag.FreeRegister();
+       }
+       public RegistersEnum FirstRegister()
+       {
+       return    ag.PeekRegister();
+       }
         public ResolveContext CurrentResolve { get; set; }
 
         public static Dictionary<LabelType, int> Labels = new Dictionary<LabelType, int>();
@@ -125,10 +136,53 @@ namespace VCC
         {
             ag.Emit(ins);
         }
+        public void EmitPop(RegistersEnum rg)
+        {
+            EmitInstruction(new Pop() { DestinationReg = rg, Size = 80 });
+        }
+        public void EmitPush(RegistersEnum rg)
+        {
+            EmitInstruction(new Push() { DestinationReg = rg, Size = 80 });
+        }
+        public void EmitPush(VarSpec v)
+        {
+            EmitInstruction(new Mov() { DestinationReg = RegistersEnum.AX, Size = 80, SourceReg = RegistersEnum.BP, SourceDisplacement = v.StackIndex, SourceIsIndirect = true });
+            EmitInstruction(new Push() { DestinationReg = RegistersEnum.AX, Size = 80 });
+        }
+        public void EmitPop(VarSpec v)
+        {
+            EmitInstruction(new Pop() { DestinationReg = FirstRegister(), Size = 80 });
+            EmitInstruction(new Mov() { SourceReg = FirstRegister(), Size = 80, DestinationReg = RegistersEnum.BP, DestinationDisplacement = v.StackIndex, DestinationIsIndirect = true });
+        }
+        public void EmitCall(MethodSpec m)
+        {
+            EmitInstruction(new Call() { DestinationLabel = m.Signature.ToString() });
+        }
         public void EmitComment(string str)
         {
             ag.Emit(new Comment(ag, str));
         }
+        public void EmitStructDef(StructTypeSpec m)
+        {
+            StructElement st = new StructElement();
+            st.Name = m.Signature.ToString();
+        st.Vars = new List<StructVar>();
+        foreach (TypeMemberSpec mem in m.Members)
+        {
+            StructVar sv = new StructVar();
+            sv.Name = mem.Name;
+            sv.IsByte = mem.MemberType.Size == 1;
+            sv.IsStruct = mem.MemberType.IsStruct;
+            sv.Size = mem.MemberType.Size;
+            sv.Type = sv.IsStruct ? mem.MemberType.Signature.ToString() : "";
+            st.Vars.Add(sv);
+        }
+        EmitStruct(st);
+
+        }
+
+
+
         public void EmitData(DataMember dm, MemberSpec v)
         {
             if (!Variables.ContainsKey(v.Signature.ToString()))
@@ -212,8 +266,16 @@ namespace VCC
        public List<ResolveContext> ChildContexts { get; set; }
        public bool IsInTypeDef { get; set; }
        public bool IsInStruct { get; set; }
+       public bool IsInEnum { get; set; }
+
+       public int LocalStackIndex { get; set; }
+
         MethodSpec current_member;
-        public MethodSpec CurrentMethod { get { return current_member; } }
+        public MethodSpec CurrentMethod { get { return current_member; } set { current_member = value; } }
+
+        TypeSpec current_type;
+        public TypeSpec CurrentType { get { return current_type; } }
+
        public Known _known;
         void FillKnown()
         {
@@ -233,7 +295,7 @@ namespace VCC
             current_member = cm;
             IsInTypeDef = false;
             IsInStruct = false;
-
+            IsInEnum = false;
         }
         public ResolveContext(Block b, MethodSpec cm)
         {
@@ -243,6 +305,7 @@ namespace VCC
             FillKnown();
             IsInTypeDef = false;
             IsInStruct = false;
+            IsInEnum = false;
         }
         public ResolveContext(DeclarationSequence<Declaration> decl)
         {
@@ -252,6 +315,7 @@ namespace VCC
             ChildContexts = new List<ResolveContext>();
             IsInTypeDef = false;
             IsInStruct = false;
+            IsInEnum = false;
         }
         public ResolveContext(MethodDeclaration decl)
         {
@@ -261,6 +325,18 @@ namespace VCC
             ChildContexts = new List<ResolveContext>();
             IsInTypeDef = false;
             IsInStruct = false;
+            IsInEnum = false;
+            LocalStackIndex = 0;
+        }
+        public ResolveContext(StructDeclaration decl)
+        {
+            _known = new Known();
+            current_member = new MethodSpec("<struct-decl>", Modifiers.NoModifier, null, Location.Null);
+            current_type = new TypeSpec(decl.Identifier.Name, 0, BuiltinTypes.Unknown, TypeFlags.Struct, Modifiers.NoModifier, Location.Null);
+            FillKnown();
+            ChildContexts = new List<ResolveContext>();
+            IsInTypeDef = false;
+            IsInStruct = true;
         }
 
         public List<VarSpec> GetLocals()
@@ -278,6 +354,8 @@ namespace VCC
 
             foreach (TypeSpec ts in kn.KnownTypes)
                 _known.KnownTypes.Add(ts);
+
+      
         }
         public bool IsInGlobal()
         {
@@ -296,10 +374,26 @@ namespace VCC
             }
             else return null;
         }
+        public ResolveContext CreateAsChild(StructDeclaration md)
+        {
+            if (ChildContexts != null)
+            {
+                ResolveContext rc = new ResolveContext(md);
+                rc.FillKnownByKnown(_known);
+                ChildContexts.Add(rc);
+                return rc;
+
+            }
+            else return null;
+        }
         public void UpdateFather(ResolveContext rc)
         {
             foreach (MethodSpec m in rc._known.KnownMethods)
                 KnowMethod(m);
+            foreach (TypeSpec m in rc._known.KnownTypes)
+                KnowType(m);
+            foreach (FieldSpec m in rc._known.KnownGlobals)
+                KnowField(m);
         }
         public void UpdateChildContext(string name, ResolveContext crc)
         {
@@ -356,36 +450,45 @@ namespace VCC
 
             return null;
         }
-        public ParameterSpec ResolveParameter(string name)
-        {
-            foreach (ParameterSpec kt in _known.KnownParameters)
-                if (kt.Name == name)
-                    return kt;
 
-            return null;
+        public bool Exist(MemberSpec m, List<MemberSpec> l)
+        {
+            foreach (MemberSpec ms in l)
+                if (m.Signature.ToString() == ms.Signature.ToString())
+                    return true;
+
+            return false;
         }
 
 
         public void KnowMethod(MethodSpec mtd)
         {
-            _known.KnownMethods.Add(mtd);
+            if (!Exist((MemberSpec)mtd, _known.KnownMethods.Cast<MemberSpec>().ToList<MemberSpec>()))
+            {
+                _known.KnownMethods.Add(mtd);
+            }
         }
         public void KnowVar(VarSpec mtd)
         {
-            _known.KnownLocalVars.Add(mtd);
+            if (!Exist((MemberSpec)mtd,_known.KnownLocalVars.Cast<MemberSpec>().ToList<MemberSpec>() ))
+            {
+                LocalStackIndex -= 2;
+                mtd.StackIndex = LocalStackIndex;
+                _known.KnownLocalVars.Add(mtd);
+            }
         }
         public void KnowType(TypeSpec mtd)
         {
-            _known.KnownTypes.Add(mtd);
+            if (!Exist((MemberSpec)mtd, _known.KnownTypes.Cast<MemberSpec>().ToList<MemberSpec>()))
+              _known.KnownTypes.Add(mtd);
         }
         public void KnowField(FieldSpec mtd)
         {
+            if (!Exist((MemberSpec)mtd, _known.KnownGlobals.Cast<MemberSpec>().ToList<MemberSpec>()))
             _known.KnownGlobals.Add(mtd);
         }
-        public void KnowParameter(ParameterSpec mtd)
-        {
-            _known.KnownParameters.Add(mtd);
-        }
+
+    
         #region IDisposable Members
 
         public void Dispose()

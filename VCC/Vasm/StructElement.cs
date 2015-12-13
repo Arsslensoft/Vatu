@@ -17,7 +17,7 @@ namespace Vasm
         {
           if(!IsStruct)
             asmw.WriteLine("."+Name + ":    "+(IsByte?"RESB":"RESW") + "    "+Size.ToString());
-        
+          else asmw.WriteLine("." + Name + ":    " + "RESB    " + Type + ".size");
 
 
         }
@@ -43,7 +43,13 @@ namespace Vasm
             asmw.WriteLine(varname+": 	ISTRUC "+Name);
             foreach (StructVar sv in Vars)
                 asmw.WriteLine("AT "+Name+"."+sv.Name+", "+(sv.IsByte?"DB":"DW")+" 0");
+            
             asmw.WriteLine("IEND");
+        }
+        public void EmitAlloc(AssemblyWriter asmw, string varname)
+        {
+            asmw.WriteLine(varname + ": 	RESB " + Name + ".size");
+          
         }
     }
 

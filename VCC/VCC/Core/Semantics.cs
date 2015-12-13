@@ -260,13 +260,17 @@ namespace VCC.Core
         {
        
 
-            return current.EmitToStack(ec);
+            return current.EmitFromStack(ec);
         }
         public virtual bool EmitToRegister(EmitContext ec, RegistersEnum rg)
         {
             return current.EmitToRegister(ec,rg);
         }
 
+        public virtual string CommentString()
+        {
+            return "";
+        }
     }
       public abstract class DeclarationToken : SimpleToken, IEmit, IResolve
     {
@@ -415,7 +419,15 @@ namespace VCC.Core
     {
         private readonly BinaryOperator _op;
 
-     
+        public bool CheckRegister(EmitContext ec,Expr ex)
+        {
+            if (ex is BinaryOperation)
+                ec.EmitPop(ec.GetNextRegister());
+            else if(ex is MethodExpression)
+                ec.EmitPop(ec.GetNextRegister());
+
+            return true;
+        }
     }
     public class UnaryOp : Operator
     {
@@ -425,7 +437,7 @@ namespace VCC.Core
     }
     public class AssignOp : Operator
     {
-        private readonly BinaryOperator _op;
+        protected BinaryOp _op;
 
      
     }
