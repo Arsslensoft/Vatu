@@ -28,12 +28,18 @@ namespace VCC.Core
     [Terminal(";")]
     [Terminal("?")]
     [Terminal(",")]
+
     public class SimpleToken : SemanticToken
     {
+        public Location loc;
+        public Location Location { get { return CompilerContext.TranslateLocation(position); } }
+
         public string Name { get { return symbol.Name; } }
     }
-
+ 
+     [Terminal("asm")]
     [Terminal("break")]
+    [Terminal("next")]
     [Terminal("case")]
     [Terminal("continue")]
     [Terminal("default")]
@@ -47,23 +53,17 @@ namespace VCC.Core
     [Terminal("switch")]
     [Terminal("typedef")]
     [Terminal("while")]
+
+    [Terminal("use")]
+    [Terminal("namespace")]
+ 
     // types
-  /*  [Terminal("void")]
-    [Terminal("char")]
-    [Terminal("schar")]
-    [Terminal("short")]
-    [Terminal("ushort")]
-    [Terminal("int")]
-    [Terminal("uint")]
-    [Terminal("long")]
-    [Terminal("ulong")]
-    [Terminal("double")]
-    [Terminal("float")]
-    [Terminal("extended")]
-    [Terminal("bool")]*/
     public class KeywordToken : SimpleToken
     {
     }
+
+
+  
     [Terminal("void")]
     [Terminal("byte")]
     [Terminal("sbyte")]
@@ -73,9 +73,20 @@ namespace VCC.Core
     [Terminal("bool")]
     public class TypeToken : SimpleToken, IResolve
     {
-        public Location loc;
-        public Location Location { get { return loc; } }
-        public TypeSpec Type { get; set; }
+        TypeSpec _ts;
+        public TypeSpec Type
+        {
+            get
+            {
+                if (_ts != null && _ts.IsTypeDef)
+                    return _ts.GetTypeDefBase(_ts);
+                else return _ts;
+            }
+            set
+            {
+                _ts = value;
+            }
+        }
         public TypeToken()
         {
             loc = CompilerContext.TranslateLocation(position);
@@ -89,16 +100,16 @@ namespace VCC.Core
         }
         public virtual SimpleToken DoResolve(ResolveContext rc)
         {
-            Type = rc.ResolveType(this.symbol.Name);
+            Type = rc.TryResolveType(this.symbol.Name);
             return this ;
         }
     }
 
+  
+
     public class Definition : SimpleToken, IEmit, IResolve
     {
-        public Location loc;
-        public Location Location { get { return loc; } }
-
+      
         public Definition()
         {
             loc = CompilerContext.TranslateLocation(position);
@@ -116,12 +127,44 @@ namespace VCC.Core
             return this;
         }
     }
-    public abstract class Operator : SimpleToken, IEmit, IResolve
+    public abstract class Operator : SimpleToken, IEmit,IEmitExpr, IResolve
     {
+        public Namespace Namespace { get; set; }
         public Expr Left { get; set; }
         public Expr Right { get; set; }
-          public Location loc;
-        public Location Location { get { return loc; } }
+
+        public bool FixConstant(ResolveContext rc)
+        {
+            bool conv = false;
+            if (Left is ConstantExpression && Right is ConstantExpression)
+            {
+                // greater conversion
+                if (Left.Type.Size > Right.Type.Size)
+                {
+                    Right = (Right as ConstantExpression).ConvertImplicitly(rc, Left.Type, ref conv);
+                    return conv;
+                }
+                else if (Left.Type.Size < Right.Type.Size)
+                {
+                    Left = (Left as ConstantExpression).ConvertImplicitly(rc, Right.Type, ref conv);
+                    return conv;
+                }
+                else return (Left.Type == Right.Type);
+            }
+            else if (Left is ConstantExpression)
+            {
+               Left = (Left as ConstantExpression).ConvertImplicitly(rc,Right.Type,ref conv);
+               return conv;
+
+            }
+            else if (Right is ConstantExpression)
+            {
+                Right = (Right as ConstantExpression).ConvertImplicitly(rc, Left.Type, ref conv);
+                return conv;
+            }else
+            return Left.Type == Right.Type;
+        }
+        public TypeSpec CommonType { get; set; }
 
         public Operator()
         {
@@ -139,7 +182,33 @@ namespace VCC.Core
         {
             return this;
         }
+        public virtual bool EmitToStack(EmitContext ec)
+        {
 
+
+            return true;
+
+        }
+        public virtual bool EmitFromStack(EmitContext ec)
+        {
+
+
+            return true;
+        }
+        public virtual bool EmitToRegister(EmitContext ec, RegistersEnum rg)
+        {
+            return true;
+        }
+        public virtual bool EmitBranchable(EmitContext ec, Label truecase, bool v)
+        {
+            return true;
+        }
+        public virtual string CommentString()
+        {
+            if (symbol != null)
+                return symbol.Name;
+            else return "";
+        }
     }
     public abstract class Statement : SimpleToken, IEmit, IResolve
     {
@@ -149,9 +218,7 @@ namespace VCC.Core
         {
             loc = CompilerContext.TranslateLocation(position);
         }
-        public Location loc;
 
-        public Location Location { get { return loc; } }
         protected bool reachable;
 
         public bool IsUnreachable
@@ -191,6 +258,7 @@ namespace VCC.Core
         [Rule("<Expression> ::= <Op Assign>")]
         public Expr(Expr expr)
         {
+            loc = expr.Location;
             current = expr;
 
         }
@@ -198,18 +266,27 @@ namespace VCC.Core
           [Rule("<Expression> ::= <Expression> ~',' <Op Assign>")]
         public Expr(Expr expr, Expr n)
         {
+    
             current = expr;
             next = n;
         }
-           protected Location loc;
+        
         protected TypeSpec type;
 
         public TypeSpec Type
         {
-            get { return type; }
-            set { type = value; }
+            get
+            {
+                if (type != null && type.IsTypeDef)
+                    return type.GetTypeDefBase(type);
+                else return type;
+            }
+            set
+            {
+                type = value;
+            }
         }
-        public Location Location { get { return loc; } }
+      
 
         public Expr(TypeSpec tp, Location lc)
         {
@@ -224,7 +301,7 @@ namespace VCC.Core
         public Expr()
             : this(Location.Null)
         {
-            loc = CompilerContext.TranslateLocation(position);
+           
         }
         public virtual bool Resolve(ResolveContext rc)
         {
@@ -238,14 +315,21 @@ namespace VCC.Core
         }
         public virtual bool Emit(EmitContext ec)
         {
-            current.Emit(ec);
+            if (current != null)
+              current.Emit(ec);
             if (next != null)
                 next.Emit(ec);
             return true;
         }
         public virtual SimpleToken DoResolve(ResolveContext rc)
         {
-            current = (Expr)current.DoResolve(rc);
+            if (current != null)
+            {
+                current = (Expr)current.DoResolve(rc);
+                Type = current.Type;
+                if (next == null)
+                    return current;
+            }
             if (next != null)
                 next = (Expr)next.DoResolve(rc);
             return this;
@@ -253,8 +337,9 @@ namespace VCC.Core
         public virtual bool EmitToStack(EmitContext ec)
         {
 
-
+        
             return current.EmitToStack(ec);
+
         }
         public virtual bool EmitFromStack(EmitContext ec)
         {
@@ -266,18 +351,20 @@ namespace VCC.Core
         {
             return current.EmitToRegister(ec,rg);
         }
-
+        public virtual bool EmitBranchable(EmitContext ec, Label truecase,bool v )
+        {
+            return current.EmitBranchable(ec,truecase,v);
+        }
+     
         public virtual string CommentString()
         {
             return "";
         }
     }
-      public abstract class DeclarationToken : SimpleToken, IEmit, IResolve
+     public abstract class DeclarationToken : SimpleToken, IEmit, IResolve
     {
 
-        public Location loc;
 
-        public Location Location { get { return loc; } }
 
         public DeclarationToken(Location lc)
         {
@@ -306,9 +393,8 @@ namespace VCC.Core
     }
     public abstract class ModifierToken : SimpleToken, IResolve
     {
-        public Location loc;
-        public Location Location { get { return loc; } }
-        public TypeSpec Type { get; set; }
+ 
+      
         public ModifierToken()
         {
             loc = CompilerContext.TranslateLocation(position);
@@ -331,9 +417,10 @@ namespace VCC.Core
     {
         protected readonly string _idName;
         public string Name { get { return _idName; } }
-
+       
         public Identifier(string idName)
         {
+            loc = CompilerContext.TranslateLocation(position);
             _idName = idName;
         }
 
@@ -375,10 +462,10 @@ namespace VCC.Core
     }
 
 
+
     public class TypePointer : SimpleToken
     {
-        public Location loc;
-        public Location Location { get { return loc; } }
+    
        
         public int PointerCount { get; set; }
 
@@ -411,33 +498,32 @@ namespace VCC.Core
     }
     public class AccessOp : Operator
     {
-        private readonly AccessOperator _op;
-
+        public virtual int  Offset { get { return 0; } }
+        public virtual MemberSpec Member { get { return null; } }
+        public AccessOperator _op;
+        public RegistersEnum? Register { get; set; }
    
     }
     public class BinaryOp : Operator
     {
-        private readonly BinaryOperator _op;
+        public RegistersEnum? RightRegister { get; set; }
+        public RegistersEnum? LeftRegister { get; set; }
+        protected bool ConstantOperation = false;
+        protected bool RegisterOperation = false;
+        protected  BinaryOperator Operator {get;set;}
 
-        public bool CheckRegister(EmitContext ec,Expr ex)
-        {
-            if (ex is BinaryOperation)
-                ec.EmitPop(ec.GetNextRegister());
-            else if(ex is MethodExpression)
-                ec.EmitPop(ec.GetNextRegister());
-
-            return true;
-        }
+     
     }
     public class UnaryOp : Operator
     {
-        private readonly UnaryOperator _op;
-
-    
+        protected bool RegisterOperation = false;
+        public RegistersEnum? Register { get; set; }
+        public UnaryOperator Operator { get; set; }
+      
     }
     public class AssignOp : Operator
     {
-        protected BinaryOp _op;
+        public BinaryOp _op;
 
      
     }
@@ -460,6 +546,9 @@ namespace VCC.Core
         GreaterThanOrEqual = 10 | ComparisonMask | RelationalMask,
         Equality = 11 | ComparisonMask | EqualityMask,
         Inequality = 12 | ComparisonMask | EqualityMask,
+       
+     
+
 
         BitwiseAnd = 13 | BitwiseMask,
         ExclusiveOr = 14 | BitwiseMask,
@@ -467,7 +556,11 @@ namespace VCC.Core
 
         LogicalAnd = 16 | LogicalMask,
         LogicalOr = 17 | LogicalMask,
-
+      
+        
+ 
+        LeftRotate = 18 | ShiftMask,
+        RightRotate = 19 | ShiftMask,
         //
         // Operator masks
         //
@@ -488,13 +581,14 @@ namespace VCC.Core
     public enum UnaryOperator : byte
     {
         UnaryPlus, UnaryNegation, LogicalNot, OnesComplement,
-        AddressOf, ValueOf, PostfixIncrement, PostfixDecrement, PrefixIncrement, PrefixDecrement
+        AddressOf, ValueOf, PostfixIncrement, PostfixDecrement, ZeroTest ,      ParityTest 
     }
     public enum AccessOperator : byte
     {
        ByValue,
        ByAddress,
-       ByIndex
+       ByIndex,
+        ByName
     }
     public enum AssignOperator : byte
     {
@@ -507,7 +601,8 @@ namespace VCC.Core
         AndAssign,
         OrAssign,
         RightShiftAssign,
-        LeftShiftAssign
+        LeftShiftAssign,
+        Exchange
 
     }
     public struct Reachability
@@ -635,11 +730,11 @@ namespace VCC.Core
         private readonly DeclarationSequence<T> next;
 
 
-   
 
-        [Rule("<Decls> ::= ", typeof(Declaration))]
-        public DeclarationSequence()
-            : this(null, null)
+
+        [Rule("<Decls> ::= <Decl>", typeof(Declaration))]
+        public DeclarationSequence(T item)
+            : this(item, null)
         {
         }
 
@@ -656,6 +751,48 @@ namespace VCC.Core
         public IEnumerator<T> GetEnumerator()
         {
             for (DeclarationSequence<T> sequence = this; sequence != null; sequence = sequence.next)
+            {
+                if (sequence.item != null)
+                {
+                    yield return sequence.item;
+                }
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        #endregion
+    }
+    public class GlobalSequence<T> : SimpleToken, IEnumerable<T> where T : SimpleToken
+    {
+        private readonly T item;
+        private readonly GlobalSequence<T> next;
+
+
+
+
+        [Rule("<GLOBALS> ::= ", typeof(Global))]
+        public GlobalSequence()
+            : this(null, null)
+        {
+        }
+
+
+        [Rule("<GLOBALS> ::= <GLOBAL> <GLOBALS>", typeof(Global))]
+        public GlobalSequence(T item, GlobalSequence<T> next)
+        {
+            this.item = item;
+            this.next = next;
+        }
+
+        #region IEnumerable<T> Members
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            for (GlobalSequence<T> sequence = this; sequence != null; sequence = sequence.next)
             {
                 if (sequence.item != null)
                 {

@@ -16,6 +16,7 @@ namespace VCC.Core
         protected string _strvalue;
         protected bool _unsigned;
         protected bool _numeric;
+        public ConstantExpression Value { get { return _value; } }
 
         public bool HasSuffix
         {
@@ -49,22 +50,22 @@ namespace VCC.Core
 			
 					switch (c)
                     {
-					case 'U': case 'u':
-						_unsigned = true;
-                            return integer_type_suffix(nxt,'#');
+					case 'U': 
+                    case 'u':
+                        return TypeCode.UInt16;
 					case 'i':
-					case 'I': 
-						return  (_unsigned)? TypeCode.UInt32:TypeCode.Int32;
-		            case 's':
+					case 'I':
+                        return TypeCode.Int16;
+		            case 'B':
+					case 'b': 
+						return   TypeCode.Byte;
+                    case 's':
 					case 'S': 
-						return  (_unsigned)? TypeCode.UInt16:TypeCode.Int16;
-                    case 'b':
-					case 'B': 
-						return  (_unsigned)? TypeCode.Byte:TypeCode.SByte;
-					case 'l':
-					case 'L': 
-						return  (_unsigned)? TypeCode.UInt64:TypeCode.Int64;
-						
+						return TypeCode.SByte;
+                   case 'A':
+                    case 'a':
+
+                        return TypeCode.Object;
 					default:
 					   return real_type_suffix(c);
 					}
@@ -72,25 +73,16 @@ namespace VCC.Core
 		}
         public string GetSuffix()
         {
-            if (_strvalue == null)
-                return null;
-
-            if (_strvalue.Length > 2)
+  
+            string suffix = "";
+            foreach (char c in _strvalue)
             {
-
-                string suffix = _strvalue.Substring(0, _strvalue.Length - 2);
-                if(char.IsLetter(suffix[0]) && char.IsLetter(suffix[1]))
-                    return suffix;
-                else return null;
+                if (char.IsLetter(c))
+                    suffix += "" + char.ToUpper(c);
+                
             }
-            else if (_strvalue.Length == 1 && char.IsLetter(_strvalue[0]))
-            {
-
-                string suffix = _strvalue.Substring(0, _strvalue.Length - 1);
-                if(char.IsLetter(suffix[0]))
-                    return suffix;
-                else return null;
-            }
+            if (suffix != "")
+                return suffix;
             else return null;
         }
         public bool IsValidNumber(string num)
@@ -164,7 +156,7 @@ namespace VCC.Core
         public CharLiteral(string value)
             : base(value, true)
         {
-            _value = new ByteConstant(Encoding.UTF8.GetBytes(value)[0], CompilerContext.TranslateLocation(position));
+            _value = new ByteConstant(Encoding.ASCII.GetBytes(value.Replace("'",""))[0], CompilerContext.TranslateLocation(position));
   
         }
 
@@ -209,7 +201,7 @@ namespace VCC.Core
                 _value = new ByteConstant(Convert.ToByte(value, 16), CompilerContext.TranslateLocation(position));
             else if (value.Length <= 6)
                 _value = new UIntConstant(Convert.ToUInt16(value, 16), CompilerContext.TranslateLocation(position));
-            else throw new ArgumentOutOfRangeException(value + "Hex value cannot be larger than 16 bits");
+            else ResolveContext.Report.Error(1,Location, "Hex value cannot be larger than 16 bits");
            
         }
 
@@ -228,8 +220,9 @@ namespace VCC.Core
                 _value = new ByteConstant(Convert.ToByte(value, 8), CompilerContext.TranslateLocation(position));
             else if (value.Length <= 6)
                 _value = new UIntConstant(Convert.ToUInt16(value, 8), CompilerContext.TranslateLocation(position));
-        
-            else throw new ArgumentOutOfRangeException(value + "Hex value cannot be larger than 16 bits");
+
+            else ResolveContext.Report.Error(1, Location, "Octal value cannot be larger than 16 bits");
+           
 
         }
 
@@ -246,7 +239,9 @@ namespace VCC.Core
             ulong v;
             if (HasSuffix)
             {
+                int l = GetSuffix().Length;
                 TypeCode tpc = GetTypeBySuffix();
+                value = value.Remove(value.Length - l, l);
                 switch (tpc)
                 {
                     case TypeCode.Byte:
@@ -263,7 +258,9 @@ namespace VCC.Core
                         _value = new UIntConstant(ushort.Parse(value), CompilerContext.TranslateLocation(position));
                         break;
 
-                 
+                    case TypeCode.Object:
+                        _value = new ArrayConstant(System.Numerics.BigInteger.Parse(value).ToByteArray(), CompilerContext.TranslateLocation(position));
+                        break;
                     
 
                     
@@ -275,17 +272,39 @@ namespace VCC.Core
                     _value = new ByteConstant((byte)v, CompilerContext.TranslateLocation(position));
                 else if (v <= ushort.MaxValue)
                     _value = new UIntConstant((ushort)v, CompilerContext.TranslateLocation(position));
-                else throw new ArgumentOutOfRangeException(value + "Decimal value cannot be larger than 16 bits");
+                else ResolveContext.Report.Error(1, Location, "Decimal value cannot be larger than 16 bits");
+           
               
             }
-            else throw new ArgumentOutOfRangeException(value + "Decimal value cannot be larger than 16 bits");
+            else ResolveContext.Report.Error(1, Location, "Decimal value cannot be larger than 16 bits");
+           
         }
 
 
 
     }
 
+    [Terminal("BinaryLiteral")]
+    public class BinaryLiteral : Literal
+    {
 
+        public BinaryLiteral(string value)
+            : base(value)
+        {
+            value = value.Remove(0, 2);
+            if (value.Length <= 8)
+                _value = new ByteConstant(Convert.ToByte(value, 2), CompilerContext.TranslateLocation(position));
+            else if (value.Length <= 16)
+                _value = new UIntConstant(Convert.ToUInt16(value, 2), CompilerContext.TranslateLocation(position));
+
+            else ResolveContext.Report.Error(1, Location, "Octal value cannot be larger than 16 bits");
+
+
+        }
+
+
+
+    }
 
 
 

@@ -58,6 +58,7 @@ namespace VCC
         // Abstract Functions list
 
         public abstract void Error(Location location, string message);
+        public abstract void Error(int code,Location location, string message);
 
         public abstract void Warning(Location location, string message);
 

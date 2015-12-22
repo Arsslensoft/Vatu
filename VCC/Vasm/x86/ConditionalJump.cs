@@ -13,7 +13,7 @@ namespace Vasm.x86 {
 
         public override void WriteText( Vasm.AsmContext aAssembler, AssemblyWriter aOutput )
         {
-            mMnemonic = String.Intern("j" + Condition.GetMnemonic() + " near");
+            mMnemonic = String.Intern("j" + Condition.GetMnemonic() + " ");
             base.WriteText(aAssembler, aOutput);
         }
     }

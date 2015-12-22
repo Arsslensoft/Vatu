@@ -34,17 +34,29 @@ namespace VCC
         DO,
         DO_WHILE,
         CASE,
-        LABEL
+        LABEL,
+        BOOL_EXPR,
+        SW,
+        FOR
 
     }
-
-
+    [Flags]
+    public enum ResolveScopes
+    {
+        AccessOperation = 1 << 1,
+        Normal = 1,
+        Loop = 1 << 2,
+        If = 1 << 3,
+        Case = 1 << 4
+    }
     public interface IEmitExpr
     {
         bool EmitToStack(EmitContext ec);
         bool EmitFromStack(EmitContext ec);
         bool EmitToRegister(EmitContext ec, RegistersEnum rg);
+        bool EmitBranchable(EmitContext ec, Label truecase, bool val);
     }
+
 
     /// <summary>
     /// Basic Emit for CodeGen
@@ -67,24 +79,73 @@ namespace VCC
         SimpleToken DoResolve(ResolveContext rc);
     }
 
+    public interface ILoop
+    {
+        ILoop ParentLoop { get; set; }
+        Label EnterLoop { get; set; }
+        Label ExitLoop { get; set; }
+        Label LoopCondition { get; set; }
+     
+    }
+    public interface IConditional
+    {
+        IConditional ParentIf { get; set; }
+        Label Else { get; set; }
+        Label ExitIf { get; set; }
+    }
     /// <summary>
     /// Emit Context
     /// </summary>
     public class EmitContext
     {
+        
+#if _16BITS
+        public const byte TRUE = 255;
+        public const RegistersEnum A = RegistersEnum.AX;
+        public const RegistersEnum B = RegistersEnum.BX;
+        public const RegistersEnum C = RegistersEnum.CX;
+        public const RegistersEnum D = RegistersEnum.DX;
+        public const RegistersEnum SP = RegistersEnum.SP;
+        public const RegistersEnum BP = RegistersEnum.BP;
+        public const RegistersEnum DI = RegistersEnum.DI;
+        public const RegistersEnum SI = RegistersEnum.SI;
+#elif _32BITS
+        public const RegistersEnum A = RegistersEnum.EAX;
+        public const RegistersEnum B = RegistersEnum.EBX;
+        public const RegistersEnum C = RegistersEnum.ECX;
+        public const RegistersEnum D = RegistersEnum.EDX;
+        public const RegistersEnum SP = RegistersEnum.ESP;
+        public const RegistersEnum BP = RegistersEnum.EBP;
+        public const RegistersEnum DI = RegistersEnum.EDI;
+        public const RegistersEnum SI = RegistersEnum.ESI;
+#endif
+
 
         Vasm.AsmContext ag;
         List<string> _names;
         Label enterLoop, exitLoop;
         Dictionary<string, VarSpec> Variables = new Dictionary<string, VarSpec>();
-    
-       public RegistersEnum GetNextRegister()
+        public RegistersEnum GetLow(RegistersEnum reg)
+        {
+            return ag.GetLow(reg);
+        }
+        public RegistersEnum GetHigh(RegistersEnum reg)
+        {
+            return ag.GetHigh(reg);
+        }
+      /* public RegistersEnum GetNextRegister()
         {
             RegistersEnum acc = ag.GetNextRegister();
-            if (acc == RegistersEnum.SP)
+            if (acc == EmitContext.SP)
                 throw new ArgumentException("All Registers used");
             return acc;
         }
+       public RegistersEnum SetAsUsed(RegistersEnum reg)
+       {
+      
+       
+           return ag.SetAsUsed(reg);
+       }
        public void FreeRegister()
        {
            ag.FreeRegister();
@@ -92,8 +153,10 @@ namespace VCC
        public RegistersEnum FirstRegister()
        {
        return    ag.PeekRegister();
-       }
+       }*/
         public ResolveContext CurrentResolve { get; set; }
+
+      
 
         public static Dictionary<LabelType, int> Labels = new Dictionary<LabelType, int>();
         EmitContext()
@@ -105,7 +168,7 @@ namespace VCC
         {
             CurrentResolve = rc;
         }
-        string GenerateLabelName(LabelType lb)
+        public static string GenerateLabelName(LabelType lb)
         {
             if (Labels.ContainsKey(lb))
             {
@@ -118,6 +181,7 @@ namespace VCC
                 return lb.ToString() + "_" + Labels[lb].ToString();
             }
         }
+
         public void SetEntry(string name)
         {
             ag.EntryPoint = name;
@@ -136,23 +200,61 @@ namespace VCC
         {
             ag.Emit(ins);
         }
-        public void EmitPop(RegistersEnum rg)
+        public void EmitPop(RegistersEnum rg, byte size = 80, bool adr = false)
         {
-            EmitInstruction(new Pop() { DestinationReg = rg, Size = 80 });
+            EmitInstruction(new Pop() { DestinationReg = rg, Size = size, DestinationIsIndirect = adr });
         }
-        public void EmitPush(RegistersEnum rg)
+        public void EmitPush(bool v)
         {
-            EmitInstruction(new Push() { DestinationReg = rg, Size = 80 });
+            EmitInstruction(new Push() { DestinationValue = (v ? (uint)EmitContext.TRUE : 0), Size = 8 });
         }
-        public void EmitPush(VarSpec v)
+        public void EmitPush(byte v)
         {
-            EmitInstruction(new Mov() { DestinationReg = RegistersEnum.AX, Size = 80, SourceReg = RegistersEnum.BP, SourceDisplacement = v.StackIndex, SourceIsIndirect = true });
-            EmitInstruction(new Push() { DestinationReg = RegistersEnum.AX, Size = 80 });
+            EmitInstruction(new Push() { DestinationValue = v, Size = 8 });
         }
-        public void EmitPop(VarSpec v)
+        public void EmitPush(ushort v)
         {
-            EmitInstruction(new Pop() { DestinationReg = FirstRegister(), Size = 80 });
-            EmitInstruction(new Mov() { SourceReg = FirstRegister(), Size = 80, DestinationReg = RegistersEnum.BP, DestinationDisplacement = v.StackIndex, DestinationIsIndirect = true });
+            EmitInstruction(new Push() { DestinationValue = v, Size = 16 });
+        }
+        public void EmitPush(RegistersEnum rg, byte size = 80,bool adr=false)
+        {
+            EmitInstruction(new Push() { DestinationReg = rg, Size = size,DestinationIsIndirect = adr });
+        }
+      
+        
+   
+
+       
+
+
+        public void EmitBoolean(RegistersEnum rg, ConditionalTestEnum tr, ConditionalTestEnum fls)
+        {
+            EmitInstruction(new ConditionalMove() {  Condition = tr, DestinationReg = rg, Size = 80, SourceValue = TRUE });
+            EmitInstruction(new ConditionalMove() { Condition = fls, DestinationReg = rg, Size = 80, SourceValue = 0 });
+        }
+        public void EmitBooleanWithJump(RegistersEnum rg, ConditionalTestEnum TR)
+        {
+            string lbname = EmitContext.GenerateLabelName(LabelType.BOOL_EXPR);
+            Label truelb = DefineLabel(lbname + "_TRUE");
+            Label falselb = DefineLabel(lbname + "_FALSE");
+            Label boolexprlb = DefineLabel(lbname + "_END");
+            // jumps
+            EmitInstruction(new ConditionalJump() { Condition = TR, DestinationLabel = truelb.Name });
+            EmitInstruction(new Jump() { DestinationLabel = falselb.Name }); // false
+            // emit true and false
+            // true
+            MarkLabel(truelb);
+            EmitInstruction(new Mov() { DestinationReg = EmitContext.A, SourceValue = TRUE, Size = 8 });
+            EmitInstruction(new Jump() { DestinationLabel = boolexprlb.Name }); // exit
+            // false
+            MarkLabel(falselb);
+            EmitInstruction(new Mov() { DestinationReg = EmitContext.A, SourceValue = 0, Size = 8 });
+            // mark exit
+            MarkLabel(boolexprlb);
+        }
+        public void EmitBoolean(RegistersEnum rg, bool v)
+        {
+            EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = (v ? (uint)EmitContext.TRUE : 0), Size = 80 });
         }
         public void EmitCall(MethodSpec m)
         {
@@ -183,17 +285,19 @@ namespace VCC
 
 
 
-        public void EmitData(DataMember dm, MemberSpec v)
+        public void EmitData(DataMember dm, MemberSpec v, bool constant=false)
         {
             if (!Variables.ContainsKey(v.Signature.ToString()))
             {
                 v.Reference =  ElementReference.New(v.Signature.ToString());
-                ag.DefineData(dm);
+                if(constant)
+                ag.DefineConstantData(dm);
+                else ag.DefineData(dm);
 
             }
         }
-      
 
+   
 
         public void MarkLabel(Label lb)
         {
@@ -207,41 +311,35 @@ namespace VCC
         {
             return ag.DefineLabel(GenerateLabelName(LabelType.LABEL));
         }
-        public Label DefineLabel(LabelType lbt)
+        public Label DefineLabel(LabelType lbt,string suffix = null)
         {
+          if(suffix == null)
             return ag.DefineLabel(GenerateLabelName(lbt));
+          else return ag.DefineLabel(GenerateLabelName(lbt) + "_"+suffix);
         }
-        public void MarkLoopEnter()
-        {
-            enterLoop = DefineLabel(LabelType.LOOP);
-            MarkLabel(enterLoop);
-
-        }
-        public void MarkLoopExit()
-        {
-            exitLoop = DefineLabel("E_" + enterLoop.Name);
-            MarkLabel(exitLoop);
-        }
+       
 
         public void Emit()
         {
             ag.Emit(ag.AssemblerWriter);
         }
 
-        public void EmitDataWithConv(string name, object value, MemberSpec v)
+        public void EmitDataWithConv(string name, object value, MemberSpec v, bool constant=false)
         {
             DataMember dm;
             if (value is string)
                 dm = new DataMember(name, Encoding.ASCII.GetBytes(value.ToString()));
+            else if (value is byte[])
+                dm = new DataMember(name, (byte[])value);
             else if (value is bool)
-                dm = new DataMember(name, ((bool)value) ? (new byte[1] { 255 }) : (new byte[1] { 0 }));
+                dm = new DataMember(name, ((bool)value) ? (new byte[1] { EmitContext.TRUE }) : (new byte[1] { 0 }));
             else if (value is byte)
                 dm = new DataMember(name, new byte[1] { (byte)value });
             else if (value is ushort)
                 dm = new DataMember(name, new ushort[1] { (ushort)value });
             else dm = new DataMember(name, new object[1] { value });
 
-            EmitData(dm,v);
+            EmitData(dm, v, constant);
         }
         public void EmitStruct(StructElement strct)
         {
@@ -258,15 +356,81 @@ namespace VCC
             ag.AddExtern(method.Signature.ToString());
         }
     }
+    public class Conversion
+    {
+        /// <summary>
+        /// Convert 8 bits to 16 bits Signed
+        /// </summary>
+        /// <param name="ec"></param>
+        /// <param name="src"></param>
+        /// <param name="dst"></param>
+        public static void EmitConvert8To16Signed(EmitContext ec, RegistersEnum src)
+        {
+            ec.EmitInstruction(new MoveSignExtend() { SourceReg = ec.GetLow(src), DestinationReg = src, Size = 80 });
+
+        }
+        /// <summary>
+        /// Convert 8 bits to 16 bits
+        /// </summary>
+        /// <param name="ec"></param>
+        /// <param name="src"></param>
+        /// <param name="dst"></param>
+        public static void EmitConvert8To16Unsigned(EmitContext ec,RegistersEnum src)
+        {
+            ec.EmitInstruction(new MoveZeroExtend() { SourceReg = ec.GetLow(src), DestinationReg = src, Size = 80 });
+        
+        }
+        /// <summary>
+        /// Convert 16 to 8 
+        /// </summary>
+        /// <param name="ec"></param>
+        /// <param name="src"></param>
+        /// <param name="dst"></param>
+        public static void EmitConvert16To8(EmitContext ec, RegistersEnum src)
+        {
+            ec.EmitInstruction(new MoveZeroExtend() { SourceReg = ec.GetLow(src), DestinationReg = src, Size = 8 });
+
+        }
+
+      
+      
+    }
 
     public class ResolveContext : IDisposable
     {
+      
+        public IConditional EnclosingIf { get; set; }
+        public ILoop EnclosingLoop { get; set; }
+        public Switch EnclosingSwitch { get; set; }
+        public Label DefineLabel(string name)
+        {
+        
+                return new Label(name);
+          
+        }
+        public Label DefineLabel(LabelType lbt, string suffix = null)
+        {
+            if (suffix == null)
+                return new Label(EmitContext.GenerateLabelName(lbt));
+            else return new Label(EmitContext.GenerateLabelName(lbt) + "_" + suffix);
+        }
+
         Block current_block;
-       public Report Report { get; set; }
+        static Report rp;
+        public static Report Report { get { return rp; } set { rp = value; } }
+
+        public Stack<object> ResolverStack { get; set; }
+
        public List<ResolveContext> ChildContexts { get; set; }
        public bool IsInTypeDef { get; set; }
        public bool IsInStruct { get; set; }
        public bool IsInEnum { get; set; }
+       public bool IsInVarDeclaration { get; set; }
+
+       public Namespace CurrentNamespace { get; set; }
+       public List<Namespace> Imports { get; set; }
+
+       public ResolveScopes CurrentScope { get; set; }
 
        public int LocalStackIndex { get; set; }
 
@@ -274,11 +438,13 @@ namespace VCC
         public MethodSpec CurrentMethod { get { return current_member; } set { current_member = value; } }
 
         TypeSpec current_type;
-        public TypeSpec CurrentType { get { return current_type; } }
+        public TypeSpec CurrentType { get { return current_type; } set { current_type = value; } }
 
        public Known _known;
         void FillKnown()
         {
+            CurrentScope = ResolveScopes.Normal;
+            ResolverStack = new Stack<object>();
             _known.KnownTypes.Add(BuiltinTypeSpec.Bool);
             _known.KnownTypes.Add(BuiltinTypeSpec.Byte);
             _known.KnownTypes.Add(BuiltinTypeSpec.SByte);
@@ -287,56 +453,82 @@ namespace VCC
             _known.KnownTypes.Add(BuiltinTypeSpec.String);
             _known.KnownTypes.Add(BuiltinTypeSpec.Void);
         }
-    
-        public ResolveContext(Block b, MethodSpec cm, Known known)
+         void Init(){
+       
+        IsInVarDeclaration = false;
+        IsInTypeDef = false;
+        IsInStruct = false;
+        IsInEnum = false;
+        LocalStackIndex = 0;
+        Report = new ConsoleReporter();
+    }
+         public ResolveContext(List<Namespace> imp,Namespace ns, Block b, MethodSpec cm, Known known)
         {
+            Imports = imp;
+            CurrentNamespace = ns;
             _known = known;
             current_block = b;
             current_member = cm;
-            IsInTypeDef = false;
-            IsInStruct = false;
-            IsInEnum = false;
+            Init();
         }
-        public ResolveContext(Block b, MethodSpec cm)
-        {
+         public ResolveContext(List<Namespace> imp, Namespace ns, Block b, MethodSpec cm)
+         {
+             Imports = imp;
+            CurrentNamespace = ns;
             _known = new Known();
             current_block = b;
             current_member = cm;
             FillKnown();
-            IsInTypeDef = false;
-            IsInStruct = false;
-            IsInEnum = false;
+            Init();
         }
-        public ResolveContext(DeclarationSequence<Declaration> decl)
-        {
+         public ResolveContext(List<Namespace> imp, Namespace ns, DeclarationSequence<Declaration> decl)
+         {
+             Imports = imp;
+             CurrentNamespace = ns;
+            Init();
             _known = new Known();
-            current_member = new MethodSpec("<root-decl-list>", Modifiers.NoModifier, null, Location.Null);
+            current_member = new MethodSpec(CurrentNamespace, "<root-decl-list>", Modifiers.NoModifier, null, Location.Null);
             FillKnown();
             ChildContexts = new List<ResolveContext>();
-            IsInTypeDef = false;
-            IsInStruct = false;
-            IsInEnum = false;
+    
         }
-        public ResolveContext(MethodDeclaration decl)
-        {
+         public ResolveContext(List<Namespace> imp, Namespace ns, MethodDeclaration decl)
+         {
+             Imports = imp;
+            CurrentNamespace = ns;
+            Init();
             _known = new Known();
-            current_member = new MethodSpec(decl.Identifier.Name, Modifiers.NoModifier, null, Location.Null);
+            current_member = new MethodSpec(CurrentNamespace, decl.Identifier.Name, Modifiers.NoModifier, null, Location.Null);
             FillKnown();
             ChildContexts = new List<ResolveContext>();
-            IsInTypeDef = false;
-            IsInStruct = false;
-            IsInEnum = false;
-            LocalStackIndex = 0;
+   
+         
         }
-        public ResolveContext(StructDeclaration decl)
-        {
+         public ResolveContext(List<Namespace> imp, Namespace ns, StructDeclaration decl)
+         {
+             Imports = imp;
+            CurrentNamespace = ns;
+            Init();
             _known = new Known();
-            current_member = new MethodSpec("<struct-decl>", Modifiers.NoModifier, null, Location.Null);
-            current_type = new TypeSpec(decl.Identifier.Name, 0, BuiltinTypes.Unknown, TypeFlags.Struct, Modifiers.NoModifier, Location.Null);
+            current_member = new MethodSpec(CurrentNamespace, "<struct-decl>", Modifiers.NoModifier, null, Location.Null);
+            current_type = new TypeSpec(CurrentNamespace, decl.Identifier.Name, 0, BuiltinTypes.Unknown, TypeFlags.Struct, Modifiers.NoModifier, Location.Null);
             FillKnown();
             ChildContexts = new List<ResolveContext>();
-            IsInTypeDef = false;
+       
             IsInStruct = true;
+        }
+         public ResolveContext(List<Namespace> imp, Namespace ns, EnumDeclaration decl)
+         {
+             Imports = imp;
+            CurrentNamespace = ns;
+            Init();
+            _known = new Known();
+            current_member = new MethodSpec(CurrentNamespace, "<enum-decl>", Modifiers.NoModifier, null, Location.Null);
+            current_type = new TypeSpec(CurrentNamespace, decl.Identifier.Name, 0, BuiltinTypes.Unknown, TypeFlags.Struct, Modifiers.NoModifier, Location.Null);
+            FillKnown();
+            ChildContexts = new List<ResolveContext>();
+
+            IsInEnum = true;
         }
 
         public List<VarSpec> GetLocals()
@@ -347,13 +539,13 @@ namespace VCC
         public void FillKnownByKnown(Known kn)
         {
             foreach (FieldSpec fs in kn.KnownGlobals)
-                _known.KnownGlobals.Add(fs);
+                KnowField(fs);
 
             foreach (MethodSpec ms in kn.KnownMethods)
-                _known.KnownMethods.Add(ms);
+                KnowMethod(ms);
 
             foreach (TypeSpec ts in kn.KnownTypes)
-                _known.KnownTypes.Add(ts);
+                KnowType(ts);
 
       
         }
@@ -362,11 +554,11 @@ namespace VCC
             return current_member.Name == "<root-decl-list>";
         }
 
-        public ResolveContext CreateAsChild(MethodDeclaration md)
+        public ResolveContext CreateAsChild(List<Namespace> imp,Namespace ns, MethodDeclaration md)
         {
             if (ChildContexts != null)
             {
-                ResolveContext rc = new ResolveContext(md);
+                ResolveContext rc = new ResolveContext(imp,ns,md);
                 rc.FillKnownByKnown(_known);
                 ChildContexts.Add(rc);
                 return rc;
@@ -374,11 +566,11 @@ namespace VCC
             }
             else return null;
         }
-        public ResolveContext CreateAsChild(StructDeclaration md)
+        public ResolveContext CreateAsChild(List<Namespace> imp, Namespace ns, StructDeclaration md)
         {
             if (ChildContexts != null)
             {
-                ResolveContext rc = new ResolveContext(md);
+                ResolveContext rc = new ResolveContext(imp,ns,md);
                 rc.FillKnownByKnown(_known);
                 ChildContexts.Add(rc);
                 return rc;
@@ -386,6 +578,19 @@ namespace VCC
             }
             else return null;
         }
+        public ResolveContext CreateAsChild(List<Namespace> imp, Namespace ns, EnumDeclaration md)
+        {
+            if (ChildContexts != null)
+            {
+                ResolveContext rc = new ResolveContext(imp,ns,md);
+                rc.FillKnownByKnown(_known);
+                ChildContexts.Add(rc);
+                return rc;
+
+            }
+            else return null;
+        }
+   
         public void UpdateFather(ResolveContext rc)
         {
             foreach (MethodSpec m in rc._known.KnownMethods)
@@ -409,47 +614,224 @@ namespace VCC
 
             ChildContexts.Add(crc);
         }
-        public static ResolveContext CreateContextForMethod(MethodSpec mtd, Block b)
+        public static ResolveContext CreateContextForMethod(List<Namespace> imp, Namespace ns, MethodSpec mtd, Block b)
         {
-            return new ResolveContext(b, mtd);
+            return new ResolveContext(imp,ns,b, mtd);
         }
-        public static ResolveContext CreateRootContext(DeclarationSequence<Declaration> dcl)
+        public static ResolveContext CreateRootContext(List<Namespace> imp, Namespace ns, DeclarationSequence<Declaration> dcl)
         {
-            return new ResolveContext(dcl);
+            return new ResolveContext(imp,ns,dcl);
         }
 
-        public TypeSpec ResolveType(string name)
+
+        #region Resolve Members
+        public MemberSpec TryResolveName(Namespace ns,string name)
+        {
+            MemberSpec m = ResolveVar(ns,name);
+            if (m == null)
+            {
+                m = ResolveParameter(name);
+                if (m == null)
+                {
+                    m = ResolveField(ns,name);
+                    if (m == null)
+                        return null;
+                  
+                    else return m;
+                }
+                else return m;
+            }
+            else return m;
+        }
+        public TypeSpec ResolveType(Namespace ns, string name)
         {
             foreach (TypeSpec kt in _known.KnownTypes)
+            {
+                if (kt.NS.Name != ns.Name)
+                    continue;
                 if (kt.Name == name)
                     return kt;
+            }
 
             return null;
         }
-        public FieldSpec ResolveField(string name)
+        public FieldSpec ResolveField(Namespace ns, string name)
         {
             foreach (FieldSpec kt in _known.KnownGlobals)
+            {
+                if (kt.NS.Name != ns.Name)
+                    continue;
                 if (kt.Name == name)
                     return kt;
+            }
 
             return null;
         }
-        public MethodSpec ResolveMethod(string name)
+        public MethodSpec ResolveMethod(Namespace ns, string name)
         {
             foreach (MethodSpec kt in _known.KnownMethods)
+            {
+                if (kt.NS.Name != ns.Name)
+                    continue;
                 if (kt.Name == name)
                     return kt;
+            }
 
             return null;
         }
-        public VarSpec ResolveVar(string name)
+        public VarSpec ResolveVar(Namespace ns, string name)
         {
             foreach (VarSpec kt in _known.KnownLocalVars)
+            {
+                if (kt.NS.Name != ns.Name)
+                    continue;
                 if (kt.Name == name)
                     return kt;
+            }
+            return null;
+        }
+        public ParameterSpec ResolveParameter( string name)
+        {
+            foreach (ParameterSpec kt in CurrentMethod.Parameters)
+            {
+        
+                if (kt.Name == name)
+                    return kt;
+            }
+            return null;
+        }
+        public EnumMemberSpec ResolveEnumValue(Namespace ns, string name)
+        {
+            foreach (TypeSpec kt in _known.KnownTypes)
+            {
+                if (kt.NS.Name != ns.Name)
+                    continue;
+                if (kt is EnumTypeSpec)
+                {
+                   
+                    EnumTypeSpec ets = (EnumTypeSpec)kt;
+                    foreach (EnumMemberSpec em in ets.Members)
+                        if (em.Name == name)
+                            return em;
+                }
+            }    
 
             return null;
         }
+
+
+        public MethodSpec TryResolveMethod(string name)
+        {
+            MethodSpec ms = ResolveMethod(CurrentNamespace, name);
+            if (ms == null)
+            {
+                ms = ResolveMethod(Namespace.Default, name);
+
+
+                if (ms == null)
+                {
+                    foreach (Namespace ns in Imports)
+                    {
+                        ms = ResolveMethod(ns, name);
+                        if (ms != null)
+                            return ms;
+                    }
+                }
+            }
+            return ms;
+        }
+        public VarSpec TryResolveVar(string name)
+        {
+            VarSpec ms = ResolveVar(CurrentNamespace, name);
+              if (ms == null)
+              {
+                  ms = ResolveVar(Namespace.Default, name);
+                  if (ms == null)
+                  {
+                      foreach (Namespace ns in Imports)
+                      {
+                          ms = ResolveVar(ns, name);
+                          if (ms != null)
+                              return ms;
+                      }
+                  }
+              }
+            return ms;
+        }
+        public FieldSpec TryResolveField(string name)
+        {
+            FieldSpec ms = ResolveField(CurrentNamespace, name);
+           if (ms == null)
+           {
+               ms = ResolveField(Namespace.Default, name);
+               if (ms == null)
+               {
+                   foreach (Namespace ns in Imports)
+                   {
+                       ms = ResolveField(ns, name);
+                       if (ms != null)
+                           return ms;
+                   }
+               }
+           }
+            return ms;
+        }
+        public MemberSpec TryResolveName(string name)
+        {
+            MemberSpec m = TryResolveVar( name);
+            if (m == null)
+            {
+                m = ResolveParameter( name);
+                if (m == null)
+                {
+                    m = TryResolveField( name);
+                    if (m == null)
+                        return null;
+
+                    else return m;
+                }
+                else return m;
+            }
+            else return m;
+        }
+        public TypeSpec TryResolveType(string name)
+        {
+            TypeSpec ms = ResolveType(CurrentNamespace, name);
+            if (ms == null)
+            {
+                ms = ResolveType(Namespace.Default, name);
+                if (ms == null)
+                {
+                    foreach (Namespace ns in Imports)
+                    {
+                        ms = ResolveType(ns, name);
+                        if (ms != null)
+                            return ms;
+                    }
+                }
+            }
+            return ms;
+        }
+        public EnumMemberSpec TryResolveEnumValue(string name)
+        {
+            EnumMemberSpec ms = ResolveEnumValue(CurrentNamespace, name);
+           if (ms == null)
+           {
+               ms = ResolveEnumValue(Namespace.Default, name);
+               if (ms == null)
+               {
+                   foreach (Namespace ns in Imports)
+                   {
+                       ms = ResolveEnumValue(ns, name);
+                       if (ms != null)
+                           return ms;
+                   }
+               }
+           }
+            return ms;
+        }
+
+        #endregion
 
         public bool Exist(MemberSpec m, List<MemberSpec> l)
         {
@@ -472,8 +854,8 @@ namespace VCC
         {
             if (!Exist((MemberSpec)mtd,_known.KnownLocalVars.Cast<MemberSpec>().ToList<MemberSpec>() ))
             {
-                LocalStackIndex -= 2;
-                mtd.StackIndex = LocalStackIndex;
+                LocalStackIndex -= mtd.MemberType.Size;
+                mtd.StackIdx = LocalStackIndex;
                 _known.KnownLocalVars.Add(mtd);
             }
         }
@@ -500,23 +882,38 @@ namespace VCC
 
     }
 
-    public class AtomicContext
+   
+    public class FlowAnalysisContext
     {
-        public Dictionary<RegistersEnum, Expr> RegistersInUse { get; set; }
-        public AtomicContext()
-        {
-         RegistersInUse = new Dictionary<RegistersEnum,Expr>();
+        public bool UnreachableReported { get; set; }
 
+/*
+        public bool IsDefinitelyAssigned(VariableInfo variable)
+        {
+            return variable.IsAssigned(DefiniteAssignment);
         }
 
-      
-    }
+        public bool IsStructFieldDefinitelyAssigned(VariableInfo variable, string name)
+        {
+            return variable.IsStructFieldAssigned(DefiniteAssignment, name);
+        }
 
+        public void SetVariableAssigned(VariableInfo variable, bool generatedAssignment = false)
+        {
+            variable.SetAssigned(DefiniteAssignment, generatedAssignment);
+        }
+
+        public void SetStructFieldAssigned(VariableInfo variable, string name)
+        {
+            variable.SetStructFieldAssigned(DefiniteAssignment, name);
+        }
+        */
+    }
     public class CompilerContext
     {
         public static Location TranslateLocation(bsn.GoldParser.Parser.LineInfo li)
         {
-            return new Location(new SourceFile("this", "null", 0), li.Line, li.Column);
+            return new Location( li.Line, li.Column);
         }
     }
 }

@@ -8,6 +8,8 @@ namespace Vasm
 {
    public class AsmContext
     {
+   
+
        private static AsmContext mCurrentInstance;
        Stack<RegistersEnum> rg = new Stack<RegistersEnum>();
        public RegistersEnum GetNextRegister()
@@ -29,6 +31,41 @@ namespace Vasm
             }
             else { rg.Push(RegistersEnum.AX); return RegistersEnum.AX; }
         }
+       public RegistersEnum SetAsUsed(RegistersEnum reg)
+       {
+
+           if (rg.Contains(reg))
+               return GetNextRegister();
+           else
+           {
+               rg.Push(reg);
+               return reg;
+           }
+       }
+       public RegistersEnum GetLow(RegistersEnum reg)
+       {
+           if (reg == RegistersEnum.AX)
+               return RegistersEnum.AL;
+           else if (reg == RegistersEnum.BX)
+               return RegistersEnum.BL;
+           else if (reg == RegistersEnum.CX)
+               return RegistersEnum.CL;
+           else if (reg == RegistersEnum.DX)
+               return RegistersEnum.DL;
+           else return reg;
+       }
+       public RegistersEnum GetHigh(RegistersEnum reg)
+       {
+           if (reg == RegistersEnum.AX)
+               return RegistersEnum.AH;
+           else if (reg == RegistersEnum.BX)
+               return RegistersEnum.BH;
+           else if (reg == RegistersEnum.CX)
+               return RegistersEnum.CH;
+           else if (reg == RegistersEnum.DX)
+               return RegistersEnum.DH;
+           else return reg;
+       }
        public void FreeRegister()
        {
           // if (rg.Contains(reg))
@@ -37,7 +74,7 @@ namespace Vasm
        }
        public RegistersEnum PeekRegister()
        {
-           return (rg.Count > 0)?rg.Peek():GetNextRegister();
+           return (rg.Count > 0)?rg.Peek():RegistersEnum.AX;
        }
        public AssemblyWriter AssemblerWriter { get; set; }
        public string EntryPoint { get; set; }
@@ -76,7 +113,7 @@ namespace Vasm
                                 m &= true;
             return m;
         }
-        bool SameOperands(InstructionWithDestinationAndSize a, InstructionWithDestinationAndSize b)
+        bool SameOperands(Pop a, Push b)
         {
             bool m = false;
             if (a.DestinationDisplacement == b.DestinationDisplacement)
@@ -90,9 +127,26 @@ namespace Vasm
                                 m &= true;
             return m;
         }
-     
-       public void Optimize()
+        bool SamePushPopRegisters(Pop a, Push b)
         {
+
+            return (a.DestinationReg.HasValue && b.DestinationReg.HasValue);
+       
+           
+        }
+        bool PushValuePopRegister(Pop a, Push b)
+        {
+            return (a.DestinationReg.HasValue && b.DestinationValue.HasValue);
+               
+        }
+        bool PushReferencePopRegister(Pop a, Push b)
+        {
+            return (a.DestinationReg.HasValue && b.DestinationRef != null);
+
+        }
+        public void Optimize()
+        {
+            return;
    
             int i = 0;
             for (i = 0; i < mInstructions.Count; i++ )
@@ -100,18 +154,40 @@ namespace Vasm
                 Instruction ins = mInstructions[i];
                 if (i > 0)
                 {
+
                     // Push Pop optimize
                     if (ins is Pop && mInstructions[i - 1] is Push)
                     {
-                        if (SameOperands((Pop)ins, (Push)mInstructions[i - 1]))
+                         Push OldPush = (Push)mInstructions[i - 1];
+                           Pop OldPop= (Pop)mInstructions[i ];
+                        if (SameOperands(OldPop, OldPush)) // PUSH REG1 POP REG1
                         {
                              mInstructions[i].Emit = false;
                             mInstructions[i-1].Emit = false;
                         }
+                        else if (SamePushPopRegisters(OldPop, OldPush)) // PUSH REG1 POP REG2
+                        {
+                           
+                           mInstructions[i].Emit = false;
+                           // mInstructions[i - 1].Emit = false;
+                           mInstructions[i - 1] = new Mov() { SourceReg = OldPush.DestinationReg, DestinationReg = OldPop.DestinationReg, Size = OldPush.Size };
+                        }
+                        else if (PushValuePopRegister(OldPop, OldPush)) // Push VAL Pop REG
+                        {
+                            mInstructions[i].Emit = false;
+                            // mInstructions[i - 1].Emit = false;
+                            mInstructions[i - 1] = new Mov() { SourceValue = OldPush.DestinationValue, DestinationReg = OldPop.DestinationReg, Size = OldPush.Size };
+                        }
+                        else if (PushReferencePopRegister(OldPop, OldPush)) // Push REF Pop REG
+                        {
+                            mInstructions[i].Emit = false;
+                            // mInstructions[i - 1].Emit = false;
+                            mInstructions[i - 1] = new Mov() { SourceRef = OldPush.DestinationRef, DestinationReg = OldPop.DestinationReg, Size = OldPush.Size };
+                        }
                     }
 
                 }
-                i++;
+              
             }
 
               
@@ -128,7 +204,12 @@ namespace Vasm
         }
 
 
-
+        protected List<DataMember> mCDataMembers = new List<DataMember>();
+        public List<DataMember> ConstantDataMembers
+        {
+            get { return mCDataMembers; }
+            set { mCDataMembers = value; }
+        }
         protected List<DataMember> mDataMembers = new List<DataMember>();
         public List<DataMember> DataMembers
         {
@@ -234,7 +315,14 @@ namespace Vasm
 
            return true;
        }
+       public bool DefineConstantData(DataMember data)
+       {
+           if (!IsCDataDefined(data.Name))
+               mCDataMembers.Add(data);
+           else return false;
 
+           return true;
+       }
        public Label DefineGlobal(string name)
        {
            return new Label(name,true);
@@ -257,7 +345,14 @@ namespace Vasm
 
            return true;
        }
+       public bool IsCDataDefined(string name)
+       {
+           foreach (DataMember dm in mCDataMembers)
+               if (dm.Name == name)
+                   return true;
 
+           return false;
+       }
        public bool IsDataDefined(string name)
        {
            foreach (DataMember dm in DataMembers)
@@ -297,7 +392,6 @@ namespace Vasm
        
            // alloc vars
            writer.WriteLine("section .bss");
-           writer.WriteLine();
            foreach (KeyValuePair<string,StructElement> p in DeclaredStructVars)
            {
                p.Value.EmitAlloc(writer, p.Key);
@@ -316,9 +410,27 @@ namespace Vasm
 
            // prepare emit
            EmitPrepare(writer);
+           // Write out readonly
+           writer.WriteLine("section .rodata");
+
+           foreach (DataMember xMember in mCDataMembers)
+           {
+               writer.Write("\t");
+               if (xMember.IsComment)
+               {
+                   writer.Write(xMember.Name);
+               }
+               else
+               {
+                   xMember.WriteText(this, writer);
+               }
+               writer.WriteLine();
+           }
+
+           writer.WriteLine();
            // Write out data declarations
            writer.WriteLine("section .data");
-           writer.WriteLine();
+ 
            foreach (DataMember xMember in mDataMembers)
            {
                writer.Write("\t");

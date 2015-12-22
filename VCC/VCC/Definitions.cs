@@ -8,88 +8,7 @@ using Vasm.x86;
 
 namespace VCC.Core
 {
-    public class EnumValue : Definition
-    {
-        Identifier _id;
-        Literal _value;
-        [Rule(@"<Enum Val> ::= Id ~'=' HexLiteral")]
-        public EnumValue(Identifier id, HexLiteral value)
-        {
-            _id = id;
-            _value = value;
-        }
-        [Rule(@"<Enum Val> ::= Id ~'=' OctLiteral")]
-        public EnumValue(Identifier id, OctLiteral value)
-        {
-            _id = id;
-            _value = value;
-        }
-        [Rule(@"<Enum Val> ::= Id ~'=' DecLiteral")]
-        public EnumValue(Identifier id, DecLiteral value)
-        {
-            _id = id;
-            _value = value;
-        }
-
-        [Rule(@"<Enum Val>     ::= Id")]
-        public EnumValue(Identifier id)
-        {
-            _id = id;
-            _value = null;
-        }
-
-
-        public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            _id = (Identifier)_id.DoResolve(rc);
-            _value = (Literal)_value.DoResolve(rc);
-            return this;
-        }
-        public override bool Resolve(ResolveContext rc)
-        {
  
-
-           return _value.Resolve(rc);
-        }
-        public override bool Emit(EmitContext ec)
-        {
-            // TODO:EMIT ENUM
-            return true;
-        }
-    }
-    public class EnumDefinition : Definition
-    {
-        EnumDefinition next_def;
-        EnumValue _value;
-        [Rule(@"<Enum Def>     ::= <Enum Val> ~',' <Enum Def>")]
-        public EnumDefinition(EnumValue val, EnumDefinition def)
-        {
-            _value = val;
-            next_def = def;
-        }
-        [Rule(@"<Enum Def>     ::= <Enum Val>")]
-        public EnumDefinition(EnumValue val)
-        {
-            _value = val;
-            next_def = null;
-        }
-
-        public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            _value = (EnumValue)_value.DoResolve(rc);
-            next_def = (EnumDefinition)next_def.DoResolve(rc);
-            return this;
-        }
-        public override bool Resolve(ResolveContext rc)
-        {
-
-           return _value.Resolve(rc) && next_def.Resolve(rc);
-        }
-        public override bool Emit(EmitContext ec)
-        {
-            return true;
-        }
-    }
 
     public class VariableItemDefinition : Definition
     {
@@ -136,18 +55,20 @@ namespace VCC.Core
 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-            if (_nextvars == null)
-                return null;
-            else
+            if (_nextvars != null)
             {
                 _nextvars = (VariableListDefinition)_nextvars.DoResolve(rc);
+
                 _vardef = (VariableItemDefinition)_vardef.DoResolve(rc);
+                return this;
             }
-            return this;
+            else return null;
+       
         }
         public override bool Resolve(ResolveContext rc)
         {
             bool ok = true;
+      
             if (_vardef != null)
                 ok &= _vardef.Resolve(rc);
             if (_nextvars != null)
@@ -178,16 +99,23 @@ namespace VCC.Core
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+            bool conv = false;
+            if (_expr != null)
             _expr = (Expr)_expr.DoResolve(rc);
-            if (_expr != null && _expr is ConstantExpression)
-                Size = ((int)(((ConstantExpression)_expr).ConvertImplicitly(rc, BuiltinTypeSpec.Int)).GetValue());
 
+            if (_expr != null && _expr is ConstantExpression)
+                Size = ((int)(((ConstantExpression)_expr).ConvertImplicitly(rc, BuiltinTypeSpec.Int, ref conv)).GetValue());
+            else Size = 0;
+
+            if (Size < 0)
+                ResolveContext.Report.Error(47, Location, "Invalid array size");
             return this;
         }
         public override bool Resolve(ResolveContext rc)
         {
-    
+      if (_expr != null)
             return _expr.Resolve(rc);
+      return true;
         }
         public override bool Emit(EmitContext ec)
         {
@@ -196,6 +124,7 @@ namespace VCC.Core
     }
     public class VariableDefinition : Definition
     {
+        public int ArraySize { get; set; }
         public ArrayVariableDefinition _avd;
         public Identifier _id;
         public Expr expr;
@@ -231,12 +160,19 @@ namespace VCC.Core
 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+            ArraySize = -1;
             if (_avd != null)
+            {
+                
                 _avd = (ArrayVariableDefinition)_avd.DoResolve(rc);
-
+                if (_avd != null)
+                    ArraySize = _avd.Size;
+            }
+           
             if (expr != null)
                 expr = (Expr)expr.DoResolve(rc);
-
+       
+                 
 
             return this;
         }
@@ -341,7 +277,7 @@ namespace VCC.Core
         {
             _type = (TypeIdentifier)_type.DoResolve(rc);
             ParameterType = _type.Type;
-            ParameterName = new ParameterSpec(_id.Name, rc.CurrentMethod, ParameterType,constant, loc);
+            ParameterName = new ParameterSpec(_id.Name, rc.CurrentMethod, ParameterType,constant, loc, constant? Modifiers.Const: Modifiers.NoModifier);
             return this;
         }
         public override bool Resolve(ResolveContext rc)
@@ -448,6 +384,125 @@ namespace VCC.Core
             bool ok = _var.Resolve(rc);
             if (_next_sdef != null)
                 ok &= _next_sdef.Resolve(rc);
+
+            return ok;
+        }
+        public override bool Emit(EmitContext ec)
+        {
+            return true;
+        }
+    }
+    public class EnumValue : Definition
+    {
+        public Identifier _id;
+        private Literal _value;
+        public ConstantExpression Value;
+        [Rule(@"<Enum Val> ::= Id ~'=' HexLiteral")]
+        public EnumValue(Identifier id, HexLiteral value)
+        {
+            _id = id;
+            _value = value;
+        }
+        [Rule(@"<Enum Val> ::= Id ~'=' OctLiteral")]
+        public EnumValue(Identifier id, OctLiteral value)
+        {
+            _id = id;
+            _value = value;
+        }
+        [Rule(@"<Enum Val> ::= Id ~'=' DecLiteral")]
+        public EnumValue(Identifier id, DecLiteral value)
+        {
+            _id = id;
+            _value = value;
+        }
+
+        [Rule(@"<Enum Val>     ::= Id")]
+        public EnumValue(Identifier id)
+        {
+            _id = id;
+            _value = null;
+        }
+
+
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            _id = (Identifier)_id.DoResolve(rc);
+            if (_value != null)
+                Value = (ConstantExpression)_value.DoResolve(rc);
+            return this;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+
+            if (_value != null)
+
+                return _value.Resolve(rc);
+            else return true;
+        }
+        public override bool Emit(EmitContext ec)
+        {
+            // TODO:EMIT ENUM
+            return true;
+        }
+    }
+    public class EnumDefinition : Definition
+    {
+  
+        public int Size { get; set; }
+        public List<EnumMemberSpec> Members { get; set; }
+        EnumDefinition next_def;
+        EnumValue _value;
+        [Rule(@"<Enum Def>     ::= <Enum Val> ~',' <Enum Def>")]
+        public EnumDefinition(EnumValue val, EnumDefinition def)
+        {
+            _value = val;
+            next_def = def;
+        }
+        [Rule(@"<Enum Def>     ::= <Enum Val>")]
+        public EnumDefinition(EnumValue val)
+        {
+            _value = val;
+            next_def = null;
+        }
+
+        EnumMemberSpec GetMember(ResolveContext rc,EnumValue v, TypeSpec host)
+        {
+            EnumMemberSpec e;
+            object val = null;
+            if (v.Value != null && ((val = v.Value.GetValue()) != null))
+            {
+                ushort uval = ushort.Parse(val.ToString());
+                if (uval > 255)
+                    Size = 2;
+                return new EnumMemberSpec(rc.CurrentNamespace,v._id.Name, uval, host, (uval < 256) ? BuiltinTypeSpec.Byte : BuiltinTypeSpec.UInt, v.Location);
+
+            }
+            else return new EnumMemberSpec(rc.CurrentNamespace, v._id.Name, host, BuiltinTypeSpec.UInt, v.Location);
+        }
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            Size = 1;
+            Members = new List<EnumMemberSpec>();
+            _value = (EnumValue)_value.DoResolve(rc);
+            if (next_def != null)
+                next_def = (EnumDefinition)next_def.DoResolve(rc);
+            Members.Add(GetMember(rc,_value, rc.CurrentType));
+            EnumDefinition m = next_def;
+            while (m != null)
+            {
+                if (m._value != null)
+                    Members.Add(GetMember(rc,m._value, rc.CurrentType));
+                if (m.Size == 2)
+                    Size = 2;
+                m = m.next_def;
+            }
+            return this;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            bool ok = _value.Resolve(rc);
+            if (next_def != null)
+                ok &= next_def.Resolve(rc);
 
             return ok;
         }

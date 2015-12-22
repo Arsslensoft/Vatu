@@ -2,4 +2,3 @@ D:\Research\Vatu\Vatu\VCC\Vasm\bin\Debug\Vasm.dll
 D:\Research\Vatu\Vatu\VCC\Vasm\bin\Debug\Vasm.pdb
 D:\Research\Vatu\Vatu\VCC\Vasm\obj\Debug\Vasm.dll
 D:\Research\Vatu\Vatu\VCC\Vasm\obj\Debug\Vasm.pdb
-D:\Research\Vatu\Vatu\VCC\Vasm\obj\Debug\Vasm.csprojResolveAssemblyReference.cache

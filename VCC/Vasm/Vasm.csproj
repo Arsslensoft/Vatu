@@ -46,6 +46,7 @@
     <Compile Include="Base\DataMember.cs" />
     <Compile Include="Base\ElementReference.cs" />
     <Compile Include="Base\AsmContext.cs" />
+    <Compile Include="Base\InlineInstruction.cs" />
     <Compile Include="Base\Instruction.cs" />
     <Compile Include="Base\Label.cs" />
     <Compile Include="Base\LabelName.cs" />

@@ -10,4 +10,12 @@ namespace Vasm.x86 {
       {
       }
   }
+  [Vasm.OpCode("lea")]
+  public class Lea : InstructionWithDestinationAndSourceAndSize
+  {
+      public Lea()
+          : base("lea")
+      {
+      }
+  }
 }

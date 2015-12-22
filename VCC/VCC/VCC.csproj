@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;_16BITS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -35,6 +35,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -43,21 +44,25 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\Reports.cs" />
+    <Compile Include="Compiler\Namespace.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Core\Context.cs" />
     <Compile Include="Classes\location.cs" />
     <Compile Include="Classes\Report.cs" />
     <Compile Include="Compiler\Literals.cs" />
+    <Compile Include="Core\InlineAsm.cs" />
     <Compile Include="Core\operators.cs" />
     <Compile Include="Declarations.cs" />
     <Compile Include="Definitions.cs" />
     <Compile Include="Expressions.cs" />
-    <Compile Include="IndexedValue.cs" />
+    <Compile Include="Operators\AccessOperators.cs" />
+    <Compile Include="Operators\AssignOperators.cs" />
+    <Compile Include="Operators\BinaryOperators.cs" />
+    <Compile Include="Operators\UnaryOperators.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\Semantics.cs" />
     <Compile Include="Compiler\Type.cs" />
-    <Compile Include="Core\statements.cs" />
     <Compile Include="Core\types.cs" />
     <Compile Include="Statements.cs" />
   </ItemGroup>
@@ -82,14 +87,6 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Antlr4.4.3.0\build\Antlr4.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Antlr4.4.3.0\build\Antlr4.props'))" />
-    <Error Condition="!Exists('..\packages\Antlr4.4.3.0\build\Antlr4.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Antlr4.4.3.0\build\Antlr4.targets'))" />
-  </Target>
-  <Import Project="..\packages\Antlr4.4.3.0\build\Antlr4.targets" Condition="Exists('..\packages\Antlr4.4.3.0\build\Antlr4.targets')" />
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>

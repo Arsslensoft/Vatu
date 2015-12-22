@@ -10,4 +10,9 @@ namespace Vasm.x86 {
     [Vasm.OpCode("div")]
 	public class Divide: InstructionWithDestinationAndSize {
 	}
+
+    [Vasm.OpCode("idiv")]
+    public class SignedDivide : InstructionWithDestinationAndSize
+    {
+    }
 }

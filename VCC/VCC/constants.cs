@@ -9,7 +9,7 @@ namespace VCC.Core
 {
     public class ByteConstant : CharConst
     {
-        byte _value;
+        internal byte _value;
         public ByteConstant(byte value, Location loc)
             : base(BuiltinTypeSpec.Byte, loc)
         {
@@ -27,10 +27,7 @@ namespace VCC.Core
         }
         public override bool Emit(EmitContext ec)
         {
-            RegistersEnum acc = ec.GetNextRegister();
-         
-
-            ec.EmitInstruction(new Mov() { DestinationReg = acc,SourceValue = (uint)_value, Size = 80 });
+            EmitToStack(ec);
             return true;
         }
         public override bool Resolve(ResolveContext rc)
@@ -39,16 +36,17 @@ namespace VCC.Core
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+            
             return this;
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            ec.EmitInstruction(new Push() { DestinationValue = (uint)_value, Size = 80 });
+            ec.EmitInstruction(new Push() { DestinationValue = (uint)_value, Size = 8 });
             return true;
         }
         public override bool EmitToRegister(EmitContext ec,RegistersEnum rg)
         {
-            ec.EmitInstruction(new Mov() { DestinationReg = rg,SourceValue = (uint)_value, Size = 80 });
+            ec.EmitInstruction(new Mov() { DestinationReg = rg,SourceValue = (uint)_value, Size = 8 });
             return true;
         }
         public override string CommentString()
@@ -67,7 +65,7 @@ namespace VCC.Core
             _value = value;
         }
 
-
+        bool decl = false;
         public override string ToString()
         {
             return "[" + Type.GetTypeName(type) + "] " + GetValue();
@@ -78,7 +76,8 @@ namespace VCC.Core
         }
         public override bool Emit(EmitContext ec)
         {
-            ec.EmitData(new DataMember(ConstVar.Signature.ToString(), Encoding.ASCII.GetBytes(_value)), ConstVar);
+            if(ConstVar != null)
+                  ec.EmitData(new DataMember(ConstVar.Signature.ToString(), Encoding.ASCII.GetBytes(_value)), ConstVar, true);
             return true;
         }
         public override bool Resolve(ResolveContext rc)
@@ -87,23 +86,30 @@ namespace VCC.Core
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-            ConstVar = new VarSpec("STRC_" + id, rc.CurrentMethod, Type, loc);
+            if (!rc.IsInGlobal() && rc.IsInVarDeclaration)
+            {
 
+                ConstVar = new VarSpec(rc.CurrentNamespace, "STRC_" + id, rc.CurrentMethod, Type, loc);
+                rc.LocalStackIndex -= 2;
+                ConstVar.StackIdx = rc.LocalStackIndex;
+            }
+            else if (!rc.IsInGlobal() && !rc.IsInVarDeclaration)
+            {
+                ConstVar = new VarSpec(rc.CurrentNamespace, "STRC_" + id, rc.CurrentMethod, Type, loc);
+            }
             id++;
             return this;
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.AX, Size = 16, SourceRef = ElementReference.New(ConstVar.Signature.ToString())});
-            ec.EmitInstruction(new Push() { DestinationReg = RegistersEnum.AX, Size = 16 });
+            if (!decl)
+                Emit(ec);
+      
+            ec.EmitInstruction(new Push() { DestinationRef = ElementReference.New(ConstVar.Signature.ToString()), Size = 16 });
 
             return true;
         }
-        public override bool EmitToRegister(EmitContext ec, RegistersEnum rg)
-        {
-            ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.AX, Size = 16, SourceRef = ElementReference.New(ConstVar.Signature.ToString()) });
-            return true;
-        }
+     
         public override string CommentString()
         {
             return _value.ToString();
@@ -111,7 +117,7 @@ namespace VCC.Core
     }
     public class SByteConstant : CharConst
     {
-        sbyte _value;
+        internal sbyte _value;
         public SByteConstant(sbyte value, Location loc)
             : base(BuiltinTypeSpec.SByte, loc)
         {
@@ -132,7 +138,8 @@ namespace VCC.Core
         }
         public override bool Emit(EmitContext ec)
         {
-
+            EmitToStack(ec);
+      
             return true;
         }
         public override bool Resolve(ResolveContext rc)
@@ -156,7 +163,7 @@ namespace VCC.Core
     }
     public class IntConstant : IntegralConst
     {
-        int _value;
+        internal int _value;
         public IntConstant(short value, Location loc)
             : base(BuiltinTypeSpec.Int, loc)
         {
@@ -177,7 +184,7 @@ namespace VCC.Core
         }
         public override bool Emit(EmitContext ec)
         {
-
+            EmitToStack(ec);
             return true;
         }
         public override bool Resolve(ResolveContext rc)
@@ -200,9 +207,55 @@ namespace VCC.Core
             return true;
         }
     }
+    public class ArrayConstant : IntegralConst
+    {
+        internal List<byte> _value;
+        public ArrayConstant(byte[] b, Location loc)
+            : base(BuiltinTypeSpec.Byte.MakeArray(), loc)
+        {
+            _value = new List<byte>();
+            _value .AddRange(b);
+        }
+
+        public override string CommentString()
+        {
+            string vals = "";
+            foreach (byte b in _value)
+                vals += " " + b.ToString();
+            return vals;
+        }
+        public override string ToString()
+        {
+            return "[" + Type.GetTypeName(type) + "] " + CommentString();
+        }
+        public override object GetValue()
+        {
+            return _value.ToArray();
+        }
+        public override bool Emit(EmitContext ec)
+        {
+            EmitToStack(ec);
+            return true;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            return this;
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+       
+            return true;
+        }
+
+      
+    }
     public class UIntConstant : IntegralConst
     {
-        uint _value;
+        internal ushort _value;
         public UIntConstant(ushort value, Location loc)
             : base(BuiltinTypeSpec.UInt, loc)
         {
@@ -223,7 +276,7 @@ namespace VCC.Core
         }
         public override bool Emit(EmitContext ec)
         {
-
+            EmitToStack(ec);
             return true;
         }
         public override bool Resolve(ResolveContext rc)
@@ -248,7 +301,7 @@ namespace VCC.Core
     }
     public class BoolConstant : BoolConst
     {
-        bool _value;
+        internal bool _value;
         public BoolConstant(bool value, Location loc)
             : base(BuiltinTypeSpec.Bool, loc)
         {
@@ -269,7 +322,8 @@ namespace VCC.Core
         }
         public override bool Emit(EmitContext ec)
         {
-
+            EmitToStack(ec);
+       
             return true;
         }
         public override bool Resolve(ResolveContext rc)
@@ -283,13 +337,13 @@ namespace VCC.Core
 
         public override bool EmitToStack(EmitContext ec)
         {
-            ec.EmitInstruction(new Push() { DestinationValue = _value?(uint)255:0, Size = 16 });
+            ec.EmitInstruction(new Push() { DestinationValue = _value ? (uint)EmitContext.TRUE : 0, Size = 16 });
             return true;
         }
 
         public override bool EmitToRegister(EmitContext ec, RegistersEnum rg)
         {
-            ec.EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = _value?(uint)255:0, Size = 16 });
+            ec.EmitInstruction(new Mov() { DestinationReg = ec.GetLow(rg), SourceValue = _value ? (uint)EmitContext.TRUE : 0, Size = 16 });
             return true;
         }
     }
@@ -317,7 +371,7 @@ namespace VCC.Core
 
         public override bool Emit(EmitContext ec)
         {
-
+            EmitToStack(ec);
             return true;
         }
         public override bool Resolve(ResolveContext rc)

@@ -1,26 +1,30 @@
-"Name"    = 'VATU' 
+﻿"Name"    = 'VATU' 
 "Version" = '2015'
 "Author"  = 'Arsslen Idadi' 
 "About"   = 'Based on ANSI-C.'
 
 "Case Sensitive" = True
-"Start Symbol"   = <Decls>
+"Start Symbol"   = <GLOBALS>
 
 {Hex Digit}      = {Digit} + [abcdefABCDEF]
 {Oct Digit}      = [01234567]
-
+{Binary Digit}   = [01]
+{Literal Suffix} = [iusbaIUSBA]
+                                 
 {Id Head}        = {Letter} + [_]
 {Id Tail}        = {Id Head} + {Digit}
 
 {String Ch}      = {Printable} - ["]
 {Char Ch}        = {Printable} - ['']
 
-DecLiteral       = [123456789]{digit}*
+DecLiteral       = ([123456789]{digit}* | [123456789]{digit}* {Literal Suffix})
 OctLiteral       = 0{Oct Digit}*
 HexLiteral       = 0x{Hex Digit}+
-
+BinaryLiteral    = 0b{Binary Digit}+
+                 
 BooleanLiteral   = true | false
 NullLiteral      = null
+
 
 StringLiteral    = '"'( {String Ch} | '\'{Printable} )* '"'
 CharLiteral      = '' ( {Char Ch} | '\'{Printable} )''
@@ -56,9 +60,26 @@ Comment Line  = '//'
 !                | '/*' (  {Non Asterisk} | '*' {Non Slash}? )*  '*/'
 
 !=======================================================
-
+<Import>   ::= 'use' Id ';'
+            
+<Imports>  ::= <Import>
+            | <Import> <Imports>          
+<Namespace> ::= 'namespace' Id ';'
+            
+              
+! ===================================================================
+!  Declaration
+! ===================================================================
+<GLOBALS> ::= <GLOBAL> <GLOBALS>
+           | 
+           
+<GLOBAL> ::= <Decls>
+          | <Namespace> <Imports> <Decls>
+          | <Imports> <Decls>
+          | <Namespace> <Decls>
+          
 <Decls> ::= <Decl> <Decls>
-          |
+         | <Decl>
 
 <Decl>  ::= <Func Decl>
           | <Func Proto>
@@ -66,7 +87,6 @@ Comment Line  = '//'
           | <Enum Decl>
           | <Var Decl>    
           | <Typedef Decl>
-              
 ! ===================================================================
 ! Function  Declaration
 ! ===================================================================
@@ -153,7 +173,8 @@ Comment Line  = '//'
 
 <Base>     ::= <Scalar>
              | struct Id 
-             | enum Id  
+             | enum Id
+             | '@'Id  
 
 <Scalar>   ::= byte
              | int
@@ -176,7 +197,10 @@ Comment Line  = '//'
                | if '(' <Expression> ')' <Then Stm> else <Statement>         
                | while '(' <Expression> ')' <Statement> 
                | for '(' <Arg> ';' <Arg> ';' <Arg> ')' <Statement>
+               | asm '{' <INSTRUCTIONS>  '}'
+               | loop <Statement>
                | <Normal Stm>
+              
 
 <Then Stm>   ::= if '(' <Expression> ')' <Then Stm> else <Then Stm> 
                | while '(' <Expression> ')' <Then Stm> 
@@ -190,6 +214,9 @@ Comment Line  = '//'
                | goto Id ';'
                | break ';'
                | continue ';'
+               | goto case DecLiteral ';'
+               | goto default ';'
+               | next ';'
                | return <Expression> ';'
                | ';'              !Null statement
 
@@ -215,6 +242,7 @@ Comment Line  = '//'
                | <Op Assign>
 
 <Op Assign>  ::= <Op If> '='   <Op Assign>
+               | <Op If> '<>'   <Op Assign>
                | <Op If> '+='  <Op Assign>
                | <Op If> '-='  <Op Assign>
                | <Op If> '*='  <Op Assign>
@@ -258,6 +286,9 @@ Comment Line  = '//'
 
 <Op Shift>   ::= <Op Shift> '<<' <Op Add>
                | <Op Shift> '>>' <Op Add>
+               
+               | <Op Shift> '~>' <Op Add>
+               | <Op Shift> '<~' <Op Add>
                | <Op Add>
 
 <Op Add>     ::= <Op Add> '+' <Op Mult>
@@ -276,6 +307,8 @@ Comment Line  = '//'
                | '&'    <Op Unary>               
                | '++'   <Op Unary>
                | '--'   <Op Unary>
+               | '£'   <Op Unary>
+               | '$'   <Op Unary>
                | <Op Pointer> '++'
                | <Op Pointer> '--'
                | '(' <Type> ')' <Op Unary>   !CAST
@@ -285,6 +318,7 @@ Comment Line  = '//'
 
 <Op Pointer> ::= <Op Pointer> '.' <Value>
                | <Op Pointer> '->' <Value>
+               | Id '::' <Value>
                | <Op Pointer> '[' <Expression> ']'
                | <Value>
 
@@ -293,6 +327,7 @@ Comment Line  = '//'
                | DecLiteral  
                | StringLiteral
                | CharLiteral
+               | BinaryLiteral
                | BooleanLiteral
                | NullLiteral
                | Id '(' <Expression> ')'
@@ -300,3 +335,60 @@ Comment Line  = '//'
 
                | Id
                | '(' <Expression> ')'
+               | <REGISTER>
+               
+<REGISTER>   ::= AX
+              | BX
+              | CX
+              | DX
+              | SI
+              | DI
+              | SP
+              | BP
+              | CS
+              | DS
+              | ES
+              | FS
+              | GS
+              | SS
+             
+              | AH
+              | AL
+              | BH
+              | BL
+              | CH
+              | CL
+              | DH
+              | DL  
+              
+<OPCODES>   ::=  mov | cmp | test
+                | push
+                | pop | idiv | inc | dec | neg | mul | div | imul | not | setpo | setae | setnle | setc | setno | setnb | setp | setnge | setl | setge | setpe | setnl | setnz | setne | setnc | setbe | setnp | setns | seto | setna | setnae | setz | setle | setnbe | sets | sete | setb | seta | setg | setng
+                | xchg
+                | popad | aaa | popa | popfd | cwd | lahf | pushad | pushf | aas | bswap | pushfd | cbw | cwde | xlat | aam | aad | cdq | daa | sahf | das | into | iret | clc | stc | cmc | cld | std | cli | sti | movsb | movsw | movsd | lods | lodsb | lodsw | lodsd | stos | stosb | stosw | sotsd | scas | scasb | scasw | scasd | cmps | cmpsb | cmpsw | cmpsd | insb | insw | insd | outsb | outsw | outsd
+                | adc | add | sub | cbb | xor | or
+                | jnbe | jnz | jpo | jz | js | loopnz | jge | jb | jnb | jo | jp | jno | jnl | jnae | loopz | jmp | jnp | loop | jl | jcxz | jae | jnge | ja | loopne | loope | jg | jnle | je | jnc | jc | jna | jbe | jle | jpe | jns | jecxz | jng
+                | movzx | bsf | bsr
+                | les | lea | lds | ins | outs
+                | xadd | cmpxchg
+                | shl | shr | ror | rol | rcl | sal | rcr | sar
+                | btr | bt | btc
+                | call
+                | inter | retn | ret | retf
+                | byt | sbyt | db | word | sword | dw | dword | sdword | dd | fword | df | qword | dq | tbyte | dt | real4 | real8 | real | far | near | proc
+
+<OPERAND>    ::= <REGISTER>
+              | DecLiteral
+              | HexLiteral
+              | StringLiteral
+              
+              
+<OPERANDS>   ::= <OPERAND> ',' <OPERANDS>             
+                | <OPERAND>
+                
+<INSTRUCTION> ::= <OPCODES> ';'
+               | <OPCODES> <OPERANDS> ';'
+           
+<INSTRUCTIONS> ::= <INSTRUCTION> <INSTRUCTIONS> 
+                |                             
+             

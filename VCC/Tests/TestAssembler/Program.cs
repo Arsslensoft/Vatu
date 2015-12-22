@@ -11,23 +11,15 @@ namespace TestAssembler
     {
         static void Main(string[] args)
         {
-            using (AssemblyWriter str = new AssemblyWriter(@"D:\Research\Vatu\Vatu\VCC\Tests\Test.asm"))
+            foreach (string line in File.ReadAllLines(@"C:\Users\Arsslen Idadi\Desktop\OPCODES.txt"))
             {
-                Vasm.AsmContext asm = new Vasm.AsmContext(str);
-                asm.Add(new Instruction[6] {
-            new Vasm.x86.Mov { SourceValue = 0x4F07, DestinationReg = Vasm.x86.Registers.AX },
-            new Vasm.x86.Mov { SourceValue = 0, DestinationReg = Vasm.x86.Registers.BL },
-            new Vasm.x86.Mov { SourceValue = 0, DestinationReg = Vasm.x86.Registers.CX },
-            new Vasm.x86.Mov { SourceValue = 0x20, DestinationReg = Vasm.x86.Registers.DX },
-            new Vasm.x86.INT { DestinationValue = 0x10 },
-                new Vasm.Label("Test")
-            });
-
-                asm.DefineData(new DataMember("a", new byte[2] { 65, 89 }));
-                asm.DefineData(new DataMember("b", new uint[1] { 9 }));
-                asm.Emit(asm.AssemblerWriter);
-
+                foreach (string tok in line.Split('|'))
+                {
+                   // Console.WriteLine(" [Rule(@\"<OPCODES> ::= "+tok.Trim()+"\")]");
+                    Console.WriteLine(" [Terminal(\"" + tok.Trim() + "\")]");
+                }
             }
+            Console.Read();
         }
     }
 }

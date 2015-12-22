@@ -148,7 +148,7 @@ namespace Vasm {
           aOutput.WriteLine(Name);
         }
         aOutput.Write(Name);
-        aOutput.Write(" dd ");
+        aOutput.Write(" dw ");
         Func<object, string> xGetTextForItem = delegate(object aItem) {
                                                      var xElementRef = aItem as ElementReference;
                                                      if (xElementRef == null) {

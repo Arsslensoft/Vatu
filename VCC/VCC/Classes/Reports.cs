@@ -33,9 +33,17 @@ namespace VCC
         public override void Error(Location location, string message)
         {
             error_count++;
-            Console.Error.WriteLine("Error in file '{0}' in line {1} :{2}", location.SourceFile.Name, location.Row, message);
+            if(!location.IsNull)
+            Console.Error.WriteLine("Error in file '{0}' in line {1} :{2}", location.FullPath, location.Row, message);
+            else Console.Error.WriteLine("Error : {0}",  message);
         }
-
+        public override void Error(int code,Location location, string message)
+        {
+            error_count++;
+            if (!location.IsNull)
+                Console.Error.WriteLine("Error:VC{4}:{0}:{1},{2}:{3}", location.FullPath, location.Row,location.Column, message,code.ToString("0000"));
+            else Console.Error.WriteLine("Error:VC{1}:{0}", message,code.ToString("0000"));
+        }
         public override void Warning(Location location, string message)
         {
             string location_str = " : ";
@@ -82,9 +90,13 @@ namespace VCC
         public override void Error(Location location, string message)
         {
             error_count++;
-            str.WriteLine("Error in file '{0}' in line {1} :{2}", location.SourceFile.Name, location.Row, message);
+            str.WriteLine("Error : '{0}' in line {1} :{2}", location.FullPath, location.Row, message);
         }
-
+        public override void Error(int code,Location location, string message)
+        {
+            error_count++;
+            str.WriteLine("Error VC{3}: '{0}' in line {1} :{2}", location.FullPath, location.Row, message, code.ToString("0000"));
+        }
         public override void Warning(Location location, string message)
         {
             string location_str = " : ";

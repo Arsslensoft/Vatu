@@ -7,4 +7,8 @@ namespace Vasm.x86 {
     [Vasm.OpCode("mul")]
 	public class Multiply: InstructionWithDestinationAndSize {
 	}
+    [Vasm.OpCode("imul")]
+    public class SignedMultiply : InstructionWithDestinationAndSize
+    {
+    }
 }

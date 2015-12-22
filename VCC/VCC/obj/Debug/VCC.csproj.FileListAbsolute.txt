@@ -1,9 +1,9 @@
 D:\Research\Vatu\Vatu\VCC\VCC\bin\Debug\VCC.exe
 D:\Research\Vatu\Vatu\VCC\VCC\bin\Debug\VCC.pdb
+D:\Research\Vatu\Vatu\VCC\VCC\bin\Debug\bsn.GoldParser.dll
 D:\Research\Vatu\Vatu\VCC\VCC\bin\Debug\Vasm.dll
+D:\Research\Vatu\Vatu\VCC\VCC\bin\Debug\bsn.GoldParser.pdb
 D:\Research\Vatu\Vatu\VCC\VCC\bin\Debug\Vasm.pdb
 D:\Research\Vatu\Vatu\VCC\VCC\obj\Debug\VCC.csprojResolveAssemblyReference.cache
 D:\Research\Vatu\Vatu\VCC\VCC\obj\Debug\VCC.exe
 D:\Research\Vatu\Vatu\VCC\VCC\obj\Debug\VCC.pdb
-D:\Research\Vatu\Vatu\VCC\VCC\bin\Debug\bsn.GoldParser.dll
-D:\Research\Vatu\Vatu\VCC\VCC\bin\Debug\bsn.GoldParser.pdb

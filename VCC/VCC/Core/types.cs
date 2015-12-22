@@ -32,6 +32,12 @@ namespace VCC.Core
 
             _base = (BaseTypeIdentifier)_base.DoResolve(rc);
             Type = _base.Type;
+            if (_pointers != null)
+            {
+          
+                for (int i = 0; i < _pointers.PointerCount; i++)
+                    Type = Type.MakePointer();
+            }
             return this;
         }
 
@@ -89,7 +95,11 @@ namespace VCC.Core
             _typeid = type;
         }
 
-     
+        [Rule(@"<Base>     ::= ~'@'Id")]
+        public BaseTypeIdentifier(Identifier type)
+        {
+            _ident = type;
+        }
 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -99,7 +109,7 @@ namespace VCC.Core
                 Type = _typeid.Type;
             }
             if (_ident != null)
-                Type = rc.ResolveType(_ident.Name);
+                Type = rc.TryResolveType(_ident.Name);
             if (_sdef != null)
             {
                 _sdef = (StructDefinition)_sdef.DoResolve(rc);
@@ -114,13 +124,17 @@ namespace VCC.Core
               _typeid.Resolve(rc);
 
             if (_ident != null)
-                Type = rc.ResolveType(_ident.Name);
+                Type = rc.TryResolveType(_ident.Name);
             if (_sdef != null)
                 _sdef.Resolve(rc);
             return base.Resolve(rc);
         }
     }
+    [Terminal("@")]
+    public class TypeTypeIdentifer : SimpleToken
+    {
 
+    }
     [Terminal("struct")]
     public class StructTypeIdentifer : SimpleToken
     {
