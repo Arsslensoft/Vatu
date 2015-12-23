@@ -30,4 +30,4 @@ The compiler was developed at Arsslensoft Research by Abd Al Moez and Arsslen
 ####YACC/BISON Grammar :
   See https://github.com/Arsslensoft/Vatu/wiki/Vatu-Language-Grammar
   
-  ########The Project development has been delayed to June 2016
+#####The Project development has been delayed to June 2016
