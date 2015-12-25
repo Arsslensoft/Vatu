@@ -61,7 +61,7 @@
     <Compile Include="Operators\UnaryOperators.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Core\Semantics.cs" />
+    <Compile Include="Semantics.cs" />
     <Compile Include="Compiler\Type.cs" />
     <Compile Include="Core\types.cs" />
     <Compile Include="Statements.cs" />
@@ -82,7 +82,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="SyntaxImpl.txt" />
+    <EmbeddedResource Include="Sample.vt" />
     <Content Include="TODO.txt" />
   </ItemGroup>
   <ItemGroup />

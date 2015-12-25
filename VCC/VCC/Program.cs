@@ -328,7 +328,13 @@ namespace VCC.Core
             Console.WriteLine("Copyright (c) 2015 Arsslensoft Research. All rights reserved");
             ResolveContext.Report = new ConsoleReporter();
           //  Init();
-            List<Test> t = new List<Test>();
+            string sample = "";
+            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VCC.Sample.vt"))
+            {
+                sample = new StreamReader(stream).ReadToEnd();
+                Run(sample);
+            }
+   List<Test> t = new List<Test>();
             t.Add(new Test("int GLOBALVAR = 789; void main() {int a = 45; \nuint v = 3762u; bool x = false; byte c = 5;}","BASIC TEST"));
             t.Add(new Test(" namespace STD; void printf(string); int ABC; namespace Hello;  const uint ABC=9; namespace MYNS; use STD;  enum VALS {A,B,C,D = 1, E = 4};  string* ABC; entry void main(){MYNS::ABC = 5; Hello::ABC = (int)(VALS.B); }","NAMESPACE TEST & Prototype"));
             t.Add(new Test("namespace MYNS;struct XA{int a;int b;}; struct XA x;  entry void main(struct XA b){byte a = 8;x.b = b.b; }", "SIMPLE STRUCT TEST"));

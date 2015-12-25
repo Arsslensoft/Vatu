@@ -1,7 +1,7 @@
 ﻿"Name"    = 'VATU' 
 "Version" = '2015'
 "Author"  = 'Arsslen Idadi' 
-"About"   = 'Based on ANSI-C.'
+"About"   = 'ANSI-C variant.'
 
 "Case Sensitive" = True
 "Start Symbol"   = <GLOBALS>
@@ -109,9 +109,11 @@ Comment Line  = '//'
 <Types>      ::= <Type>  ',' <Types>
                | <Type> 
   
-<Func ID>    ::= <Type> ID
-               | ID
+<Func ID>    ::= <CallCV> <Type> ID
 
+<CallCV>    ::= stdcall 
+             | fastcall
+             | cdecl 
 ! ===================================================================
 ! Type Declaration
 ! ===================================================================
@@ -388,6 +390,7 @@ Comment Line  = '//'
                 
 <INSTRUCTION> ::= <OPCODES> ';'
                | <OPCODES> <OPERANDS> ';'
+               | StringLiteral ';'
            
 <INSTRUCTIONS> ::= <INSTRUCTION> <INSTRUCTIONS> 
                 |                             

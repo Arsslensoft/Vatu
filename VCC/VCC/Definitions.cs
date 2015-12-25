@@ -104,7 +104,7 @@ namespace VCC.Core
             _expr = (Expr)_expr.DoResolve(rc);
 
             if (_expr != null && _expr is ConstantExpression)
-                Size = ((int)(((ConstantExpression)_expr).ConvertImplicitly(rc, BuiltinTypeSpec.Int, ref conv)).GetValue());
+                Size = int.Parse((((ConstantExpression)_expr).ConvertImplicitly(rc, BuiltinTypeSpec.Int, ref conv)).GetValue().ToString());
             else Size = 0;
 
             if (Size < 0)

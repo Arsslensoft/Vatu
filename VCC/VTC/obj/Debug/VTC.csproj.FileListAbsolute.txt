@@ -1,0 +1,11 @@
+D:\Research\Vatu\Vatu\VCC\VTC\bin\Debug\VTC.exe
+D:\Research\Vatu\Vatu\VCC\VTC\bin\Debug\VTC.pdb
+D:\Research\Vatu\Vatu\VCC\VTC\obj\Debug\VTC.exe
+D:\Research\Vatu\Vatu\VCC\VTC\obj\Debug\VTC.pdb
+D:\Research\Vatu\Vatu\VCC\VTC\obj\Debug\VTC.csprojResolveAssemblyReference.cache
+D:\Research\Vatu\Vatu\VCC\VTC\bin\Debug\CommandLine.dll
+D:\Research\Vatu\Vatu\VCC\VTC\bin\Debug\CommandLine.xml
+D:\Research\Vatu\Vatu\VCC\VTC\bin\Debug\bsn.GoldParser.dll
+D:\Research\Vatu\Vatu\VCC\VTC\bin\Debug\Vasm.dll
+D:\Research\Vatu\Vatu\VCC\VTC\bin\Debug\bsn.GoldParser.pdb
+D:\Research\Vatu\Vatu\VCC\VTC\bin\Debug\Vasm.pdb

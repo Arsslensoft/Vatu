@@ -314,6 +314,12 @@ namespace VCC.Core
     {
         public string Value { get; set; }
 
+        [Rule(@"<INSTRUCTION> ::= StringLiteral ~';'")]
+        public AsmInstruction(StringLiteral opc)
+        {
+            loc = CompilerContext.TranslateLocation(position);
+            Value = opc.Value.GetValue().ToString();
+        }
         [Rule(@"<INSTRUCTION> ::= <OPCODES> ~';'")]
         public AsmInstruction(AsmOpcode opc)
         {

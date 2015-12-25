@@ -10,20 +10,44 @@ namespace VCC
     /// <summary>
     /// Member Signature [Types, member, variable]
     /// </summary>
-    public class MemberSignature
+    public struct MemberSignature
     {
-        public string Signature { get; set; }
-        public Location Location { get; set; }
-       
-        public MemberSignature(Namespace ns,string name,Location loc)
+        string _signature;
+        public string Signature { get { return _signature; } }
+        Location _loc;
+        public Location Location { get { return _loc; } }
+
+        public MemberSignature(Namespace ns, string name, Location loc)
         {
-            Signature = name;
+            _signature = name;
             if (!ns.IsDefault)
-                Signature =ns.Normalize()+ "_" + Signature;
-            Location = loc;
+                _signature = ns.Normalize() + "_" + _signature;
+            _loc = loc;
 
         }
-   
+        public static bool operator !=(MemberSignature a, MemberSignature b)
+        {
+            return a.Signature != b.Signature;
+        }
+        public static bool operator ==(MemberSignature a, MemberSignature b)
+        {
+            return a.Signature == b.Signature;
+        }
+
+        public bool Equals(MemberSignature ns)
+        {
+            return ns.Signature == Signature;
+        }
+        public override bool Equals(object obj)
+        {
+            if (obj is MemberSignature)
+                return Signature == ((MemberSignature)obj).Signature;
+            return base.Equals(obj);
+        }
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
         public override string ToString()
         {
             return Signature;
@@ -157,7 +181,7 @@ namespace VCC
         }
         public static bool Equals(TypeSpec a, TypeSpec b)
         {
-            return a.BuiltinType == b.BuiltinType && a.Flags == b.Flags && a.Size == b.Size && a.NS.Name == b.NS.Name;
+            return true;
         }
         public static bool CompatibleTypes(TypeSpec a, TypeSpec b)
         {

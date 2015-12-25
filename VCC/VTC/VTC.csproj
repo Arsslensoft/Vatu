@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{7FB3A786-F973-4727-8EAE-3AD51C047C45}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>VTC</RootNamespace>
+    <AssemblyName>VTC</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CommandLine, Version=1.9.71.2, Culture=neutral, PublicKeyToken=de6f01bd326f8c32, processorArchitecture=MSIL">
+      <HintPath>..\packages\CommandLineParser.1.9.71\lib\net40\CommandLine.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Base\location.cs" />
+    <Compile Include="Base\Report.cs" />
+    <Compile Include="Base\Reports.cs" />
+    <Compile Include="Compiler\CallingConventions.cs" />
+    <Compile Include="Core\Literals.cs" />
+    <Compile Include="Compiler\Namespace.cs" />
+    <Compile Include="Compiler\Type.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="Contexts\CompilerContext.cs" />
+    <Compile Include="Contexts\EmitContext.cs" />
+    <Compile Include="Contexts\FlowAnalysisContext.cs" />
+    <Compile Include="Contexts\ResolveContext.cs" />
+    <Compile Include="Contexts\Resolver.cs" />
+    <Compile Include="Core\InlineAsm.cs" />
+    <Compile Include="Core\operators.cs" />
+    <Compile Include="Core\types.cs" />
+    <Compile Include="Declarations.cs" />
+    <Compile Include="Definitions.cs" />
+    <Compile Include="Expressions.cs" />
+    <Compile Include="Operators\AccessOperators.cs" />
+    <Compile Include="Operators\AssignOperators.cs" />
+    <Compile Include="Operators\BinaryOperators.cs" />
+    <Compile Include="Operators\UnaryOperators.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Base\Settings.cs" />
+    <Compile Include="Semantics.cs" />
+    <Compile Include="Statements.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <EmbeddedResource Include="Sample.vt" />
+    <EmbeddedResource Include="VATU.cgt" />
+    <None Include="VATU.grm" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Types\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="TODO.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\bsn.GoldParser\bsn.GoldParser.csproj">
+      <Project>{1a1a5ae9-7981-471c-9cc7-f7465e675a32}</Project>
+      <Name>bsn.GoldParser</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Vasm\Vasm.csproj">
+      <Project>{bf4e6a24-9204-4b24-a271-36c4d8ef8096}</Project>
+      <Name>Vasm</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
