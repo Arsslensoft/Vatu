@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Vasm.Optimizer
 {
-    class Optimizer
+   public class Optimizer
     {
     }
 }

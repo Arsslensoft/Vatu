@@ -24,7 +24,7 @@ namespace VTC.Core
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             _vardef = (VariableDefinition)_vardef.DoResolve(rc);
-            _ptr = _ptr.DoResolve(rc);
+            _ptr = (TypePointer)_ptr.DoResolve(rc);
             return this;
         }
         public override bool Resolve(ResolveContext rc)
@@ -467,7 +467,7 @@ namespace VTC.Core
 
         EnumMemberSpec GetMember(ResolveContext rc,EnumValue v, TypeSpec host)
         {
-            EnumMemberSpec e;
+
             object val = null;
             if (v.Value != null && ((val = v.Value.GetValue()) != null))
             {

@@ -8,6 +8,15 @@ using System.Text;
 
 namespace VTC
 {
+    public sealed class FileListAttribute : System.Attribute
+    {
+        public FileListAttribute(Type concreteType)
+        {
+
+        }
+
+        public int MaximumElements { get; set; }
+    }
     public enum Platform
     {
         Intel16,
@@ -25,18 +34,42 @@ HelpText = "Enable optimizations")]
        public Platform Platform { get; set; }
 
 
-        [Option('o', "optimize", Required = false, DefaultValue = false,
+        [Option( "optimize", Required = false, DefaultValue = false,
    HelpText = "Enable optimizations")]
         public bool Optimize { get; set; }
 
-               [Option('l', "optimizelevel", Required = false, DefaultValue = 2,
+               [Option('z', "optimizelevel", Required = false, DefaultValue = 2,
    HelpText = "Optimizations Level")]
         public int OptimizeLevel { get; set; }
 
             [Option('w', "warnaserror", Required = false, DefaultValue = false,
    HelpText = "Enable optimizations")]
                public bool WarningsAreErrors { get; set; }
+          
+       [OptionArray('i', "include", HelpText = "Include directory.")]
+        public string[] Includes { get; set; }
 
+       [OptionArray('l', "library", HelpText = "Object files directory.")]
+       public string[] Libraries { get; set; }
+
+       [OptionArray('s', "source", Required = true, HelpText = "Source files.")]
+       public string[] Sources { get; set; }
+
+       [Option('o', "out", Required = false, DefaultValue = "",
+HelpText = "Output file")]
+       public string Output { get; set; }
+       
+       [Option("boot", Required = false,  DefaultValue = false,
+HelpText = "Bootloader")]
+       public bool BootLoader { get; set; }
+
+       [Option("flat", Required = false, DefaultValue = false,
+HelpText = "Flat output")]
+       public bool IsFlat { get; set; }
+
+       [Option("ovrl", Required = false, DefaultValue = true,
+HelpText = "Enable method overload")]
+       public bool Overload { get; set; }
 
             [ParserState]
             public IParserState LastParserState { get; set; }

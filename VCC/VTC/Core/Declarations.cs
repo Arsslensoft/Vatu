@@ -23,14 +23,14 @@ namespace VTC.Core
         public List<TypeMemberSpec> Members { get; set; }
 
         Modifier _mod;
-        TypeIdentifier _type;
+        TypeIdentifier _stype;
         VariableDefinition _vadef;
         VariableListDefinition _valist;
         [Rule(@"<Var Decl>     ::= <Mod> <Type> <Var> <Var List>  ~';'")]
         public VariableDeclaration(Modifier mod, TypeIdentifier type, VariableDefinition var, VariableListDefinition valist)
         {
             _mod = mod;
-            _type = type;
+            _stype = type;
             _vadef = var;
             _valist = valist;
 
@@ -40,7 +40,7 @@ namespace VTC.Core
         public VariableDeclaration(TypeIdentifier type, VariableDefinition var, VariableListDefinition valist)
         {
             _mod = null;
-            _type = type;
+            _stype = type;
             _vadef = var;
             _valist = valist;
 
@@ -50,7 +50,7 @@ namespace VTC.Core
         public VariableDeclaration(Modifier mod, VariableDefinition var, VariableListDefinition valist)
         {
             _mod = mod;
-            _type = null;
+            _stype = null;
             _vadef = var;
             _valist = valist;
 
@@ -171,8 +171,8 @@ namespace VTC.Core
 
             if (_mod != null)
                 _mod = (Modifier)_mod.DoResolve(rc);
-            _type = (TypeIdentifier)_type.DoResolve(rc);
-            this.Type = _type.Type;
+            _stype = (TypeIdentifier)_stype.DoResolve(rc);
+            this.Type = _stype.Type;
             if (ArraySize > -1 && Type.IsStruct)
                 ResolveContext.Report.Error(52, Location, "Only builtin type arrays are allowed"); 
             if (_mod != null)
@@ -206,7 +206,7 @@ namespace VTC.Core
             if (_mod != null)
               ok &=  _mod.Resolve(rc);
 
-           ok &= _type.Resolve(rc);
+            ok &= _stype.Resolve(rc);
             return ok;
         }
 
@@ -286,6 +286,161 @@ namespace VTC.Core
 
 
     // Working Emit and Resolve
+    public class OperatorDeclaration : Declaration
+    {
+        MethodSpec method;
+        Modifiers mods = Modifiers.NoModifier;
+        public string OpName;
+        Stack<ParameterSpec> Params { get; set; }
+        public List<ParameterSpec> Parameters { get; set; }
+
+ 
+        ParameterListDefinition _pal;
+        Block _b;
+        TypeToken _mtype;
+        BinaryOp OpSym;
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '==' ~'(' <Params>  ~')' <Block>")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '!=' ~'(' <Params>  ~')' <Block>")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '>=' ~'(' <Params>  ~')' <Block>")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '<=' ~'(' <Params>  ~')' <Block>")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '>' ~'(' <Params>  ~')' <Block>")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '<' ~'(' <Params>  ~')' <Block>")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '+' ~'(' <Params>  ~')' <Block>")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '*' ~'(' <Params>  ~')' <Block>")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '-' ~'(' <Params>  ~')' <Block>")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '/' ~'(' <Params>  ~')' <Block>")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '%' ~'(' <Params>  ~')' <Block>")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '^' ~'(' <Params>  ~')' <Block>")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '&' ~'(' <Params>  ~')' <Block>")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '|' ~'(' <Params>  ~')' <Block>")]
+        public OperatorDeclaration(TypeToken type,BinaryOp oper, ParameterListDefinition pal, Block b)
+        {
+            _mtype = type;
+            _pal = pal;
+            _b = b;
+            OpSym = oper;
+        }
+
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+           
+            _mtype = (TypeToken)_mtype.DoResolve(rc);
+         
+
+          
+            base._type = _mtype;
+            OpName = _type.Type.Name + "_" + OpSym.Operator.ToString();
+
+            method = rc.Resolver.TryResolveMethod(OpName);
+            if (method != null)
+                ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
+            List<TypeSpec> tp = new List<TypeSpec>();
+
+            Params = new Stack<ParameterSpec>();
+            Parameters = new List<ParameterSpec>();
+            if (_pal != null)
+            {
+                _pal.Resolve(rc);
+                _pal = (ParameterListDefinition)_pal.DoResolve(rc);
+                ParameterListDefinition par = _pal;
+                while (par != null)
+                {
+                    if (par._id != null)
+                    {
+                        Params.Push(par._id.ParameterName);
+                        tp.Add(par._id.ParameterName.MemberType);
+                    }
+                    par = par._nextid;
+                }
+            }
+            // operator checks
+            if(tp.Count != 2)
+                ResolveContext.Report.Error(45, Location, "Operator must have 2 parameters with same type");
+            if (_mtype.Type != BuiltinTypeSpec.Bool && (OpSym.Operator & BinaryOperator.ComparisonMask) == BinaryOperator.ComparisonMask)
+                ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
+            else if ((OpSym.Operator & BinaryOperator.ComparisonMask) != BinaryOperator.ComparisonMask)
+            {
+                // match types
+                if(_mtype.Type != tp[0] || _mtype.Type != tp[1] || tp[0] != tp[1])
+                    ResolveContext.Report.Error(45, Location, "Non comparison operators must have same return and parameters type");
+            }
+            method = new MethodSpec(rc.CurrentNamespace, OpName, mods, _mtype.Type, CallingConventions.StdCall, tp.ToArray(), this.loc);
+            method.Parameters = Params.ToList<ParameterSpec>();
+            rc.KnowMethod(method);
+            rc.CurrentMethod = method;
+            if (!method.MemberType.IsBuiltinType && !method.MemberType.IsPointer)
+                ResolveContext.Report.Error(45, Location, "return type must be builtin type " + method.MemberType.ToString() + " is user-defined type.");
+            if (_b != null)
+                _b = (Block)_b.DoResolve(rc);
+            return this;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            bool ok = true;
+
+            if (_pal != null)
+                ok &= _pal.Resolve(rc);
+            if (_b != null)
+                ok &= _b.Resolve(rc);
+            return ok;
+        }
+        public override bool Emit(EmitContext ec)
+        {
+    
+
+
+            Label mlb = ec.DefineLabel(method.Signature.ToString());
+            ec.MarkLabel(mlb);
+            ec.EmitComment("Operator: Name = " + method.Name + " ");
+            // create stack frame
+            ec.EmitComment("create stackframe");
+            ec.EmitInstruction(new Push() { DestinationReg = EmitContext.BP, Size = 80 });
+            ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, SourceReg = EmitContext.SP, Size = 80 });
+            // allocate variables
+
+            uint size = 0;
+            foreach (VarSpec v in ec.CurrentResolve.GetLocals())
+                size += (uint)v.MemberType.Size;
+
+            if (size != 0)         // no allocation
+                ec.EmitInstruction(new Sub() { DestinationReg = EmitContext.SP, SourceValue = size, Size = 80 });
+            //EMit params
+            // Get Parameters Indexes
+            int paramidx = 4; // Initial Stack Position
+            ParameterSpec p = null;
+            while (Params.Count > 0)
+            {
+                p = Params.Pop();
+                p.StackIdx = paramidx;
+                Parameters.Add(p);
+
+                paramidx += 2;
+            }
+            if (Parameters.Count > 0)
+            {
+                ec.EmitComment("Parameters Definitions");
+                foreach (ParameterSpec par in Parameters)
+                    ec.EmitComment("Parameter " + par.Name + " @BP" + par.StackIdx);
+
+            }
+            ec.EmitComment("Block");
+            // Emit Code
+            if (_b != null)
+                _b.Emit(ec);
+
+            ec.EmitComment("return label");
+            // Return Label
+            ec.MarkLabel(ec.DefineLabel(method.Signature + "_ret"));
+            // Destroy Stack Frame
+            ec.EmitComment("destroy stackframe");
+            ec.EmitInstruction(new Leave());
+            // ret
+            ec.EmitInstruction(new SimpleReturn());
+            return true;
+        }
+    }
+
+
     public class MethodDeclaration : Declaration
     {
         MethodSpec method;
@@ -294,6 +449,7 @@ namespace VTC.Core
 
         public bool EntryPoint = false;
         Stack<ParameterSpec> Params { get; set; }
+        Queue<ParameterSpec> StdParams { get; set; }
         public List<ParameterSpec> Parameters { get; set; }
 
         MethodIdentifier _id; ParameterListDefinition _pal; Block _b;
@@ -339,13 +495,11 @@ namespace VTC.Core
         {
             _id = (MethodIdentifier)_id.DoResolve(rc);
             ccv = _id.CCV.CallingConvention;
-            base._type = _id.Type;
+            base._type = _id.TType;
 
-            method = rc.Resolver.TryResolveMethod(_id.Name);
-            if (method != null)
-                ResolveContext.Report.Error(9, Location, "Duplicate method name, multiple method overloading is not allowed");
         
-            
+            List<TypeSpec> tp = new List<TypeSpec>();
+            StdParams = new Queue<ParameterSpec>();
             Params = new Stack<ParameterSpec>();
             Parameters = new List<ParameterSpec>();
             if (_pal != null)
@@ -356,12 +510,25 @@ namespace VTC.Core
                 while (par != null)
                 {
                     if (par._id != null)
+                    {
                         Params.Push(par._id.ParameterName);
+                        tp.Add(par._id.ParameterName.MemberType);
+                        StdParams.Enqueue(par._id.ParameterName);
+                    }
                     par = par._nextid;
                 }
             }
-            method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods, _id.Type.Type, this.loc);
+            method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods, _id.TType.Type, ccv, tp.ToArray(),this.loc);
+
+      
             method.Parameters = Params.ToList<ParameterSpec>();
+         
+
+            MethodSpec m = rc.Resolver.TryResolveMethod(method.Signature.ToString());
+            if (m != null)
+                ResolveContext.Report.Error(9, Location, "Duplicate method signature");
+
+
             rc.KnowMethod(method);
             rc.CurrentMethod = method;
             if (!method.MemberType.IsBuiltinType)
@@ -405,19 +572,34 @@ namespace VTC.Core
             // Get Parameters Indexes
             int paramidx = 4; // Initial Stack Position
             ParameterSpec p = null;
-            while (Params.Count > 0)
+            if (ccv == CallingConventions.StdCall)
             {
-                p = Params.Pop();
-                p.StackIdx = paramidx;
-                Parameters.Add(p);
+                while (Params.Count > 0)
+                {
+                    p = Params.Pop();
+                    p.StackIdx = paramidx;
+                    Parameters.Add(p);
 
-                paramidx += 2;
+                    paramidx += 2;
+                }
+            }
+            else if(ccv == CallingConventions.Cdecl)
+            {
+                while (StdParams.Count > 0)
+                {
+                    p = StdParams.Dequeue();
+                    p.StackIdx = paramidx;
+                    Parameters.Add(p);
+
+                    paramidx += 2;
+                }
+
             }
             if (Parameters.Count > 0)
             {
-                ec.EmitComment("Parameters");
+                ec.EmitComment("Parameters Definitions");
                 foreach (ParameterSpec par in Parameters)
-                    par.EmitFromStack(ec);
+                    ec.EmitComment("Parameter " + par.Name + " @BP" + par.StackIdx);
 
             }
             ec.EmitComment("Block");
@@ -427,7 +609,7 @@ namespace VTC.Core
 
             ec.EmitComment("return label");
             // Return Label
-            ec.MarkLabel(ec.DefineLabel(method.Name + "_ret"));
+            ec.MarkLabel(ec.DefineLabel(method.Signature + "_ret"));
             // Destroy Stack Frame
             ec.EmitComment("destroy stackframe");
             ec.EmitInstruction(new Leave());
@@ -439,6 +621,7 @@ namespace VTC.Core
     public class MethodPrototypeDeclaration : Declaration
     {
         MethodSpec method;
+        CallingConventions ccv = CallingConventions.StdCall;
         Modifiers mods = Modifiers.NoModifier;
         Stack<ParameterSpec> Params { get; set; }
         public List<ParameterSpec> Parameters { get; set; }
@@ -471,11 +654,12 @@ namespace VTC.Core
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             _id = (MethodIdentifier)_id.DoResolve(rc);
-            base._type = _id.Type;
-            method = new MethodSpec(rc.CurrentNamespace,_id.Name, mods | Modifiers.Prototype, _id.Type.Type, this.loc);
+            ccv = _id.CCV.CallingConvention;
+            base._type = _id.TType;
+            method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, null ,this.loc);
             Params = new Stack<ParameterSpec>();
             Parameters = new List<ParameterSpec>();
- 
+            List<TypeSpec> tp = new List<TypeSpec>();
             if (_pal != null)
             {
                 _pal.Resolve(rc);
@@ -484,7 +668,10 @@ namespace VTC.Core
                 while (par != null)
                 {
                     if (par._id != null)
+                    {
                         Params.Push(par._id.ParameterName);
+                        tp.Add(par._id.ParameterName.MemberType);
+                    }
                     par = par._nextid;
                 }
     
@@ -502,6 +689,7 @@ namespace VTC.Core
                         ParameterSpec p = new ParameterSpec("param_" + paid, method, par._id.Type, false, par.loc);
                         Parameters.Add(p);
                         Params.Push(p);
+                        tp.Add(p.MemberType);
                     }
                     par = par._nextid;
                     paid++;
@@ -509,7 +697,7 @@ namespace VTC.Core
             }
 
 
-            method = new MethodSpec(rc.CurrentNamespace,_id.Name, mods, _id.Type.Type, this.loc);
+            method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods, _id.TType.Type, ccv,tp.ToArray(), this.loc);
             method.Parameters = Parameters;
             rc.KnowMethod(method);
 
@@ -709,7 +897,7 @@ namespace VTC.Core
         }
 
         protected Identifier _name;
-        protected TypeToken _type;
+       protected TypeToken _type;
         public bool IsTypeDef { get { return (BaseDeclaration is StructDeclaration) || (BaseDeclaration is TypeDefDeclaration) || (BaseDeclaration is EnumDeclaration); } }
         public bool IsStruct { get { return (BaseDeclaration is StructDeclaration); } }
         public TypeToken TypeTok
@@ -726,7 +914,8 @@ namespace VTC.Core
         {
 
         }
-
+        [Rule(@"<Decl>  ::= <ASM Decl>")]
+        [Rule(@"<Decl>  ::= <Oper Decl>")]
         [Rule(@"<Decl>  ::= <Func Decl>")]
         [Rule(@"<Decl>  ::= <Func Proto>")]
         [Rule(@"<Decl>  ::= <Struct Decl>")]
@@ -818,6 +1007,48 @@ namespace VTC.Core
                 ResolveContext.Report.Error(11, Location, "Max enum values exceeded, only 65536 values are allowed");
             rc.KnowType(TypeName);
             return this;
+        }
+    }
+
+    public class AsmDeclaration : Declaration
+    {
+        public List<string> Instructions { get; set; }
+        public bool IsDefault;
+        AsmInstructions _stmt;
+        [Rule(@"<ASM Decl>        ::= extern ~asm ~'{' <INSTRUCTIONS>  ~'}'")]
+        [Rule(@"<ASM Decl>        ::= default ~asm ~'{' <INSTRUCTIONS>  ~'}'")]
+        public AsmDeclaration(SimpleToken tok,AsmInstructions stmt)
+        {
+            Instructions = new List<string>();
+            IsDefault = tok.Name == "default";
+            _stmt = stmt;
+        }
+
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            AsmInstructions st = _stmt;
+            while (st != null)
+            {
+                AsmInstruction ins = st.ins;
+                if (ins != null)
+                    Instructions.Add(ins.Value);
+                st = st.nxt;
+            }
+            return this;
+        }
+        public override bool Emit(EmitContext ec)
+        {
+            if (!IsDefault)
+            {
+                foreach (string ins in Instructions)
+                    ec.EmitInstruction(new InlineInstruction(ins));
+            }
+            else
+            {
+                foreach (string ins in Instructions)
+                ec.ag.AddDefault(new InlineInstruction(ins));
+            }
+            return true;
         }
     }
 }

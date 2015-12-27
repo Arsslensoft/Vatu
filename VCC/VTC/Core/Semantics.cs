@@ -10,6 +10,9 @@ using Vasm.x86;
 
 namespace VTC.Core
 {
+    [Terminal("operator")]
+    [Terminal("override")]
+        [Terminal("loop")]
     [Terminal("asm")]
     [Terminal("break")]
     [Terminal("next")]
@@ -57,12 +60,13 @@ namespace VTC.Core
     [Terminal("stdcall")]
     [Terminal("fastcall")]
     [Terminal("cdecl")]
+    [Terminal("private")]
     public class SimpleToken : SemanticToken, IResolve
     {
         public Location loc;
         public Location Location { get { return CompilerContext.TranslateLocation(position); } }
 
-        public string Name { get { return symbol.Name; } }
+        public virtual string Name { get { return symbol.Name; } }
 
         public virtual bool Resolve(ResolveContext rc)
         {
@@ -75,54 +79,6 @@ namespace VTC.Core
     }
  
 
- 
-
-
-
-  
-    [Terminal("void")]
-    [Terminal("byte")]
-    [Terminal("sbyte")]
-    [Terminal("int")]
-    [Terminal("uint")]
-    [Terminal("string")]
-    [Terminal("bool")]
-    public class TypeToken : SimpleToken, IResolve
-    {
-        TypeSpec _ts;
-        public TypeSpec Type
-        {
-            get
-            {
-                if (_ts != null && _ts.IsTypeDef)
-                    return _ts.GetTypeDefBase(_ts);
-                else return _ts;
-            }
-            set
-            {
-                _ts = value;
-            }
-        }
-        public TypeToken()
-        {
-            loc = CompilerContext.TranslateLocation(position);
-
-        }
-
-        public virtual bool Resolve(ResolveContext rc)
-        {
-        
-            return true;
-        }
-        public virtual SimpleToken DoResolve(ResolveContext rc)
-        {
-            Type = rc.Resolver.TryResolveType(this.symbol.Name);
-            return this ;
-        }
-    }
-
-  
-
     public class Definition : SimpleToken, IEmit, IResolve
     {
       
@@ -130,7 +86,7 @@ namespace VTC.Core
         {
             loc = CompilerContext.TranslateLocation(position);
         }
-        public virtual bool Resolve(ResolveContext rc)
+        public override bool Resolve(ResolveContext rc)
         {
             return true;
         }
@@ -138,7 +94,7 @@ namespace VTC.Core
         {
             return true;
         }
-        public virtual SimpleToken DoResolve(ResolveContext rc)
+        public override SimpleToken DoResolve(ResolveContext rc)
         {
             return this;
         }
@@ -186,7 +142,7 @@ namespace VTC.Core
         {
             loc = CompilerContext.TranslateLocation(position);
         }
-        public virtual bool Resolve(ResolveContext rc)
+        public override bool Resolve(ResolveContext rc)
         {
             return true;
         }
@@ -194,7 +150,7 @@ namespace VTC.Core
         {
             return true;
         }
-        public virtual SimpleToken DoResolve(ResolveContext rc)
+        public override SimpleToken DoResolve(ResolveContext rc)
         {
             return this;
         }
@@ -246,7 +202,7 @@ namespace VTC.Core
         }
 
 
-        public virtual bool Resolve(ResolveContext rc)
+        public override bool Resolve(ResolveContext rc)
         {
             return true;
         }
@@ -262,12 +218,12 @@ namespace VTC.Core
 
             return rc;
         }
-        public virtual SimpleToken DoResolve(ResolveContext rc)
+        public override SimpleToken DoResolve(ResolveContext rc)
         {
             return this;
         }
     } 
-    public class Expr : SimpleToken, IEmit, IResolve, IEmitExpr
+    public  class Expr : SimpleToken, IEmit,  IEmitExpr
     {
        public Expr next;
        public Expr current;
@@ -279,14 +235,8 @@ namespace VTC.Core
 
         }
 
-          [Rule("<Expression> ::= <Expression> ~',' <Op Assign>")]
-        public Expr(Expr expr, Expr n)
-        {
-    
-            current = expr;
-            next = n;
-        }
         
+    
         protected TypeSpec type;
 
         public TypeSpec Type
@@ -319,7 +269,7 @@ namespace VTC.Core
         {
            
         }
-        public virtual bool Resolve(ResolveContext rc)
+        public override bool Resolve(ResolveContext rc)
         {
             bool ok = true;
             if (current != null)
@@ -337,12 +287,13 @@ namespace VTC.Core
                 next.Emit(ec);
             return true;
         }
-        public virtual SimpleToken DoResolve(ResolveContext rc)
+        public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (current != null)
             {
                 current = (Expr)current.DoResolve(rc);
                 Type = current.Type;
+              
                 if (next == null)
                     return current;
             }
@@ -353,7 +304,7 @@ namespace VTC.Core
         public virtual bool EmitToStack(EmitContext ec)
         {
 
-        
+       
             return current.EmitToStack(ec);
 
         }
@@ -392,103 +343,18 @@ namespace VTC.Core
             loc = CompilerContext.TranslateLocation(position);
         }
 
-        public virtual bool Resolve(ResolveContext rc)
-        {
-            return true;
-        }
+     
         public virtual bool Emit(EmitContext ec)
         {
             return true;
         }
 
-        public virtual SimpleToken DoResolve(ResolveContext rc)
-        {
-            return this;
-        }
+      
      
     }
     
 
-    [Terminal("Id")]
-    public class Identifier : Expr
-    {
-        protected readonly string _idName;
-        public string Name { get { return _idName; } }
-       
-        public Identifier(string idName)
-        {
-            loc = CompilerContext.TranslateLocation(position);
-            _idName = idName;
-        }
-
-
-    }
-    public class MethodIdentifier : Identifier
-    {
-        public Identifier Id { get; set; }
-        public TypeToken Type { get; set; }
-        public CallingCV CCV { get; set; }
-        [Rule(@"<Func ID> ::= <CallCV> <Type> ID")]
-        public MethodIdentifier(CallingCV ccv,TypeToken type, Identifier id)
-            : base(id.Name)
-        {
-            Id = id;
-            Type = type;
-            CCV = ccv;
-        }
-
- 
-
-        public override SimpleToken DoResolve(ResolveContext rc)
-        {
-          Type = (TypeToken) Type.DoResolve(rc);
-          base.Type = Type.Type;
-          CCV = (CallingCV)CCV.DoResolve(rc);
-            return this;
-        }
-        public override bool Resolve(ResolveContext rc)
-        {
-            Type.Resolve(rc);
-
-            return base.Resolve(rc);
-        }
-    }
-
-
-
-    public class TypePointer : SimpleToken
-    {
-    
-       
-        public int PointerCount { get; set; }
-
-        TypePointer _next;
-        [Rule(@"<Pointers> ::= ~'*' <Pointers>")]
-        public TypePointer(TypePointer ptr)
-        {
-            loc = CompilerContext.TranslateLocation(position);
-            _next = ptr;
-        }
-        [Rule(@"<Pointers> ::=  ")]
-        public TypePointer()
-        {
-            loc = CompilerContext.TranslateLocation(position);
-            _next = null;
-        }
-
-        public TypePointer DoResolve(ResolveContext rc)
-        {
-            if (_next == null)
-            {
-                PointerCount = 0;
-                return this;
-            }
-            PointerCount = 1 + (_next.DoResolve(rc)).PointerCount;
-            return this;
-        }
-        
-
-    }
+   
     public class AccessOp : Operator
     {
         public virtual int  Offset { get { return 0; } }
@@ -499,13 +365,45 @@ namespace VTC.Core
     }
     public class BinaryOp : Operator
     {
+        protected MethodSpec OvlrdOp { get; set; }
         public RegistersEnum? RightRegister { get; set; }
         public RegistersEnum? LeftRegister { get; set; }
         protected bool ConstantOperation = false;
         protected bool RegisterOperation = false;
-        protected  BinaryOperator Operator {get;set;}
+        public  BinaryOperator Operator {get;set;}
 
-     
+        public virtual bool EmitOverrideOperator(EmitContext ec)
+        {
+            Left.EmitToStack(ec);
+            Right.EmitToStack(ec);
+            ec.EmitComment("Override Operator : " + Left.CommentString() + " " + Operator.ToString() + " " + Right.CommentString());
+            ec.EmitCall(OvlrdOp);
+            ec.EmitInstruction(new Add() { DestinationReg = EmitContext.SP, SourceValue = 4, Size = 80 });
+            ec.EmitPush(EmitContext.A);
+            return true;
+        }
+        public virtual bool EmitOverrideOperatorBranchable(EmitContext ec, Label truecase, bool v, ConditionalTestEnum cond, ConditionalTestEnum acond)
+        {
+            Left.EmitToStack(ec);
+            Right.EmitToStack(ec);
+            ec.EmitComment("Override Operator : " + Left.CommentString() + " "+Operator.ToString()+" " + Right.CommentString());
+            ec.EmitCall(OvlrdOp);
+            ec.EmitInstruction(new Add() { DestinationReg = EmitContext.SP, SourceValue = 4, Size = 80 });
+            ec.EmitPush(EmitContext.A);
+            ec.EmitPop(LeftRegister.Value);
+
+            if (CommonType.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceValue = EmitContext.TRUE, Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceValue = EmitContext.TRUE, Size = 80 });
+         
+            if (v)
+                ec.EmitInstruction(new ConditionalJump() { Condition = cond, DestinationLabel = truecase.Name });
+            else
+                ec.EmitInstruction(new ConditionalJump() { Condition = acond, DestinationLabel = truecase.Name });
+       
+            return true;
+        }
     }
     public class UnaryOp : Operator
     {
@@ -598,125 +496,10 @@ namespace VTC.Core
         Exchange
 
     }
-    public struct Reachability
-    {
-        readonly bool unreachable;
-
-        Reachability(bool unreachable)
-        {
-            this.unreachable = unreachable;
-        }
-
-        public bool IsUnreachable
-        {
-            get
-            {
-                return unreachable;
-            }
-        }
-
-        public static Reachability CreateUnreachable()
-        {
-            return new Reachability(true);
-        }
-
-        public static Reachability operator &(Reachability a, Reachability b)
-        {
-            return new Reachability(a.unreachable && b.unreachable);
-        }
-
-        public static Reachability operator |(Reachability a, Reachability b)
-        {
-            return new Reachability(a.unreachable | b.unreachable);
-        }
-    }
-
-    public class StatementSequence<T> : SimpleToken, IEnumerable<T> where T : SimpleToken
-    {
-        private readonly T item;
-        private readonly StatementSequence<T> next;
+  
 
 
-   
-    
-        public StatementSequence()
-            : this(null, null)
-        {
-        }
 
-
-    //    [Rule("<Stm List>  ::=  <Statement> <Stm List> ", typeof(Statement))]
-        public StatementSequence(T item, StatementSequence<T> next)
-        {
-            this.item = item;
-            this.next = next;
-        }
-
-        #region IEnumerable<T> Members
-
-        public IEnumerator<T> GetEnumerator()
-        {
-            for (StatementSequence<T> sequence = this; sequence != null; sequence = sequence.next)
-            {
-                if (sequence.item != null)
-                {
-                    yield return sequence.item;
-                }
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        #endregion
-    }
-    public class ExpressionSequence<T> : SimpleToken, IEnumerable<T> where T : SimpleToken
-    {
-        private readonly T item;
-        private readonly ExpressionSequence<T> next;
-
-
-        public ExpressionSequence()
-            : this(null, null)
-        {
-        }
-
-    //    [Rule("<Expression> ::= <Op Assign>", typeof(Expr))]
-        public ExpressionSequence(T item)
-            : this(item, null)
-        {
-        }
-
-
-     //   [Rule("<Expression> ::= <Expression> ~',' <Op Assign>", typeof(Expr))]
-        public ExpressionSequence(T item, ExpressionSequence<T> next)
-        {
-            this.item = item;
-            this.next = next;
-        }
-
-        #region IEnumerable<T> Members
-
-        public IEnumerator<T> GetEnumerator()
-        {
-            for (ExpressionSequence<T> sequence = this; sequence != null; sequence = sequence.next)
-            {
-                if (sequence.item != null)
-                {
-                    yield return sequence.item;
-                }
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        #endregion
-    }
     public class DeclarationSequence<T> : SimpleToken, IEnumerable<T> where T : SimpleToken
     {
         private readonly T item;
@@ -786,6 +569,52 @@ namespace VTC.Core
         public IEnumerator<T> GetEnumerator()
         {
             for (GlobalSequence<T> sequence = this; sequence != null; sequence = sequence.next)
+            {
+                if (sequence.item != null)
+                {
+                    yield return sequence.item;
+                }
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        #endregion
+    }
+    public class ParameterSequence<T> : SimpleToken, IEnumerable<T> where T : SimpleToken
+    {
+        private readonly T item;
+        private readonly ParameterSequence<T> next;
+
+
+
+
+        [Rule("<PARAM EXPR>  ::= ", typeof(Expr))]
+        public ParameterSequence()
+            : this(null, null)
+        {
+        }
+        [Rule("<PARAM EXPR>  ::= <Expression>", typeof(Expr))]
+        public ParameterSequence(T item)
+            : this(item, null)
+        {
+        }
+
+        [Rule("<PARAM EXPR>  ::= <Expression> ~',' <PARAM EXPR>", typeof(Expr))]
+        public ParameterSequence(T item, ParameterSequence<T> next)
+        {
+            this.item = item;
+            this.next = next;
+        }
+
+        #region IEnumerable<T> Members
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            for (ParameterSequence<T> sequence = this; sequence != null; sequence = sequence.next)
             {
                 if (sequence.item != null)
                 {

@@ -211,9 +211,9 @@ namespace VTC.Core
         public List<Expr> Parameters { get; set; }
 
         protected Identifier _id;
-        protected Expr _param;
-        [Rule(@"<Value>       ::= Id ~'(' <Expression> ~')'")]
-        public MethodExpression(Identifier id, Expr expr)
+        protected ParameterSequence<Expr> _param;
+        [Rule(@"<Value>       ::= Id ~'(' <PARAM EXPR> ~')'")]
+        public MethodExpression(Identifier id, ParameterSequence<Expr> expr)
         {
             _id = id;
             _param = expr;
@@ -235,23 +235,25 @@ namespace VTC.Core
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-          
+            List<TypeSpec> tp = new List<TypeSpec>();
             Parameters = new List<Expr>();
             if (_param != null)
             {
-                _param = (Expr)_param.DoResolve(rc);
-                Expr a = _param;
-                while (a != null)
+                foreach (Expr p in _param)
                 {
-                    if (a != null)
-                        Parameters.Add(a);
-                    else if (a.current != null)
-                        Parameters.Add(a.current);
-                    a = a.next;
+                    Expr e =(Expr)p.DoResolve(rc);
+                    Parameters.Add(e);
+                    tp.Add(e.Type);
+
                 }
+        
             }
-            Method = rc.Resolver.TryResolveMethod(_id.Name);
-            if(Method.Parameters.Count != Parameters.Count)
+            if(tp.Count > 0)
+            Method = rc.Resolver.TryResolveMethod(_id.Name,tp.ToArray());
+            else Method = rc.Resolver.TryResolveMethod(_id.Name);
+            if(Method == null)
+                ResolveContext.Report.Error(46, Location, "Unknown method " + _id.Name + " ");
+            else if(Method.Parameters.Count != Parameters.Count)
                 ResolveContext.Report.Error(46, Location, "the method "+Method.Name + " has different parameters");
             else if (!MatchParameterTypes())
                 ResolveContext.Report.Error(46, Location, "the method " + Method.Name + " has different parameters types. try casting"); 
@@ -269,16 +271,33 @@ namespace VTC.Core
         public override bool Emit(EmitContext ec)
         {
           
-                RegistersEnum acc = EmitContext.A;
+             
                 int size = 0;
                 // parameters
                 if (Parameters.Count > 0)
                 {
-                    foreach (Expr e in Parameters)
+                    if (Method.CallingConvention == CallingConventions.StdCall)
                     {
-                    
-                          e.EmitToStack(ec);
-                          size += e.Type.Size;
+                        foreach (Expr e in Parameters)
+                        {
+
+                            e.EmitToStack(ec);
+                            if (e.Type.Size > 1)
+                                size += e.Type.Size;
+                            else size += 2;
+                        }
+                    }
+                    else if (Method.CallingConvention == CallingConventions.Cdecl)
+                    {
+                        int i = 0;
+                        for(i = Parameters.Count -1; i >= 0; i--)
+                        {
+
+                            Parameters[i].EmitToStack(ec);
+                            if (Parameters[i].Type.Size > 1)
+                                size += Parameters[i].Type.Size;
+                            else size += 2;
+                        }
                     }
 
                 }
@@ -291,8 +310,7 @@ namespace VTC.Core
                     if (size > 0)
                         ec.EmitInstruction(new Add() { DestinationReg = EmitContext.SP, SourceValue = (uint)size,Size = 80});
 
-                  if(Method.MemberType != BuiltinTypeSpec.Void)
-                    ec.EmitPush( EmitContext.A );
+            
 
                 }
                 
@@ -309,12 +327,12 @@ namespace VTC.Core
         public override bool EmitFromStack(EmitContext ec)
         {
             throw new NotImplementedException();
-            return base.EmitFromStack(ec);
+       //     return base.EmitFromStack(ec);
         }
 
         public override string CommentString()
         {
-            return _id.Name + ((_param!= null)?"()":"(" + _param.CommentString()+ ")");
+            return _id.Name + ((_param== null)?"()":"(" + ")");
         }
     }
 
@@ -444,6 +462,7 @@ namespace VTC.Core
             Left = left;
             Right = right;
             Operator = op;
+            Type = left.Type.BaseType;
         }
 
         public override bool Emit(EmitContext ec)
@@ -532,6 +551,7 @@ namespace VTC.Core
                 if (variable == null && (rc.CurrentScope & ResolveScopes.AccessOperation) != ResolveScopes.AccessOperation)
                     ResolveContext.Report.Error(14, Location, "Unresolved variable '" + Name + "'");
             }
+            base.DoResolve(rc);
             return this;
         }
         public override bool Resolve(ResolveContext rc)
@@ -612,9 +632,9 @@ namespace VTC.Core
             _op.Right = (Expr)_op.Right.DoResolve(rc);
             _op.Left = (Expr)_op.Left.DoResolve(rc);
            _op = (AssignOp)_op.DoResolve(rc);
-           if (!(_op.Left is VariableExpression) && ! (_op.Left is AccessOperation) && !(_op.Left is UnaryOperation))
+           if (!(_op.Left is VariableExpression) && !(_op.Left is AccessOperation) && !(_op.Left is RegisterExpression) && !(_op.Left is UnaryOperation))
                ResolveContext.Report.Error(42, Location, "Target must be a variable");
-           else if ((!(_op.Left is AccessOperation)) && (!(_op.Left is UnaryOperation)) && (_op.Left as VariableExpression).variable.IsConstant)
+           else if ((!(_op.Left is AccessOperation)) & !(_op.Left is RegisterExpression) && (!(_op.Left is UnaryOperation)) && (_op.Left as VariableExpression).variable.IsConstant)
                ResolveContext.Report.Error(43, Location, "Cannot assign a constant variable only in it's declaration");
            Type = _op.Left.Type;
             return this;
@@ -708,6 +728,7 @@ namespace VTC.Core
             {
                 _op.Right = (Expr)_op.Right.DoResolve(rc);
                 _op.Left = (Expr)_op.Left.DoResolve(rc);
+                rc.CurrentScope &= ~ResolveScopes.AccessOperation;
                  return _op.DoResolve(rc);
 
             }
@@ -718,13 +739,14 @@ namespace VTC.Core
                 _op.Right = (Expr)_op.Right.DoResolve(rc);
         
                 rc.CurrentNamespace = lastns;
+                rc.CurrentScope &= ~ResolveScopes.AccessOperation;
                 return _op.Right;
             }
-            rc.CurrentScope &= ~ResolveScopes.AccessOperation;
-           Type = _op.CommonType;
-           Offset = _op.Offset;
-           Member = _op.Member;
-            return this;
+    
+           //Type = _op.CommonType;
+           //Offset = _op.Offset;
+           //Member = _op.Member;
+           // return this;
         }
         public override bool Resolve(ResolveContext rc)
         {
@@ -1320,8 +1342,12 @@ namespace VTC.Core
 
         public override bool Emit(EmitContext ec)
         {
+         Label elselb =   ec.DefineLabel(LabelType.IF_EXPR);
+         Label iflb = ec.DefineLabel(elselb.Name + "_EXIT");
             _cond.Emit(ec);
+            
             _true.Emit(ec);
+            ec.MarkLabel(elselb);
             _false.Emit(ec);
             return true;
         }

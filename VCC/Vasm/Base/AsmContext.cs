@@ -8,8 +8,9 @@ namespace Vasm
 {
    public class AsmContext
     {
-   
 
+       public bool IsFlat { get; set; }
+       
        private static AsmContext mCurrentInstance;
        Stack<RegistersEnum> rg = new Stack<RegistersEnum>();
        public RegistersEnum GetNextRegister()
@@ -66,6 +67,19 @@ namespace Vasm
                return RegistersEnum.DH;
            else return reg;
        }
+       public RegistersEnum GetHolder(RegistersEnum reg)
+       {
+           if (reg == RegistersEnum.AL | reg == RegistersEnum.AH)
+               return RegistersEnum.AX;
+           else if (reg == RegistersEnum.BL | reg == RegistersEnum.BH)
+               return RegistersEnum.BX;
+           else if (reg == RegistersEnum.CL | reg == RegistersEnum.CH)
+               return RegistersEnum.CX;
+           else if (reg == RegistersEnum.DL | reg == RegistersEnum.DH)
+               return RegistersEnum.DX;
+           else return reg;
+       }
+
        public void FreeRegister()
        {
           // if (rg.Contains(reg))
@@ -80,11 +94,13 @@ namespace Vasm
        public string EntryPoint { get; set; }
        public AsmContext(string file)
        {
+           IsFlat = false;
            AssemblerWriter = new AssemblyWriter(file);
            mCurrentInstance = this;
        }
        public AsmContext(AssemblyWriter writer)
        {
+           IsFlat = false;
            AssemblerWriter = writer;
            mCurrentInstance = this;
           
@@ -147,7 +163,7 @@ namespace Vasm
         public void Optimize()
         {
             return;
-   
+   /*
             int i = 0;
             for (i = 0; i < mInstructions.Count; i++ )
             {
@@ -189,7 +205,7 @@ namespace Vasm
                 }
               
             }
-
+            */
               
         }
         public Dictionary<string, StructElement> DeclaredStructVars = new Dictionary<string, StructElement>();
@@ -236,7 +252,12 @@ namespace Vasm
             get { return mInstructions; }
             set { mInstructions = value; }
         }
-
+        protected internal List<Instruction> mDefInstructions = new List<Instruction>();
+        public List<Instruction> DefaultInstructions
+        {
+            get { return mDefInstructions; }
+            set { mDefInstructions = value; }
+        }
         public static AsmContext CurrentInstance
         {
             get { return mCurrentInstance; }
@@ -278,7 +299,20 @@ namespace Vasm
             }
             return null;
         }
-
+       public void AddDefault(Instruction aReader)
+       {
+           if (EmitAsmLabels)
+           {
+               if (!(aReader is Label)
+                   && !(aReader is Comment))
+               {
+                   // Only issue label if its executable code.
+                   new Label("." + AsmIlIdx.ToString("X2"), "Asm");
+                   mAsmIlIdx++;
+               }
+           }
+           mDefInstructions.Add(aReader);
+       }
 
        public void Add(Instruction aReader)
        {
@@ -380,8 +414,22 @@ namespace Vasm
        public virtual void EmitPrepare(AssemblyWriter writer)
        {
            // Emit
+        
+            writer.WriteLine("bits 16");
+            foreach (Instruction inst in mDefInstructions)
+            {
+                writer.Write("\t");
+                inst.WriteText(this, writer);
+                writer.WriteLine();
+            }
+            if (IsFlat)
+            {
 
-           writer.WriteLine("bits 16");
+                writer.Write("\tcall "+EntryPoint);
+               
+                writer.WriteLine();
+            }
+
            // define
            foreach (StructElement xMember in mStructs)
            {
@@ -391,6 +439,7 @@ namespace Vasm
            }
        
            // alloc vars
+           if (!IsFlat)
            writer.WriteLine("section .bss");
            foreach (KeyValuePair<string,StructElement> p in DeclaredStructVars)
            {
@@ -401,7 +450,6 @@ namespace Vasm
        }
        public virtual void EmitFinalize(AssemblyWriter writer)
        {
-
        }
        public virtual void Emit(AssemblyWriter writer)
        {
@@ -411,6 +459,7 @@ namespace Vasm
            // prepare emit
            EmitPrepare(writer);
            // Write out readonly
+           if(!IsFlat)
            writer.WriteLine("section .rodata");
 
            foreach (DataMember xMember in mCDataMembers)
@@ -429,6 +478,7 @@ namespace Vasm
 
            writer.WriteLine();
            // Write out data declarations
+           if (!IsFlat)
            writer.WriteLine("section .data");
  
            foreach (DataMember xMember in mDataMembers)
@@ -452,11 +502,13 @@ namespace Vasm
                writer.WriteLine();
            }
            writer.WriteLine();
+           if (!IsFlat)
            writer.WriteLine("section .text");
            // define externs
            foreach (string ex in Externals)
                writer.WriteLine("extern\t" + ex);
            writer.WriteLine();
+           if(!IsFlat)
            writer.Write("global	" + EntryPoint);
            // Write out code
            for (int i = 0; i < mInstructions.Count; i++)

@@ -8,6 +8,7 @@ namespace Vasm
 {
     public class AssemblyWriter : StreamWriter
     {
+
         public override Encoding Encoding
         {
             get { return Encoding.UTF8; }

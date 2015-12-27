@@ -9,3 +9,14 @@ D:\Research\Vatu\Vatu\VCC\VTC\bin\Debug\bsn.GoldParser.dll
 D:\Research\Vatu\Vatu\VCC\VTC\bin\Debug\Vasm.dll
 D:\Research\Vatu\Vatu\VCC\VTC\bin\Debug\bsn.GoldParser.pdb
 D:\Research\Vatu\Vatu\VCC\VTC\bin\Debug\Vasm.pdb
+D:\Projects\Vatu\Vatu\VCC\VTC\obj\Debug\VTC.exe
+D:\Projects\Vatu\Vatu\VCC\VTC\obj\Debug\VTC.pdb
+D:\Projects\Vatu\Vatu\VCC\VTC\bin\Debug\VTC.exe
+D:\Projects\Vatu\Vatu\VCC\VTC\bin\Debug\VTC.pdb
+D:\Projects\Vatu\Vatu\VCC\VTC\bin\Debug\bsn.GoldParser.dll
+D:\Projects\Vatu\Vatu\VCC\VTC\bin\Debug\CommandLine.dll
+D:\Projects\Vatu\Vatu\VCC\VTC\bin\Debug\Vasm.dll
+D:\Projects\Vatu\Vatu\VCC\VTC\bin\Debug\bsn.GoldParser.pdb
+D:\Projects\Vatu\Vatu\VCC\VTC\bin\Debug\Vasm.pdb
+D:\Projects\Vatu\Vatu\VCC\VTC\bin\Debug\CommandLine.xml
+D:\Projects\Vatu\Vatu\VCC\VTC\obj\Debug\VTC.csprojResolveAssemblyReference.cache

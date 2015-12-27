@@ -44,7 +44,7 @@ namespace VTC
     {
 
 
-        public const byte TRUE = 255;
+        public const byte TRUE = 1;
         public const RegistersEnum A = RegistersEnum.AX;
         public const RegistersEnum B = RegistersEnum.BX;
         public const RegistersEnum C = RegistersEnum.CX;
@@ -65,9 +65,9 @@ namespace VTC
 
 
 
-        Vasm.AsmContext ag;
+       internal Vasm.AsmContext ag;
         List<string> _names;
-        Label enterLoop, exitLoop;
+  
         Dictionary<string, VarSpec> Variables = new Dictionary<string, VarSpec>();
         public RegistersEnum GetLow(RegistersEnum reg)
         {
@@ -146,15 +146,17 @@ namespace VTC
         }
         public void EmitPop(RegistersEnum rg, byte size = 80, bool adr = false)
         {
-            EmitInstruction(new Pop() { DestinationReg = rg, Size = size, DestinationIsIndirect = adr });
+            if (Registers.Is8Bit(rg))
+                rg = ag.GetHolder(rg);
+            EmitInstruction(new Pop() { DestinationReg = rg, Size = 16, DestinationIsIndirect = adr });
         }
         public void EmitPush(bool v)
         {
-            EmitInstruction(new Push() { DestinationValue = (v ? (uint)EmitContext.TRUE : 0), Size = 8 });
+            EmitInstruction(new Push() { DestinationValue = (v ? (uint)EmitContext.TRUE : 0), Size = 16 });
         }
         public void EmitPush(byte v)
         {
-            EmitInstruction(new Push() { DestinationValue = v, Size = 8 });
+            EmitInstruction(new Push() { DestinationValue = v, Size = 16 });
         }
         public void EmitPush(ushort v)
         {
@@ -162,7 +164,10 @@ namespace VTC
         }
         public void EmitPush(RegistersEnum rg, byte size = 80, bool adr = false)
         {
-            EmitInstruction(new Push() { DestinationReg = rg, Size = size, DestinationIsIndirect = adr });
+            if (Registers.Is8Bit(rg))
+                rg = ag.GetHolder(rg);
+            
+            EmitInstruction(new Push() { DestinationReg = rg, Size = 16, DestinationIsIndirect = adr });
         }
 
 
@@ -173,8 +178,14 @@ namespace VTC
 
         public void EmitBoolean(RegistersEnum rg, ConditionalTestEnum tr, ConditionalTestEnum fls)
         {
+          //  EmitInstruction(new Xor() { SourceReg = ag.GetHolder(rg), DestinationReg =  ag.GetHolder(rg), Size = 80 });
+            EmitInstruction(new ConditionalSet() { Condition = tr, DestinationReg = GetLow( rg), Size = 80 });
+            EmitInstruction(new MoveZeroExtend() { SourceReg = GetLow(rg), DestinationReg = ag.GetHolder(rg), Size = 80 });
+          /*
             EmitInstruction(new ConditionalMove() { Condition = tr, DestinationReg = rg, Size = 80, SourceValue = TRUE });
             EmitInstruction(new ConditionalMove() { Condition = fls, DestinationReg = rg, Size = 80, SourceValue = 0 });
+           * 
+           * */
         }
         public void EmitBooleanWithJump(RegistersEnum rg, ConditionalTestEnum TR)
         {

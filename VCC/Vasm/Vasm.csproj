@@ -55,6 +55,10 @@
     <Compile Include="Base\StackContents.cs" />
     <Compile Include="Base\TypeComparer.cs" />
     <Compile Include="IEmit.cs" />
+    <Compile Include="Optimizer\CommentOptimizer.cs" />
+    <Compile Include="Optimizer\IOptimizer.cs" />
+    <Compile Include="Optimizer\JumpOptimizer.cs" />
+    <Compile Include="Optimizer\LabelOptimizer.cs" />
     <Compile Include="Optimizer\Optimizer.cs" />
     <Compile Include="StructElement.cs" />
     <Compile Include="x86\Add.cs" />

@@ -17,6 +17,20 @@ namespace VTC
         Location _loc;
         public Location Location { get { return _loc; } }
 
+        public MemberSignature(Namespace ns, string name,TypeSpec[] param, Location loc)
+        {
+            _signature = name;
+                 if (!ns.IsDefault)
+                _signature = ns.Normalize() + "_" + _signature;
+            if (param != null)
+            {
+                foreach(TypeSpec p in param)
+                   _signature += "_" + p.Name;
+            }
+       
+            _loc = loc;
+
+        }
         public MemberSignature(Namespace ns, string name, Location loc)
         {
             _signature = name;
@@ -100,9 +114,7 @@ namespace VTC
         Prototype = 1 << 3,
         
         Const = 1 << 4,
-        StdCall = 1 << 5,
-        FastCall = 1 << 6,
-        Cdecl    = 1 << 7
+        Private = 1 << 5
     }
 
     public abstract class MemberSpec :ReferenceSpec, IMember
@@ -112,7 +124,7 @@ namespace VTC
        protected string _name;
        protected TypeSpec memberType;
 
-       public bool IsConstant { get { return ((_mod & Modifiers.Const) == Modifiers.Const); } }
+       public  bool IsConstant { get { return ((_mod & Modifiers.Const) == Modifiers.Const); } }
 
        public TypeSpec MemberType
        {
@@ -157,7 +169,10 @@ namespace VTC
 
        }
 
-
+       public bool IsPrivate
+       {
+           get { return (_mod & Modifiers.Private) != 0; }
+       }
        public bool IsExtern
        {
            get { return (_mod & Modifiers.Extern) != 0; }
@@ -362,6 +377,7 @@ namespace VTC
                         return 1;
                     case BuiltinTypes.Int:
                     case BuiltinTypes.UInt:
+                    case  BuiltinTypes.String:
                         return 2;
 
 
@@ -532,6 +548,7 @@ namespace VTC
     /// </summary>
     public class FieldSpec : MemberSpec
     {
+
         public int FieldOffset { get; set; }
         public Namespace NS { get; set; }
         public FieldSpec(Namespace ns,string name, Modifiers mods, TypeSpec type, Location loc)
@@ -544,10 +561,19 @@ namespace VTC
     
         public override bool EmitFromStack(EmitContext ec)
         {
-            if (memberType.Size <= 2)
+            bool isind = !memberType.IsPointer;
+            if (memberType.Size == 1)
             {
                 ec.EmitComment("Pop Field @" + Signature.ToString() + " " + FieldOffset);
-                ec.EmitInstruction(new Pop() { DestinationRef = ElementReference.New(Signature.ToString()), DestinationDisplacement = FieldOffset, DestinationIsIndirect = true, Size = memberType.SizeInBits });
+                ec.EmitInstruction(new Pop() { DestinationReg = EmitContext.D,Size = 16 });
+                ec.EmitInstruction(new Mov() { SourceReg = ec.GetLow( EmitContext.D), DestinationRef = ElementReference.New(Signature.ToString()), DestinationDisplacement = FieldOffset, DestinationIsIndirect = isind, Size = 8 });
+              
+
+            }
+            else  if (memberType.Size <= 2)
+            {
+                ec.EmitComment("Pop Field @" + Signature.ToString() + " " + FieldOffset);
+                ec.EmitInstruction(new Pop() { DestinationRef = ElementReference.New(Signature.ToString()), DestinationDisplacement = FieldOffset, DestinationIsIndirect = isind, Size = memberType.SizeInBits });
             }
             else // is composed type
             {
@@ -567,10 +593,18 @@ namespace VTC
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            if (memberType.Size <= 2)
+            bool isind = !memberType.IsPointer;
+            if (memberType.Size == 1)
             {
                 ec.EmitComment("Push Field @" + Signature.ToString() + " " + FieldOffset);
-                ec.EmitInstruction(new Push() { DestinationRef = ElementReference.New(Signature.ToString()), DestinationDisplacement = FieldOffset, DestinationIsIndirect = true, Size = memberType.SizeInBits });
+                ec.EmitInstruction(new MoveZeroExtend() { DestinationReg = EmitContext.D, SourceRef = ElementReference.New(Signature.ToString()), SourceDisplacement = FieldOffset, SourceIsIndirect = true, Size = 8 });
+                ec.EmitInstruction(new Push() { DestinationReg = EmitContext.D, Size = 16 });
+        
+            }
+            else if (memberType.Size <= 2 || memberType.IsArray)
+            {
+                ec.EmitComment("Push Field @" + Signature.ToString() + " " + FieldOffset);
+                ec.EmitInstruction(new Push() { DestinationRef = ElementReference.New(Signature.ToString()), DestinationDisplacement = FieldOffset, DestinationIsIndirect = isind, Size = memberType.SizeInBits });
             }
             else // is composed type
             {
@@ -638,11 +672,11 @@ namespace VTC
             }
         }
 
-        public MethodSpec(Namespace ns, string name, Modifiers mods, TypeSpec type, Location loc)
-            : base(name, new MemberSignature(ns, name, loc), mods ,ReferenceKind.Method)
+        public MethodSpec(Namespace ns, string name, Modifiers mods, TypeSpec type,CallingConventions ccv ,TypeSpec[] param,Location loc)
+            : base(name, new MemberSignature(ns, name, param,loc), mods ,ReferenceKind.Method)
         {
             NS = ns;
-            CallingConvention = CallingConventions.StdCall;
+            CallingConvention =ccv;
             memberType = type;
             Parameters = new List<ParameterSpec>();
         }
@@ -651,6 +685,7 @@ namespace VTC
             return Signature.ToString();
         }
     }
+
 
     /// <summary>
     /// Local Variable Specs
@@ -686,8 +721,14 @@ namespace VTC
 
         public override bool EmitToStack(EmitContext ec)
         {
+            if (MemberType.Size == 1)
+            {
 
-            if (MemberType.Size <= 2)
+                ec.EmitComment("Push Var @BP" + StackIdx);
+                ec.EmitInstruction(new MoveZeroExtend() {DestinationReg = EmitContext.D ,SourceReg = EmitContext.BP, SourceDisplacement = StackIdx, SourceIsIndirect = true,Size = 8});
+                ec.EmitInstruction(new Push() { DestinationReg = EmitContext.D,  Size = 16 });
+            }
+            else if (MemberType.Size <= 2)
             {
                 ec.EmitComment("Push Var @BP" + StackIdx);
                 ec.EmitInstruction(new Push() { DestinationReg = EmitContext.BP, DestinationDisplacement = StackIdx, DestinationIsIndirect = true, Size = MemberType.SizeInBits });
@@ -709,7 +750,13 @@ namespace VTC
         }
         public override bool EmitFromStack(EmitContext ec)
         {
-            if (MemberType.Size <= 2)
+            if (MemberType.Size == 1)
+            {
+                ec.EmitComment("Pop Var @BP" + StackIdx);
+                ec.EmitInstruction(new Pop() { DestinationReg = EmitContext.D, Size = 16 });
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, Size = 8, DestinationDisplacement = StackIdx, DestinationIsIndirect = true, SourceReg = ec.GetLow(EmitContext.D) });
+            }
+            else if (MemberType.Size <= 2)
             {
                 ec.EmitComment("Pop Var @BP" + StackIdx);
                 ec.EmitInstruction(new Pop() { Size = memberType.SizeInBits, DestinationReg = EmitContext.BP, DestinationDisplacement = StackIdx, DestinationIsIndirect = true });
@@ -766,7 +813,7 @@ namespace VTC
     {
  
         MethodSpec method;
-        public bool IsConstant { get; set; }
+       
         public int StackIdx { get; set; }
        
       
@@ -789,7 +836,8 @@ namespace VTC
         {
             method = host;
             memberType = type;
-            IsConstant = constant;
+            if (constant)
+                _mod |= VTC.Modifiers.Const;
             StackIdx = 4;
         }
         public override string ToString()
@@ -800,8 +848,14 @@ namespace VTC
  
         public override bool EmitFromStack(EmitContext ec)
         {
-
-            if (memberType.Size <= 2)
+            if (memberType.Size == 1)
+            {
+                ec.EmitComment("Pop Parameter @BP " + StackIdx);
+                ec.EmitInstruction(new Pop() { DestinationReg = EmitContext.D, Size = 16 });
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, Size = 8, DestinationDisplacement = StackIdx, DestinationIsIndirect = true, SourceReg = ec.GetLow(EmitContext.D) });
+         
+            }
+            else if (memberType.Size <= 2)
             {
                 ec.EmitComment("Pop Parameter @BP " + StackIdx);
                 ec.EmitInstruction(new Pop() { DestinationReg = EmitContext.BP, Size = memberType.SizeInBits, DestinationDisplacement = StackIdx, DestinationIsIndirect = true });
@@ -823,7 +877,13 @@ namespace VTC
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            if (memberType.Size <= 2)
+            if (memberType.Size == 1)
+            {
+                ec.EmitComment("Push Parameter @BP " + StackIdx);
+                ec.EmitInstruction(new MoveZeroExtend() { DestinationReg = EmitContext.D, SourceReg = EmitContext.BP, Size = 8, SourceDisplacement = StackIdx, SourceIsIndirect = true });
+                ec.EmitInstruction(new Push() { DestinationReg = EmitContext.D, Size = 16 });
+            }
+            else if (memberType.Size <= 2)
             {
                 ec.EmitComment("Push Parameter @BP " + StackIdx);
                 ec.EmitInstruction(new Push() { DestinationReg = EmitContext.BP, Size = memberType.SizeInBits, DestinationDisplacement = StackIdx, DestinationIsIndirect = true });

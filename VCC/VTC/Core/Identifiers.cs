@@ -28,7 +28,7 @@ namespace VTC.Core
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (_pointers != null)
-                _pointers = _pointers.DoResolve(rc);
+                _pointers = (TypePointer)_pointers.DoResolve(rc);
 
             _base = (BaseTypeIdentifier)_base.DoResolve(rc);
             Type = _base.Type;
@@ -46,7 +46,7 @@ namespace VTC.Core
     {
        TypeToken _type;
 
-        public bool Resolve(ResolveContext rc)
+        public override bool Resolve(ResolveContext rc)
         {
             _type.Resolve(rc);
             return true;
@@ -80,7 +80,7 @@ namespace VTC.Core
         TypeToken _typeid;
         Identifier _ident;
         StructDefinition _sdef;
-        bool isstruct = false;
+       
 
         [Rule(@"<Base>     ::= struct Id")]
         [Rule(@"<Base>     ::= enum Id")]  
@@ -130,8 +130,87 @@ namespace VTC.Core
             return base.Resolve(rc);
         }
     }
- 
 
+    [Terminal("Id")]
+    public class Identifier : Expr
+    {
+        protected readonly string _idName;
+        public override string Name { get { return _idName; } }
+
+        public Identifier(string idName)
+        {
+            loc = CompilerContext.TranslateLocation(position);
+            _idName = idName;
+        }
+
+
+    }
+    public class MethodIdentifier : Identifier
+    {
+        public Identifier Id { get; set; }
+        public TypeToken TType { get; set; }
+        public CallingCV CCV { get; set; }
+        [Rule(@"<Func ID> ::= <CallCV> <Type> Id")]
+        public MethodIdentifier(CallingCV ccv, TypeToken type, Identifier id)
+            : base(id.Name)
+        {
+            Id = id;
+            TType = type;
+            CCV = ccv;
+        }
+
+
+
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            TType = (TypeToken)TType.DoResolve(rc);
+            base.Type = TType.Type;
+            CCV = (CallingCV)CCV.DoResolve(rc);
+            return this;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            TType.Resolve(rc);
+
+            return base.Resolve(rc);
+        }
+    }
+
+
+
+    public class TypePointer : SimpleToken
+    {
+
+
+        public int PointerCount { get; set; }
+
+        TypePointer _next;
+        [Rule(@"<Pointers> ::= ~'*' <Pointers>")]
+        public TypePointer(TypePointer ptr)
+        {
+            loc = CompilerContext.TranslateLocation(position);
+            _next = ptr;
+        }
+        [Rule(@"<Pointers> ::=  ")]
+        public TypePointer()
+        {
+            loc = CompilerContext.TranslateLocation(position);
+            _next = null;
+        }
+
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            if (_next == null)
+            {
+                PointerCount = 0;
+                return this;
+            }
+            PointerCount = 1 + ((TypePointer)(_next.DoResolve(rc))).PointerCount;
+            return this;
+        }
+
+
+    }
    
     public class CallingCV : SimpleToken
     {
@@ -178,6 +257,7 @@ namespace VTC.Core
         [Rule(@"<Mod>      ::= extern")]
         [Rule(@"<Mod>      ::= static")]
         [Rule(@"<Mod>      ::= const")]
+        [Rule(@"<Mod>      ::= private")]
         public Modifier(SimpleToken mod)
         {
             _mod = mod;
@@ -192,6 +272,8 @@ namespace VTC.Core
                 ModifierList = Modifiers.Static;
             else if (_mod.Name == "const")
                 ModifierList = Modifiers.Const;
+            else if (_mod.Name == "private")
+                ModifierList = Modifiers.Private;
             else ModifierList = Modifiers.NoModifier;
             return this;
         }
@@ -201,6 +283,50 @@ namespace VTC.Core
         }
     }
 
-  
+
+
+
+
+
+    [Terminal("void")]
+    [Terminal("byte")]
+    [Terminal("sbyte")]
+    [Terminal("int")]
+    [Terminal("uint")]
+    [Terminal("string")]
+    [Terminal("bool")]
+    public class TypeToken : SimpleToken, IResolve
+    {
+        TypeSpec _ts;
+        public TypeSpec Type
+        {
+            get
+            {
+                if (_ts != null && _ts.IsTypeDef)
+                    return _ts.GetTypeDefBase(_ts);
+                else return _ts;
+            }
+            set
+            {
+                _ts = value;
+            }
+        }
+        public TypeToken()
+        {
+            loc = CompilerContext.TranslateLocation(position);
+
+        }
+
+        public override bool Resolve(ResolveContext rc)
+        {
+
+            return true;
+        }
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            Type = rc.Resolver.TryResolveType(this.symbol.Name);
+            return this;
+        }
+    }
     // end modifiers
 }

@@ -11,4 +11,14 @@ namespace Vasm.x86 {
             Size = 32;
         }
     }
+    [Vasm.OpCode("org")]
+    public class Org : InstructionWithDestinationAndSize
+    {
+
+        public Org()
+            : base("org")
+        {
+            Size = 80;
+        }
+    }
 }

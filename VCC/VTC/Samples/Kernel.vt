@@ -1,0 +1,362 @@
+﻿default asm {
+"[org 0]";
+
+"start:";
+	"mov ax,cs";
+	"mov ds,ax";
+	"mov es,ax";
+	"mov ax,0x7000";
+	"mov ss,ax";
+	"mov sp,ss";
+}
+
+namespace std;
+enum CONSOLE_COLORS{
+BLUE = 1,
+GREEN = 2,
+RED = 4
+
+};
+typedef enum CONSOLE_COLORS CCOLORS;
+// get char
+stdcall byte getc(){
+byte c = 0;
+   asm{
+   "mov ah, 0";
+   "int 0x16   ; wait for keypress";
+   "mov [BP-1], al";
+	"mov ah, 0x0E";
+    "int 0x10      ; otherwise, print out the character!";
+   }
+   
+   return c;
+}
+// put char
+stdcall void putc(byte c){
+asm{
+"xor cx,cx";
+"xor dx,dx";
+"xor bx,bx";
+}
+
+asm{
+
+	"mov byte al, [BP+4]";
+	"mov ah, 0x0E";
+    "int 0x10      ; otherwise, print out the character!";
+  }
+
+}
+// print null terminated string
+stdcall void print(string msg){
+
+int i = 0;
+asm{
+"xor cx,cx";
+"xor dx,dx";
+"xor bx,bx";
+"xor ax,ax";
+}
+// 0 end of string
+byte c;
+while(msg[i] != 0)
+	{
+	c = msg[i];
+	asm{
+	"mov byte al, [BP-3]";
+	"mov ah, 0x0E";
+    "int 0x10";
+  }
+  i++;
+
+	}
+
+
+}
+
+stdcall void cls()
+{
+asm{
+"xor cx,cx";
+"xor dx,dx";
+"xor bx,bx";
+"mov ax, 0x0003";
+"int 0x10";
+
+}
+}
+stdcall void lnprint(string msg){
+ asm{
+	"mov al, 0xA";
+	"mov ah, 0x0E";
+    "int 0x10      ; otherwise, print out the character!";
+	"mov al, 0x0D";
+	"mov ah, 0x0E";
+    "int 0x10      ; otherwise, print out the character!";
+  }
+ print(msg);
+
+}
+
+stdcall void println(string msg){
+
+ print(msg);
+  asm{
+	"mov al, 0xA";
+	"mov ah, 0x0E";
+    "int 0x10      ; otherwise, print out the character!";
+	"mov al, 0x0D";
+	"mov ah, 0x0E";
+    "int 0x10      ; otherwise, print out the character!";
+  }
+
+}
+stdcall void getstring(string buff){
+ byte cc = 0;
+ int  i = 0;
+ cc = getc();
+ while(cc != 0x0D){
+    buff[i] = cc;
+	i++;
+	cc = getc();
+	}
+buff[i] = 0;
+
+}
+stdcall void print_color(string msg, byte color)
+{
+int i = 0;
+byte c = 0;
+asm{
+	"mov ax,0xb800";
+	"mov gs,ax";
+	"push word gs"; // save gs
+	"mov bx,0";
+	"mov si,[BP+6]";
+	"mov ch,[BP+4]";
+}
+
+loop{
+
+asm{
+		"lodsb" ;
+		"or al,al";
+		"jz done";
+		"mov byte [gs:bx],al";
+		"mov byte [gs:bx+1],ch";
+		"add bx,2";
+		}
+
+}
+done:
+asm{
+"pop word gs";
+}
+
+}
+
+namespace String;
+use std;
+override bool operator ==(string a, string b)
+{
+bool eq = false;
+int i = 0;
+ while(a[i] == b[i] && a[i] != 0)
+     i++;
+
+	 
+eq = (a[i] == 0 && b[i] == 0 ); 
+
+return eq;
+}
+
+override string operator +(string a, string b)
+{
+ int i = 0;
+ int j = 0;
+ while(a[i] != 0)
+   i++;
+
+while(b[j] != 0){
+  a[i] = b[j];
+  j++;
+  i++;
+  }
+a[i] = 0;
+
+
+ return a;
+
+}
+
+stdcall uint strlen(string a)
+{
+ uint i = 0;
+ while(a[i] != 0)
+  i++;
+
+  return i;
+}
+
+stdcall void tostring(bool v)
+{
+if(v == true)
+ print("TRUE");
+else
+print("FALSE");
+
+}
+stdcall void tostring(uint a){
+if(a < 10)
+  putc((byte)(a+48));
+  else{
+  	tostring(a / 10);
+  	putc(48+(a % 10));
+
+  }
+
+
+}
+stdcall void reverse(string str, int length)
+{
+    uint start = 0;
+    uint end;
+
+	end = length -1;
+    while (start < end)
+    {
+       str[start] <> str[end];
+        start++;
+        end--;
+    }
+}
+
+namespace OPERATIONS;
+use std;
+use String;
+stdcall bool isdigit(byte c)
+{
+  if(c >= 48 && c <= 57)
+     return true;
+	else return false;
+}
+stdcall uint a2u(string s)
+{
+int i = 0;
+ uint num=0;
+ while(s[i] != 0)
+  {
+  if(isdigit(s[i]) == true)
+    num=(uint)((s[i])-'0')+num*10;
+  else
+   println("Not a number");
+    i++;  
+	 
+  }
+
+ return num;
+}
+
+
+
+private string prompt = ">>";
+private string NM_msg = "Type a number : ";
+private string buff = "00000"; // 5 digits number
+private string OP_msg = "Type an operator (+,-,*,/): ";
+const string OP_PL = "+";
+const string OP_MI = "-";
+const string OP_MUL = "*";
+const string OP_DIV = "/";
+stdcall void operate(){
+	uint a = 0;
+	uint b = 0;
+	uint r = 0;
+	lnprint(NM_msg);
+	lnprint(prompt);
+	getstring(buff);
+	a = a2u(buff);
+	lnprint(NM_msg);
+	lnprint(prompt);
+	getstring(buff);
+	b = a2u(buff);
+	lnprint(OP_msg);
+	lnprint(prompt);
+	getstring(buff);
+
+	if(OP_PL == buff)
+	 r = a+b;
+	else if(OP_MI == buff)
+	 r = a-b;
+	else if(OP_DIV == buff)
+	 r = a/b;
+	else if(OP_MUL == buff)
+	 r = a * b;
+	 else
+	 lnprint("Unknown Operator only (+,*,-,/) are allowed");
+
+
+lnprint("RESULT : ");
+	tostring(r);
+	
+	
+
+
+}
+
+namespace VTOS;
+use std;
+use String;
+use OPERATIONS;
+const string prompt = ">";
+string input = "000000000000000000000000000000000000000000000000000000000";
+const string hello_cmd = "hello";
+const string about_cmd = "about";
+const string op_cmd = "oper";
+const string op_help = "help";
+const string op_sd = "shutdown";
+const string op_res = "restart";
+const string help_msg = "oper : Operation, help : Help, hello : Hello World, about : About, shutdown, restart";
+const string about_text = "This os is a simple demo written to test Vatu compiler";
+stdcall void restart() {
+asm{
+"int 0x19";
+}
+}
+stdcall void shutdown() {
+asm{
+    "mov ax, 0x1000";
+    "mov ax, ss";
+    "mov sp, 0xf000";
+    "mov ax, 0x5307";
+    "mov bx, 0x0001";
+    "mov cx, 0x0003";
+    "int 0x15";
+	}
+}
+entry stdcall void main()
+{
+cls();
+	print_color("Welcome to Vatu OS Kernel", CONSOLE_COLORS.BLUE);
+	lnprint("Write your command : ");
+	loop{
+	lnprint(prompt);
+	getstring(input);
+	if(hello_cmd == input)
+		lnprint("Hello, from Vatu OS");
+	else if(about_cmd == input)
+			lnprint(about_text);
+	else if(op_cmd == input)
+	  operate();
+	else if(op_help == input)
+	 lnprint(help_msg);
+	else if(op_sd == input)
+		shutdown();
+	else if(op_res == input)
+		restart();
+	else
+		lnprint("Unknown command");
+	
+	}
+
+}
+

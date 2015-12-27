@@ -7,7 +7,7 @@ using Vasm.x86;
 
 namespace VTC.Core
 {
-    public class ByteConstant : CharConst
+    public class ByteConstant : ConstantExpression
     {
         internal byte _value;
         public ByteConstant(byte value, Location loc)
@@ -41,12 +41,12 @@ namespace VTC.Core
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            ec.EmitInstruction(new Push() { DestinationValue = (uint)_value, Size = 8 });
+            ec.EmitInstruction(new Push() { DestinationValue = (uint)_value, Size = 16 });
             return true;
         }
         public override bool EmitToRegister(EmitContext ec,RegistersEnum rg)
         {
-            ec.EmitInstruction(new Mov() { DestinationReg = rg,SourceValue = (uint)_value, Size = 8 });
+            ec.EmitInstruction(new Mov() { DestinationReg = rg,SourceValue = (uint)_value, Size = 16 });
             return true;
         }
         public override string CommentString()
@@ -54,13 +54,13 @@ namespace VTC.Core
             return _value.ToString();
         }
     }
-    public class StringConstant : StringConst
+    public class StringConstant : ConstantExpression
     {
         public static int id = 0;
-        public VarSpec ConstVar { get; set; }
+        public FieldSpec ConstVar { get; set; }
         string _value;
         public StringConstant(string value, Location loc)
-            : base(BuiltinTypeSpec.Byte.MakePointer(), loc)
+            : base(BuiltinTypeSpec.String, loc)
         {
             _value = value;
         }
@@ -76,8 +76,12 @@ namespace VTC.Core
         }
         public override bool Emit(EmitContext ec)
         {
-            if(ConstVar != null)
-                  ec.EmitData(new DataMember(ConstVar.Signature.ToString(), Encoding.ASCII.GetBytes(_value)), ConstVar, true);
+            if (ConstVar != null)
+            {
+                ec.EmitData(new DataMember(ConstVar.Signature.ToString(), Encoding.ASCII.GetBytes(_value)), ConstVar, true);
+                ec.EmitInstruction(new Push() { DestinationRef = ElementReference.New(ConstVar.Signature.ToString()), Size = 16 });
+
+            }
             return true;
         }
         public override bool Resolve(ResolveContext rc)
@@ -86,17 +90,9 @@ namespace VTC.Core
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-            if (!rc.IsInGlobal() && rc.IsInVarDeclaration)
-            {
-
-                ConstVar = new VarSpec(rc.CurrentNamespace, "STRC_" + id, rc.CurrentMethod, Type, loc);
-                rc.LocalStackIndex -= 2;
-                ConstVar.StackIdx = rc.LocalStackIndex;
-            }
-            else if (!rc.IsInGlobal() && !rc.IsInVarDeclaration)
-            {
-                ConstVar = new VarSpec(rc.CurrentNamespace, "STRC_" + id, rc.CurrentMethod, Type, loc);
-            }
+    
+                ConstVar = new FieldSpec(rc.CurrentNamespace, "STRC_" + id,  Modifiers.Const, Type, loc);
+          
             id++;
             return this;
         }
@@ -115,7 +111,7 @@ namespace VTC.Core
             return _value.ToString();
         }
     }
-    public class SByteConstant : CharConst
+    public class SByteConstant : ConstantExpression
     {
         internal sbyte _value;
         public SByteConstant(sbyte value, Location loc)
@@ -161,7 +157,7 @@ namespace VTC.Core
             return true;
         }
     }
-    public class IntConstant : IntegralConst
+    public class IntConstant : ConstantExpression
     {
         internal int _value;
         public IntConstant(short value, Location loc)
@@ -207,7 +203,7 @@ namespace VTC.Core
             return true;
         }
     }
-    public class ArrayConstant : IntegralConst
+    public class ArrayConstant : ConstantExpression
     {
         internal List<byte> _value;
         public ArrayConstant(byte[] b, Location loc)
@@ -253,7 +249,7 @@ namespace VTC.Core
 
       
     }
-    public class UIntConstant : IntegralConst
+    public class UIntConstant : ConstantExpression
     {
         internal ushort _value;
         public UIntConstant(ushort value, Location loc)
@@ -299,7 +295,7 @@ namespace VTC.Core
             return true;
         }
     }
-    public class BoolConstant : BoolConst
+    public class BoolConstant : ConstantExpression
     {
         internal bool _value;
         public BoolConstant(bool value, Location loc)
@@ -396,37 +392,5 @@ namespace VTC.Core
 
 
 
-    // Recognized by the parser
-    public class IntegralConst : ConstantExpression
-    {
-        public IntegralConst(TypeSpec tp, Location loc)
-            : base(tp, loc)
-        {
 
-        }
-    }
-    public class StringConst : ConstantExpression
-    {
-        public StringConst(TypeSpec tp, Location loc)
-            : base(tp, loc)
-        {
-
-        }
-    }
-    public class CharConst : ConstantExpression
-    {
-        public CharConst(TypeSpec tp, Location loc)
-            : base(tp, loc)
-        {
-
-        }
-    }
-    public class BoolConst : ConstantExpression
-    {
-        public BoolConst(TypeSpec tp, Location loc)
-            : base(tp, loc)
-        {
-
-        }
-    }
 }

@@ -82,6 +82,8 @@ Comment Line  = '//'
          | <Decl>
 
 <Decl>  ::= <Func Decl>
+          | <ASM Decl>
+          | <Oper Decl>
           | <Func Proto>
           | <Struct Decl>
           | <Enum Decl>
@@ -100,6 +102,21 @@ Comment Line  = '//'
                | 'entry' <Func ID> '(' <Params>  ')' <Block>
                | 'entry' <Func ID> '(' ')' <Block>
 
+<Oper Decl>  ::= 'override' <Type> 'operator' '==' '(' <Params>  ')' <Block>
+               | 'override' <Type> 'operator' '!=' '(' <Params>  ')' <Block>
+               | 'override' <Type> 'operator' '<=' '(' <Params>  ')' <Block>
+               | 'override' <Type> 'operator' '>=' '(' <Params>  ')' <Block>
+               | 'override' <Type> 'operator' '>' '(' <Params>  ')' <Block>
+               | 'override' <Type> 'operator' '<' '(' <Params>  ')' <Block>
+               | 'override' <Type> 'operator' '+' '(' <Params>  ')' <Block>
+               | 'override' <Type> 'operator' '-' '(' <Params>  ')' <Block>
+               | 'override' <Type> 'operator' '*' '(' <Params>  ')' <Block>
+               | 'override' <Type> 'operator' '/' '(' <Params>  ')' <Block>
+               | 'override' <Type> 'operator' '%' '(' <Params>  ')' <Block>
+               | 'override' <Type> 'operator' '^' '(' <Params>  ')' <Block>
+               | 'override' <Type> 'operator' '&' '(' <Params>  ')' <Block>
+               | 'override' <Type> 'operator' '|' '(' <Params>  ')' <Block>
+               
 <Params>     ::= <Param> ',' <Params>
                | <Param>
                
@@ -109,9 +126,18 @@ Comment Line  = '//'
 <Types>      ::= <Type>  ',' <Types>
                | <Type> 
   
-<Func ID>    ::= <Type> ID
-               | ID
+<Func ID>    ::= <CallCV> <Type> ID
 
+<CallCV>    ::= stdcall 
+             | fastcall
+             | cdecl 
+
+! ===================================================================
+! Asm Declaration
+! ===================================================================
+<ASM Decl> ::= extern asm '{' <INSTRUCTIONS>  '}'
+             | default asm '{' <INSTRUCTIONS>  '}'
+           
 ! ===================================================================
 ! Type Declaration
 ! ===================================================================
@@ -149,6 +175,7 @@ Comment Line  = '//'
 <Mod>      ::= extern 
              | static
              | const   
+             | private
 
 ! ===================================================================
 ! Enumerations
@@ -238,8 +265,7 @@ Comment Line  = '//'
 ! Here begins the C's 15 levels of operator precedence.
 ! ===================================================================
 
-<Expression>       ::= <Expression> ',' <Op Assign>   
-               | <Op Assign>
+<Expression>       ::= <Op Assign>
 
 <Op Assign>  ::= <Op If> '='   <Op Assign>
                | <Op If> '<>'   <Op Assign>
@@ -330,13 +356,15 @@ Comment Line  = '//'
                | BinaryLiteral
                | BooleanLiteral
                | NullLiteral
-               | Id '(' <Expression> ')'
+               | Id '(' <PARAM EXPR> ')'
                | Id '(' ')'          
-
                | Id
                | '(' <Expression> ')'
                | <REGISTER>
                
+<PARAM EXPR>  ::= <Expression> ',' <PARAM EXPR>
+               |  <Expression>
+               |        
 <REGISTER>   ::= AX
               | BX
               | CX
@@ -360,36 +388,9 @@ Comment Line  = '//'
               | CL
               | DH
               | DL  
-              
-<OPCODES>   ::=  mov | cmp | test
-                | push
-                | pop | idiv | inc | dec | neg | mul | div | imul | not | setpo | setae | setnle | setc | setno | setnb | setp | setnge | setl | setge | setpe | setnl | setnz | setne | setnc | setbe | setnp | setns | seto | setna | setnae | setz | setle | setnbe | sets | sete | setb | seta | setg | setng
-                | xchg
-                | popad | aaa | popa | popfd | cwd | lahf | pushad | pushf | aas | bswap | pushfd | cbw | cwde | xlat | aam | aad | cdq | daa | sahf | das | into | iret | clc | stc | cmc | cld | std | cli | sti | movsb | movsw | movsd | lods | lodsb | lodsw | lodsd | stos | stosb | stosw | sotsd | scas | scasb | scasw | scasd | cmps | cmpsb | cmpsw | cmpsd | insb | insw | insd | outsb | outsw | outsd
-                | adc | add | sub | cbb | xor | or
-                | jnbe | jnz | jpo | jz | js | loopnz | jge | jb | jnb | jo | jp | jno | jnl | jnae | loopz | jmp | jnp | loop | jl | jcxz | jae | jnge | ja | loopne | loope | jg | jnle | je | jnc | jc | jna | jbe | jle | jpe | jns | jecxz | jng
-                | movzx | bsf | bsr
-                | les | lea | lds | ins | outs
-                | xadd | cmpxchg
-                | shl | shr | ror | rol | rcl | sal | rcr | sar
-                | btr | bt | btc
-                | call
-                | inter | retn | ret | retf
-                | byt | sbyt | db | word | sword | dw | dword | sdword | dd | fword | df | qword | dq | tbyte | dt | real4 | real8 | real | far | near | proc
-
-<OPERAND>    ::= <REGISTER>
-              | DecLiteral
-              | HexLiteral
-              | StringLiteral
-              
-              
-<OPERANDS>   ::= <OPERAND> ',' <OPERANDS>             
-                | <OPERAND>
-                
-<INSTRUCTION> ::= <OPCODES> ';'
-               | <OPCODES> <OPERANDS> ';'
-               | StringLiteral ';'
+                            
+<INSTRUCTION> ::= StringLiteral ';'
            
 <INSTRUCTIONS> ::= <INSTRUCTION> <INSTRUCTIONS> 
-                |                             
-             
+                |             
+          

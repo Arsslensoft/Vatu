@@ -65,6 +65,7 @@ namespace VTC
                     }
 
                 }
+
             }
             else
             {
@@ -138,7 +139,7 @@ namespace VTC
                     ec.EmitPop(RegistersEnum.SI, 16);
                     ec.EmitPop(RegistersEnum.DI, 16);
                     ec.EmitInstruction(new Add() { SourceReg = RegistersEnum.DI, DestinationReg = RegistersEnum.SI });
-                    ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 8, DestinationIsIndirect = true, SourceReg = Register.Value });
+                    ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 8, DestinationIsIndirect = true, SourceReg = ec.GetLow(Register.Value) });
                 }
                 else
                 {
@@ -159,7 +160,7 @@ namespace VTC
                     Left.EmitToStack(ec);
                     ec.EmitPop(RegistersEnum.SI, 16);
                     ec.EmitInstruction(new Add() { SourceValue = (uint)Index, DestinationReg = RegistersEnum.SI });
-                    ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 8, DestinationIsIndirect = true, SourceReg = Register.Value });
+                    ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 8, DestinationIsIndirect = true, SourceReg = ec.GetLow( Register.Value) });
                 }
                 else
                 {
@@ -224,8 +225,8 @@ namespace VTC
             _op = AccessOperator.ByValue;
             Register = RegistersEnum.AX;
         }
-        bool istype = false;
-        bool isbyvalue = true;
+      
+
         // enum
         TypeSpec tp;
         EnumMemberSpec enumval;
@@ -238,7 +239,7 @@ namespace VTC
             tp = rc.Resolver.TryResolveType(lv.Name);
             if (tp != null && tp.IsEnum)
             {
-                istype = true;
+     
                 enumval = rc.Resolver.TryResolveEnumValue(rv.Name);
                 return true;
             }
@@ -345,4 +346,18 @@ namespace VTC
 
 
     }
+
+  
+
+    [Terminal("->")]
+    public class ByAddressOperator : AccessOp
+    {
+        public ByAddressOperator()
+        {
+            _op = AccessOperator.ByAddress;
+        }
+
+    }
+
+
 }

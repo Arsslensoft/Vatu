@@ -119,22 +119,35 @@ namespace VTC
             {
                 if (kt.NS.Name != ns.Name)
                     continue;
-                if (kt.Name == name)
+                if (kt.Name == name && !(kt.IsPrivate && kt.NS != CurrentNamespace))
                     return kt;
             }
 
             return null;
         }
-        public MethodSpec ResolveMethod(Namespace ns, string name)
+        public MethodSpec ResolveMethod(Namespace ns, string name, TypeSpec[] par=null)
         {
-            foreach (MethodSpec kt in KnownMethods)
+            if (par != null)
             {
-                if (kt.NS.Name != ns.Name)
-                    continue;
-                if (kt.Name == name)
-                    return kt;
+                MemberSignature msig = new MemberSignature(ns, name,par, Location.Null);
+                foreach (MethodSpec kt in KnownMethods)
+                {
+                    if (kt.NS.Name != ns.Name)
+                        continue;
+                    if (kt.Signature == msig)
+                        return kt;
+                }
             }
-
+            else
+            {
+                foreach (MethodSpec kt in KnownMethods)
+                {
+                    if (kt.NS.Name != ns.Name)
+                        continue;
+                    if (kt.Name == name)
+                        return kt;
+                }
+            }
             return null;
         }
         public VarSpec ResolveVar(Namespace ns, string name)
@@ -180,19 +193,19 @@ namespace VTC
         }
 
 
-        public MethodSpec TryResolveMethod(string name)
+        public MethodSpec TryResolveMethod(string name, TypeSpec[] param = null)
         {
-            MethodSpec ms = ResolveMethod(CurrentNamespace, name);
+            MethodSpec ms = ResolveMethod(CurrentNamespace, name, param);
             if (ms == null)
             {
-                ms = ResolveMethod(Namespace.Default, name);
+                ms = ResolveMethod(Namespace.Default, name, param);
 
 
                 if (ms == null)
                 {
                     foreach (Namespace ns in Imports)
                     {
-                        ms = ResolveMethod(ns, name);
+                        ms = ResolveMethod(ns, name, param);
                         if (ms != null)
                             return ms;
                     }

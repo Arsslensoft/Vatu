@@ -8,3 +8,7 @@ D:\Research\Vatu\Vatu\VCC\bsn.GoldParser\bin\Debug\bsn.GoldParser.pdb
 D:\Research\Vatu\Vatu\VCC\bsn.GoldParser\obj\Debug\bsn.GoldParser.csprojResolveAssemblyReference.cache
 D:\Research\Vatu\Vatu\VCC\bsn.GoldParser\obj\Debug\bsn.GoldParser.dll
 D:\Research\Vatu\Vatu\VCC\bsn.GoldParser\obj\Debug\bsn.GoldParser.pdb
+D:\Projects\Vatu\Vatu\VCC\bsn.GoldParser\bin\Debug\bsn.GoldParser.dll
+D:\Projects\Vatu\Vatu\VCC\bsn.GoldParser\bin\Debug\bsn.GoldParser.pdb
+D:\Projects\Vatu\Vatu\VCC\bsn.GoldParser\obj\Debug\bsn.GoldParser.dll
+D:\Projects\Vatu\Vatu\VCC\bsn.GoldParser\obj\Debug\bsn.GoldParser.pdb

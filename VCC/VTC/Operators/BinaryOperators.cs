@@ -62,8 +62,11 @@ namespace VTC
             ec.EmitPop(RightRegister.Value);
         
             ec.EmitInstruction(new Or() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+            if (CommonType.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceValue = EmitContext.TRUE, Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceValue = EmitContext.TRUE, Size = 80 });
 
-            ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceValue = EmitContext.TRUE, Size = 80 });
       
             if (v)
                 ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.Equal, DestinationLabel = truecase.Name });
@@ -80,8 +83,8 @@ namespace VTC
         public LogicalAndOperator()
         {
             Operator = BinaryOperator.LogicalAnd;
-            RightRegister = RegistersEnum.BL;
-            LeftRegister = RegistersEnum.AL;
+            RightRegister = RegistersEnum.BX;
+            LeftRegister = RegistersEnum.AX;
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -118,7 +121,10 @@ namespace VTC
 
             ec.EmitInstruction(new And() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
 
-            ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceValue = EmitContext.TRUE, Size = 80 });
+            if (CommonType.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceValue = EmitContext.TRUE, Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceValue = EmitContext.TRUE, Size = 80 });
 
             if (v)
                 ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.Equal, DestinationLabel = truecase.Name });
@@ -150,10 +156,16 @@ namespace VTC
                 RegisterOperation = true;
             else if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(28, Location, "Register expected, Left and Right must be registers");
+
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Emit(EmitContext ec)
         {
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
 
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
@@ -188,11 +200,16 @@ namespace VTC
                 RegisterOperation = true;
             else if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(28, Location, "Register expected, Left and Right must be registers");
+
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Emit(EmitContext ec)
         {
-
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " ^ " + Right.CommentString());
@@ -225,10 +242,15 @@ namespace VTC
                 RegisterOperation = true;
             else if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(28, Location, "Register expected, Left and Right must be registers");
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Emit(EmitContext ec)
         {
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
 
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
@@ -255,42 +277,58 @@ namespace VTC
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+          
             if (!FixConstant(rc))
                 ResolveContext.Report.Error(24, Location, "Comparison operation must have the same type");
             CommonType = BuiltinTypeSpec.Bool;
             if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
+
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] {Left.Type, Right.Type});
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Emit(EmitContext ec)
         {
 
+          
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
+            
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " == " + Right.CommentString());
             ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
-         
-            ec.EmitInstruction(new Compare() { DestinationReg =LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+
+            if (CommonType.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+
             ec.EmitBoolean(ec.GetLow(LeftRegister.Value) ,ConditionalTestEnum.Equal, ConditionalTestEnum.NotEqual);
 
 
-            ec.EmitPush(ec.GetLow(LeftRegister.Value));
+            ec.EmitPush(LeftRegister.Value);
 
 
             return true;
         }
         public override bool EmitBranchable(EmitContext ec, Label truecase,bool v)
         {
-
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperatorBranchable(ec,truecase,v, ConditionalTestEnum.Equal, ConditionalTestEnum.NotEqual);
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " == " + Right.CommentString());
             ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
 
-            ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
-          
+            if (CommonType.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
 
             // jumps
             if(v)
@@ -318,29 +356,39 @@ namespace VTC
             CommonType = BuiltinTypeSpec.Bool;
             if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
 
         public override bool Emit(EmitContext ec)
         {
-
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " != " + Right.CommentString());
             ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
 
-            ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+           if(CommonType.Size == 1)
+               ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg =ec.GetLow( RightRegister.Value), Size = 80 });
+            else
+               ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+
             ec.EmitBoolean(ec.GetLow(LeftRegister.Value), ConditionalTestEnum.NotEqual, ConditionalTestEnum.Equal);
 
 
-            ec.EmitPush(ec.GetLow(LeftRegister.Value));
+            ec.EmitPush(LeftRegister.Value);
 
 
             return true;
         }
         public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
         {
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperatorBranchable(ec, truecase, v, ConditionalTestEnum.NotEqual, ConditionalTestEnum.Equal);
 
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
@@ -348,8 +396,10 @@ namespace VTC
             ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
 
-            ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
-
+            if (CommonType.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
 
             // jumps
             if (v)
@@ -361,6 +411,7 @@ namespace VTC
             return true;
         }
     }
+  
     [Terminal("<")]
     public class LessThanOperator : BinaryOp
     {
@@ -377,18 +428,29 @@ namespace VTC
             CommonType = BuiltinTypeSpec.Bool;
             if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
+
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Emit(EmitContext ec)
         {
-
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " < " + Right.CommentString());
-            ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
+            ec.EmitPop(LeftRegister.Value);
 
-            ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+            if (CommonType.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+
+       
+
             ec.EmitBoolean(ec.GetLow(LeftRegister.Value), ConditionalTestEnum.LessThan, ConditionalTestEnum.NotLessThan);
 
 
@@ -399,14 +461,19 @@ namespace VTC
         }
         public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
         {
-
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperatorBranchable(ec, truecase, v, ConditionalTestEnum.LessThan, ConditionalTestEnum.NotLessThan);
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " < " + Right.CommentString());
-            ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
+            ec.EmitPop(LeftRegister.Value);
+       
 
-            ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+            if (CommonType.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
 
 
             // jumps
@@ -436,19 +503,28 @@ namespace VTC
             CommonType = BuiltinTypeSpec.Bool;
             if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
+
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
 
         public override bool Emit(EmitContext ec)
         {
-
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " > " + Right.CommentString());
-            ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
+            ec.EmitPop(LeftRegister.Value);
 
-            ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+            if (CommonType.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+
             ec.EmitBoolean(ec.GetLow(LeftRegister.Value), ConditionalTestEnum.GreaterThan, ConditionalTestEnum.NotGreaterThan);
 
 
@@ -459,14 +535,18 @@ namespace VTC
         }
         public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
         {
-
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperatorBranchable(ec, truecase, v, ConditionalTestEnum.GreaterThan, ConditionalTestEnum.NotGreaterThan);
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " > " + Right.CommentString());
-            ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
+            ec.EmitPop(LeftRegister.Value);
 
-            ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+            if (CommonType.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
 
 
             // jumps
@@ -496,19 +576,28 @@ namespace VTC
             CommonType = BuiltinTypeSpec.Bool;
             if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
 
         public override bool Emit(EmitContext ec)
         {
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
 
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " <= " + Right.CommentString());
-            ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
+            ec.EmitPop(LeftRegister.Value);
 
-            ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+            if (CommonType.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+
             ec.EmitBoolean(ec.GetLow(LeftRegister.Value), ConditionalTestEnum.LessThanOrEqualTo, ConditionalTestEnum.NotGreaterThanOrEqualTo);
 
 
@@ -519,14 +608,19 @@ namespace VTC
         }
         public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
         {
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperatorBranchable(ec, truecase, v, ConditionalTestEnum.LessThanOrEqualTo, ConditionalTestEnum.NotLessThanOrEqualTo);
 
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " <= " + Right.CommentString());
-            ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
+            ec.EmitPop(LeftRegister.Value);
 
-            ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+            if (CommonType.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
 
 
             // jumps
@@ -557,19 +651,28 @@ namespace VTC
             CommonType = BuiltinTypeSpec.Bool;
             if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
+
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
 
         public override bool Emit(EmitContext ec)
         {
-
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " >= " + Right.CommentString());
-            ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
+            ec.EmitPop(LeftRegister.Value);
 
-            ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+            if (CommonType.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+
             ec.EmitBoolean(ec.GetLow(LeftRegister.Value), ConditionalTestEnum.GreaterThanOrEqualTo, ConditionalTestEnum.NotGreaterThanOrEqualTo);
 
 
@@ -580,14 +683,18 @@ namespace VTC
         }
         public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
         {
-
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperatorBranchable(ec, truecase, v, ConditionalTestEnum.GreaterThanOrEqualTo, ConditionalTestEnum.NotGreaterThanOrEqualTo);
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " >= " + Right.CommentString());
-            ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
+            ec.EmitPop(LeftRegister.Value);
 
-            ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+            if (CommonType.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
 
 
             // jumps
@@ -854,11 +961,16 @@ namespace VTC
                 RegisterOperation = true;
             else if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(28, Location, "Register expected, Left and Right must be registers");
+
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Emit(EmitContext ec)
         {
-
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
 
             if (RegisterOperation)
             {
@@ -899,11 +1011,16 @@ namespace VTC
                 RegisterOperation = true;
             else if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(28, Location, "Register expected, Left and Right must be registers");
+
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Emit(EmitContext ec)
         {
-
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
 
             if (RegisterOperation)
             {
@@ -948,10 +1065,16 @@ namespace VTC
             CommonType = Left.Type;
             if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
+
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Emit(EmitContext ec)
         {
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
 
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
@@ -1002,11 +1125,16 @@ namespace VTC
             if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
             CommonType = Left.Type;
+
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Emit(EmitContext ec)
         {
-
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " / " + Right.CommentString());
@@ -1070,17 +1198,21 @@ namespace VTC
             if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
             CommonType = Left.Type;
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Emit(EmitContext ec)
         {
-
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " % " + Right.CommentString());
             ec.EmitPop(RightRegister.Value);
             ec.EmitPop(LeftRegister.Value);
-
+            ec.EmitInstruction(new Xor() { DestinationReg = EmitContext.D,SourceReg = EmitContext.D, Size = 80 });
             // TODO:CHECKED DIV
             if (unsigned)
             {

@@ -9,11 +9,7 @@ namespace VTC
     public class ConsoleReporter : Report
     {
 
-        private static int error_count;
-        private static int mark_count;
-        private static bool quiet;
-        /* Current file being processed */
-        private static string file_path;
+     
 
         public ConsoleReporter()
             : base()
@@ -66,11 +62,7 @@ namespace VTC
     public class FileReporter : Report
     {
         private StreamWriter str;
-        private static int error_count;
-        private static int mark_count;
-        private static bool quiet;
-        /* Current file being processed */
-        private static string file_path;
+   
 
         public FileReporter(string file)
             : base()

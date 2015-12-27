@@ -17,4 +17,20 @@ namespace Vasm.x86 {
             base.WriteText(aAssembler, aOutput);
         }
     }
+
+    [Vasm.OpCode("setcc")]
+    public class ConditionalSet : InstructionWithDestinationAndSize, IInstructionWithCondition
+    {
+        public ConditionalTestEnum Condition
+        {
+            get;
+            set;
+        }
+
+        public override void WriteText(Vasm.AsmContext aAssembler, AssemblyWriter aOutput)
+        {
+            mMnemonic = "set" + Condition.GetMnemonic();
+            base.WriteText(aAssembler, aOutput);
+        }
+    }
 }

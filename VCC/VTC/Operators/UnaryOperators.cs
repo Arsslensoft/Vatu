@@ -317,7 +317,7 @@ namespace VTC
             {
                 ec.EmitComment("$" + Right.CommentString());
 
-                ec.EmitInstruction(new Compare() { DestinationReg = ((RegisterExpression)Right).Register, SourceValue = 0, Size = 80 });
+                ec.EmitInstruction(new Test() { DestinationReg = ((RegisterExpression)Right).Register, SourceValue = 1, Size = 80 });
                 ec.EmitBoolean(ec.GetLow(Register.Value), ConditionalTestEnum.ParityEven, ConditionalTestEnum.ParityOdd);
                 ec.EmitPush(((RegisterExpression)Right).Register);
 
@@ -327,7 +327,7 @@ namespace VTC
             ec.EmitComment("$" + Right.CommentString());
             ec.EmitPop(Register.Value);
 
-            ec.EmitInstruction(new Compare() { DestinationReg = Register.Value, SourceValue = 0, Size = 80 });
+            ec.EmitInstruction(new Test() { DestinationReg = Register.Value, SourceValue = 1, Size = 80 });
             ec.EmitBoolean(ec.GetLow(Register.Value), ConditionalTestEnum.ParityEven, ConditionalTestEnum.ParityOdd);
             ec.EmitPush(Register.Value);
      

@@ -232,12 +232,13 @@ namespace VTC.Core
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             _expr = (Expr)_expr.DoResolve(rc);
-            ReturnLabel = new Label(rc.CurrentMethod.Name + "_ret");
+            ReturnLabel = new Label(rc.CurrentMethod.Signature + "_ret");
             return this;
         }
         public override bool Emit(EmitContext ec)
         {
             bool ok = _expr.Emit(ec);
+            ec.EmitInstruction(new Vasm.x86.Pop() { DestinationReg = EmitContext.A});
             ec.EmitInstruction(new Vasm.x86.Jump() { DestinationLabel = this.ReturnLabel.Name });
             return ok;
         }
@@ -776,7 +777,7 @@ namespace VTC.Core
                 EmitConstantLoop(ec);
             else
             {
-                ec.EmitInstruction(new Jump() { DestinationLabel = ExitLoop.Name });
+                ec.EmitInstruction(new Jump() { DestinationLabel = LoopCondition.Name });
 
                 ec.MarkLabel(EnterLoop);
 
@@ -941,6 +942,7 @@ namespace VTC.Core
                 _expr.EmitBranchable(ec, Else, false);
                 ec.EmitComment("("+_expr.CommentString() + ") is true");
                 _stmt.Emit(ec);
+                ec.EmitInstruction(new Jump() {DestinationLabel = ExitIf.Name });
                 ec.MarkLabel(Else);
                 ec.EmitComment("Else ");
                 _elsestmt.Emit(ec);
