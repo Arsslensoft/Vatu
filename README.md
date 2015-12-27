@@ -12,7 +12,8 @@ Global, Local variables,
 Register operations,
 Assembly statements,
 Flow Control Statements (return,goto,goto case,continue,next,break),
-Iteration and Conditional Statements
+Iteration and Conditional Statements,
+Operators overloading
 
 ####In The future : 
 Fix a lot of bugs,
@@ -29,5 +30,6 @@ The compiler was developed at Arsslensoft Research by Abd Al Moez and Arsslen
 
 ####YACC/BISON Grammar :
   See https://github.com/Arsslensoft/Vatu/wiki/Vatu-Language-Grammar
-  
+####Vatu OS Sample Tutorial
+  See https://github.com/Arsslensoft/Vatu/wiki/Testing-Kernel.vt-sample
 #####The Project development has been delayed to June 2016
