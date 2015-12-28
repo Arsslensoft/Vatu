@@ -103,6 +103,15 @@ namespace VTC.Core
         {
             return true;
         }
+        public override Reachability MarkReachable(Reachability rc)
+        {
+            if (rc.IsUnreachable)
+                return rc;
+
+
+
+            return base.MarkReachable(rc);
+        }
     }
     public class NormalStatment : Statement
     {
@@ -245,6 +254,11 @@ namespace VTC.Core
         public override bool Resolve(ResolveContext rc)
         {
             return _expr.Resolve(rc);
+        }
+        public override Reachability MarkReachable(Reachability rc)
+        {
+            base.MarkReachable(rc);
+            return Reachability.CreateUnreachable();
         }
     }
     public class BreakStatement : NormalStatment
@@ -471,9 +485,42 @@ namespace VTC.Core
                 ec.MarkLabel(EnterLoop);
 
                 _stmt.Emit(ec);
+                ec.MarkLabel(LoopCondition);
                 ec.EmitInstruction(new Jump() { DestinationLabel = EnterLoop.Name });
+            
                 ec.MarkLabel(ExitLoop);
             }
+            else
+            {
+                ec.MarkLabel(EnterLoop);
+                _stmt.Emit(ec);
+                ec.MarkLabel(LoopCondition);
+                ec.MarkLabel(ExitLoop);
+            }
+        }
+
+        public override Reachability MarkReachable(Reachability rc)
+        {
+            ConstantExpression ce = null;
+
+            if (_expr is ConstantExpression)
+                ce = (ConstantExpression)_expr;
+            else
+                ce = (ConstantExpression)_expr.current;
+
+            bool val = (bool)ce.GetValue();
+            base.MarkReachable(rc);
+
+            var body_rc = _stmt.MarkReachable(rc);
+
+            if (body_rc.IsUnreachable)
+                return Reachability.CreateUnreachable();
+
+            if (val)
+                return Reachability.CreateUnreachable();
+   
+
+            return rc & body_rc;
         }
     }
     #endregion

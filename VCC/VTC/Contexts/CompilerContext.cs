@@ -44,6 +44,7 @@ namespace VTC
         public void PrepareEmit(EmitContext ec)
         {
             ec.ag.IsFlat = Options.IsFlat;
+            ec.ag.OLevel = Options.OptimizeLevel;
         }
         public bool Test()
         {

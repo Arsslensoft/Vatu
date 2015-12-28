@@ -27,7 +27,8 @@ namespace Vasm.Optimizer
       }
        Dictionary<string, string> lbtranslate;
        List<int> ToBeCorrected;
-       public bool CheckForOptimization(List<Instruction> ins)
+
+       public bool CheckForOptimization(List<Instruction> ins, List<Instruction> externals = null)
        {
            ToBeCorrected = new List<int>();
            lbtranslate = new Dictionary<string, string>();
@@ -72,6 +73,7 @@ namespace Vasm.Optimizer
                    }
                }
            }
+           Optimizer.Optimizations += ToBeCorrected.Count;
            return ToBeCorrected.Count > 0;
        }
     }

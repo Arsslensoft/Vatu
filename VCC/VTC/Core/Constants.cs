@@ -101,8 +101,7 @@ namespace VTC.Core
             if (!decl)
                 Emit(ec);
       
-            ec.EmitInstruction(new Push() { DestinationRef = ElementReference.New(ConstVar.Signature.ToString()), Size = 16 });
-
+     
             return true;
         }
      

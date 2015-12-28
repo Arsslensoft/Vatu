@@ -8,7 +8,7 @@ namespace Vasm.Optimizer
     interface IOptimizer
     {
         int Level { get; set; }
-        bool CheckForOptimization(List<Instruction> ins);
+        bool CheckForOptimization(List<Instruction> ins, List<Instruction> externals = null);
         bool Optimize(ref List<Instruction> src);
     }
 }

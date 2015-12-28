@@ -321,6 +321,7 @@ stdcall void restart() {
 asm{
 "int 0x19";
 }
+
 }
 stdcall void shutdown() {
 asm{

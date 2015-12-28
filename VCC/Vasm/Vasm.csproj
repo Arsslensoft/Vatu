@@ -60,6 +60,9 @@
     <Compile Include="Optimizer\JumpOptimizer.cs" />
     <Compile Include="Optimizer\LabelOptimizer.cs" />
     <Compile Include="Optimizer\Optimizer.cs" />
+    <Compile Include="Optimizer\OptimizeUtils.cs" />
+    <Compile Include="Optimizer\PushPopO1.cs" />
+    <Compile Include="Optimizer\PushPopO2.cs" />
     <Compile Include="StructElement.cs" />
     <Compile Include="x86\Add.cs" />
     <Compile Include="x86\AddWithCarry.cs" />

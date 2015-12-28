@@ -1111,8 +1111,7 @@ namespace VTC
         {
             ReferenceType = rs;
         }
-
-
+      
       
         public virtual bool LoadEffectiveAddress(EmitContext ec)
         {

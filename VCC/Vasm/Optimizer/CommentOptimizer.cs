@@ -16,7 +16,7 @@ namespace Vasm.Optimizer
         }
         public int Level { get; set; }
 
-        public bool CheckForOptimization(List<Instruction> ins)
+        public bool CheckForOptimization(List<Instruction> ins, List<Instruction> externals = null)
         {
          
             return true;
@@ -25,7 +25,11 @@ namespace Vasm.Optimizer
         {
             for (int i = 0; i < src.Count; i++)
                 if (src[i] is Comment)
+                {
                     src[i].Emit = false;
+                 
+                    Optimizer.Optimizations++;
+                }
             return true;
         }
     }

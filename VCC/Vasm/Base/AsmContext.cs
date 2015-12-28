@@ -10,7 +10,7 @@ namespace Vasm
     {
 
        public bool IsFlat { get; set; }
-       
+       public int OLevel { get; set; }
        private static AsmContext mCurrentInstance;
        Stack<RegistersEnum> rg = new Stack<RegistersEnum>();
        public RegistersEnum GetNextRegister()
@@ -160,9 +160,16 @@ namespace Vasm
             return (a.DestinationReg.HasValue && b.DestinationRef != null);
 
         }
-        public void Optimize()
+        public bool Optimize()
         {
-            return;
+            InlineInstruction entry = new InlineInstruction(EntryPoint);
+            if(!string.IsNullOrEmpty(EntryPoint))
+                mDefInstructions.Add(entry);
+            bool ok = Optimizer.Optimizer.Optimize(OLevel,ref mInstructions,mDefInstructions);
+            if (!string.IsNullOrEmpty(EntryPoint))
+                mDefInstructions.Remove(entry);
+
+            return ok;
    /*
             int i = 0;
             for (i = 0; i < mInstructions.Count; i++ )
