@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Vasm;
 using Vasm.x86;
 using VTC.Core;
 
@@ -18,57 +19,126 @@ namespace VTC
             Register = RegistersEnum.AX;
             Operator = UnaryOperator.ValueOf;
         }
-
+        TypeSpec MemberType;
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (!Right.Type.IsPointer)
                 ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non pointer types");
             // VOF
-            if (Right is VariableExpression)
+            if (Right is AccessExpression)
+            {
+                //ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non variable expressions");
+                ms = null;
+            }
+            else if (Right is VariableExpression)
                 ms = (Right as VariableExpression).variable;
+            MemberType = Right.Type;
             Right.Type = Right.Type.BaseType;
-            if(Right.Type != null)
-            CommonType = Right.Type.BaseType;
+            if (Right.Type != null)
+                CommonType = Right.Type;
+            
+            
             return this;
         }
         public override bool Resolve(ResolveContext rc)
         {
-            return true;
+            return Right.Resolve(rc) ;
         }
         public override bool Emit(EmitContext ec)
         {
-            if (ms is VarSpec)
-                ms.ValueOf(ec);
-            else if (ms is FieldSpec)
-                ms.ValueOf(ec);
-            else if (ms is ParameterSpec)
-                ms.ValueOf(ec);
+            if (ms != null)
+            {
+                if (ms is VarSpec)
+                    ms.ValueOf(ec);
+                else if (ms is FieldSpec)
+                    ms.ValueOf(ec);
+                else if (ms is ParameterSpec)
+                    ms.ValueOf(ec);
+            }
+            else
+            {
+             
+              
+                ec.EmitComment("ValueOf @Var");
+                Right.EmitToStack(ec);
+                ec.EmitPop(EmitContext.SI);
+                if (MemberType.BaseType.Size <= 2)
+                    ec.EmitPush(EmitContext.SI, MemberType.BaseType.SizeInBits, true);
+                else
+                {
 
+                    ec.EmitComment("Push ValueOf Var [TypeOf " + MemberType.Name + "] @Var");
+
+                    PushAllFromRegister(ec, EmitContext.SI, MemberType.BaseType.Size, 0);
+                }
+            }
             return true;
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            if (ms is VarSpec)
-                ms.ValueOf(ec);
-            else if (ms is FieldSpec)
-                ms.ValueOf(ec);
-            else if (ms is ParameterSpec)
-                ms.ValueOf(ec);
-            return true;
+           
+            return Emit(ec);
         }
         public override bool EmitFromStack(EmitContext ec)
         {
-            if (ms is VarSpec)
-                ms.ValueOfStack(ec);
-            else if (ms is FieldSpec)
-                ms.ValueOfStack(ec);
-            else if (ms is ParameterSpec)
-                ms.ValueOfStack(ec);
+            if (ms != null)
+            {
+                if (ms is VarSpec)
+                    ms.ValueOfStack(ec);
+                else if (ms is FieldSpec)
+                    ms.ValueOfStack(ec);
+                else if (ms is ParameterSpec)
+                    ms.ValueOfStack(ec);
+            }
+            else
+            {
+                Right.Emit(ec); 
+                ec.EmitPop(EmitContext.SI); // pop @var 
+                ec.EmitComment("ValueOf Stack @Var");
+
+                if (MemberType.BaseType.Size <= 2)
+                    ec.EmitPop(EmitContext.SI, MemberType.BaseType.SizeInBits, true);
+                else
+                    PopAllToRegister(ec, EmitContext.SI, MemberType.BaseType.Size, 0);
+         
+
+            }
             return true;
         }
         public override string CommentString()
         {
             return "*" ;
+        }
+
+        public bool PushAllFromRegister(EmitContext ec, RegistersEnum rg, int size, int offset = 0)
+        {
+            int s = size / 2;
+
+            if (size % 2 != 0)
+            {
+                ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.DL, SourceReg = rg, SourceDisplacement = offset - 1 + size, SourceIsIndirect = true, Size = 8 });
+                ec.EmitPush(RegistersEnum.DX);
+            }
+            for (int i = s - 1; i >= 0; i--)
+                ec.EmitInstruction(new Push() { DestinationReg = rg, DestinationDisplacement = offset + 2 * i, DestinationIsIndirect = true, Size = 16 });
+
+            return true;
+        }
+        public bool PopAllToRegister(EmitContext ec, RegistersEnum rg, int size, int offset = 0)
+        {
+
+            int s = size / 2;
+
+
+            for (int i = 0; i < s; i++)
+                ec.EmitInstruction(new Pop() { DestinationReg = rg, DestinationDisplacement = offset + 2 * i, DestinationIsIndirect = true, Size = 16 });
+            if (size % 2 != 0)
+            {
+                ec.EmitPop(RegistersEnum.DX);
+                ec.EmitInstruction(new Mov() { DestinationReg = rg, DestinationDisplacement = offset - 1 + size, DestinationIsIndirect = true, Size = 8, SourceReg = RegistersEnum.DL });
+
+            }
+            return true;
         }
     }
     public class LoadEffectiveAddressOp : UnaryOp
@@ -79,12 +149,17 @@ namespace VTC
             Register = RegistersEnum.AX;
             Operator = UnaryOperator.AddressOf;
         }
-    
+        TypeSpec MemberType;
         public override SimpleToken DoResolve(ResolveContext rc)
         {
        
                 // LEA
-            if (Right is VariableExpression)
+            if (Right is AccessExpression)
+            {
+              ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non variable expressions");
+                ms = null;
+            }
+            else if (Right is VariableExpression)
                 ms = (Right as VariableExpression).variable;
             else
                 ResolveContext.Report.Error(54, Location, "Address Of Operator does not support non variable expressions");
@@ -94,27 +169,35 @@ namespace VTC
         }
         public override bool Resolve(ResolveContext rc)
         {
-            return true;
+           return Right.Resolve(rc) ;
         }
         public override bool Emit(EmitContext ec)
         {
-            if (ms is VarSpec)
-                ms.LoadEffectiveAddress(ec);
-            else if (ms is FieldSpec)
-                ms.LoadEffectiveAddress(ec);
-            else if (ms is ParameterSpec)
-                ms.LoadEffectiveAddress(ec);
+            if (ms != null)
+            {
+                if (ms is VarSpec)
+                    ms.LoadEffectiveAddress(ec);
+                else if (ms is FieldSpec)
+                    ms.LoadEffectiveAddress(ec);
+                else if (ms is ParameterSpec)
+                    ms.LoadEffectiveAddress(ec);
+            }
+     
 
             return true;
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            if (ms is VarSpec)
-                ms.LoadEffectiveAddress(ec);
-            else if (ms is FieldSpec)
-                ms.LoadEffectiveAddress(ec);
-            else if (ms is ParameterSpec)
-                ms.LoadEffectiveAddress(ec);
+            if (ms != null)
+            {
+                if (ms is VarSpec)
+                    ms.LoadEffectiveAddress(ec);
+                else if (ms is FieldSpec)
+                    ms.LoadEffectiveAddress(ec);
+                else if (ms is ParameterSpec)
+                    ms.LoadEffectiveAddress(ec);
+            }
+            else return Emit(ec);
             return true;
         }
         public override string CommentString()
@@ -167,6 +250,7 @@ namespace VTC
 
 
             ec.EmitInstruction(new Not() { DestinationReg =Register.Value, Size = 80 });
+            ec.EmitInstruction(new And() { DestinationReg = Register.Value, SourceValue = 254, Size = 80 });
             ec.EmitPush(Register.Value);
   
 
@@ -380,8 +464,10 @@ namespace VTC
             Right.EmitToStack(ec);
             ec.EmitComment(Right.CommentString() + "-- ");
             ec.EmitPop(Register.Value);
-
-            ec.EmitInstruction(new Dec() { DestinationReg = Register.Value, Size = 80 });
+            if (Right.Type.IsPointer)
+                ec.EmitInstruction(new Sub() { DestinationReg = Register.Value, SourceValue = (ushort)Right.Type.BaseType.Size });
+            else
+                ec.EmitInstruction(new Dec() { DestinationReg = Register.Value, Size = 80 });
             ec.EmitPush(Register.Value);
 
 
@@ -404,7 +490,9 @@ namespace VTC
             Right.EmitToStack(ec);
             ec.EmitComment(Right.CommentString() + "-- ");
             ec.EmitPop(Register.Value);
-
+            if (Right.Type.IsPointer)
+                ec.EmitInstruction(new Sub() { DestinationReg = Register.Value, SourceValue = (ushort)Right.Type.BaseType.Size });
+            else
             ec.EmitInstruction(new Dec() { DestinationReg = Register.Value, Size = 80 });
             ec.EmitPush(Register.Value);
             ec.EmitPush(Register.Value);
@@ -453,7 +541,9 @@ namespace VTC
             Right.EmitToStack(ec);
             ec.EmitComment(Right.CommentString() + "++ ");
             ec.EmitPop(Register.Value);
-
+            if (Right.Type.IsPointer)
+                ec.EmitInstruction(new Add() { DestinationReg = Register.Value, SourceValue = (ushort)Right.Type.BaseType.Size });
+            else
             ec.EmitInstruction(new INC() { DestinationReg = Register.Value, Size = 80 });
             ec.EmitPush(Register.Value);
 
@@ -477,7 +567,9 @@ namespace VTC
             Right.EmitToStack(ec);
             ec.EmitComment(Right.CommentString() + "++ ");
             ec.EmitPop(Register.Value);
-
+            if (Right.Type.IsPointer)
+                ec.EmitInstruction(new Add() { DestinationReg = Register.Value, SourceValue = (ushort)Right.Type.BaseType.Size });
+            else
             ec.EmitInstruction(new INC() { DestinationReg = Register.Value, Size = 80 });
             ec.EmitPush(Register.Value);
             ec.EmitPush(Register.Value);
@@ -495,9 +587,46 @@ namespace VTC
         bool nofix = true;
         bool to16 = false;
         bool tosign = false;
-
+        protected MethodSpec OvlrdOp { get; set; }
         protected TypeIdentifier _type;
         protected Expr _target;
+        public virtual bool EmitOverrideOperatorFromStack(EmitContext ec)
+        {
+ 
+            ec.EmitComment("Override Cast Operator : " + " (" + _type.Type.Name + ")" + _target.CommentString());
+            ec.EmitCall(OvlrdOp);
+            ec.EmitPush(EmitContext.A);
+            return true;
+        }
+        public virtual bool EmitOverrideOperator(EmitContext ec)
+        {
+            _target.EmitToStack(ec);
+            ec.EmitComment("Override Cast Operator : " + " (" + _type.Type.Name + ")" + _target.CommentString());
+            ec.EmitCall(OvlrdOp);
+            ec.EmitPush(EmitContext.A);
+            return true;
+        }
+        public virtual bool EmitOverrideOperatorBranchable(EmitContext ec, Label truecase, bool v, ConditionalTestEnum cond, ConditionalTestEnum acond)
+        {
+            _target.EmitToStack(ec);
+            ec.EmitComment("Override Cast Operator : " + " (" + _type.Type.Name + ")" + _target.CommentString());
+            ec.EmitCall(OvlrdOp);
+
+
+
+            if (_type.Type.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(EmitContext.A), SourceValue = EmitContext.TRUE, Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = EmitContext.A, SourceValue = EmitContext.TRUE, Size = 80 });
+
+            if (v)
+                ec.EmitInstruction(new ConditionalJump() { Condition = cond, DestinationLabel = truecase.Name });
+            else
+                ec.EmitInstruction(new ConditionalJump() { Condition = acond, DestinationLabel = truecase.Name });
+
+            return true;
+        }
+      
         public Expr Target
         {
             get { return _target; }
@@ -515,74 +644,85 @@ namespace VTC
             _type = (TypeIdentifier)_type.DoResolve(rc);
             Type = _type.Type;
             _target = (Expr)_target.DoResolve(rc);
+            if(_type.Type.IsForeignType)
+              OvlrdOp = rc.Resolver.TryResolveMethod(_type.Type.NormalizedName + "P_OpCast_" + _target.Type.NormalizedName, new TypeSpec[1] { _target.Type });
+            else OvlrdOp = rc.Resolver.TryResolveMethod(_type.Type.NormalizedName + "_OpCast_" + _target.Type.NormalizedName, new TypeSpec[1] { _target.Type });
 
-            // simple fix typedef typedef => type
-            if (Type.IsTypeDef && Type.GetTypeDefBase(Type) == _target.Type)
-                Type = _target.Type;
-            else if (_target.Type.IsTypeDef && _target.Type.GetTypeDefBase(_target.Type) == Type) // simple fix (type => typedef)
-                _target.Type = Type;
-            else if (Type.IsPointer && _target.Type == BuiltinTypeSpec.UInt)
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
+            if (OvlrdOp == null)
             {
-                _target.Type = Type;
-                nofix = false;
-            }
-            else if (_target.Type.IsPointer && Type == BuiltinTypeSpec.UInt)
-            {
-                Type = _target.Type;
-                nofix = false;
-            }
-            else if (_target is ConstantExpression) // convert const
-            {
-                bool c = false;
-                try
+                // simple fix typedef typedef => type
+                if (Type.IsTypeDef && Type.GetTypeDefBase(Type) == _target.Type)
+                    Type = _target.Type;
+                else if (_target.Type.IsTypeDef && _target.Type.GetTypeDefBase(_target.Type) == Type) // simple fix (type => typedef)
+                    _target.Type = Type;
+                else if (Type.IsPointer && _target.Type == BuiltinTypeSpec.UInt)
                 {
-                    _target = ((ConstantExpression)_target).ConvertExplicitly(rc, Type, ref c);
+                    _target.Type = Type;
+                    nofix = false;
                 }
-                catch
+                else if (_target.Type.IsPointer && Type == BuiltinTypeSpec.UInt)
                 {
-                    c = false;
+                    Type = _target.Type;
+                    nofix = false;
                 }
-                if (!c)
+                else if (_target is ConstantExpression) // convert const
+                {
+                    bool c = false;
+                    try
+                    {
+                        _target = ((ConstantExpression)_target).ConvertExplicitly(rc, Type, ref c);
+                    }
+                    catch
+                    {
+                        c = false;
+                    }
+                    if (!c)
+                        ResolveContext.Report.Error(27, Location, "Invalid cast " + Type.Name + " to " + _target.Type.Name);
+                    else return _target;
+                }
+                else if (_target is CastOperator) // cast under cast
+                    _target = ((CastOperator)_target).Target;
+                else if (_target.Type.BuiltinType == BuiltinTypes.Byte || _target.Type.BuiltinType == BuiltinTypes.SByte) // byte or sbyte => int or uint
+                {
+                    if (Type.BuiltinType == BuiltinTypes.UInt)
+                    {
+                        nofix = false;
+                        to16 = true;
+                        tosign = false;
+                    }
+                    else if (Type.BuiltinType == BuiltinTypes.Int)
+                    {
+                        nofix = false;
+                        to16 = true;
+                        tosign = true;
+                    }
+                    else ResolveContext.Report.Error(27, Location, "Invalid cast " + Type.Name + " to " + _target.Type.Name);
+                }
+                else if (_target.Type.BuiltinType == BuiltinTypes.Int || _target.Type.BuiltinType == BuiltinTypes.UInt) // int or uint => byte or sbyte
+                {
+                    if (Type.BuiltinType == BuiltinTypes.Byte)
+                    {
+                        nofix = false;
+                        to16 = false;
+                        tosign = false;
+                    }
+                    else if (Type.BuiltinType == BuiltinTypes.SByte)
+                    {
+                        nofix = false;
+                        to16 = false;
+                        tosign = true;
+                    }
+                    else if (Type.BuiltinType == BuiltinTypes.Int || Type.BuiltinType == BuiltinTypes.UInt)
+                        nofix = true;
+
+
+                    else ResolveContext.Report.Error(27, Location, "Invalid cast " + Type.Name + " to " + _target.Type.Name);
+                }
+                else
                     ResolveContext.Report.Error(27, Location, "Invalid cast " + Type.Name + " to " + _target.Type.Name);
-                else return _target;
             }
-            else if (_target is CastOperator) // cast under cast
-                _target = ((CastOperator)_target).Target;
-            else if (_target.Type.BuiltinType == BuiltinTypes.Byte || _target.Type.BuiltinType == BuiltinTypes.SByte) // byte or sbyte => int or uint
-            {
-                if (Type.BuiltinType == BuiltinTypes.UInt)
-                {
-                    nofix = false;
-                    to16 = true;
-                    tosign = false;
-                }
-                else if (Type.BuiltinType == BuiltinTypes.Int)
-                {
-                    nofix = false;
-                    to16 = true;
-                    tosign = true;
-                }
-                else ResolveContext.Report.Error(27, Location, "Invalid cast " + Type.Name + " to " + _target.Type.Name);
-            }
-            else if (_target.Type.BuiltinType == BuiltinTypes.Int || _target.Type.BuiltinType == BuiltinTypes.UInt) // int or uint => byte or sbyte
-            {
-                if (Type.BuiltinType == BuiltinTypes.Byte)
-                {
-                    nofix = false;
-                    to16 = false;
-                    tosign = false;
-                }
-                else if (Type.BuiltinType == BuiltinTypes.SByte)
-                {
-                    nofix = false;
-                    to16 = false;
-                    tosign = true;
-                }
-                else ResolveContext.Report.Error(27, Location, "Invalid cast " + Type.Name + " to " + _target.Type.Name);
-            }
-            else
-                ResolveContext.Report.Error(27, Location, "Invalid cast " + Type.Name + " to " + _target.Type.Name);
-
             return this;
         }
         public override bool Resolve(ResolveContext rc)
@@ -596,6 +736,8 @@ namespace VTC
         }
         public override bool Emit(EmitContext ec)
         {
+            if (OvlrdOp != null)
+                return EmitOverrideOperator(ec);
 
             if (nofix)
             {
@@ -625,6 +767,8 @@ namespace VTC
         }
         public override bool EmitToStack(EmitContext ec)
         {
+            if (OvlrdOp != null)
+                return EmitOverrideOperator(ec);
 
             if (nofix)
             {
@@ -654,6 +798,12 @@ namespace VTC
         }
         public override bool EmitToRegister(EmitContext ec, RegistersEnum rg)
         {
+            if (OvlrdOp != null)
+            {
+                EmitOverrideOperator(ec);
+                ec.EmitPop(rg);
+                return true;
+            }
             if (nofix)
                 return _target.EmitToRegister(ec, rg);
             else
@@ -677,6 +827,11 @@ namespace VTC
         }
         public override bool EmitFromStack(EmitContext ec)
         {
+            if (OvlrdOp != null)
+            {
+                EmitOverrideOperatorFromStack(ec);
+                return _target.EmitFromStack(ec);
+            }
             if (nofix)
                 return _target.EmitFromStack(ec);
             else
@@ -757,17 +912,17 @@ namespace VTC
      /*   public override bool Emit(EmitContext ec)
         {
             RegistersEnum acc = ec.GetNextRegister();
-            ec.EmitInstruction(new Mov() { DestinationReg = acc, SourceValue = (uint)this.Size, Size = 16 });
+            ec.EmitInstruction(new Mov() { DestinationReg = acc, SourceValue = (ushort)this.Size, Size = 16 });
             return true;
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            ec.EmitInstruction(new Push() { DestinationValue = (uint)this.Size, Size = 16 });
+            ec.EmitInstruction(new Push() { DestinationValue = (ushort)this.Size, Size = 16 });
             return true;
         }
         public override bool EmitToRegister(EmitContext ec, RegistersEnum rg)
         {
-            ec.EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = (uint)this.Size, Size = 16 });
+            ec.EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = (ushort)this.Size, Size = 16 });
             return true;
         }
 

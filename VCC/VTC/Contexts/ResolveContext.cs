@@ -74,12 +74,16 @@ namespace VTC
         Block current_block;
         static Report rp;
         public static Report Report { get { return rp; } set { rp = value; } }
-
+        static ResolveContext()
+        {
+            Report = new ConsoleReporter();
+        }
         public Stack<object> ResolverStack { get; set; }
 
         public List<ResolveContext> ChildContexts { get; set; }
         public bool IsInTypeDef { get; set; }
         public bool IsInStruct { get; set; }
+        public bool IsInUnion { get; set; }
         public bool IsInEnum { get; set; }
         public bool IsInVarDeclaration { get; set; }
 
@@ -116,9 +120,10 @@ namespace VTC
             IsInVarDeclaration = false;
             IsInTypeDef = false;
             IsInStruct = false;
+            IsInUnion = false;
             IsInEnum = false;
             LocalStackIndex = 0;
-            Report = new ConsoleReporter();
+      
         }
         public ResolveContext(List<Namespace> imp, Namespace ns, Block b, MethodSpec cm, Resolver known)
         {
@@ -187,6 +192,18 @@ namespace VTC
 
             IsInStruct = true;
         }
+        public ResolveContext(List<Namespace> imp, Namespace ns, UnionDeclaration decl)
+        {
+            Imports = imp;
+
+            Init();
+            Resolver = new Resolver(ns, imp, new MethodSpec(ns, "<union-decl>", Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
+            current_type = new TypeSpec(CurrentNamespace, decl.Identifier.Name, 0, BuiltinTypes.Unknown, TypeFlags.Union, Modifiers.NoModifier, Location.Null);
+            FillKnown();
+            ChildContexts = new List<ResolveContext>();
+
+            IsInUnion = true;
+        }
         public ResolveContext(List<Namespace> imp, Namespace ns, EnumDeclaration decl)
         {
             Imports = imp;
@@ -248,6 +265,18 @@ namespace VTC
             else return null;
         }
         public ResolveContext CreateAsChild(List<Namespace> imp, Namespace ns, StructDeclaration md)
+        {
+            if (ChildContexts != null)
+            {
+                ResolveContext rc = new ResolveContext(imp, ns, md);
+                rc.FillKnownByKnown(Resolver);
+                ChildContexts.Add(rc);
+                return rc;
+
+            }
+            else return null;
+        }
+        public ResolveContext CreateAsChild(List<Namespace> imp, Namespace ns, UnionDeclaration md)
         {
             if (ChildContexts != null)
             {

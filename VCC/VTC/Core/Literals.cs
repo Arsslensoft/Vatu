@@ -155,9 +155,13 @@ namespace VTC.Core
       
         public CharLiteral(string value)
             : base(value, true)
-        {
+        {try{
             _value = new ByteConstant(Encoding.ASCII.GetBytes(value.Replace("'",""))[0], CompilerContext.TranslateLocation(position));
-  
+        }
+        catch (Exception ex)
+        {
+            ResolveContext.Report.Error(1, Location, ex.Message);
+        }
         }
 
 
@@ -196,13 +200,17 @@ namespace VTC.Core
         public HexLiteral(string value)
             : base(value)
         {
-            
+            try{
             if (value.Length <= 4)
                 _value = new ByteConstant(Convert.ToByte(value, 16), CompilerContext.TranslateLocation(position));
             else if (value.Length <= 6)
                 _value = new UIntConstant(Convert.ToUInt16(value, 16), CompilerContext.TranslateLocation(position));
             else ResolveContext.Report.Error(1,Location, "Hex value cannot be larger than 16 bits");
-           
+            }
+            catch (Exception ex)
+            {
+                ResolveContext.Report.Error(1, Location, ex.Message);
+            }
         }
 
 
@@ -215,14 +223,18 @@ namespace VTC.Core
         public OctLiteral(string value)
             : base(value)
         {
-
+            try{
             if (value.Length <= 4)
                 _value = new ByteConstant(Convert.ToByte(value, 8), CompilerContext.TranslateLocation(position));
             else if (value.Length <= 6)
                 _value = new UIntConstant(Convert.ToUInt16(value, 8), CompilerContext.TranslateLocation(position));
 
             else ResolveContext.Report.Error(1, Location, "Octal value cannot be larger than 16 bits");
-           
+            }
+            catch (Exception ex)
+            {
+                ResolveContext.Report.Error(1, Location, ex.Message);
+            }
 
         }
 
@@ -232,58 +244,73 @@ namespace VTC.Core
     [Terminal("DecLiteral")]
     public class DecLiteral : Literal
     {
-      
+
         public DecLiteral(string value)
             : base(value, true)
         {
-            ulong v;
-            if (HasSuffix)
+            try
             {
-                int l = GetSuffix().Length;
-                TypeCode tpc = GetTypeBySuffix();
-                value = value.Remove(value.Length - l, l);
-                switch (tpc)
+                long v;
+                if (HasSuffix)
                 {
-                    case TypeCode.Byte:
-                        _value = new ByteConstant(byte.Parse(value), CompilerContext.TranslateLocation(position));
-                        break;
-                    case TypeCode.SByte:
-                        _value = new SByteConstant(sbyte.Parse(value), CompilerContext.TranslateLocation(position));
-                        break;
+                    int l = GetSuffix().Length;
+                    TypeCode tpc = GetTypeBySuffix();
+                    value = value.Remove(value.Length - l, l);
+                    switch (tpc)
+                    {
+                        case TypeCode.Byte:
+                            _value = new ByteConstant(byte.Parse(value), CompilerContext.TranslateLocation(position));
+                            break;
+                        case TypeCode.SByte:
+                            _value = new SByteConstant(sbyte.Parse(value), CompilerContext.TranslateLocation(position));
+                            break;
 
-                    case TypeCode.Int16:
-                        _value = new IntConstant(short.Parse(value), CompilerContext.TranslateLocation(position));
-                        break;
-                    case TypeCode.UInt16:
-                        _value = new UIntConstant(ushort.Parse(value), CompilerContext.TranslateLocation(position));
-                        break;
+                        case TypeCode.Int16:
+                            _value = new IntConstant(short.Parse(value), CompilerContext.TranslateLocation(position));
+                            break;
+                        case TypeCode.UInt16:
+                            _value = new UIntConstant(ushort.Parse(value), CompilerContext.TranslateLocation(position));
+                            break;
 
-                    case TypeCode.Object:
-                        _value = new ArrayConstant(System.Numerics.BigInteger.Parse(value).ToByteArray(), CompilerContext.TranslateLocation(position));
-                        break;
-                    
+                        case TypeCode.Object:
+                            _value = new ArrayConstant(System.Numerics.BigInteger.Parse(value).ToByteArray(), CompilerContext.TranslateLocation(position));
+                            break;
 
-                    
+
+
+                    }
                 }
-            }
-            else if (ulong.TryParse(value, out v))
-            {
-                if (v <= byte.MaxValue)
-                    _value = new ByteConstant((byte)v, CompilerContext.TranslateLocation(position));
-                else if (v <= ushort.MaxValue)
-                    _value = new UIntConstant((ushort)v, CompilerContext.TranslateLocation(position));
+                else if (long.TryParse(value, out v))
+                {
+                    if (v >= 0)
+                    {
+                        if (v <= byte.MaxValue)
+                            _value = new ByteConstant(byte.Parse(value), CompilerContext.TranslateLocation(position));
+                        else if (v <= ushort.MaxValue)
+                            _value = new UIntConstant(ushort.Parse(value), CompilerContext.TranslateLocation(position));
+                        else ResolveContext.Report.Error(1, Location, "Decimal value cannot be larger than 16 bits");
+                    }
+                    else
+                    {
+                        if (v >= sbyte.MinValue)
+                            _value = new SByteConstant(sbyte.Parse(value), CompilerContext.TranslateLocation(position));
+                        else if (v >= short.MinValue)
+                            _value = new IntConstant(short.Parse(value), CompilerContext.TranslateLocation(position));
+                        else ResolveContext.Report.Error(1, Location, "Decimal value cannot be larger than 16 bits");
+                    }
+
+                }
                 else ResolveContext.Report.Error(1, Location, "Decimal value cannot be larger than 16 bits");
-           
-              
+
             }
-            else ResolveContext.Report.Error(1, Location, "Decimal value cannot be larger than 16 bits");
-           
+            catch(Exception ex)
+            {
+                ResolveContext.Report.Error(1, Location, ex.Message);
+            }
         }
+     
 
-
-
-    }
-
+    } 
     [Terminal("BinaryLiteral")]
     public class BinaryLiteral : Literal
     {
@@ -291,6 +318,7 @@ namespace VTC.Core
         public BinaryLiteral(string value)
             : base(value)
         {
+            try{
             value = value.Remove(0, 2);
             if (value.Length <= 8)
                 _value = new ByteConstant(Convert.ToByte(value, 2), CompilerContext.TranslateLocation(position));
@@ -298,7 +326,11 @@ namespace VTC.Core
                 _value = new UIntConstant(Convert.ToUInt16(value, 2), CompilerContext.TranslateLocation(position));
 
             else ResolveContext.Report.Error(1, Location, "Octal value cannot be larger than 16 bits");
-
+            }
+            catch (Exception ex)
+            {
+                ResolveContext.Report.Error(1, Location, ex.Message);
+            }
 
         }
 

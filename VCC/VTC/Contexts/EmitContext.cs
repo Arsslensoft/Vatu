@@ -144,15 +144,32 @@ namespace VTC
         {
             ag.Emit(ins);
         }
-        public void EmitPop(RegistersEnum rg, byte size = 80, bool adr = false)
+        public void EmitPop(RegistersEnum rg, byte size = 80, bool adr = false,int off=0)
         {
             if (Registers.Is8Bit(rg))
                 rg = ag.GetHolder(rg);
-            EmitInstruction(new Pop() { DestinationReg = rg, Size = 16, DestinationIsIndirect = adr });
+            if (size == 8 )
+            {
+                ag.SetAsUsed(rg);
+                RegistersEnum drg = ag.GetNextRegister();
+                ag.FreeRegister();
+                ag.FreeRegister();
+
+             EmitInstruction(new Pop() { DestinationReg = drg, Size = 16});
+             if (off != 0)
+                 EmitInstruction(new Mov() { DestinationReg = rg, Size = 8, DestinationIsIndirect = adr, DestinationDisplacement = off,SourceReg = GetLow(drg) });
+             else EmitInstruction(new Mov() { DestinationReg = rg, Size = 8, DestinationIsIndirect = adr, SourceReg = GetLow(drg) });
+            }
+            else
+            {
+                if (off != 0)
+                    EmitInstruction(new Pop() { DestinationReg = rg, Size = 16, DestinationIsIndirect = adr, DestinationDisplacement = off });
+                else EmitInstruction(new Pop() { DestinationReg = rg, Size = 16, DestinationIsIndirect = adr });
+            }
         }
         public void EmitPush(bool v)
         {
-            EmitInstruction(new Push() { DestinationValue = (v ? (uint)EmitContext.TRUE : 0), Size = 16 });
+            EmitInstruction(new Push() { DestinationValue = (v ? (ushort)EmitContext.TRUE : (ushort)0), Size = 16 });
         }
         public void EmitPush(byte v)
         {
@@ -162,12 +179,21 @@ namespace VTC
         {
             EmitInstruction(new Push() { DestinationValue = v, Size = 16 });
         }
-        public void EmitPush(RegistersEnum rg, byte size = 80, bool adr = false)
+        public void EmitPush(RegistersEnum rg, byte size = 80, bool adr = false,int off = 0)
         {
             if (Registers.Is8Bit(rg))
                 rg = ag.GetHolder(rg);
-            
-            EmitInstruction(new Push() { DestinationReg = rg, Size = 16, DestinationIsIndirect = adr });
+            if (size == 8)
+            {
+                ag.SetAsUsed(rg);
+                RegistersEnum drg = ag.GetNextRegister();
+                ag.FreeRegister();
+                ag.FreeRegister();
+                EmitInstruction(new Mov() { DestinationReg = drg, Size = 8, SourceReg = rg, SourceDisplacement = off, SourceIsIndirect = adr });
+                EmitInstruction(new Push() { DestinationReg = drg, Size = 16 });
+            }
+            else
+             EmitInstruction(new Push() { DestinationReg = rg, Size = 16, DestinationIsIndirect = adr, DestinationDisplacement = off });
         }
 
 
@@ -175,7 +201,13 @@ namespace VTC
 
 
 
+        public void EmitBooleanBranch(bool v, Label truecase, ConditionalTestEnum tr, ConditionalTestEnum fls)
+        {
+        if(v)
+            EmitInstruction(new ConditionalJump() { Condition = tr, DestinationLabel = truecase.Name });
+        else EmitInstruction(new ConditionalJump() { Condition = fls, DestinationLabel = truecase.Name });
 
+        }
         public void EmitBoolean(RegistersEnum rg, ConditionalTestEnum tr, ConditionalTestEnum fls)
         {
           //  EmitInstruction(new Xor() { SourceReg = ag.GetHolder(rg), DestinationReg =  ag.GetHolder(rg), Size = 80 });
@@ -209,7 +241,7 @@ namespace VTC
         }
         public void EmitBoolean(RegistersEnum rg, bool v)
         {
-            EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = (v ? (uint)EmitContext.TRUE : 0), Size = 80 });
+            EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = (v ? (ushort)EmitContext.TRUE :(ushort) 0), Size = 80 });
         }
         public void EmitCall(MethodSpec m)
         {
@@ -237,7 +269,7 @@ namespace VTC
             EmitStruct(st);
 
         }
-
+      
 
 
         public void EmitData(DataMember dm, MemberSpec v, bool constant = false)

@@ -10,14 +10,15 @@
 {Oct Digit}      = [01234567]
 {Binary Digit}   = [01]
 {Literal Suffix} = [iusbaIUSBA]
-                                 
+{Literal Prefix} = [-]
+                                                  
 {Id Head}        = {Letter} + [_]
 {Id Tail}        = {Id Head} + {Digit}
 
 {String Ch}      = {Printable} - ["]
 {Char Ch}        = {Printable} - ['']
 
-DecLiteral       = ([123456789]{digit}* | [123456789]{digit}* {Literal Suffix})
+DecLiteral       = ({Literal Prefix} [123456789]{digit}* | {Literal Prefix}[123456789]{digit}* {Literal Suffix} | [123456789]{digit}* |[123456789]{digit}* {Literal Suffix})
 OctLiteral       = 0{Oct Digit}*
 HexLiteral       = 0x{Hex Digit}+
 BinaryLiteral    = 0b{Binary Digit}+
@@ -30,6 +31,7 @@ StringLiteral    = '"'( {String Ch} | '\'{Printable} )* '"'
 CharLiteral      = '' ( {Char Ch} | '\'{Printable} )''
 
 Id               = {Id Head}{Id Tail}*
+
 
 
 ! ===================================================================
@@ -84,6 +86,7 @@ Comment Line  = '//'
 <Decl>  ::= <Func Decl>
           | <ASM Decl>
           | <Oper Decl>
+          | <Union Decl>
           | <Func Proto>
           | <Struct Decl>
           | <Enum Decl>
@@ -116,7 +119,9 @@ Comment Line  = '//'
                | 'override' <Type> 'operator' '^' '(' <Params>  ')' <Block>
                | 'override' <Type> 'operator' '&' '(' <Params>  ')' <Block>
                | 'override' <Type> 'operator' '|' '(' <Params>  ')' <Block>
+               | 'override' <Type> 'operator' <Type> '('  <Params>  ')' <Block> ! CAST Overload
                
+
 <Params>     ::= <Param> ',' <Params>
                | <Param>
                
@@ -127,11 +132,13 @@ Comment Line  = '//'
                | <Type> 
   
 <Func ID>    ::= <CallCV> <Type> ID
+                | <Type> ID
 
 <CallCV>    ::= stdcall 
              | fastcall
              | cdecl 
-
+             | pascal
+             | default
 ! ===================================================================
 ! Asm Declaration
 ! ===================================================================
@@ -145,7 +152,8 @@ Comment Line  = '//'
 <Typedef Decl> ::= typedef <Type> ID ';'
 
 <Struct Decl>  ::= struct Id '{' <Struct Def> '}'  ';' 
-
+                
+<Union Decl>   ::= union Id '{' <Struct Def> '}'  ';' 
 
 <Struct Def>   ::= <Var Decl> <Struct Def>
                  | <Var Decl>
@@ -202,7 +210,8 @@ Comment Line  = '//'
              | struct Id 
              | enum Id
              | '@'Id  
-
+             | union Id
+             
 <Scalar>   ::= byte
              | int
              | uint

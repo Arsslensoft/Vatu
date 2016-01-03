@@ -10,6 +10,8 @@ using Vasm.x86;
 
 namespace VTC.Core
 {
+     [Terminal("union")]
+    [Terminal("pascal")]
     [Terminal("operator")]
     [Terminal("override")]
         [Terminal("loop")]
@@ -121,7 +123,7 @@ namespace VTC.Core
                     Left = (Left as ConstantExpression).ConvertImplicitly(rc, Right.Type, ref conv);
                     return conv;
                 }
-                else return (Left.Type == Right.Type);
+                else return (Left.Type.Equals( Right.Type));
             }
             else if (Left is ConstantExpression)
             {
@@ -134,7 +136,7 @@ namespace VTC.Core
                 Right = (Right as ConstantExpression).ConvertImplicitly(rc, Left.Type, ref conv);
                 return conv;
             }else
-            return Left.Type == Right.Type;
+                return (Left.Type.Equals(Right.Type));
         }
         public TypeSpec CommonType { get; set; }
 
@@ -365,20 +367,20 @@ namespace VTC.Core
     }
     public class BinaryOp : Operator
     {
-        protected MethodSpec OvlrdOp { get; set; }
+        public MethodSpec OvlrdOp { get; set; }
         public RegistersEnum? RightRegister { get; set; }
         public RegistersEnum? LeftRegister { get; set; }
         protected bool ConstantOperation = false;
         protected bool RegisterOperation = false;
         public  BinaryOperator Operator {get;set;}
-
+       protected bool unsigned = true;
+     
         public virtual bool EmitOverrideOperator(EmitContext ec)
         {
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
             ec.EmitComment("Override Operator : " + Left.CommentString() + " " + Operator.ToString() + " " + Right.CommentString());
             ec.EmitCall(OvlrdOp);
-            ec.EmitInstruction(new Add() { DestinationReg = EmitContext.SP, SourceValue = 4, Size = 80 });
             ec.EmitPush(EmitContext.A);
             return true;
         }
@@ -388,7 +390,7 @@ namespace VTC.Core
             Right.EmitToStack(ec);
             ec.EmitComment("Override Operator : " + Left.CommentString() + " "+Operator.ToString()+" " + Right.CommentString());
             ec.EmitCall(OvlrdOp);
-            ec.EmitInstruction(new Add() { DestinationReg = EmitContext.SP, SourceValue = 4, Size = 80 });
+    
             ec.EmitPush(EmitContext.A);
             ec.EmitPop(LeftRegister.Value);
 
@@ -407,10 +409,12 @@ namespace VTC.Core
     }
     public class UnaryOp : Operator
     {
+
         protected bool RegisterOperation = false;
         public RegistersEnum? Register { get; set; }
         public UnaryOperator Operator { get; set; }
-      
+
+       
     }
     public class AssignOp : Operator
     {

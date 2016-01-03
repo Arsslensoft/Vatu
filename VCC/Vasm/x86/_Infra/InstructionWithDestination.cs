@@ -26,7 +26,7 @@ namespace Vasm.x86 {
             set;
         }
 
-        public uint? DestinationValue
+        public ushort? DestinationValue
         {
             get;
             set;
@@ -60,7 +60,7 @@ namespace Vasm.x86 {
         public override void UpdateAddress( Vasm.AsmContext aAssembler, ref ulong aAddresss )
         {
             if (DestinationRef != null) {
-                DestinationValue = 0xFFFFFFFF;
+                DestinationValue = 0xFFFF;
             }
             base.UpdateAddress(aAssembler, ref aAddresss);
         }

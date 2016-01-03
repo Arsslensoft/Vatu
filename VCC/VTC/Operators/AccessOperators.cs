@@ -15,7 +15,7 @@ namespace VTC
         {
             IsByte = true;
             Index = -1;
-            Register = RegistersEnum.AX;
+            Register = RegistersEnum.DX;
             _op = AccessOperator.ByIndex;
         }
         public bool IsByte { get; set; }
@@ -32,6 +32,7 @@ namespace VTC
             else if (Left.Type.IsArray)
             {
                 IsByte = Left.Type.BaseType.Size != 2;
+           
                 if (Left is VariableExpression && Right is ConstantExpression)
                 {
                     VariableExpression ve = (VariableExpression)Left;
@@ -39,15 +40,14 @@ namespace VTC
                     GetIndex(ce);
                     if (Index < 0)
                         ResolveContext.Report.Error(50, ce.Location, "Invalid array index");
-                    if (ve.variable is VarSpec)
+                   if (ve.variable is VarSpec)
                     {
                         VarSpec v = (VarSpec)ve.variable;
                         VarSpec vr = new VarSpec(v.NS, v.Name, v.MethodHost, v.MemberType.BaseType, Location, v.Modifiers);
                         vr.StackIdx = v.StackIdx;
-                        if (IsByte)
-                            vr.StackIdx += Index;
-                        else
-                            vr.StackIdx += 2 * Index;
+                     
+                        vr.StackIdx += Left.Type.BaseType.Size*Index;
+                       
 
                         return new AccessExpression(vr);
                     }
@@ -56,19 +56,19 @@ namespace VTC
                         FieldSpec v = (FieldSpec)ve.variable;
                         FieldSpec vr = new FieldSpec(v.NS, v.Name, v.Modifiers, v.MemberType.BaseType, Location);
                         vr.FieldOffset = v.FieldOffset;
-                        if (IsByte)
-                            vr.FieldOffset += Index;
-                        else
-                            vr.FieldOffset += 2 * Index;
-
+               
+                       vr.FieldOffset  += Left.Type.BaseType.Size*Index;
+                     
                         return new AccessExpression(vr);
                     }
-
+                    
                 }
+                else return new AccessExpression(Left as VariableExpression, Right, this);
 
             }
             else
             {
+              
                 IsByte = Left.Type.BaseType.Size != 2;
                 if (Left is VariableExpression && Right is ConstantExpression)
                 {
@@ -96,34 +96,29 @@ namespace VTC
                     ec.EmitPop(RegistersEnum.SI, 16);
                     ec.EmitPop(RegistersEnum.DI, 16);
                     ec.EmitInstruction(new Add() { SourceReg = RegistersEnum.DI, DestinationReg = RegistersEnum.SI });
-                    ec.EmitPush(RegistersEnum.SI, 8, true);
+                    ec.EmitPush(RegistersEnum.SI, 16, true);
                 }
                 else
                 {
                     Left.EmitToStack(ec);
                     Right.EmitToStack(ec);
+                    ec.EmitPop(EmitContext.A, 16);
                     ec.EmitPop(RegistersEnum.SI, 16);
-                    ec.EmitPop(RegistersEnum.DI, 16);
-                    ec.EmitInstruction(new Add() { SourceReg = RegistersEnum.DI, DestinationReg = RegistersEnum.SI });
+         
+                    ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.C, Size = 16, SourceValue = (ushort)Left.Type.BaseType.Size });
+                    ec.EmitInstruction(new Multiply() { DestinationReg = EmitContext.C, Size = 80 });
+                    ec.EmitInstruction(new Add() { SourceReg = EmitContext.A, DestinationReg = RegistersEnum.SI });
                     ec.EmitPush(RegistersEnum.SI, 16, true);
                 }
             }
             else
             {
-                if (IsByte)
-                {
+               
                     Left.EmitToStack(ec);
                     ec.EmitPop(RegistersEnum.SI, 16);
-                    ec.EmitInstruction(new Add() { SourceValue = (uint)Index, DestinationReg = RegistersEnum.SI });
-                    ec.EmitPush(RegistersEnum.SI, 8, true);
-                }
-                else
-                {
-                    Left.EmitToStack(ec);
-                    ec.EmitPop(RegistersEnum.SI, 16);
-                    ec.EmitInstruction(new Add() { SourceValue =(uint)Index * 2, DestinationReg = RegistersEnum.SI });
+                    ec.EmitInstruction(new Add() { SourceValue =(ushort)( (ushort)Index * (uint)Left.Type.BaseType.Size), DestinationReg = RegistersEnum.SI });
                     ec.EmitPush(RegistersEnum.SI, 16, true);
-                }
+              
             }
             return true;
         }
@@ -133,43 +128,50 @@ namespace VTC
             {
                 if (IsByte)
                 {
-                    ec.EmitPop(Register.Value);
+          
                     Left.EmitToStack(ec);
                     Right.EmitToStack(ec);
                     ec.EmitPop(RegistersEnum.SI, 16);
                     ec.EmitPop(RegistersEnum.DI, 16);
                     ec.EmitInstruction(new Add() { SourceReg = RegistersEnum.DI, DestinationReg = RegistersEnum.SI });
+                   
+                    ec.EmitPop(Register.Value);
                     ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 8, DestinationIsIndirect = true, SourceReg = ec.GetLow(Register.Value) });
                 }
                 else
                 {
-                    ec.EmitPop(Register.Value);
+                
+
                     Left.EmitToStack(ec);
                     Right.EmitToStack(ec);
+                    ec.EmitPop(EmitContext.A, 16);
                     ec.EmitPop(RegistersEnum.SI, 16);
-                    ec.EmitPop(RegistersEnum.DI, 16);
-                    ec.EmitInstruction(new Add() { SourceReg = RegistersEnum.DI, DestinationReg = RegistersEnum.SI });
-                    ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 16, DestinationIsIndirect = true, SourceReg = Register.Value });
+                
+                    ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.C, Size = 16, SourceValue = (ushort)Left.Type.BaseType.Size });
+                    ec.EmitInstruction(new Multiply() { DestinationReg = EmitContext.C ,Size = 80});
+                    ec.EmitInstruction(new Add() { SourceReg = EmitContext.A, DestinationReg = RegistersEnum.SI });
+                  
+                    ec.EmitPop(RegistersEnum.DI);
+                    ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 16, DestinationIsIndirect = true, SourceReg = RegistersEnum.DI });
                 }
             }
             else
             {
-                if (IsByte)
-                {
-                    ec.EmitPop(Register.Value);
+              
+                  
                     Left.EmitToStack(ec);
                     ec.EmitPop(RegistersEnum.SI, 16);
-                    ec.EmitInstruction(new Add() { SourceValue = (uint)Index, DestinationReg = RegistersEnum.SI });
-                    ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 8, DestinationIsIndirect = true, SourceReg = ec.GetLow( Register.Value) });
-                }
-                else
-                {
-                    ec.EmitPop(Register.Value);
-                    Left.EmitToStack(ec);
-                    ec.EmitPop(RegistersEnum.SI, 16);
-                    ec.EmitInstruction(new Add() { SourceValue = (uint)Index * 2, DestinationReg = RegistersEnum.SI });
-                    ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 16, DestinationIsIndirect = true, SourceReg = Register.Value });
-                }
+                    ec.EmitInstruction(new Add() { SourceValue =(ushort)( (ushort)Index * (ushort)Left.Type.BaseType.Size), DestinationReg = RegistersEnum.SI });
+                    if (IsByte)
+                    {
+                        ec.EmitPop(Register.Value);
+                        ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 8, DestinationIsIndirect = true, SourceReg = ec.GetLow(Register.Value) });
+                    }
+                    else
+                    {
+                        ec.EmitPop(RegistersEnum.DI);
+                        ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 16, DestinationIsIndirect = true, SourceReg = RegistersEnum.DI });
+                    }
             }
             return true;
         }
@@ -248,14 +250,14 @@ namespace VTC
         }
 
         TypeMemberSpec tmp = null;
-        public bool ResolveStructMember(ResolveContext rc, MemberSpec mem, ref TypeMemberSpec tmp, VariableExpression lv, VariableExpression rv)
+        public bool ResolveStructOrUnionMember(ResolveContext rc, MemberSpec mem, ref TypeMemberSpec tmp, VariableExpression lv, VariableExpression rv)
         {
 
             if (!mem.MemberType.IsPointer)
             {
-                if (!mem.MemberType.IsStruct)
-                    ResolveContext.Report.Error(15, Location, "'.' operator allowed only with struct based types");
-                else
+                if (!mem.MemberType.IsForeignType)
+                    ResolveContext.Report.Error(15, Location, "'.' operator allowed only with struct union based types");
+                else if(mem.MemberType.IsStruct)
                 {
                     StructTypeSpec stp = (StructTypeSpec)mem.MemberType;
                     tmp = stp.ResolveMember(rv.Name);
@@ -265,6 +267,21 @@ namespace VTC
                     {
                         // Resolve
                         index = tmp.Index;
+                        return true;
+                    }
+
+                }
+                else
+                {
+                    UnionTypeSpec stp = (UnionTypeSpec)mem.MemberType;
+                    tmp = stp.ResolveMember(rv.Name);
+                    if (tmp == null)
+                        ResolveContext.Report.Error(16, Location, rv.Name + " is not defined in union " + stp.Name);
+                    else
+                    {
+                        // Resolve
+
+                        index = 0;
                         return true;
                     }
 
@@ -293,17 +310,18 @@ namespace VTC
                 if (!ok)
                 {
                     struct_var = lv.variable;
+                  
                     if (struct_var != null)
                     {
-                        ok = ResolveStructMember(rc, struct_var, ref tmp, lv, rv);
+                        ok = ResolveStructOrUnionMember(rc, struct_var, ref tmp, lv, rv);
                         rv.variable = tmp;
-
+                      
                         if (struct_var is VarSpec)
                         {
                             VarSpec v = (VarSpec)struct_var;
 
                             VarSpec dst = new VarSpec(v.NS, v.Name, v.MethodHost, tmp.MemberType, Location, v.Modifiers);
-                            dst.StackIdx = v.StackIdx + tmp.Index;
+                            dst.StackIdx = v.StackIdx + index;
                             return new AccessExpression(dst);
 
                         }
@@ -312,7 +330,7 @@ namespace VTC
                             FieldSpec v = (FieldSpec)struct_var;
 
                             FieldSpec dst = new FieldSpec(v.NS, v.Name, v.Modifiers, tmp.MemberType, Location);
-                            dst.FieldOffset = v.FieldOffset + tmp.Index;
+                            dst.FieldOffset = v.FieldOffset + index;
                             return new AccessExpression(dst);
                         }
                         else if (struct_var is ParameterSpec)
@@ -321,7 +339,7 @@ namespace VTC
 
                             ParameterSpec dst = new ParameterSpec(v.Name, v.MethodHost, tmp.MemberType, v.IsConstant, Location, v.Modifiers);
 
-                            dst.StackIdx = v.StackIdx + tmp.Index;
+                            dst.StackIdx = v.StackIdx + index;
 
                             return new AccessExpression(dst);
                         }
@@ -353,8 +371,127 @@ namespace VTC
     public class ByAddressOperator : AccessOp
     {
         public ByAddressOperator()
-        {
+        {   Register = RegistersEnum.AX;
             _op = AccessOperator.ByAddress;
+        }
+         public override int Offset
+        {
+            get { return index; }
+        }
+        public override MemberSpec Member
+        {
+            get { return struct_var; }
+        }
+      
+      
+
+     
+        // Struct
+        MemberSpec struct_var;
+        int index = -1;
+   
+
+        TypeMemberSpec tmp = null;
+        public bool ResolveStructOrUnionMember(ResolveContext rc, MemberSpec mem, ref TypeMemberSpec tmp, VariableExpression lv, VariableExpression rv)
+        {
+
+            if (mem.MemberType.IsPointer )
+            {
+                if (!mem.MemberType.IsForeignType)
+                    ResolveContext.Report.Error(15, Location, "'->' operator allowed only with struct union based types");
+                else if(mem.MemberType.IsStruct)
+                {
+                    StructTypeSpec stp = (StructTypeSpec)mem.MemberType.BaseType;
+                    tmp = stp.ResolveMember(rv.Name);
+                    if (tmp == null)
+                        ResolveContext.Report.Error(16, Location, rv.Name + " is not defined in struct " + stp.Name);
+                    else
+                    {
+                        // Resolve
+                        index = tmp.Index;
+                        return true;
+                    }
+
+                }
+                else
+                {
+                    UnionTypeSpec stp = (UnionTypeSpec)mem.MemberType.BaseType;
+                    tmp = stp.ResolveMember(rv.Name);
+                    if (tmp == null)
+                        ResolveContext.Report.Error(16, Location, rv.Name + " is not defined in union " + stp.Name);
+                    else
+                    {
+                        // Resolve
+
+                        index = 0;
+                        return true;
+                    }
+
+                }
+            }
+            else ResolveContext.Report.Error(17, Location, "Cannot use '->' operator with non pointer types use '.' instead");
+
+
+            return false;
+        }
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            // Check if left is type
+            if (Left is VariableExpression && Right is VariableExpression)
+            {
+
+
+                VariableExpression lv = (VariableExpression)Left;
+                VariableExpression rv = (VariableExpression)Right;
+                // enum
+                bool ok = false;
+          
+
+                // struct member
+                if (!ok)
+                {
+                    struct_var = lv.variable;
+                    if (struct_var != null)
+                    {
+                        ok = ResolveStructOrUnionMember(rc, struct_var, ref tmp, lv, rv);
+                        rv.variable = tmp;
+                        CommonType = tmp.MemberType;
+                        if (struct_var is VarSpec)
+                        {
+                            VarSpec dst = (VarSpec)struct_var;
+
+                            return new AccessExpression(dst, true,index, tmp.MemberType);
+
+                        }
+                        else if (struct_var is FieldSpec)
+                        {
+                            FieldSpec dst = (FieldSpec)struct_var;
+
+                         
+                            return new AccessExpression(dst, true,index,tmp.MemberType);
+                        }
+                        else if (struct_var is ParameterSpec)
+                        {
+                            ParameterSpec dst = (ParameterSpec)struct_var;
+
+                           
+                            return new AccessExpression(dst,true,index,tmp.MemberType);
+                        }
+                        this.CommonType = tmp.MemberType;
+                    }
+                }
+
+                // error
+                if ( struct_var == null)
+                    ResolveContext.Report.Error(18, Location, "Undefined access reference " + lv.Name);
+                if (!ok)
+                    ResolveContext.Report.Error(19, Location, "Unresolved member access " + lv.Name + "." + rv.Name);
+
+            }
+
+            else ResolveContext.Report.Error(20, Location, "'->' operator accepts only variable expressions at both sides (left,right)");
+
+            throw new Exception("Failed to create variable");
         }
 
     }

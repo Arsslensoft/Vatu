@@ -36,7 +36,7 @@ namespace Vasm.x86 {
           if (DestinationValue.HasValue && !DestinationIsIndirect) {
             var xCurAddress = ActualAddress;
             var xOrigValue = DestinationValue.Value;
-            DestinationValue = (uint)(xOrigValue - xCurAddress.Value);
+            DestinationValue = (ushort)(xOrigValue - xCurAddress.Value);
             try {
               base.WriteData(aAssembler, aOutput);
               return;

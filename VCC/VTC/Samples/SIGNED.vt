@@ -1,0 +1,102 @@
+﻿default asm {
+"[org 0]";
+"jmp 0x7c0:start";
+"start:";
+"mov ax,cs";
+	"mov ds,ax";
+	"mov es,ax";
+	
+
+
+}
+
+namespace std;
+// put char
+ void putc(byte c){
+asm{
+"xor cx,cx";
+"xor dx,dx";
+"xor bx,bx";
+}
+
+asm{
+
+	"mov byte al, [BP+4]";
+	"mov ah, 0x0E";
+    "int 0x10      ; otherwise, print out the character!";
+  }
+
+}
+// print null terminated string
+ void print(string msg){
+
+int i = 0;
+asm{
+"xor cx,cx";
+"xor dx,dx";
+"xor bx,bx";
+"xor ax,ax";
+}
+// 0 end of string
+byte c;
+while(msg[i] != 0)
+	{
+	c = msg[i];
+	asm{
+	"mov byte al, [BP-3]";
+	"mov ah, 0x0E";
+    "int 0x10";
+  }
+  i++;
+
+	}
+
+
+}
+
+namespace DOS;
+use std;
+
+
+const string prompt = ">";
+string HelloWorld = "Hello World";
+
+
+
+string buff="00000";
+void tostring(uint x){
+uint r;
+string ptr ;
+r=x;
+ptr = buff;
+
+for(;r >= 10u; r = r / 10){
+*ptr = 48 + (byte)(r % 10u);
+ptr++;
+
+ }
+*ptr = 48 + (byte)r;
+
+
+ print(buff);
+}
+entry  void main()
+{
+int x = -5;
+int y = -7;
+int z;
+
+z= x+y;
+tostring(4025u);
+
+
+print(HelloWorld);
+loop{}
+
+
+}
+
+extern asm{
+"times 510 - ($-$$) db 0";
+"dw 0xaa55";
+}

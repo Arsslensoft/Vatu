@@ -7,7 +7,7 @@
               return mComment;
           }
       }
-
+      public bool Method = false;
       private readonly string mComment;
 
       public Label(string aName, bool isGlobal = false)

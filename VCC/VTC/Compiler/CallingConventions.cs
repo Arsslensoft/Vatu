@@ -11,5 +11,7 @@ namespace VTC
 			Cdecl = 1,
 			StdCall = 2,
 			FastCall = 3,
+            Pascal  = 4,
+            Default = 0
 	} 
 }

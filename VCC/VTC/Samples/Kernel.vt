@@ -1,4 +1,5 @@
-﻿default asm {
+﻿
+default asm {
 "[org 0]";
 
 "start:";
@@ -17,9 +18,13 @@ GREEN = 2,
 RED = 4
 
 };
+struct XA{
+int a;
+byte b;
+};
 typedef enum CONSOLE_COLORS CCOLORS;
 // get char
-stdcall byte getc(){
+ byte getc(){
 byte c = 0;
    asm{
    "mov ah, 0";
@@ -32,7 +37,7 @@ byte c = 0;
    return c;
 }
 // put char
-stdcall void putc(byte c){
+ void putc(byte c){
 asm{
 "xor cx,cx";
 "xor dx,dx";
@@ -48,7 +53,7 @@ asm{
 
 }
 // print null terminated string
-stdcall void print(string msg){
+ void print(string msg){
 
 int i = 0;
 asm{
@@ -74,7 +79,7 @@ while(msg[i] != 0)
 
 }
 
-stdcall void cls()
+ void cls()
 {
 asm{
 "xor cx,cx";
@@ -85,7 +90,7 @@ asm{
 
 }
 }
-stdcall void lnprint(string msg){
+ void lnprint(string msg){
  asm{
 	"mov al, 0xA";
 	"mov ah, 0x0E";
@@ -98,7 +103,7 @@ stdcall void lnprint(string msg){
 
 }
 
-stdcall void println(string msg){
+ void println(string msg){
 
  print(msg);
   asm{
@@ -111,7 +116,7 @@ stdcall void println(string msg){
   }
 
 }
-stdcall void getstring(string buff){
+ void getstring(string buff){
  byte cc = 0;
  int  i = 0;
  cc = getc();
@@ -123,7 +128,7 @@ stdcall void getstring(string buff){
 buff[i] = 0;
 
 }
-stdcall void print_color(string msg, byte color)
+ void print_color(string msg, byte color)
 {
 int i = 0;
 byte c = 0;
@@ -157,19 +162,55 @@ asm{
 
 namespace String;
 use std;
-override bool operator ==(string a, string b)
+
+override bool operator ==(string b, string a)
 {
-bool eq = false;
-int i = 0;
- while(a[i] == b[i] && a[i] != 0)
-     i++;
+ for(;*a == *b;) {
 
+   if(*a == 0)
+      return true;
+
+	  a++;
+	  b++;
+
+	 }
 	 
-eq = (a[i] == 0 && b[i] == 0 ); 
+return false;
+}
+override bool operator >(string a, string b)
+{
+ for(;*a == *b;) {
 
-return eq;
+   if(*a == 0)
+      return false;
+
+	  a++;
+	  b++;
+
+	 }
+	 if(*a > *b)
+			return true;
+
+return false;
 }
 
+
+override bool operator <(string a, string b)
+{
+ for(;*a == *b;) {
+
+   if(*a == 0)
+      return false;
+
+	  a++;
+	  b++;
+
+	 }
+	 if(*a < *b)
+			return true;
+
+return false;
+}
 override string operator +(string a, string b)
 {
  int i = 0;
@@ -189,7 +230,7 @@ a[i] = 0;
 
 }
 
-stdcall uint strlen(string a)
+ uint strlen(string a)
 {
  uint i = 0;
  while(a[i] != 0)
@@ -198,7 +239,7 @@ stdcall uint strlen(string a)
   return i;
 }
 
-stdcall void tostring(bool v)
+ void tostring(bool v)
 {
 if(v == true)
  print("TRUE");
@@ -206,7 +247,7 @@ else
 print("FALSE");
 
 }
-stdcall void tostring(uint a){
+ void tostring(uint a){
 if(a < 10)
   putc((byte)(a+48));
   else{
@@ -217,7 +258,7 @@ if(a < 10)
 
 
 }
-stdcall void reverse(string str, int length)
+ void reverse(string str, int length)
 {
     uint start = 0;
     uint end;
@@ -234,13 +275,13 @@ stdcall void reverse(string str, int length)
 namespace OPERATIONS;
 use std;
 use String;
-stdcall bool isdigit(byte c)
+ bool isdigit(byte c)
 {
   if(c >= 48 && c <= 57)
      return true;
 	else return false;
 }
-stdcall uint a2u(string s)
+ uint a2u(string s)
 {
 int i = 0;
  uint num=0;
@@ -267,7 +308,7 @@ const string OP_PL = "+";
 const string OP_MI = "-";
 const string OP_MUL = "*";
 const string OP_DIV = "/";
-stdcall void operate(){
+ void operate(){
 	uint a = 0;
 	uint b = 0;
 	uint r = 0;
@@ -315,15 +356,20 @@ const string op_cmd = "oper";
 const string op_help = "help";
 const string op_sd = "shutdown";
 const string op_res = "restart";
+const string op_swap = "s";
+
 const string help_msg = "oper : Operation, help : Help, hello : Hello World, about : About, shutdown, restart";
 const string about_text = "This os is a simple demo written to test Vatu compiler";
-stdcall void restart() {
+
+struct XA* buffer[5];
+
+ void restart() {
 asm{
 "int 0x19";
 }
 
 }
-stdcall void shutdown() {
+ void shutdown() {
 asm{
     "mov ax, 0x1000";
     "mov ax, ss";
@@ -334,15 +380,61 @@ asm{
     "int 0x15";
 	}
 }
-entry stdcall void main()
+struct XA v;
+void testArrayCast(){
+int i=0;
+byte *p;
+byte bk;
+
+// allocation
+struct XA a;
+struct XA b;
+struct XA* px;
+v.b = 66;
+a.b = 65;
+px = &a;
+b = *px;
+bk = v.b;
+p = &(bk);
+putc(a.b);
+putc(b.b);
+putc(v.b);
+putc(*p);
+/*
+// assign
+buffer[0] =&a;
+buffer[1] = &b;
+
+
+
+struct XA x;
+struct XA* px;
+for(i = 0;i < 2; i++){
+	px = buffer[i];
+	x = *(px);
+	x.b = 65+i;
+	}
+
+	lnprint("Result : ");
+for(i = 0;i < 2; i++){
+px = buffer[i];
+		x = *(px);
+	putc(x.b);
+
+	}*/
+lnprint(" ");	
+}
+entry void main()
 {
+
 cls();
 	print_color("Welcome to Vatu OS Kernel", CONSOLE_COLORS.BLUE);
 	lnprint("Write your command : ");
+	testArrayCast();
 	loop{
 	lnprint(prompt);
 	getstring(input);
-	if(hello_cmd == input)
+	 if(hello_cmd == input)
 		lnprint("Hello, from Vatu OS");
 	else if(about_cmd == input)
 			lnprint(about_text);
@@ -354,6 +446,9 @@ cls();
 		shutdown();
 	else if(op_res == input)
 		restart();
+	else if(op_res == input)
+		restart();
+
 	else
 		lnprint("Unknown command");
 	

@@ -209,7 +209,7 @@ namespace VTC.Core
     {
         public MethodSpec Method { get; set; }
         public List<Expr> Parameters { get; set; }
-
+        
         protected Identifier _id;
         protected ParameterSequence<Expr> _param;
         [Rule(@"<Value>       ::= Id ~'(' <PARAM EXPR> ~')'")]
@@ -235,6 +235,7 @@ namespace VTC.Core
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+            ccvh = new CallingConventionsHandler();
             List<TypeSpec> tp = new List<TypeSpec>();
             Parameters = new List<Expr>();
             if (_param != null)
@@ -248,15 +249,28 @@ namespace VTC.Core
                 }
         
             }
-            if(tp.Count > 0)
-            Method = rc.Resolver.TryResolveMethod(_id.Name,tp.ToArray());
-            else Method = rc.Resolver.TryResolveMethod(_id.Name);
+            MemberSignature msig= new MemberSignature();
+            if (tp.Count > 0)
+            {
+                Method = rc.Resolver.TryResolveMethod(_id.Name, tp.ToArray());
+                if (Method == null)
+                    msig = new MemberSignature(rc.CurrentNamespace, _id.Name, tp.ToArray(), loc);
+
+            }
+            else
+            {
+                Method = rc.Resolver.TryResolveMethod(_id.Name);
+                if (Method == null)
+                    msig = new MemberSignature(rc.CurrentNamespace, _id.Name, tp.ToArray(), loc);
+            }
             if(Method == null)
-                ResolveContext.Report.Error(46, Location, "Unknown method " + _id.Name + " ");
+                ResolveContext.Report.Error(46, Location, "Unknown method " + msig.NormalSignature + " ");
             else if(Method.Parameters.Count != Parameters.Count)
                 ResolveContext.Report.Error(46, Location, "the method "+Method.Name + " has different parameters");
             else if (!MatchParameterTypes())
-                ResolveContext.Report.Error(46, Location, "the method " + Method.Name + " has different parameters types. try casting"); 
+                ResolveContext.Report.Error(46, Location, "the method " + Method.Name + " has different parameters types. try casting");
+       
+            if (Method != null)
             Type = Method.MemberType;
             return this;
         }
@@ -268,53 +282,12 @@ namespace VTC.Core
 
             return true;
         }
+        CallingConventionsHandler ccvh;
         public override bool Emit(EmitContext ec)
         {
-          
-             
-                int size = 0;
-                // parameters
-                if (Parameters.Count > 0)
-                {
-                    if (Method.CallingConvention == CallingConventions.StdCall)
-                    {
-                        foreach (Expr e in Parameters)
-                        {
 
-                            e.EmitToStack(ec);
-                            if (e.Type.Size > 1)
-                                size += e.Type.Size;
-                            else size += 2;
-                        }
-                    }
-                    else if (Method.CallingConvention == CallingConventions.Cdecl)
-                    {
-                        int i = 0;
-                        for(i = Parameters.Count -1; i >= 0; i--)
-                        {
-
-                            Parameters[i].EmitToStack(ec);
-                            if (Parameters[i].Type.Size > 1)
-                                size += Parameters[i].Type.Size;
-                            else size += 2;
-                        }
-                    }
-
-                }
-
-                if (Method.MemberType.IsBuiltinType)
-                {
-                    // call
-                    ec.EmitCall(Method);
-                    // clean params 
-                    if (size > 0)
-                        ec.EmitInstruction(new Add() { DestinationReg = EmitContext.SP, SourceValue = (uint)size,Size = 80});
-
-            
-
-                }
-                
-            
+            ccvh.EmitCall(ec, Parameters, Method);
+                           
        
             return true;
         }
@@ -393,7 +366,7 @@ namespace VTC.Core
         }
 
   
-        public static void EmitAssign(EmitContext ec,  RegistersEnum dst,uint val)
+        public static void EmitAssign(EmitContext ec,  RegistersEnum dst,ushort val)
         {
      
                 ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceValue = val, Size = 80 });
@@ -416,7 +389,7 @@ namespace VTC.Core
             ec.EmitPush(dst);
            
         }
-        public static void EmitOperation(EmitContext ec, InstructionWithDestinationAndSourceAndSize ins, uint src, RegistersEnum dst)
+        public static void EmitOperation(EmitContext ec, InstructionWithDestinationAndSourceAndSize ins, ushort src, RegistersEnum dst)
         {
             ins.SourceValue = src;
             ins.DestinationReg = dst;
@@ -443,14 +416,21 @@ namespace VTC.Core
     public class AccessExpression : VariableExpression
     {
         bool IsExpr { get; set; }
+        bool IsByAdr { get; set; }
+        int AccessIndex { get; set; }
+        TypeSpec MemberT { get; set; }
         /// <summary>
         /// ByVal ccess operator
         /// </summary>
         /// <param name="ms"></param>
-        public AccessExpression(MemberSpec ms)
+        public AccessExpression(MemberSpec ms, bool adr = false, int index = 0, TypeSpec mem = null)
             : base(ms)
-       {
+        {
+            IsByAdr = adr;
            IsExpr = false;
+           AccessIndex = index;
+           MemberT = mem;
+           Type = mem != null?mem:ms.MemberType;
        }
 
         public VariableExpression Left { get; set; }
@@ -467,22 +447,47 @@ namespace VTC.Core
 
         public override bool Emit(EmitContext ec)
         {
-            if (!IsExpr)
+            if (!IsExpr && !IsByAdr)
                 return base.Emit(ec);
+            else if (IsByAdr)
+                return EmitToStack(ec);
             else
                 return Operator.Emit(ec);
         }
         public override bool EmitFromStack(EmitContext ec)
         {
-            if (!IsExpr)
+            if (!IsExpr && !IsByAdr)
                 return base.EmitFromStack(ec);
+            else if (IsByAdr)
+            {
+                if (variable is VarSpec)
+                    variable.ValueOfStackAccess(ec, AccessIndex, MemberT);
+                else if (variable is FieldSpec)
+                    variable.ValueOfStackAccess(ec, AccessIndex, MemberT);
+                else if (variable is ParameterSpec)
+                    variable.ValueOfStackAccess(ec, AccessIndex, MemberT);
+                return true;
+
+            }
             else
                 return Operator.EmitFromStack(ec);
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            if (!IsExpr)
+            if (!IsExpr && !IsByAdr)
                 return base.EmitToStack(ec);
+            else if (IsByAdr)
+            {
+
+                if (variable is VarSpec)
+                    variable.ValueOfAccess(ec, AccessIndex, MemberT);
+                else if (variable is FieldSpec)
+                    variable.ValueOfAccess(ec, AccessIndex, MemberT);
+                else if (variable is ParameterSpec)
+                    variable.ValueOfAccess(ec,AccessIndex,MemberT);
+
+                return true;
+            }
             else
                 return Operator.EmitToStack(ec);
         }
@@ -822,12 +827,14 @@ namespace VTC.Core
 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-          
+            bool adrop = _op is LoadEffectiveAddressOp || _op is ValueOfOp;
+            bool idecop = _op is IncrementOperator || _op is DecrementOperator;
             _op.Right = (Expr)_op.Right.DoResolve(rc);
             _op = (Operator)_op.DoResolve(rc);
-            if (!TypeChecker.ArtihmeticsAllowed(_op.Right.Type, _op.Right.Type))
-                ResolveContext.Report.Error(46, Location, "Binary operations are not allowed for this type");
-            Type = _op.Right.Type;
+           
+            if ((idecop && !_op.Right.Type.IsPointer && !_op.Right.Type.IsNumeric) &&!adrop &&  !TypeChecker.ArtihmeticsAllowed(_op.Right.Type, _op.Right.Type))
+                ResolveContext.Report.Error(46, Location, "Unary operations are not allowed for this type");
+            Type = _op.CommonType;
             return this;
         }
         public override bool Resolve(ResolveContext rc)
@@ -1193,7 +1200,7 @@ namespace VTC.Core
             }
            
         }
-
+        bool requireoverload = false;
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             Expr tmp;
@@ -1201,7 +1208,8 @@ namespace VTC.Core
             _op.Left = (Expr)_op.Left.DoResolve(rc);
 
             if (!TypeChecker.ArtihmeticsAllowed(_op.Right.Type, _op.Left.Type))
-                ResolveContext.Report.Error(46, Location, "Binary operations are not allowed for this type");
+                requireoverload = true;
+              
             // check for const
             if (_op.Right is ConstantExpression && _op.Left is ConstantExpression)
             {
@@ -1214,7 +1222,8 @@ namespace VTC.Core
           
             // end check const
             _op = (BinaryOp)_op.DoResolve(rc);
-           
+            if (requireoverload && _op.OvlrdOp == null)
+               ResolveContext.Report.Error(46, Location, "Binary operations are not allowed for this type");
             Type = _op.CommonType;
             return this;
         }

@@ -516,12 +516,14 @@ namespace Vasm
                writer.WriteLine("extern\t" + ex);
            writer.WriteLine();
            if(!IsFlat)
-           writer.Write("global	" + EntryPoint);
+           writer.Write("call	" + EntryPoint);
            // Write out code
            for (int i = 0; i < mInstructions.Count; i++)
            {
 
                var xOp = mInstructions[i];
+               if (xOp == null)
+                   continue;
                if (xOp.Emit)
                {
                    string prefix = "\t\t\t";

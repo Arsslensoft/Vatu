@@ -6,14 +6,13 @@ using Vasm.x86;
 
 namespace Vasm.Optimizer
 {
-    class DestinationElement
-    {
-        public RegistersEnum? Register { get; set; }
-        public ElementReference Ref { get; set; }
-    }
+  
+  
  public  class PushPopO2 : IOptimizer
   {
      Stack<int> PushIdxStack;
+     Stack<string> CallLb;
+     Dictionary<string, int> CallAndRet;
       public PushPopO2()
        {
            Level =2;
@@ -48,8 +47,30 @@ namespace Vasm.Optimizer
            }
            return false;
        }
-    
-  
+
+       void LookForReturn(List<Instruction> mInstructions, int start)
+       {
+           for (int i = start; i < mInstructions.Count; i++)
+           {
+               Instruction ins = mInstructions[i];
+               if (ins is Return)
+               {
+                   Return ad = ins as Return;
+
+                   if (ad.DestinationValue.HasValue)
+                       CallAndRet.Add(CallLb.Pop(), (int)ad.DestinationValue.Value);
+                   else CallAndRet.Add(CallLb.Pop(), 0);
+
+                   return;
+               }
+               else if (ins is SimpleReturn)
+               {
+                   CallAndRet.Add(CallLb.Pop(), 0);
+                   return;
+               }
+
+           }
+       }
      Push GetLastPush(List<Instruction> ins, int start, ref int idx)
        {
            for (int i = start; i >= 0; i--)
@@ -66,29 +87,54 @@ namespace Vasm.Optimizer
            }
            return null;
        }
+     void BeforeCheck(int i,Instruction ins, List<Instruction> mInstructions)
+     {
+         if (ins is Push)
+             PushIdxStack.Push(i);
+         else if (ins is Add)
+         {
+             Add ad = ins as Add;
+             if (ad.DestinationReg.HasValue && ad.SourceValue.HasValue && ad.DestinationReg.Value == RegistersEnum.SP)
+             {
+                 for (int j = 0; j < ad.SourceValue.Value / 2; j++)
+                     PushIdxStack.Pop();
+             }
+         }
+         else if (ins is Leave)
+             PushIdxStack.Pop();
+         else if (ins is Label && (ins as Label).Method)
+         {
+             CallLb.Push((ins as Label).Name);
+             LookForReturn(mInstructions, i + 1);
+         }
+         else if (ins is Call && !(mInstructions[i + 1] is Add))
+         {
+
+             if (CallAndRet.ContainsKey((ins as Call).DestinationLabel))
+             {
+                 for (int j = 0; j < CallAndRet[(ins as Call).DestinationLabel] / 2; j++)
+                     if (PushIdxStack.Count > 0)
+                         PushIdxStack.Pop();
+                     else Console.WriteLine("Stack error");
+
+
+             }
+             else Console.WriteLine("Method error");
+         }
+     }
      public bool CheckForOptimization(List<Instruction> mInstructions, List<Instruction> externals = null)
      {
          PushIdxStack = new Stack<int>();
+         CallLb = new Stack<string>();
+         CallAndRet = new Dictionary<string, int>();
            int pushidx;
            int popidx;
            for (int i = 0; i < mInstructions.Count; i++)
            {
                
                 Instruction ins = mInstructions[i];
-             
-               if (ins is Push)
-                    PushIdxStack.Push(i);
-                else if (ins is Add)
-                {
-                    Add ad = ins as Add;
-                    if (ad.DestinationReg.HasValue && ad.SourceValue.HasValue && ad.DestinationReg.Value == RegistersEnum.SP)
-                    {
-                        for (int j = 0; j < ad.SourceValue.Value / 2; j++)
-                            PushIdxStack.Pop();
-                    }
-                }
-                else if (ins is Leave)
-                    PushIdxStack.Pop();
+
+                BeforeCheck(i, ins, mInstructions);
                 if (i > 0)
                 {
 
@@ -122,19 +168,21 @@ namespace Vasm.Optimizer
                          InstructionWithDestinationAndSourceAndSize mv = new Mov();
                          OptimizeUtils.CopyDestination((InstructionWithDestinationAndSize)OldPush, ref mv, true);
                          OptimizeUtils.CopyDestination((InstructionWithDestinationAndSize)OldPop, ref mv, false);
-                         mInstructions[popidx] = mv;
-                         mInstructions[pushidx] = null;
+                         mInstructions[pushidx] = mv;
+                         mInstructions[popidx] = null;
                          
                         }
                     }
                 }
            }
+
            while (PushIdxStack.Count > 0)
            {
                using (AssemblyWriter str = new AssemblyWriter(Console.OpenStandardOutput(),Encoding.ASCII))
                {
-                   mInstructions[PushIdxStack.Pop()].WriteText(null,str);
-                   Console.WriteLine();
+                   int i = 0;
+                   mInstructions[i=PushIdxStack.Pop()].WriteText(null,str);
+                   Console.WriteLine(i);
                }
            }
            return true;

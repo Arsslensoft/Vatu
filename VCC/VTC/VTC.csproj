@@ -49,6 +49,7 @@
     <Compile Include="Base\location.cs" />
     <Compile Include="Base\Report.cs" />
     <Compile Include="Base\Reports.cs" />
+    <Compile Include="CallingConventions.cs" />
     <Compile Include="Compiler\CallingConventions.cs" />
     <Compile Include="Core\Literals.cs" />
     <Compile Include="Compiler\Namespace.cs" />
@@ -79,6 +80,8 @@
     <None Include="packages.config" />
     <EmbeddedResource Include="Samples\Kernel.vt" />
     <EmbeddedResource Include="VATU.cgt" />
+    <EmbeddedResource Include="Samples\DOS.vt" />
+    <EmbeddedResource Include="Samples\SIGNED.vt" />
     <None Include="VATU.grm" />
   </ItemGroup>
   <ItemGroup />

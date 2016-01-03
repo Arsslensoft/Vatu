@@ -48,8 +48,9 @@ namespace VTC
         }
         public bool Test()
         {
-          Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.Kernel.vt");
-           //Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.Bootloader.vt");
+         // Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.Kernel.vt");
+       Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.DOS.vt");
+            //  Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.SIGNED.vt");
                 InputSource = new StreamReader(stream);
 
        
@@ -118,6 +119,17 @@ namespace VTC
                             Resolved.Add(d);
                             ResolveCtx.Add(childctx);
                         }
+                        else if (stmt.BaseDeclaration is UnionDeclaration)
+                        {
+                            UnionDeclaration md = (UnionDeclaration)stmt.BaseDeclaration;
+                            ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
+                            stmt.Resolve(childctx);
+                            UnionDeclaration d = (UnionDeclaration)md.DoResolve(childctx);
+                            // RootCtx.UpdateChildContext("<method-decl>", childctx);
+                            RootCtx.UpdateFather(childctx);
+                            Resolved.Add(d);
+                            ResolveCtx.Add(childctx);
+                        }
                         else if (stmt.BaseDeclaration is EnumDeclaration)
                         {
                             EnumDeclaration md = (EnumDeclaration)stmt.BaseDeclaration;
@@ -133,6 +145,7 @@ namespace VTC
                         {
                             RootCtx.IsInTypeDef = stmt.IsTypeDef;
                             RootCtx.IsInStruct = stmt.IsStruct;
+                            RootCtx.IsInUnion = stmt.IsUnion;
                             stmt.Resolve(RootCtx);
                             ResolveCtx.Add(RootCtx);
                             Declaration d = (Declaration)stmt.DoResolve(RootCtx);

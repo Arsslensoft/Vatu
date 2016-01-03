@@ -37,7 +37,7 @@ namespace Vasm.Optimizer
            Instruction last = null;
            for (int i = 0; i < ins.Count; i++)
            {
-               if (ins[i] is Label)
+               if (ins[i] is Label && !(ins[i] as Label).Method)
                {
                    if (last is Label)
                    {

@@ -55,8 +55,8 @@ HelpText = "Enable optimizations")]
        [OptionArray('s', "source", Required = true, HelpText = "Source files.")]
        public string[] Sources { get; set; }
 
-       [Option('o', "out", Required = false, DefaultValue = "",
-HelpText = "Output file")]
+       [Option('a', "asm", Required = false, DefaultValue = "",
+HelpText = "Output assembly file")]
        public string Output { get; set; }
        
        [Option("boot", Required = false,  DefaultValue = false,
@@ -71,6 +71,10 @@ HelpText = "Flat output")]
 HelpText = "Enable method overload")]
        public bool Overload { get; set; }
 
+
+       [Option('o', "out", Required = false, DefaultValue = "",
+HelpText = "Output file")]
+       public string OutputBinary { get; set; }
             [ParserState]
             public IParserState LastParserState { get; set; }
             [HelpOption]

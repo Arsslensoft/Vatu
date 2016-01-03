@@ -83,7 +83,8 @@ namespace VTC.Core
        
 
         [Rule(@"<Base>     ::= struct Id")]
-        [Rule(@"<Base>     ::= enum Id")]  
+        [Rule(@"<Base>     ::= enum Id")]
+        [Rule(@"<Base>     ::= union Id")]  
         public BaseTypeIdentifier(SimpleToken tok,Identifier type)
         {
             _ident = type;
@@ -149,7 +150,16 @@ namespace VTC.Core
     {
         public Identifier Id { get; set; }
         public TypeToken TType { get; set; }
-        public CallingCV CCV { get; set; }
+        private CallingCV CCV { get; set; }
+        public CallingConventions CV
+        {
+            get
+            {
+                if (CCV != null)
+                    return CCV.CallingConvention;
+                else return CallingConventions.Default;
+            }
+        }
         [Rule(@"<Func ID> ::= <CallCV> <Type> Id")]
         public MethodIdentifier(CallingCV ccv, TypeToken type, Identifier id)
             : base(id.Name)
@@ -158,6 +168,14 @@ namespace VTC.Core
             TType = type;
             CCV = ccv;
         }
+        [Rule(@"<Func ID> ::= <Type> Id")]
+        public MethodIdentifier( TypeToken type, Identifier id)
+            : base(id.Name)
+        {
+            Id = id;
+            TType = type;
+            CCV = null;
+        }
 
 
 
@@ -165,7 +183,9 @@ namespace VTC.Core
         {
             TType = (TypeToken)TType.DoResolve(rc);
             base.Type = TType.Type;
-            CCV = (CallingCV)CCV.DoResolve(rc);
+            if (CCV != null)
+                CCV = (CallingCV)CCV.DoResolve(rc);
+         
             return this;
         }
         public override bool Resolve(ResolveContext rc)
@@ -221,6 +241,8 @@ namespace VTC.Core
         [Rule(@"<CallCV>      ::= stdcall")]
         [Rule(@"<CallCV>      ::= fastcall")]
         [Rule(@"<CallCV>      ::= cdecl")]
+        [Rule(@"<CallCV>      ::= default")]
+        [Rule(@"<CallCV>      ::= pascal")]
         public CallingCV(SimpleToken mod)
         {
             _mod = mod;
@@ -233,6 +255,10 @@ namespace VTC.Core
                CallingConvention = CallingConventions.FastCall;
             else if (_mod.Name == "cdecl")
                CallingConvention = CallingConventions.Cdecl;
+           else if (_mod.Name == "default")
+               CallingConvention = CallingConventions.Default;
+           else if (_mod.Name == "pascal")
+               CallingConvention = CallingConventions.Pascal;
            else CallingConvention = CallingConventions.StdCall;
             return this;
         }

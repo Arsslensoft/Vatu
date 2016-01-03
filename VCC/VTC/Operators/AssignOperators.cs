@@ -70,9 +70,13 @@ namespace VTC
 
             Right.EmitToStack(ec);
             Left.EmitToStack(ec);
-            ec.EmitComment(Left.CommentString() + "=" + Right.CommentString());
+            ec.EmitPop(EmitContext.A);
+            ec.EmitPop(EmitContext.B);
+            ec.EmitComment(Left.CommentString() + "<>" + Right.CommentString());
+            ec.EmitInstruction(new Xchg() { SourceReg = EmitContext.A, DestinationReg = EmitContext.B, Size = 16});
+            ec.EmitPush(EmitContext.A);
+            ec.EmitPush(EmitContext.B);
             Right.EmitFromStack(ec);
-            ec.EmitComment(Right.CommentString() + "=" + Left.CommentString());
             Left.EmitFromStack(ec);
             return true;
         }

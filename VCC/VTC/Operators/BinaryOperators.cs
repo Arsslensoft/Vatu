@@ -157,7 +157,7 @@ namespace VTC
             else if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(28, Location, "Register expected, Left and Right must be registers");
 
-            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
             return this;
@@ -201,7 +201,7 @@ namespace VTC
             else if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(28, Location, "Register expected, Left and Right must be registers");
 
-            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
             return this;
@@ -242,7 +242,7 @@ namespace VTC
                 RegisterOperation = true;
             else if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(28, Location, "Register expected, Left and Right must be registers");
-            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
             return this;
@@ -284,7 +284,7 @@ namespace VTC
             if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
 
-            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] {Left.Type, Right.Type});
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] {Left.Type, Right.Type});
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
             return this;
@@ -302,7 +302,7 @@ namespace VTC
             ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
 
-            if (CommonType.Size == 1)
+            if (Left.Type.Size == 1)
                 ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
             else
                 ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
@@ -325,17 +325,13 @@ namespace VTC
             ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
 
-            if (CommonType.Size == 1)
+            if (Left.Type.Size == 1)
                 ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
             else
                 ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
 
             // jumps
-            if(v)
-            ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.Equal, DestinationLabel = truecase.Name });
-            else
-               ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.NotEqual, DestinationLabel = truecase.Name });
-       
+            ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.Equal, ConditionalTestEnum.NotEqual);
 
             return true;
         }
@@ -356,7 +352,7 @@ namespace VTC
             CommonType = BuiltinTypeSpec.Bool;
             if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
-            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
             return this;
@@ -372,7 +368,7 @@ namespace VTC
             ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
 
-           if(CommonType.Size == 1)
+            if (Left.Type.Size == 1)
                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg =ec.GetLow( RightRegister.Value), Size = 80 });
             else
                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
@@ -396,18 +392,14 @@ namespace VTC
             ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
 
-            if (CommonType.Size == 1)
+            if (Left.Type.Size == 1)
                 ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
             else
                 ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
 
             // jumps
-            if (v)
-                ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.NotEqual, DestinationLabel = truecase.Name });
-            else
-                ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.Equal, DestinationLabel = truecase.Name });
 
-
+            ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.NotEqual, ConditionalTestEnum.Equal);
             return true;
         }
     }
@@ -415,6 +407,7 @@ namespace VTC
     [Terminal("<")]
     public class LessThanOperator : BinaryOp
     {
+      
         public LessThanOperator()
         {
             Operator = BinaryOperator.LessThan;
@@ -423,15 +416,19 @@ namespace VTC
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+
+
             if (!FixConstant(rc))
                 ResolveContext.Report.Error(24, Location, "Comparison operation must have the same type");
             CommonType = BuiltinTypeSpec.Bool;
             if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
 
-            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
+
+            unsigned = (Right.Type.IsUnsigned || Left.Type.IsUnsigned);
             return this;
         }
         public override bool Emit(EmitContext ec)
@@ -444,13 +441,15 @@ namespace VTC
             ec.EmitPop(RightRegister.Value);
             ec.EmitPop(LeftRegister.Value);
 
-            if (CommonType.Size == 1)
+            if (Left.Type.Size == 1)
                 ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
             else
                 ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
 
        
-
+            if(unsigned)
+                ec.EmitBoolean(ec.GetLow(LeftRegister.Value), ConditionalTestEnum.Below, ConditionalTestEnum.NotBelow);
+            else
             ec.EmitBoolean(ec.GetLow(LeftRegister.Value), ConditionalTestEnum.LessThan, ConditionalTestEnum.NotLessThan);
 
 
@@ -468,20 +467,21 @@ namespace VTC
             ec.EmitComment(Left.CommentString() + " < " + Right.CommentString());
             ec.EmitPop(RightRegister.Value);
             ec.EmitPop(LeftRegister.Value);
-       
 
-            if (CommonType.Size == 1)
+
+            if (Left.Type.Size == 1)
                 ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
             else
                 ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
 
 
             // jumps
-            if (v)
-                ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.LessThan, DestinationLabel = truecase.Name });
-            else
-                ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.NotLessThan, DestinationLabel = truecase.Name });
 
+            if (unsigned)
+                ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.Below, ConditionalTestEnum.NotBelow);
+            else
+                ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.LessThan, ConditionalTestEnum.NotLessThan);
+         
 
             return true;
         }
@@ -497,14 +497,14 @@ namespace VTC
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-
+            unsigned = (Right.Type.IsUnsigned || Left.Type.IsUnsigned);
             if (!FixConstant(rc))
                 ResolveContext.Report.Error(24, Location, "Comparison operation must have the same type");
             CommonType = BuiltinTypeSpec.Bool;
             if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
 
-            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
             return this;
@@ -520,11 +520,13 @@ namespace VTC
             ec.EmitPop(RightRegister.Value);
             ec.EmitPop(LeftRegister.Value);
 
-            if (CommonType.Size == 1)
+            if (Left.Type.Size == 1)
                 ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
             else
                 ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
-
+            if (unsigned)
+                ec.EmitBoolean(ec.GetLow(LeftRegister.Value), ConditionalTestEnum.Above, ConditionalTestEnum.NotAbove);
+            else
             ec.EmitBoolean(ec.GetLow(LeftRegister.Value), ConditionalTestEnum.GreaterThan, ConditionalTestEnum.NotGreaterThan);
 
 
@@ -543,19 +545,17 @@ namespace VTC
             ec.EmitPop(RightRegister.Value);
             ec.EmitPop(LeftRegister.Value);
 
-            if (CommonType.Size == 1)
+            if (Left.Type.Size == 1)
                 ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
             else
                 ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
 
 
             // jumps
-            if (v)
-                ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.GreaterThan, DestinationLabel = truecase.Name });
+            if (unsigned)
+                ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.Above, ConditionalTestEnum.NotAbove);
             else
-                ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.NotGreaterThan, DestinationLabel = truecase.Name });
-
-
+                ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.GreaterThan, ConditionalTestEnum.NotGreaterThan);
             return true;
         }
     }
@@ -570,13 +570,14 @@ namespace VTC
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+            unsigned = (Right.Type.IsUnsigned || Left.Type.IsUnsigned);
 
             if (!FixConstant(rc))
                 ResolveContext.Report.Error(24, Location, "Comparison operation must have the same type");
             CommonType = BuiltinTypeSpec.Bool;
             if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
-            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
             return this;
@@ -593,11 +594,13 @@ namespace VTC
             ec.EmitPop(RightRegister.Value);
             ec.EmitPop(LeftRegister.Value);
 
-            if (CommonType.Size == 1)
+            if (Left.Type.Size == 1)
                 ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
             else
                 ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
-
+            if (unsigned)
+                ec.EmitBoolean(ec.GetLow(LeftRegister.Value), ConditionalTestEnum.BelowOrEqual, ConditionalTestEnum.NotBelowOrEqual);
+            else
             ec.EmitBoolean(ec.GetLow(LeftRegister.Value), ConditionalTestEnum.LessThanOrEqualTo, ConditionalTestEnum.NotGreaterThanOrEqualTo);
 
 
@@ -617,18 +620,17 @@ namespace VTC
             ec.EmitPop(RightRegister.Value);
             ec.EmitPop(LeftRegister.Value);
 
-            if (CommonType.Size == 1)
+            if (Left.Type.Size == 1)
                 ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
             else
                 ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
 
 
             // jumps
-            if (v)
-                ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.LessThanOrEqualTo, DestinationLabel = truecase.Name });
+            if (unsigned)
+                ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.BelowOrEqual, ConditionalTestEnum.NotBelowOrEqual);
             else
-                ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.NotLessThanOrEqualTo, DestinationLabel = truecase.Name });
-
+                ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.LessThanOrEqualTo,ConditionalTestEnum.NotLessThanOrEqualTo);
 
             return true;
         }
@@ -644,7 +646,7 @@ namespace VTC
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-
+            unsigned = (Right.Type.IsUnsigned || Left.Type.IsUnsigned);
             if (!FixConstant(rc))
                 ResolveContext.Report.Error(24, Location, "Comparison operation must have the same type");
 
@@ -652,7 +654,7 @@ namespace VTC
             if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
 
-            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
             return this;
@@ -668,11 +670,13 @@ namespace VTC
             ec.EmitPop(RightRegister.Value);
             ec.EmitPop(LeftRegister.Value);
 
-            if (CommonType.Size == 1)
+            if (Left.Type.Size == 1)
                 ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
             else
                 ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
-
+            if (unsigned)
+                ec.EmitBoolean(ec.GetLow(LeftRegister.Value), ConditionalTestEnum.AboveOrEqual, ConditionalTestEnum.NotAboveOrEqual);
+            else
             ec.EmitBoolean(ec.GetLow(LeftRegister.Value), ConditionalTestEnum.GreaterThanOrEqualTo, ConditionalTestEnum.NotGreaterThanOrEqualTo);
 
 
@@ -691,18 +695,17 @@ namespace VTC
             ec.EmitPop(RightRegister.Value);
             ec.EmitPop(LeftRegister.Value);
 
-            if (CommonType.Size == 1)
-                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
+            if (Left.Type.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 8 });
             else
-                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 16 });
 
 
             // jumps
-            if (v)
-                ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.GreaterThanOrEqualTo, DestinationLabel = truecase.Name });
+            if (unsigned)
+                ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.AboveOrEqual, ConditionalTestEnum.NotAboveOrEqual);
             else
-                ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.NotGreaterThanOrEqualTo, DestinationLabel = truecase.Name });
-
+                ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.GreaterThanOrEqualTo, ConditionalTestEnum.NotGreaterThanOrEqualTo);
 
             return true;
         }
@@ -719,7 +722,7 @@ namespace VTC
             LeftRegister = RegistersEnum.AX;
             RightRegister = RegistersEnum.BX;
         }
-        public uint ShiftValue { get; set; }
+        public ushort ShiftValue { get; set; }
         bool noshift = false;
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -730,7 +733,7 @@ namespace VTC
             if (!(Right is ConstantExpression))
                 ResolveContext.Report.Error(31, Location, "Right side must be constant value in shift operations");
             else
-                ShiftValue = uint.Parse((Right as ConstantExpression).GetValue().ToString());
+                ShiftValue = ushort.Parse((Right as ConstantExpression).GetValue().ToString());
 
 
             if (ShiftValue > 15)
@@ -777,7 +780,7 @@ namespace VTC
             LeftRegister = RegistersEnum.AX;
     
         }
-        public uint ShiftValue { get; set; }
+        public ushort ShiftValue { get; set; }
         bool noshift = false;
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -787,7 +790,7 @@ namespace VTC
             if (!(Right is ConstantExpression))
                 ResolveContext.Report.Error(31, Location, "Right side must be constant value in shift operations");
             else
-                ShiftValue = uint.Parse((Right as ConstantExpression).GetValue().ToString());
+                ShiftValue = ushort.Parse((Right as ConstantExpression).GetValue().ToString());
 
 
             if (ShiftValue > 15)
@@ -835,7 +838,7 @@ namespace VTC
             LeftRegister = RegistersEnum.AX;
        
         }
-        public uint RotValue { get; set; }
+        public ushort RotValue { get; set; }
         bool norot = false;
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -846,9 +849,9 @@ namespace VTC
             if (!(Right is ConstantExpression))
                 ResolveContext.Report.Error(31, Location, "Right side must be constant value in shift operations");
             else
-                RotValue = uint.Parse((Right as ConstantExpression).GetValue().ToString());
+                RotValue = ushort.Parse((Right as ConstantExpression).GetValue().ToString());
 
-            RotValue = RotValue % 16;
+            RotValue = (ushort)(RotValue % 16);
 
       
                 norot = (RotValue == 0);
@@ -891,7 +894,7 @@ namespace VTC
             LeftRegister = RegistersEnum.AX;
 
         }
-        public uint RotValue { get; set; }
+        public ushort RotValue { get; set; }
         bool norot = false;
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -902,9 +905,9 @@ namespace VTC
             if (!(Right is ConstantExpression))
                 ResolveContext.Report.Error(31, Location, "Right side must be constant value in shift operations");
             else
-                RotValue = uint.Parse((Right as ConstantExpression).GetValue().ToString());
+                RotValue = ushort.Parse((Right as ConstantExpression).GetValue().ToString());
 
-            RotValue = RotValue % 16;
+            RotValue = (ushort)(RotValue % 16);
 
 
             norot = (RotValue == 0);
@@ -962,7 +965,7 @@ namespace VTC
             else if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(28, Location, "Register expected, Left and Right must be registers");
 
-            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
             return this;
@@ -983,7 +986,7 @@ namespace VTC
             ec.EmitComment(Left.CommentString() + " + " + Right.CommentString());
             ec.EmitPop(RightRegister.Value);
             ec.EmitPop(LeftRegister.Value);
-
+          
             ec.EmitInstruction(new Add() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
             ec.EmitPush(LeftRegister.Value);
          
@@ -1012,7 +1015,7 @@ namespace VTC
             else if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(28, Location, "Register expected, Left and Right must be registers");
 
-            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
             return this;
@@ -1066,7 +1069,7 @@ namespace VTC
             if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
 
-            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
             return this;
@@ -1113,7 +1116,7 @@ namespace VTC
             RightRegister = RegistersEnum.CX;
         }
         bool bytemul = false;
-        bool unsigned = true;
+   
 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -1126,7 +1129,7 @@ namespace VTC
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
             CommonType = Left.Type;
 
-            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
             return this;
@@ -1140,7 +1143,7 @@ namespace VTC
             ec.EmitComment(Left.CommentString() + " / " + Right.CommentString());
             ec.EmitPop(RightRegister.Value);
             ec.EmitPop(LeftRegister.Value);
-
+            ec.EmitInstruction(new Xor() { DestinationReg = EmitContext.D, SourceReg = EmitContext.D, Size = 80 });
             // TODO:CHECKED DIV
             if (unsigned)
             {
@@ -1187,7 +1190,7 @@ namespace VTC
             RightRegister = RegistersEnum.CX;
         }
         bool bytemul = false;
-        bool unsigned = true;
+
 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -1198,7 +1201,7 @@ namespace VTC
             if (Right is RegisterExpression || Left is RegisterExpression)
                 ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
             CommonType = Left.Type;
-            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.Name + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
             return this;

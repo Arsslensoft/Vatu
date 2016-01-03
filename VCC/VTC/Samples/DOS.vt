@@ -1,0 +1,202 @@
+﻿default asm {
+"[org 100h]";
+
+}
+
+namespace std;
+void print(string msg){
+asm{
+	"mov  dx, [BP+4]";
+	"mov  ah, 9 ";
+	"int  0x21";
+	}
+}
+void putc(byte c){
+asm{
+	"mov  dx, [BP+4]";
+	"mov  ah, 2 ";
+	"int  0x21";
+	}
+}
+namespace DOS;
+use std;
+
+
+const string prompt = ">";
+string HelloWorld = "Hello World $";
+
+
+
+string buff;
+void tostring(uint x){
+if(x < 10u)
+putc((byte)x + 48);
+else
+{
+tostring(x / 10);
+putc((byte)(x % 10) + 48);
+}
+
+}
+void tostring(int x){
+uint r = 0;
+if(x < 0)
+{
+	putc('-');
+	r  = 65535 - (uint)x + 1u;
+}
+else r = x;
+tostring(r);
+
+}
+union MyU{
+byte b;
+int a;
+string ch;
+};
+
+struct YD{
+byte CHAR;
+};
+struct XA{
+union MyU u;
+struct YD v;
+};
+
+struct MyS{
+int a;
+byte b;
+struct XA x;
+
+};
+struct A{
+int a;
+byte b;
+};
+struct B{
+int c;
+byte d;
+};
+typedef struct B TB;
+typedef struct A TA;
+@TB OP_CAST_AB_TMP;
+override @TB* operator @TA(@TA a){
+@TB* pb;
+OP_CAST_AB_TMP.c = a.a;
+OP_CAST_AB_TMP.d = a.b;
+pb = &OP_CAST_AB_TMP;
+return pb;
+}
+override int operator union MyU(union MyU u)
+{
+return u.a;
+}
+override int operator struct MyS(struct MyS s)
+{
+return s.a;
+}
+
+fastcall int ft(int c,bool d,struct MyS u, union MyU m){
+return (int)u+ (int)m;
+}
+stdcall int st(struct MyS u, union MyU m){
+return (int)u+ (int)m;
+}
+cdecl int ct(struct MyS u, union MyU m){
+return (int)u+ (int)m;
+}
+pascal int pt(struct MyS u, union MyU m){
+return (int)u+ (int)m;
+}
+default int dt(struct MyS u, union MyU m){
+return (int)u+ (int)m;
+}
+int ddt(struct MyS u, union MyU m){
+return (int)u+ (int)m;
+}
+override struct MyS* operator +(struct MyS* a, struct MyS* b)
+{
+ a->a = a->a + b->a;
+ a->b = a->b + b->b;
+	return a;
+}
+entry  void main()
+{
+struct MyS m;
+struct MyS a;
+struct MyS r;
+struct MyS* pr ;
+@TB *pb;
+@TA tmp;
+tmp.a = 459i;
+tmp.b = 98;
+union MyU u;
+u.a = 45i;
+m.a = 500i;
+m.b = 65b;
+a.a = 65i;
+a.b = 32b;
+a.x.v.CHAR = 70;
+a.x.u.ch = HelloWorld;
+
+int z;
+print("FastCall : $");
+z = ft(4i,true,m,u);
+tostring(z);
+
+print("|StdCall : $");
+z = st(m,u);
+tostring(z);
+
+print("|CdeclCall : $");
+z = ct(m,u);
+tostring(z);
+print("|Pascal : $");
+z = pt(m,u);
+tostring(z);
+
+print("|Default : $");
+z = dt(m,u);
+tostring(z);
+print("|Normal : $");
+z = ddt(m,u);
+tostring(z);
+
+print("|OP+ : $");
+
+pr = &a + &m;
+
+print("a.a=$");
+tostring(a.a);
+print("a.b=$");
+putc(a.b);
+
+print(",m.a=$");
+tostring(m.a);
+print("m.b=$");
+putc(m.b);
+
+print(",r.a=$");
+tostring(pr->a);
+print("r.b=$");
+putc(pr->b);
+putc(a.x.v.CHAR);
+print(a.x.u.ch);
+
+print("Before Cast ,a=$");
+tostring(pb->c);
+print("b=$");
+putc(pb->d);
+pb = (@TB)tmp;
+print("After Cast ,a=$");
+tostring(pb->c);
+print("b=$");
+putc(pb->d);
+asm{
+	"mov  ah, 0x4c ";
+	"int  0x21";
+}
+
+
+}
+

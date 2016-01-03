@@ -15,7 +15,7 @@ namespace Vasm.x86 {
     {
         public SimpleReturn()
         {
-         
+       
         }
     }
 }

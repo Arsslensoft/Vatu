@@ -34,6 +34,7 @@ namespace Vasm.Optimizer
        }
        public bool CheckForOptimization(List<Instruction> mInstructions, List<Instruction> externals = null)
        {
+           return true;
            int pushidx;
            int popidx;
            for (int i = 0; i < mInstructions.Count; i++)
@@ -82,7 +83,7 @@ namespace Vasm.Optimizer
        }
        public bool Optimize(ref List<Instruction> src)
        {
-
+           return true;
        
            for (int i = 0; i < src.Count; i++)
            {

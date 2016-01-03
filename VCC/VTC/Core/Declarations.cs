@@ -128,10 +128,11 @@ namespace VTC.Core
             while (c != null)
             {
                 rc.KnowVar(new VarSpec(rc.CurrentNamespace, c._vardef._vardef._id.Name, rc.CurrentMethod, Type, loc, mods));
-                c = _valist._nextvars;
+                c = c._nextvars;
             }
             rc.KnowVar((VarSpec)FieldOrLocal);
         }
+   
         void ResolveStructMember(ResolveContext rc)
         {
             if (ArraySize > 0)
@@ -152,10 +153,10 @@ namespace VTC.Core
          
             // value
             if (_vadef.expr is ConstantExpression)
-                ResolveContext.Report.Error(6,Location,"Struct members cannot have initial values");
+                ResolveContext.Report.Error(6,Location,"Struct and Union members cannot have initial values");
             // modifiers
             if(mods != Modifiers.NoModifier)
-                ResolveContext.Report.Error(7, Location, "Struct members cannot have modifiers");
+                ResolveContext.Report.Error(7, Location, "Struct and Union members cannot have modifiers");
 
         }
         public override SimpleToken DoResolve(ResolveContext rc)
@@ -173,7 +174,7 @@ namespace VTC.Core
                 _mod = (Modifier)_mod.DoResolve(rc);
             _stype = (TypeIdentifier)_stype.DoResolve(rc);
             this.Type = _stype.Type;
-            if (ArraySize > -1 && Type.IsStruct)
+            if (ArraySize > -1 && Type.IsForeignType && !Type.IsPointer)
                 ResolveContext.Report.Error(52, Location, "Only builtin type arrays are allowed"); 
             if (_mod != null)
                 mods = _mod.ModifierList;
@@ -185,12 +186,13 @@ namespace VTC.Core
             else if (_vadef.expr is CastOperator)
                 _vadef.expr = ((CastOperator)_vadef.expr).Target;
 
-            if (rc.IsInGlobal() && !rc.IsInTypeDef && !rc.IsInEnum && !rc.IsInStruct) // field def
+            if (rc.IsInGlobal() && !rc.IsInTypeDef && !rc.IsInEnum && !rc.IsInStruct && !rc.IsInUnion) // field def
                 ResolveField(rc);
-            else if (!rc.IsInTypeDef && !rc.IsInEnum && !rc.IsInStruct) // local var definition
+            else if (!rc.IsInTypeDef && !rc.IsInEnum && !rc.IsInStruct && !rc.IsInUnion) // local var definition
                 ResolveLocalVariable(rc);
-            else if (rc.IsInStruct) // struct member def
+            else if (rc.IsInStruct || rc.IsInUnion) // struct, union member def
                 ResolveStructMember(rc);
+
             else
                 ResolveContext.Report.Error(8, Location, "Unresolved variable declaration");
 
@@ -216,7 +218,7 @@ namespace VTC.Core
             if (ArraySize <= 0)
             {
                 // handle const
-                if (_vadef.expr is ConstantExpression)
+                if (_vadef.expr != null)
                 {
 
                     ec.EmitComment("Var decl assign '" + v.Name + "' @BP" + v.StackIdx);
@@ -224,7 +226,7 @@ namespace VTC.Core
                     _vadef.expr.EmitToStack(ec);
                     v.EmitFromStack(ec);
                 }
-                else if (_vadef.expr == null && Type.IsBuiltinType)
+             /*   else if (_vadef.expr == null && Type.IsBuiltinType)
                 {
 
 
@@ -233,9 +235,9 @@ namespace VTC.Core
                     ec.EmitPush((ushort)0);
                     v.EmitFromStack(ec);
 
-                }
-                else if (_vadef.expr == null && Type.IsStruct)
-                    ec.EmitComment("Struct var decl '" + v.Name + "' @BP" + v.StackIdx);
+                }*/
+           
+              
             }
            
             return true;
@@ -245,7 +247,7 @@ namespace VTC.Core
            FieldSpec f = (FieldSpec)FieldOrLocal; 
            if (ArraySize <= 0)
            {
-               if (_vadef.expr == null && Type.IsStruct)
+               if (_vadef.expr == null && Type.IsForeignType)
                    ec.EmitData(new DataMember(f.Signature.ToString(), new byte[f.MemberType.Size]), f);
                //   ec.AddInstanceOfStruct(FieldOrLocal.Signature.ToString(), f.MemberType);
                // assign struct
@@ -260,7 +262,8 @@ namespace VTC.Core
                    else ec.EmitData(new DataMember(f.Signature.ToString(), new byte[f.MemberType.Size]), f);
                }
            }
-           else ec.EmitData(new DataMember(f.Signature.ToString(), new byte[ArraySize]), f);
+           
+           else ec.EmitData(new DataMember(f.Signature.ToString(), new byte[ArraySize*f.MemberType.Size]), f);
            return true;
        }
        public override bool Emit(EmitContext ec)
@@ -291,6 +294,7 @@ namespace VTC.Core
         MethodSpec method;
         Modifiers mods = Modifiers.NoModifier;
         public string OpName;
+
         Stack<ParameterSpec> Params { get; set; }
         public List<ParameterSpec> Parameters { get; set; }
 
@@ -299,6 +303,7 @@ namespace VTC.Core
         Block _b;
         TypeToken _mtype;
         BinaryOp OpSym;
+        TypeToken _casttype;
         [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '==' ~'(' <Params>  ~')' <Block>")]
         [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '!=' ~'(' <Params>  ~')' <Block>")]
         [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '>=' ~'(' <Params>  ~')' <Block>")]
@@ -320,20 +325,19 @@ namespace VTC.Core
             _b = b;
             OpSym = oper;
         }
-
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator <Type> ~'(' <Params>  ~')' <Block>")]
+        public OperatorDeclaration(TypeToken type, TypeToken oper, ParameterListDefinition pal, Block b)
+        {
+            _mtype = type;
+            _pal = pal;
+            _b = b;
+            _casttype = oper;
+        }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-           
+             
             _mtype = (TypeToken)_mtype.DoResolve(rc);
-         
-
-          
             base._type = _mtype;
-            OpName = _type.Type.Name + "_" + OpSym.Operator.ToString();
-
-            method = rc.Resolver.TryResolveMethod(OpName);
-            if (method != null)
-                ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
             List<TypeSpec> tp = new List<TypeSpec>();
 
             Params = new Stack<ParameterSpec>();
@@ -353,16 +357,44 @@ namespace VTC.Core
                     par = par._nextid;
                 }
             }
-            // operator checks
-            if(tp.Count != 2)
-                ResolveContext.Report.Error(45, Location, "Operator must have 2 parameters with same type");
-            if (_mtype.Type != BuiltinTypeSpec.Bool && (OpSym.Operator & BinaryOperator.ComparisonMask) == BinaryOperator.ComparisonMask)
-                ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
-            else if ((OpSym.Operator & BinaryOperator.ComparisonMask) != BinaryOperator.ComparisonMask)
+            if (_casttype == null)
             {
-                // match types
-                if(_mtype.Type != tp[0] || _mtype.Type != tp[1] || tp[0] != tp[1])
-                    ResolveContext.Report.Error(45, Location, "Non comparison operators must have same return and parameters type");
+                OpName = _type.Type.NormalizedName + "_" + OpSym.Operator.ToString();
+
+                method = rc.Resolver.TryResolveMethod(OpName);
+                if (method != null)
+                    ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
+               
+                // operator checks
+                    if (tp.Count != 2)
+                    ResolveContext.Report.Error(45, Location, "Operator must have 2 parameters with same type");
+                if (_mtype.Type != BuiltinTypeSpec.Bool && (OpSym.Operator & BinaryOperator.ComparisonMask) == BinaryOperator.ComparisonMask)
+                    ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
+                else if ((OpSym.Operator & BinaryOperator.ComparisonMask) != BinaryOperator.ComparisonMask)
+                {
+                    // match types
+                    if (!_mtype.Type.Equals( tp[0] )|| !_mtype.Type.Equals( tp[1]) || !tp[0].Equals( tp[1]))
+                        ResolveContext.Report.Error(45, Location, "Non comparison operators must have same return and parameters type");
+                }
+
+            }
+            else
+            {
+                _casttype = (TypeToken)_casttype.DoResolve(rc);
+                OpName = _type.Type.NormalizedName + "_OpCast_" + _casttype.Type.NormalizedName;
+
+                method = rc.Resolver.TryResolveMethod(OpName);
+                if (method != null)
+                    ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
+
+                // operator checks
+                if (tp.Count != 1)
+                    ResolveContext.Report.Error(45, Location, "Cast operator must have 1 parameters with same type as source");
+            
+                    // match types
+                if (_casttype.Type != tp[0])
+                        ResolveContext.Report.Error(45, Location, "Cast operators must have same cast type and parameter type");
+                
             }
             method = new MethodSpec(rc.CurrentNamespace, OpName, mods, _mtype.Type, CallingConventions.StdCall, tp.ToArray(), this.loc);
             method.Parameters = Params.ToList<ParameterSpec>();
@@ -390,20 +422,23 @@ namespace VTC.Core
 
 
             Label mlb = ec.DefineLabel(method.Signature.ToString());
+            mlb.Method = true;
             ec.MarkLabel(mlb);
-            ec.EmitComment("Operator: Name = " + method.Name + " ");
+            ec.EmitComment("Operator: Name = " + method.Name + " IsCast = " + (_casttype != null).ToString());
             // create stack frame
             ec.EmitComment("create stackframe");
             ec.EmitInstruction(new Push() { DestinationReg = EmitContext.BP, Size = 80 });
             ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, SourceReg = EmitContext.SP, Size = 80 });
+
             // allocate variables
 
-            uint size = 0;
+            ushort size = 0;
             foreach (VarSpec v in ec.CurrentResolve.GetLocals())
-                size += (uint)v.MemberType.Size;
+                size += (ushort)v.MemberType.Size;
 
             if (size != 0)         // no allocation
                 ec.EmitInstruction(new Sub() { DestinationReg = EmitContext.SP, SourceValue = size, Size = 80 });
+            int cleansize = 0;
             //EMit params
             // Get Parameters Indexes
             int paramidx = 4; // Initial Stack Position
@@ -413,8 +448,13 @@ namespace VTC.Core
                 p = Params.Pop();
                 p.StackIdx = paramidx;
                 Parameters.Add(p);
-
-                paramidx += 2;
+                cleansize += (p.MemberType.Size == 1) ? 2 : p.MemberType.Size;
+                if (p.MemberType.Size % 2 != 0)
+                {
+                    paramidx++;
+                    cleansize++;
+                }
+                paramidx += (p.MemberType.Size == 1) ? 2 : p.MemberType.Size;
             }
             if (Parameters.Count > 0)
             {
@@ -435,7 +475,8 @@ namespace VTC.Core
             ec.EmitComment("destroy stackframe");
             ec.EmitInstruction(new Leave());
             // ret
-            ec.EmitInstruction(new SimpleReturn());
+        
+             ec.EmitInstruction(new Return() { DestinationValue = (ushort)cleansize });
             return true;
         }
     }
@@ -446,11 +487,10 @@ namespace VTC.Core
         MethodSpec method;
         Modifiers mods = Modifiers.NoModifier;
         CallingConventions ccv = CallingConventions.StdCall;
-
+        CallingConventionsHandler ccvh;
         public bool EntryPoint = false;
-        Stack<ParameterSpec> Params { get; set; }
-        Queue<ParameterSpec> StdParams { get; set; }
-        public List<ParameterSpec> Parameters { get; set; }
+
+        public List<ParameterSpec> Parameters;
 
         MethodIdentifier _id; ParameterListDefinition _pal; Block _b;
         [Rule(@"<Func Decl> ::= <Func ID> ~'(' <Params> ~')' <Block>")]
@@ -493,14 +533,14 @@ namespace VTC.Core
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+            ccvh = new CallingConventionsHandler();
             _id = (MethodIdentifier)_id.DoResolve(rc);
-            ccv = _id.CCV.CallingConvention;
+            ccv = _id.CV;
             base._type = _id.TType;
 
         
             List<TypeSpec> tp = new List<TypeSpec>();
-            StdParams = new Queue<ParameterSpec>();
-            Params = new Stack<ParameterSpec>();
+       
             Parameters = new List<ParameterSpec>();
             if (_pal != null)
             {
@@ -511,18 +551,27 @@ namespace VTC.Core
                 {
                     if (par._id != null)
                     {
-                        Params.Push(par._id.ParameterName);
+                        Parameters.Add(par._id.ParameterName);
                         tp.Add(par._id.ParameterName.MemberType);
-                        StdParams.Enqueue(par._id.ParameterName);
+                    
                     }
                     par = par._nextid;
                 }
             }
+         
             method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods, _id.TType.Type, ccv, tp.ToArray(),this.loc);
 
-      
-            method.Parameters = Params.ToList<ParameterSpec>();
+            // Calling Convention
+            ccvh.SetParametersIndex(ref Parameters, ccv);
+            if(ccv == CallingConventions.FastCall)
+                 ccvh.ReserveFastCall(rc, Parameters);
+            method.Parameters = Parameters;
          
+                 if(ccv == CallingConventions.FastCall && Parameters.Count >= 1 && Parameters[0].MemberType.Size > 2)
+                     ResolveContext.Report.Error(9, Location, "Cannot use fast call with struct or union parameter at index 1");
+                 else if (ccv == CallingConventions.FastCall && Parameters.Count >= 2 && (Parameters[0].MemberType.Size > 2 || Parameters[1].MemberType.Size > 2))
+                     ResolveContext.Report.Error(9, Location, "Cannot use fast call with struct or union parameter at index 1 or 2");
+
 
             MethodSpec m = rc.Resolver.TryResolveMethod(method.Signature.ToString());
             if (m != null)
@@ -554,6 +603,7 @@ namespace VTC.Core
 
         
             Label mlb = ec.DefineLabel(method.Signature.ToString());
+            mlb.Method = true;
             ec.MarkLabel(mlb);
             ec.EmitComment("Method: Name = " + method.Name + ", EntryPoint = "+ EntryPoint);
             // create stack frame
@@ -562,45 +612,40 @@ namespace VTC.Core
             ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, SourceReg = EmitContext.SP, Size = 80 });
             // allocate variables
 
-            uint size = 0;
-            foreach (VarSpec v in ec.CurrentResolve.GetLocals())
-                size += (uint)v.MemberType.Size;
+            ushort size = 0;
+            List<VarSpec> locals = ec.CurrentResolve.GetLocals();
+            foreach (VarSpec v in locals)
+                size += (ushort)v.MemberType.Size;
+
+            // fast call
+            if (ccv == CallingConventions.FastCall)
+            {
+                if (Parameters.Count >= 2)
+                {
+                    size += 4;
+                    ccvh.EmitFastCall(ec, 2);
+                }
+                else if (Parameters.Count == 1)
+                {
+                    size += 2;
+                    ccvh.EmitFastCall(ec, 1);
+                }
+            }
         
             if (size != 0)         // no allocation
                 ec.EmitInstruction(new Sub() { DestinationReg = EmitContext.SP, SourceValue = size, Size = 80 });
             //EMit params
-            // Get Parameters Indexes
-            int paramidx = 4; // Initial Stack Position
-            ParameterSpec p = null;
-            if (ccv == CallingConventions.StdCall)
-            {
-                while (Params.Count > 0)
-                {
-                    p = Params.Pop();
-                    p.StackIdx = paramidx;
-                    Parameters.Add(p);
-
-                    paramidx += 2;
-                }
-            }
-            else if(ccv == CallingConventions.Cdecl)
-            {
-                while (StdParams.Count > 0)
-                {
-                    p = StdParams.Dequeue();
-                    p.StackIdx = paramidx;
-                    Parameters.Add(p);
-
-                    paramidx += 2;
-                }
-
-            }
             if (Parameters.Count > 0)
             {
                 ec.EmitComment("Parameters Definitions");
                 foreach (ParameterSpec par in Parameters)
                     ec.EmitComment("Parameter " + par.Name + " @BP" + par.StackIdx);
 
+            }
+            if (locals.Count > 0)
+            {   ec.EmitComment("Local Vars Definitions");
+                     foreach (VarSpec v in locals)
+                         ec.EmitComment("Parameter " + v.Name + " @BP" + v.StackIdx);
             }
             ec.EmitComment("Block");
             // Emit Code
@@ -614,7 +659,7 @@ namespace VTC.Core
             ec.EmitComment("destroy stackframe");
             ec.EmitInstruction(new Leave());
             // ret
-            ec.EmitInstruction(new SimpleReturn());
+            ccvh.EmitDecl(ec, ref Parameters, ccv);
             return true;
         }
     }
@@ -654,7 +699,7 @@ namespace VTC.Core
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             _id = (MethodIdentifier)_id.DoResolve(rc);
-            ccv = _id.CCV.CallingConvention;
+            ccv = _id.CV;
             base._type = _id.TType;
             method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, null ,this.loc);
             Params = new Stack<ParameterSpec>();
@@ -716,6 +761,48 @@ namespace VTC.Core
         public override bool Emit(EmitContext ec)
         {
             ec.DefineExtern(method);
+            return true;
+        }
+    }
+    public class UnionDeclaration : Declaration
+    {
+        public UnionTypeSpec TypeName { get; set; }
+        public int Size { get; set; }
+        StructDefinition _def;
+        [Rule(@"<Union Decl>  ::= ~union Id ~'{' <Struct Def> ~'}'  ~';' ")]
+        public UnionDeclaration(Identifier id, StructDefinition sdef)
+        {
+            _name = id;
+            _def = sdef;
+            Size = 0;
+        }
+
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            _def = (StructDefinition)_def.DoResolve(rc);
+            if (_def != null)
+                Size = _def.Size;
+            int idx = 0;
+            foreach (TypeMemberSpec m in _def.Members)
+            {
+                m.Index = 0;
+                idx += m.MemberType.Size;
+            }
+            TypeName = new UnionTypeSpec(rc.CurrentNamespace, _name.Name, _def.Members, loc);
+            rc.KnowType(TypeName);
+            return this;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+
+
+            return _def.Resolve(rc);
+        }
+        public override bool Emit(EmitContext ec)
+        {
+
+            //ec.EmitStructDef(TypeName);
+
             return true;
         }
     }
@@ -900,6 +987,7 @@ namespace VTC.Core
        protected TypeToken _type;
         public bool IsTypeDef { get { return (BaseDeclaration is StructDeclaration) || (BaseDeclaration is TypeDefDeclaration) || (BaseDeclaration is EnumDeclaration); } }
         public bool IsStruct { get { return (BaseDeclaration is StructDeclaration); } }
+        public bool IsUnion { get { return (BaseDeclaration is UnionDeclaration); } }
         public TypeToken TypeTok
         {
             get { return _type; }
@@ -918,6 +1006,7 @@ namespace VTC.Core
         [Rule(@"<Decl>  ::= <Oper Decl>")]
         [Rule(@"<Decl>  ::= <Func Decl>")]
         [Rule(@"<Decl>  ::= <Func Proto>")]
+        [Rule(@"<Decl>  ::= <Union Decl>")]
         [Rule(@"<Decl>  ::= <Struct Decl>")]
         [Rule(@"<Decl>  ::= <Enum Decl>")]
         [Rule(@"<Decl>  ::= <Var Decl>")]

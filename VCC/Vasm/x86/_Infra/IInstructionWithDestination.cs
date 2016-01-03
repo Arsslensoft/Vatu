@@ -16,7 +16,7 @@ namespace Vasm.x86 {
             set;
         }
 
-        uint? DestinationValue
+        ushort? DestinationValue
         {
             get;
             set;

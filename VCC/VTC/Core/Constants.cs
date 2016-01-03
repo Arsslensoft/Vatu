@@ -41,12 +41,12 @@ namespace VTC.Core
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            ec.EmitInstruction(new Push() { DestinationValue = (uint)_value, Size = 16 });
+            ec.EmitInstruction(new Push() { DestinationValue = (ushort)_value, Size = 16 });
             return true;
         }
         public override bool EmitToRegister(EmitContext ec,RegistersEnum rg)
         {
-            ec.EmitInstruction(new Mov() { DestinationReg = rg,SourceValue = (uint)_value, Size = 16 });
+            ec.EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = (ushort)_value, Size = 16 });
             return true;
         }
         public override string CommentString()
@@ -147,18 +147,18 @@ namespace VTC.Core
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            ec.EmitInstruction(new Push() { DestinationValue = (uint)_value, Size = 16 });
+            ec.EmitInstruction(new Push() { DestinationValue = (ushort)_value, Size = 16 });
             return true;
         }
         public override bool EmitToRegister(EmitContext ec, RegistersEnum rg)
         {
-            ec.EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = (uint)_value, Size = 16 });
+            ec.EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = (ushort)_value, Size = 16 });
             return true;
         }
     }
     public class IntConstant : ConstantExpression
     {
-        internal int _value;
+        internal short _value;
         public IntConstant(short value, Location loc)
             : base(BuiltinTypeSpec.Int, loc)
         {
@@ -193,12 +193,12 @@ namespace VTC.Core
 
         public override bool EmitToStack(EmitContext ec)
         {
-            ec.EmitInstruction(new Push() { DestinationValue = (uint)_value, Size = 16 });
+            ec.EmitInstruction(new Push() { DestinationValue = (ushort)_value, Size = 16 });
             return true;
         }
         public override bool EmitToRegister(EmitContext ec, RegistersEnum rg)
         {
-            ec.EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = (uint)_value, Size = 16 });
+            ec.EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = (ushort)_value, Size = 16 });
             return true;
         }
     }
@@ -284,13 +284,13 @@ namespace VTC.Core
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            ec.EmitInstruction(new Push() { DestinationValue = (uint)_value, Size = 16 });
+            ec.EmitInstruction(new Push() { DestinationValue = (ushort)_value, Size = 16 });
             return true;
         }
 
         public override bool EmitToRegister(EmitContext ec, RegistersEnum rg)
         {
-            ec.EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = (uint)_value, Size = 16 });
+            ec.EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = (ushort)_value, Size = 16 });
             return true;
         }
     }
@@ -332,13 +332,13 @@ namespace VTC.Core
 
         public override bool EmitToStack(EmitContext ec)
         {
-            ec.EmitInstruction(new Push() { DestinationValue = _value ? (uint)EmitContext.TRUE : 0, Size = 16 });
+            ec.EmitInstruction(new Push() { DestinationValue = _value ? (ushort)EmitContext.TRUE : (ushort)0, Size = 16 });
             return true;
         }
 
         public override bool EmitToRegister(EmitContext ec, RegistersEnum rg)
         {
-            ec.EmitInstruction(new Mov() { DestinationReg = ec.GetLow(rg), SourceValue = _value ? (uint)EmitContext.TRUE : 0, Size = 16 });
+            ec.EmitInstruction(new Mov() { DestinationReg = ec.GetLow(rg), SourceValue = _value ? (ushort)EmitContext.TRUE : (ushort)0, Size = 16 });
             return true;
         }
     }
