@@ -8,7 +8,7 @@ namespace Vasm
 {
    public class AsmContext
     {
-
+       public bool IsInterruptOverload { get; set; }
        public bool IsFlat { get; set; }
        public int OLevel { get; set; }
        private static AsmContext mCurrentInstance;
@@ -112,54 +112,7 @@ namespace Vasm
             get { return mAsmIlIdx; }
         }
 
-        bool SameOperands(InstructionWithDestinationAndSource a, InstructionWithDestinationAndSource b)
-        {
-            bool m = false;
-            if (a.DestinationDisplacement == b.DestinationDisplacement)
-                if (a.DestinationIsIndirect == b.DestinationIsIndirect)
-                    if (a.DestinationRef == b.DestinationRef)
-                        if (a.DestinationReg == b.DestinationReg)
-                            if (a.DestinationValue == b.DestinationValue)
-                                m = true;
-            if (a.SourceDisplacement == b.SourceDisplacement)
-                if (a.SourceIsIndirect == b.SourceIsIndirect)
-                    if (a.SourceRef == b.SourceRef)
-                        if (a.SourceReg == b.SourceReg)
-                            if (a.SourceValue == b.SourceValue)
-                                m &= true;
-            return m;
-        }
-        bool SameOperands(Pop a, Push b)
-        {
-            bool m = false;
-            if (a.DestinationDisplacement == b.DestinationDisplacement)
-                if (a.DestinationIsIndirect == b.DestinationIsIndirect)
-                    if (a.DestinationRef == b.DestinationRef)
-                        if (a.DestinationReg == b.DestinationReg)
-                            if (a.DestinationValue == b.DestinationValue)
-                                m = true;
-            if (a.Size == b.Size)
-             
-                                m &= true;
-            return m;
-        }
-        bool SamePushPopRegisters(Pop a, Push b)
-        {
-
-            return (a.DestinationReg.HasValue && b.DestinationReg.HasValue);
-       
-           
-        }
-        bool PushValuePopRegister(Pop a, Push b)
-        {
-            return (a.DestinationReg.HasValue && b.DestinationValue.HasValue);
-               
-        }
-        bool PushReferencePopRegister(Pop a, Push b)
-        {
-            return (a.DestinationReg.HasValue && b.DestinationRef != null);
-
-        }
+      
         public bool Optimize()
         {
             InlineInstruction entry = new InlineInstruction(EntryPoint);
@@ -226,6 +179,12 @@ namespace Vasm
             return null;
         }
 
+        protected List<InterruptDef> mInt = new List<InterruptDef>();
+        public List<InterruptDef> Interrupts
+        {
+            get { return mInt; }
+            set { mInt = value; }
+        }
 
         protected List<DataMember> mCDataMembers = new List<DataMember>();
         public List<DataMember> ConstantDataMembers
@@ -431,7 +390,8 @@ namespace Vasm
             }
             if (IsFlat)
             {
-
+                if (IsInterruptOverload && Interrupts.Count > 0)
+                    writer.WriteLine("\tcall	INSTALL_INTERRUPTS");
                 writer.Write("\tcall "+EntryPoint);
                
                 writer.WriteLine();
@@ -515,8 +475,20 @@ namespace Vasm
            foreach (string ex in Externals)
                writer.WriteLine("extern\t" + ex);
            writer.WriteLine();
+           if (!IsFlat && IsInterruptOverload && Interrupts.Count > 0)
+               writer.WriteLine("\tcall	INSTALL_INTERRUPTS");
+         
+         
            if(!IsFlat)
-           writer.Write("call	" + EntryPoint);
+                  writer.Write("call	" + EntryPoint);
+
+           if (IsInterruptOverload && Interrupts.Count > 0)
+           {
+               InstallINTInstruction iit = new InstallINTInstruction(Interrupts);
+               writer.WriteLine();
+               writer.Write("\t\t");
+               iit.WriteText(this, writer);
+           }
            // Write out code
            for (int i = 0; i < mInstructions.Count; i++)
            {

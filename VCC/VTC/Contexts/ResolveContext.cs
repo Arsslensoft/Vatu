@@ -156,6 +156,18 @@ namespace VTC
             ChildContexts = new List<ResolveContext>();
 
         }
+        public ResolveContext(List<Namespace> imp, Namespace ns, InterruptDeclaration decl)
+        {
+            Imports = imp;
+
+            Init();
+            Resolver = new Resolver(ns, imp, new MethodSpec(ns, decl.ItName, Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
+
+            FillKnown();
+            ChildContexts = new List<ResolveContext>();
+
+
+        }
         public ResolveContext(List<Namespace> imp, Namespace ns, OperatorDeclaration decl)
         {
             Imports = imp;
@@ -239,6 +251,18 @@ namespace VTC
         public bool IsInGlobal()
         {
             return Resolver.CurrentMethod.Name == "<root-decl-list>";
+        }
+        public ResolveContext CreateAsChild(List<Namespace> imp, Namespace ns, InterruptDeclaration md)
+        {
+            if (ChildContexts != null)
+            {
+                ResolveContext rc = new ResolveContext(imp, ns, md);
+                rc.FillKnownByKnown(Resolver);
+                ChildContexts.Add(rc);
+                return rc;
+
+            }
+            else return null;
         }
         public ResolveContext CreateAsChild(List<Namespace> imp, Namespace ns, OperatorDeclaration md)
         {

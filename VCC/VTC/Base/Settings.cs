@@ -67,6 +67,11 @@ HelpText = "Bootloader")]
 HelpText = "Flat output")]
        public bool IsFlat { get; set; }
 
+
+       [Option("int", Required = false, DefaultValue = false,
+HelpText = "Interrupts definition")]
+       public bool IsInterrupt { get; set; }
+
        [Option("ovrl", Required = false, DefaultValue = true,
 HelpText = "Enable method overload")]
        public bool Overload { get; set; }

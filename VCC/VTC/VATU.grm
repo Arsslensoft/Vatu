@@ -86,6 +86,7 @@ Comment Line  = '//'
 <Decl>  ::= <Func Decl>
           | <ASM Decl>
           | <Oper Decl>
+          | <Inter Decl>
           | <Union Decl>
           | <Func Proto>
           | <Struct Decl>
@@ -121,7 +122,9 @@ Comment Line  = '//'
                | 'override' <Type> 'operator' '|' '(' <Params>  ')' <Block>
                | 'override' <Type> 'operator' <Type> '('  <Params>  ')' <Block> ! CAST Overload
                
-
+<Inter Decl>  ::= 'interrupt' DecLiteral <Block>
+               | 'interrupt' HexLiteral <Block>
+               
 <Params>     ::= <Param> ',' <Params>
                | <Param>
                

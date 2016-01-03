@@ -10,6 +10,7 @@ using Vasm.x86;
 
 namespace VTC.Core
 {
+    [Terminal("interrupt")]
      [Terminal("union")]
     [Terminal("pascal")]
     [Terminal("operator")]

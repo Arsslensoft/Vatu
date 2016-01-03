@@ -60,37 +60,15 @@ use std;
 
 const string prompt = ">";
 string HelloWorld = "Hello World";
-
-
-
-string buff="00000";
-void tostring(uint x){
-uint r;
-string ptr ;
-r=x;
-ptr = buff;
-
-for(;r >= 10u; r = r / 10){
-*ptr = 48 + (byte)(r % 10u);
-ptr++;
-
- }
-*ptr = 48 + (byte)r;
-
-
- print(buff);
+interrupt 0x85{
+print(HelloWorld);
 }
 entry  void main()
 {
-int x = -5;
-int y = -7;
-int z;
 
-z= x+y;
-tostring(4025u);
-
-
-print(HelloWorld);
+asm {
+"int 85h";
+}
 loop{}
 
 

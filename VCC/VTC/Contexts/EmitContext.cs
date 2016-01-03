@@ -189,7 +189,8 @@ namespace VTC
                 RegistersEnum drg = ag.GetNextRegister();
                 ag.FreeRegister();
                 ag.FreeRegister();
-                EmitInstruction(new Mov() { DestinationReg = drg, Size = 8, SourceReg = rg, SourceDisplacement = off, SourceIsIndirect = adr });
+                EmitInstruction(new MoveZeroExtend() { DestinationReg = drg, Size = 8, SourceReg = rg, SourceDisplacement = off, SourceIsIndirect = adr });
+
                 EmitInstruction(new Push() { DestinationReg = drg, Size = 16 });
             }
             else
@@ -331,6 +332,13 @@ namespace VTC
         public void EmitStruct(StructElement strct)
         {
             ag.DefineStruct(strct);
+        }
+        public void EmitINT(ushort num, Label method)
+        {
+            InterruptDef idef = new InterruptDef();
+            idef.Number = num;
+            idef.Destination = method;
+            ag.Interrupts.Add(idef);
         }
         public bool AddInstanceOfStruct(string varname, TypeSpec st)
         {

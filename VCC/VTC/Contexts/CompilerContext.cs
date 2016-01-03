@@ -44,13 +44,14 @@ namespace VTC
         public void PrepareEmit(EmitContext ec)
         {
             ec.ag.IsFlat = Options.IsFlat;
+            ec.ag.IsInterruptOverload = Options.IsInterrupt;
             ec.ag.OLevel = Options.OptimizeLevel;
         }
         public bool Test()
         {
          // Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.Kernel.vt");
-       Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.DOS.vt");
-            //  Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.SIGNED.vt");
+    Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.DOS.vt");
+         //  Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.SIGNED.vt");
                 InputSource = new StreamReader(stream);
 
        
@@ -103,6 +104,17 @@ namespace VTC
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
                             stmt.Resolve(childctx);
                             OperatorDeclaration d = (OperatorDeclaration)md.DoResolve(childctx);
+                            // RootCtx.UpdateChildContext("<method-decl>", childctx);
+                            RootCtx.UpdateFather(childctx);
+                            Resolved.Add(d);
+                            ResolveCtx.Add(childctx);
+                        }
+                        else if (stmt.BaseDeclaration is InterruptDeclaration)
+                        {
+                            InterruptDeclaration md = (InterruptDeclaration)stmt.BaseDeclaration;
+                            ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
+                            stmt.Resolve(childctx);
+                            InterruptDeclaration d = (InterruptDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
                             Resolved.Add(d);

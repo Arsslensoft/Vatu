@@ -120,6 +120,10 @@ override struct MyS* operator +(struct MyS* a, struct MyS* b)
  a->b = a->b + b->b;
 	return a;
 }
+interrupt 0x85
+{
+ print(HelloWorld);
+}
 entry  void main()
 {
 struct MyS m;
@@ -192,7 +196,9 @@ print("After Cast ,a=$");
 tostring(pb->c);
 print("b=$");
 putc(pb->d);
+
 asm{
+	"int 85h";
 	"mov  ah, 0x4c ";
 	"int  0x21";
 }

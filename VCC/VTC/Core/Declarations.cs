@@ -481,6 +481,110 @@ namespace VTC.Core
         }
     }
 
+    public class InterruptDeclaration : Declaration
+    {
+        MethodSpec method;
+        Modifiers mods = Modifiers.NoModifier;
+        public string ItName;
+
+        Stack<ParameterSpec> Params { get; set; }
+        public List<ParameterSpec> Parameters { get; set; }
+
+        ushort interrupt;
+        Block _b;
+ 
+        [Rule(@"<Inter Decl> ::= ~interrupt HexLiteral <Block>")]
+        public InterruptDeclaration(HexLiteral hlit,  Block b)
+        {
+            interrupt = ushort.Parse(hlit.Value.GetValue().ToString());
+            _b = b;
+            ItName = "INTERRUPT_" + interrupt.ToString();
+        }
+       [Rule(@"<Inter Decl> ::= ~interrupt DecLiteral <Block>")]
+        public InterruptDeclaration(DecLiteral hlit, Block b)
+        {
+            interrupt = ushort.Parse(hlit.Value.GetValue().ToString());
+            _b = b;
+            ItName = "INTERRUPT_" + interrupt.ToString();
+
+        }
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+
+            ItName = "INTERRUPT_" + interrupt.ToString();
+
+            method = rc.Resolver.TryResolveMethod(ItName);
+                if (method != null)
+                    ResolveContext.Report.Error(9, Location, "Duplicate interrupt name, multiple interrupt definition is not allowed");
+
+             
+            
+            method = new MethodSpec(rc.CurrentNamespace, ItName, mods, BuiltinTypeSpec.Void, CallingConventions.StdCall,null, this.loc);
+       
+            rc.KnowMethod(method);
+            rc.CurrentMethod = method;
+       
+            if (_b != null)
+                _b = (Block)_b.DoResolve(rc);
+            return this;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            bool ok = true;
+
+            if (_b != null)
+                ok &= _b.Resolve(rc);
+            return ok;
+        }
+        public override bool Emit(EmitContext ec)
+        {
+
+
+
+            Label mlb = ec.DefineLabel(method.Signature.ToString());
+            mlb.Method = true;
+            ec.MarkLabel(mlb);
+            ec.EmitComment("Interrupt: Number = " + interrupt.ToString() );
+            // save flags
+            ec.EmitComment("save flags");
+            ec.EmitInstruction(new Pushad());
+            // create stack frame
+            ec.EmitComment("create stackframe");
+            ec.EmitInstruction(new Push() { DestinationReg = EmitContext.BP, Size = 80 });
+            ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, SourceReg = EmitContext.SP, Size = 80 });
+
+            // allocate variables
+
+            ushort size = 0;
+            foreach (VarSpec v in ec.CurrentResolve.GetLocals())
+                size += (ushort)v.MemberType.Size;
+
+            if (size != 0)         // no allocation
+                ec.EmitInstruction(new Sub() { DestinationReg = EmitContext.SP, SourceValue = size, Size = 80 });
+    
+          
+            ec.EmitComment("Block");
+            // Emit Code
+            if (_b != null)
+                _b.Emit(ec);
+
+            ec.EmitComment("return label");
+            // Return Label
+            ec.MarkLabel(ec.DefineLabel(method.Signature + "_ret"));
+            // Destroy Stack Frame
+            ec.EmitComment("destroy stackframe");
+            ec.EmitInstruction(new Leave());
+          
+            // restore flags
+            ec.EmitComment("restore flags");
+            ec.EmitInstruction(new Popad());
+            // ret
+            ec.EmitInstruction(new IRET() );
+
+            ec.EmitINT(interrupt, mlb);
+            return true;
+        }
+    }
 
     public class MethodDeclaration : Declaration
     {
