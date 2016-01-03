@@ -13,15 +13,14 @@ Register operations,
 Assembly statements,
 Flow Control Statements (return,goto,goto case,continue,next,break),
 Iteration and Conditional Statements,
-Operators overloading
+Operators overloading (binary op, cast)
+Struct and Union
 
 ####In The future : 
 Fix a lot of bugs,
 Return check,
 Type check,
 Standard library support,
-More pointers and struct support,
-Optimizer,
 Compilation Interface,
 Re-write (Clean code)
 
