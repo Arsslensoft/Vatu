@@ -243,6 +243,7 @@ namespace VTC.Core
         [Rule(@"<CallCV>      ::= cdecl")]
         [Rule(@"<CallCV>      ::= default")]
         [Rule(@"<CallCV>      ::= pascal")]
+        [Rule(@"<CallCV>      ::= vfastcall")]
         public CallingCV(SimpleToken mod)
         {
             _mod = mod;
@@ -259,6 +260,8 @@ namespace VTC.Core
                CallingConvention = CallingConventions.Default;
            else if (_mod.Name == "pascal")
                CallingConvention = CallingConventions.Pascal;
+           else if (_mod.Name == "vfastcall")
+               CallingConvention = CallingConventions.VeryFastCall;
            else CallingConvention = CallingConventions.StdCall;
             return this;
         }
@@ -309,6 +312,29 @@ namespace VTC.Core
         }
     }
 
+    public class FunctionSpecifier : SimpleToken
+    {
+        public Specifiers Specs { get; set; }
+
+        SimpleToken tt;
+        [Rule(@"<Func Spec>  ::= isolated")]
+        [Rule(@"<Func Spec>  ::= entry")]
+        public FunctionSpecifier(SimpleToken t)
+        {
+            tt = t;
+        }
+
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            if (tt.Name == "entry")
+                Specs = Specifiers.Entry;
+
+            else if (tt.Name == "isolated")
+                Specs = Specifiers.Isolated;
+
+            return this;
+        }
+    }
 
 
 

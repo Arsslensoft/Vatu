@@ -11,6 +11,7 @@ namespace VTC
 {
     public class ByIndexOperator : AccessOp
     {
+      
         public ByIndexOperator()
         {
             IsByte = true;
@@ -27,8 +28,16 @@ namespace VTC
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+
+            OvlrdOp = rc.Resolver.TryResolveMethod(Left.Type.NormalizedName + "_IndexedAccess", new TypeSpec[2] { Left.Type, BuiltinTypeSpec.UInt });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
+
             if (!Left.Type.IsPointer && !Left.Type.IsArray)
                 ResolveContext.Report.Error(51, Location, "Indexed access is only allowed on pointers and arrays");
+
+            else if(OvlrdOp != null)
+                return new AccessExpression(Left as VariableExpression, Right, this);
             else if (Left.Type.IsArray)
             {
                 IsByte = Left.Type.BaseType.Size != 2;
@@ -87,6 +96,9 @@ namespace VTC
         }
         public override bool Emit(EmitContext ec)
         {
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperatorValue(ec);
+            
             if (Index == -1)
             {
                 if (IsByte)
@@ -124,6 +136,13 @@ namespace VTC
         }
         public override bool EmitFromStack(EmitContext ec)
         {
+            if (OvlrdOp != null)
+            {
+                base.EmitOverrideOperatorAddress(ec);
+                ec.EmitPop(RegistersEnum.DI);
+                ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 16, DestinationIsIndirect = true, SourceReg = RegistersEnum.DI });
+                return true;
+            }
             if (Index == -1)
             {
                 if (IsByte)
@@ -295,7 +314,8 @@ namespace VTC
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             // Check if left is type
-            if (Left is VariableExpression && Right is VariableExpression)
+
+          if (Left is VariableExpression && Right is VariableExpression)
             {
 
 
@@ -337,7 +357,7 @@ namespace VTC
                         {
                             ParameterSpec v = (ParameterSpec)struct_var;
 
-                            ParameterSpec dst = new ParameterSpec(v.Name, v.MethodHost, tmp.MemberType, v.IsConstant, Location, v.Modifiers);
+                            ParameterSpec dst = new ParameterSpec(v.Name, v.MethodHost, tmp.MemberType, Location, v.Modifiers);
 
                             dst.StackIdx = v.StackIdx + index;
 

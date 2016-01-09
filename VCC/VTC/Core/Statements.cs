@@ -181,7 +181,8 @@ namespace VTC.Core
           /*  if (ns != null)
                 return ns.DoResolve(rc);
             */
-            return ns.DoResolve(rc);
+           return ns.DoResolve(rc);
+          //  return ns;
         }
         public override bool Emit(EmitContext ec)
         {
@@ -225,6 +226,40 @@ namespace VTC.Core
     }
 
     #region NormalStatements
+    public class InterruptStatement : NormalStatment
+    {
+ 
+
+        private ushort itr;
+
+        [Rule("<Normal Stm> ::= ~interrupt <CONSTANT> ~';' ")]
+        public InterruptStatement(Literal b)
+        {
+            itr = ushort.Parse(b.Value.GetValue().ToString());
+
+        }
+       
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+
+            return this;
+        }
+        public override bool Emit(EmitContext ec)
+        {
+       
+            ec.EmitInstruction(new Vasm.x86.INT() { DestinationValue = itr});
+            return true;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+        public override Reachability MarkReachable(Reachability rc)
+        {
+         return   base.MarkReachable(rc);
+           
+        }
+    }
     public class ReturnStatement : NormalStatment
     {
         public Label ReturnLabel { get; set; }
@@ -398,6 +433,7 @@ namespace VTC.Core
         }
 
     }
+
     public class DoWhile : NormalStatment, ILoop
     {
         public Label EnterLoop { get; set; }

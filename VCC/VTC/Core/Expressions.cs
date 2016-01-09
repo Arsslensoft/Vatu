@@ -249,6 +249,7 @@ namespace VTC.Core
                 }
         
             }
+        
             MemberSignature msig= new MemberSignature();
             if (tp.Count > 0)
             {
@@ -262,6 +263,15 @@ namespace VTC.Core
                 Method = rc.Resolver.TryResolveMethod(_id.Name);
                 if (Method == null)
                     msig = new MemberSignature(rc.CurrentNamespace, _id.Name, tp.ToArray(), loc);
+            }
+           if ((rc.CurrentScope & ResolveScopes.AccessOperation) == ResolveScopes.AccessOperation)
+            {
+                if (Method == null)
+                    ResolveContext.Report.Error(46, Location, "Unresolved extension method");
+                else if (rc.ExtensionVar != null && Parameters.Count < Method.Parameters.Count)
+                    Parameters.Add(rc.ExtensionVar);
+                else if(!rc.StaticExtensionLookup)
+                    ResolveContext.Report.Error(46, Location, "Extension methods must be called with less parameters by 1, the first is reserved for the extended type");
             }
             if(Method == null)
                 ResolveContext.Report.Error(46, Location, "Unknown method " + msig.NormalSignature + " ");
@@ -682,11 +692,15 @@ namespace VTC.Core
         public int  Offset { get; set; }
         public MemberSpec Member { get; set; }
         private  AccessOp _op;
+        TypeToken tt;
+
         [Rule(@"<Op Pointer> ::= <Op Pointer> '.' <Value>")]
         [Rule(@"<Op Pointer> ::= <Op Pointer> '->' <Value>")]
+        [Rule(@"<Op Pointer> ::= <Value> '.' <Value>")]
         public AccessOperation(Expr left, AccessOp op, Expr target)
         {
             _op = op;
+           
      
             _op.Left = left;
             _op.Right = target;
@@ -703,7 +717,17 @@ namespace VTC.Core
 
 
         }
+  
 
+        [Rule(@"<Op Pointer> ::= <Type> '::' <Value>")]
+        public AccessOperation(TypeToken id, AccessOp op, Expr target)
+        {
+            _op = op;
+            tt = id;
+            _op.Right = target;
+
+
+        }
         [Rule(@"<Op Pointer> ::= <Op Pointer> ~'[' <Expression> ~']'")]
         public AccessOperation(Expr left, Expr target)
         {
@@ -729,23 +753,71 @@ namespace VTC.Core
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             rc.CurrentScope |= ResolveScopes.AccessOperation;
+                   
             if (_op._op != AccessOperator.ByName)
             {
-                _op.Right = (Expr)_op.Right.DoResolve(rc);
+             
                 _op.Left = (Expr)_op.Left.DoResolve(rc);
+                if (_op._op == AccessOperator.ByValue && _op.Left is VariableExpression)
+                {
+                    rc.CurrentExtensionLookup = _op.Left.Type;
+                    rc.StaticExtensionLookup = false;
+                    rc.ExtensionVar = _op.Left;
+
+                    _op.Right = (Expr)_op.Right.DoResolve(rc);
+                    if (_op.Right is VariableExpression && (_op.Right as VariableExpression).variable == null)
+                        ResolveContext.Report.Error(0,Location,"Unresolved extended field");
+                    else if (_op.Right is MethodExpression && (_op.Right as MethodExpression).Method == null)
+                        ResolveContext.Report.Error(0, Location, "Unresolved extended method");
+
+                    rc.ExtensionVar = null;
+                    rc.CurrentExtensionLookup = null;
+
+                    rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+                    return _op.Right;
+                }
+                else _op.Right = (Expr)_op.Right.DoResolve(rc);
+            
                 rc.CurrentScope &= ~ResolveScopes.AccessOperation;
                  return _op.DoResolve(rc);
 
             }
             else
             {
-                Namespace lastns = rc.CurrentNamespace;
-                rc.CurrentNamespace = _op.Namespace;
-                _op.Right = (Expr)_op.Right.DoResolve(rc);
-        
-                rc.CurrentNamespace = lastns;
-                rc.CurrentScope &= ~ResolveScopes.AccessOperation;
-                return _op.Right;
+                if (tt != null)
+                {
+                    tt = (TypeToken)tt.DoResolve(rc);
+                    if (tt.Type == null)
+                        ResolveContext.Report.Error("Failed to resolve type");
+                    else
+                    {
+
+                        rc.CurrentExtensionLookup =tt.Type;
+                        rc.StaticExtensionLookup = true;
+                        _op.Right = (Expr)_op.Right.DoResolve(rc);
+                        if (_op.Right is VariableExpression && (_op.Right as VariableExpression).variable == null)
+                            ResolveContext.Report.Error(0, Location, "Unresolved extended field");
+                        else if (_op.Right is MethodExpression && (_op.Right as MethodExpression).Method == null)
+                            ResolveContext.Report.Error(0, Location, "Unresolved extended method");
+                        rc.CurrentExtensionLookup = null;
+                        rc.StaticExtensionLookup = false;
+                        rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+                        return _op.Right;
+                    }
+                    rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+                    return _op.Right;
+                }
+              
+                else
+                {
+                    Namespace lastns = rc.CurrentNamespace;
+                    rc.CurrentNamespace = _op.Namespace;
+                    _op.Right = (Expr)_op.Right.DoResolve(rc);
+
+                    rc.CurrentNamespace = lastns;
+                    rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+                    return _op.Right;
+                }
             }
     
            //Type = _op.CommonType;

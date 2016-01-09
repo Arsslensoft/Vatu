@@ -65,7 +65,8 @@ Comment Line  = '//'
 <Import>   ::= 'use' Id ';'
             
 <Imports>  ::= <Import>
-            | <Import> <Imports>          
+            | <Import> <Imports>   
+                   
 <Namespace> ::= 'namespace' Id ';'
             
               
@@ -93,6 +94,13 @@ Comment Line  = '//'
           | <Enum Decl>
           | <Var Decl>    
           | <Typedef Decl>
+          | <Extension Decl>
+
+! ===================================================================
+! Extension  Declaration
+! ===================================================================      
+
+<Extension Decl> ::= <Value> extends <Type> ';'
 ! ===================================================================
 ! Function  Declaration
 ! ===================================================================
@@ -101,34 +109,55 @@ Comment Line  = '//'
                | <Func ID> '(' <Params> ')' ';'
                | <Func ID> '(' ')' ';'
 
-<Func Decl>  ::= <Func ID> '(' <Params>  ')' <Block>
-               | <Func ID> '(' ')' <Block>
-               | 'entry' <Func ID> '(' <Params>  ')' <Block>
-               | 'entry' <Func ID> '(' ')' <Block>
+<Func Decl>  ::= <Func ID> <Func Body>
+               | <Func Spec> <Func ID> <Func Body>
 
-<Oper Decl>  ::= 'override' <Type> 'operator' '==' '(' <Params>  ')' <Block>
-               | 'override' <Type> 'operator' '!=' '(' <Params>  ')' <Block>
-               | 'override' <Type> 'operator' '<=' '(' <Params>  ')' <Block>
-               | 'override' <Type> 'operator' '>=' '(' <Params>  ')' <Block>
-               | 'override' <Type> 'operator' '>' '(' <Params>  ')' <Block>
-               | 'override' <Type> 'operator' '<' '(' <Params>  ')' <Block>
-               | 'override' <Type> 'operator' '+' '(' <Params>  ')' <Block>
-               | 'override' <Type> 'operator' '-' '(' <Params>  ')' <Block>
-               | 'override' <Type> 'operator' '*' '(' <Params>  ')' <Block>
-               | 'override' <Type> 'operator' '/' '(' <Params>  ')' <Block>
-               | 'override' <Type> 'operator' '%' '(' <Params>  ')' <Block>
-               | 'override' <Type> 'operator' '^' '(' <Params>  ')' <Block>
-               | 'override' <Type> 'operator' '&' '(' <Params>  ')' <Block>
-               | 'override' <Type> 'operator' '|' '(' <Params>  ')' <Block>
-               | 'override' <Type> 'operator' <Type> '('  <Params>  ')' <Block> ! CAST Overload
+
+
+!Operators Overloading         
+<Oper Decl>  ::= 'override' <Type> 'operator' '==' <Func Body>
+               | 'override' <Type> 'operator' '!=' <Func Body>
+               | 'override' <Type> 'operator' '<=' <Func Body>
+               | 'override' <Type> 'operator' '>=' <Func Body>
+               | 'override' <Type> 'operator' '>' <Func Body>
+               | 'override' <Type> 'operator' '<' <Func Body>
+               | 'override' <Type> 'operator' '+' <Func Body>
+               | 'override' <Type> 'operator' '-' <Func Body>
+               | 'override' <Type> 'operator' '*' <Func Body>
+               | 'override' <Type> 'operator' '/' <Func Body>
+               | 'override' <Type> 'operator' '%' <Func Body>
+               | 'override' <Type> 'operator' '^' <Func Body>
+               | 'override' <Type> 'operator' '&' <Func Body>
+               | 'override' <Type> 'operator' '|' <Func Body>
+                ! CAST Overload
+               | 'override' <Type> 'operator' <Type> <Func Body>
+               !Shift Rotate
+               | 'override' <Type> 'operator' '~>' <Func Body>
+               | 'override' <Type> 'operator' '<~' <Func Body>
+               | 'override' <Type> 'operator' '>>' <Func Body>
+               | 'override' <Type> 'operator' '<<' <Func Body>
+               !Unary
+               | 'override' <Type> 'operator' '++' <Func Body>
+               | 'override' <Type> 'operator' '--' <Func Body>
+               | 'override' <Type> 'operator' '[]' <Func Body>
+               | 'override' <Type> 'operator' '$' <Func Body>
+               | 'override' <Type> 'operator' '£' <Func Body>
+               | 'override' <Type> 'operator' '~' <Func Body>
                
-<Inter Decl>  ::= 'interrupt' DecLiteral <Block>
-               | 'interrupt' HexLiteral <Block>
-               
+!Interrupt decl               
+<Inter Decl>  ::= 'interrupt' <CONSTANT> <Block>
+
+<Func Body>  ::= '(' <Params>  ')' <Block>
+              | '(' ')' <Block>
+              |  '(' <Params>  ')' <Func Ext> <Block>
+              | '(' ')' <Func Ext>  <Block>      
+              
+        
 <Params>     ::= <Param> ',' <Params>
                | <Param>
                
 <Param>      ::= const <Type> ID
+               | ref <Type> ID
                |       <Type> ID
                
 <Types>      ::= <Type>  ',' <Types>
@@ -137,11 +166,18 @@ Comment Line  = '//'
 <Func ID>    ::= <CallCV> <Type> ID
                 | <Type> ID
 
+<Func Ext>  ::= extends <Type>
+             | static extends <Type>
+             
+<Func Spec> ::= entry
+             | isolated
+             
 <CallCV>    ::= stdcall 
              | fastcall
              | cdecl 
              | pascal
              | default
+             | vfastcall
 ! ===================================================================
 ! Asm Declaration
 ! ===================================================================
@@ -256,8 +292,10 @@ Comment Line  = '//'
                | goto case DecLiteral ';'
                | goto default ';'
                | next ';'
+               | interrupt <CONSTANT> ';'
                | return <Expression> ';'
                | ';'              !Null statement
+
 
 
 <Arg>       ::= <Expression> 
@@ -357,23 +395,27 @@ Comment Line  = '//'
 <Op Pointer> ::= <Op Pointer> '.' <Value>
                | <Op Pointer> '->' <Value>
                | Id '::' <Value>
+               | <Type> '::' <Value>
+               | <Value> '.' <Value>
                | <Op Pointer> '[' <Expression> ']'
                | <Value>
 
-<Value>      ::= OctLiteral
+<Value>      ::= <CONSTANT>
+               | Id '(' <PARAM EXPR> ')'
+               | Id '(' ')'          
+               | Id
+               | '(' <Expression> ')'
+               | <REGISTER>
+
+<CONSTANT>    ::= OctLiteral
                | HexLiteral
                | DecLiteral  
                | StringLiteral
                | CharLiteral
                | BinaryLiteral
                | BooleanLiteral
-               | NullLiteral
-               | Id '(' <PARAM EXPR> ')'
-               | Id '(' ')'          
-               | Id
-               | '(' <Expression> ')'
-               | <REGISTER>
-               
+               | NullLiteral    
+                        
 <PARAM EXPR>  ::= <Expression> ',' <PARAM EXPR>
                |  <Expression>
                |        
@@ -400,7 +442,7 @@ Comment Line  = '//'
               | CL
               | DH
               | DL  
-                            
+                        
 <INSTRUCTION> ::= StringLiteral ';'
            
 <INSTRUCTIONS> ::= <INSTRUCTION> <INSTRUCTIONS> 

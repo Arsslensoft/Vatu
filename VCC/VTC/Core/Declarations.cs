@@ -298,84 +298,135 @@ namespace VTC.Core
         Stack<ParameterSpec> Params { get; set; }
         public List<ParameterSpec> Parameters { get; set; }
 
- 
-        ParameterListDefinition _pal;
-        Block _b;
+
+        FunctionBodyDefinition _fbd;
+      
         TypeToken _mtype;
-        BinaryOp OpSym;
+        SimpleToken OpSym;
         TypeToken _casttype;
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '==' ~'(' <Params>  ~')' <Block>")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '!=' ~'(' <Params>  ~')' <Block>")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '>=' ~'(' <Params>  ~')' <Block>")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '<=' ~'(' <Params>  ~')' <Block>")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '>' ~'(' <Params>  ~')' <Block>")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '<' ~'(' <Params>  ~')' <Block>")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '+' ~'(' <Params>  ~')' <Block>")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '*' ~'(' <Params>  ~')' <Block>")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '-' ~'(' <Params>  ~')' <Block>")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '/' ~'(' <Params>  ~')' <Block>")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '%' ~'(' <Params>  ~')' <Block>")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '^' ~'(' <Params>  ~')' <Block>")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '&' ~'(' <Params>  ~')' <Block>")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '|' ~'(' <Params>  ~')' <Block>")]
-        public OperatorDeclaration(TypeToken type,BinaryOp oper, ParameterListDefinition pal, Block b)
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '==' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '!=' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '>=' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '<=' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '>' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '<' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '+' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '*' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '-' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '/' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '%' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '^' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '&' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '|' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '<<' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '>>' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '<~' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '~>' <Func Body> ")]
+        public OperatorDeclaration(TypeToken type,BinaryOp oper, FunctionBodyDefinition fbd)
         {
             _mtype = type;
-            _pal = pal;
-            _b = b;
+            _fbd = fbd;
+       
             OpSym = oper;
         }
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator <Type> ~'(' <Params>  ~')' <Block>")]
-        public OperatorDeclaration(TypeToken type, TypeToken oper, ParameterListDefinition pal, Block b)
+
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '++' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '--' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '$' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '£' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '~' <Func Body> ")]
+        public OperatorDeclaration(TypeToken type, UnaryOp oper, FunctionBodyDefinition fbd)
         {
             _mtype = type;
-            _pal = pal;
-            _b = b;
+            _fbd = fbd;
+
+            OpSym = oper;
+        }
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '[]' <Func Body> ")]
+        public OperatorDeclaration(TypeToken type, SimpleToken oper, FunctionBodyDefinition fbd)
+        {
+            _mtype = type;
+            _fbd = fbd;
+
+            OpSym = oper;
+        }
+
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator <Type> <Func Body> ")]
+        public OperatorDeclaration(TypeToken type, TypeToken oper, FunctionBodyDefinition fbd)
+        {
+            _mtype = type;
+            _fbd = fbd;
             _casttype = oper;
         }
+
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-             
+            _fbd = (FunctionBodyDefinition)_fbd.DoResolve(rc);
             _mtype = (TypeToken)_mtype.DoResolve(rc);
+            Params = _fbd.Params;
+            Parameters = _fbd.Parameters;
             base._type = _mtype;
-            List<TypeSpec> tp = new List<TypeSpec>();
-
-            Params = new Stack<ParameterSpec>();
-            Parameters = new List<ParameterSpec>();
-            if (_pal != null)
+            
+            if (_casttype == null && OpSym is BinaryOp)
             {
-                _pal.Resolve(rc);
-                _pal = (ParameterListDefinition)_pal.DoResolve(rc);
-                ParameterListDefinition par = _pal;
-                while (par != null)
-                {
-                    if (par._id != null)
-                    {
-                        Params.Push(par._id.ParameterName);
-                        tp.Add(par._id.ParameterName.MemberType);
-                    }
-                    par = par._nextid;
-                }
-            }
-            if (_casttype == null)
-            {
-                OpName = _type.Type.NormalizedName + "_" + OpSym.Operator.ToString();
+                BinaryOp bop = OpSym as BinaryOp;
+                OpName = _type.Type.NormalizedName + "_" + bop.Operator.ToString();
 
                 method = rc.Resolver.TryResolveMethod(OpName);
                 if (method != null)
                     ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
                
                 // operator checks
-                    if (tp.Count != 2)
-                    ResolveContext.Report.Error(45, Location, "Operator must have 2 parameters with same type");
-                if (_mtype.Type != BuiltinTypeSpec.Bool && (OpSym.Operator & BinaryOperator.ComparisonMask) == BinaryOperator.ComparisonMask)
+                if (_fbd.ParamTypes.Count != 2)
+                    ResolveContext.Report.Error(45, Location, "Binary operators must have 2 parameters with same type");
+                if (_mtype.Type != BuiltinTypeSpec.Bool && (bop.Operator & BinaryOperator.ComparisonMask) == BinaryOperator.ComparisonMask)
                     ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
-                else if ((OpSym.Operator & BinaryOperator.ComparisonMask) != BinaryOperator.ComparisonMask)
+                else if ((bop.Operator & BinaryOperator.ComparisonMask) != BinaryOperator.ComparisonMask)
                 {
                     // match types
-                    if (!_mtype.Type.Equals( tp[0] )|| !_mtype.Type.Equals( tp[1]) || !tp[0].Equals( tp[1]))
+                    if (!_mtype.Type.Equals(_fbd.ParamTypes[0]) || !_mtype.Type.Equals(_fbd.ParamTypes[1]) || !_fbd.ParamTypes[0].Equals(_fbd.ParamTypes[1]))
                         ResolveContext.Report.Error(45, Location, "Non comparison operators must have same return and parameters type");
                 }
+
+            }
+            else if (_casttype == null && OpSym is UnaryOp)
+            {
+                UnaryOp uop = OpSym as UnaryOp;
+                OpName = _type.Type.NormalizedName + "_" + uop.Operator.ToString();
+
+                method = rc.Resolver.TryResolveMethod(OpName);
+                if (method != null)
+                    ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
+
+                // operator checks
+                if (_fbd.ParamTypes.Count!= 1)
+                    ResolveContext.Report.Error(45, Location, "Unary operators must have 1 parameters with same return type");
+          
+              
+                    // match types
+                    if (uop.Operator != UnaryOperator.ParityTest && uop.Operator != UnaryOperator.ZeroTest && !_mtype.Type.Equals(_fbd.ParamTypes[0]) )
+                        ResolveContext.Report.Error(45, Location, "Unary operators must have same return and parameters type");
+
+
+            }
+            else if (_casttype == null && OpSym is SimpleToken)
+            {
+
+                OpName = _type.Type.NormalizedName + "_IndexedAccess" ;
+
+                method = rc.Resolver.TryResolveMethod(OpName);
+                if (method != null)
+                    ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
+
+                // operator checks
+                if (_fbd.ParamTypes.Count != 2)
+                    ResolveContext.Report.Error(45, Location, "Indexed access operator must have 2 parameters 1st  same as return type, 2nd uint");
+
+
+                // match types
+                if (!_mtype.Type.Equals(_fbd.ParamTypes[0]) || _fbd.ParamTypes[1] != BuiltinTypeSpec.UInt)
+                    ResolveContext.Report.Error(45, Location, "Indexed access operator must have same return and 1st parameter type, the 2nd parameter must be type of uint");
+
 
             }
             else
@@ -388,43 +439,48 @@ namespace VTC.Core
                     ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
 
                 // operator checks
-                if (tp.Count != 1)
+                if (_fbd.ParamTypes.Count != 1)
                     ResolveContext.Report.Error(45, Location, "Cast operator must have 1 parameters with same type as source");
             
                     // match types
-                if (_casttype.Type != tp[0])
+                if (_casttype.Type != _fbd.ParamTypes[0])
                         ResolveContext.Report.Error(45, Location, "Cast operators must have same cast type and parameter type");
                 
             }
-            method = new MethodSpec(rc.CurrentNamespace, OpName, mods, _mtype.Type, CallingConventions.StdCall, tp.ToArray(), this.loc);
+            method = new MethodSpec(rc.CurrentNamespace, OpName, mods, _mtype.Type, CallingConventions.StdCall, _fbd.ParamTypes.ToArray(), this.loc);
             method.Parameters = Params.ToList<ParameterSpec>();
             rc.KnowMethod(method);
             rc.CurrentMethod = method;
             if (!method.MemberType.IsBuiltinType && !method.MemberType.IsPointer)
                 ResolveContext.Report.Error(45, Location, "return type must be builtin type " + method.MemberType.ToString() + " is user-defined type.");
-            if (_b != null)
-                _b = (Block)_b.DoResolve(rc);
+            if (_fbd._b != null)
+                _fbd._b = (Block)_fbd._b.DoResolve(rc);
             return this;
         }
         public override bool Resolve(ResolveContext rc)
         {
             bool ok = true;
 
-            if (_pal != null)
-                ok &= _pal.Resolve(rc);
-            if (_b != null)
-                ok &= _b.Resolve(rc);
+            if (_fbd._pdef != null)
+                ok &= _fbd._pdef.Resolve(rc);
+            if (_fbd._b != null)
+                ok &= _fbd._b.Resolve(rc);
             return ok;
         }
         public override bool Emit(EmitContext ec)
         {
-    
-
+            string opt = "None";
+            if (OpSym is UnaryOp)
+                opt = "Unary";
+            else if (OpSym is BinaryOp)
+                opt = "Binary";
+            else if (OpSym is SimpleToken)
+                opt = "Indexed Access";
 
             Label mlb = ec.DefineLabel(method.Signature.ToString());
             mlb.Method = true;
             ec.MarkLabel(mlb);
-            ec.EmitComment("Operator: Name = " + method.Name + " IsCast = " + (_casttype != null).ToString());
+            ec.EmitComment("Operator: Name = " + method.Name + " IsCast = " + (_casttype != null).ToString() + " Nature = " + opt);
             // create stack frame
             ec.EmitComment("create stackframe");
             ec.EmitInstruction(new Push() { DestinationReg = EmitContext.BP, Size = 80 });
@@ -465,8 +521,8 @@ namespace VTC.Core
             }
             ec.EmitComment("Block");
             // Emit Code
-            if (_b != null)
-                _b.Emit(ec);
+            if (_fbd._b != null)
+                _fbd._b.Emit(ec);
 
             ec.EmitComment("return label");
             // Return Label
@@ -493,21 +549,14 @@ namespace VTC.Core
         ushort interrupt;
         Block _b;
  
-        [Rule(@"<Inter Decl> ::= ~interrupt HexLiteral <Block>")]
-        public InterruptDeclaration(HexLiteral hlit,  Block b)
+        [Rule(@"<Inter Decl> ::= ~interrupt <CONSTANT> <Block>")]
+        public InterruptDeclaration(Literal hlit,  Block b)
         {
             interrupt = ushort.Parse(hlit.Value.GetValue().ToString());
             _b = b;
             ItName = "INTERRUPT_" + interrupt.ToString();
         }
-       [Rule(@"<Inter Decl> ::= ~interrupt DecLiteral <Block>")]
-        public InterruptDeclaration(DecLiteral hlit, Block b)
-        {
-            interrupt = ushort.Parse(hlit.Value.GetValue().ToString());
-            _b = b;
-            ItName = "INTERRUPT_" + interrupt.ToString();
-
-        }
+ 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
 
@@ -592,78 +641,51 @@ namespace VTC.Core
         Modifiers mods = Modifiers.NoModifier;
         CallingConventions ccv = CallingConventions.StdCall;
         CallingConventionsHandler ccvh;
-        public bool EntryPoint = false;
-
+        FunctionBodyDefinition _fbd;
+        FunctionSpecifier _spec;
+        Specifiers specs;
         public List<ParameterSpec> Parameters;
 
-        MethodIdentifier _id; ParameterListDefinition _pal; Block _b;
-        [Rule(@"<Func Decl> ::= <Func ID> ~'(' <Params> ~')' <Block>")]
-        public MethodDeclaration(MethodIdentifier id, ParameterListDefinition pal, Block b)
+        MethodIdentifier _id; 
+        [Rule(@"<Func Decl> ::= <Func ID> <Func Body>")]
+        public MethodDeclaration(MethodIdentifier id, FunctionBodyDefinition fbd)
         {
             _name = id.Id;
             _id = id;
-            _pal = pal;
-            _b = b;
+            _spec = null;
+            _fbd = fbd;
         }
 
-        [Rule(@"<Func Decl> ::= <Func ID> ~'(' ~')' <Block>")]
-        public MethodDeclaration(MethodIdentifier id, Block b)
+        [Rule(@"<Func Decl> ::= <Func Spec> <Func ID> <Func Body>")]
+        public MethodDeclaration(FunctionSpecifier spec,MethodIdentifier id, FunctionBodyDefinition fbd)
         {
             _name = id.Id;
             _id = id;
-            _pal = null;
-            _b = b;
+            _spec = spec;
+            _fbd = fbd;
         }
 
 
-        [Rule(@"<Func Decl> ::= entry <Func ID> ~'(' <Params> ~')' <Block>")]
-        public MethodDeclaration(SimpleToken t, MethodIdentifier id, ParameterListDefinition pal, Block b)
-        {
-            EntryPoint = true;
-            _name = id.Id;
-            _id = id;
-            _pal = pal;
-            _b = b;
-        }
-
-        [Rule(@"<Func Decl> ::= entry <Func ID> ~'(' ~')' <Block>")]
-        public MethodDeclaration(SimpleToken t, MethodIdentifier id, Block b)
-        {
-            EntryPoint = true;
-            _name = id.Id;
-            _id = id;
-            _pal = null;
-            _b = b;
-        }
+   
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             ccvh = new CallingConventionsHandler();
             _id = (MethodIdentifier)_id.DoResolve(rc);
             ccv = _id.CV;
+
+            _fbd = (FunctionBodyDefinition)_fbd.DoResolve(rc);
+            Parameters = _fbd.Parameters;
+            if (_spec != null)
+            {
+                _spec = (FunctionSpecifier)_spec.DoResolve(rc);
+                specs = _spec.Specs;
+            }
+            else specs = Specifiers.NoSpec;
             base._type = _id.TType;
 
-        
-            List<TypeSpec> tp = new List<TypeSpec>();
-       
-            Parameters = new List<ParameterSpec>();
-            if (_pal != null)
-            {
-                _pal.Resolve(rc);
-                _pal = (ParameterListDefinition)_pal.DoResolve(rc);
-                ParameterListDefinition par = _pal;
-                while (par != null)
-                {
-                    if (par._id != null)
-                    {
-                        Parameters.Add(par._id.ParameterName);
-                        tp.Add(par._id.ParameterName.MemberType);
-                    
-                    }
-                    par = par._nextid;
-                }
-            }
-         
-            method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods, _id.TType.Type, ccv, tp.ToArray(),this.loc);
+
+
+            method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods, _id.TType.Type, ccv, _fbd.ParamTypes.ToArray(), this.loc);
 
             // Calling Convention
             ccvh.SetParametersIndex(ref Parameters, ccv);
@@ -683,37 +705,51 @@ namespace VTC.Core
 
 
             rc.KnowMethod(method);
+            // extension
+            if (_fbd._ext != null)
+            {
+                if(_fbd._ext.Static && _fbd.ParamTypes.Count > 0&& _fbd.ParamTypes[0] != _fbd._ext.ExtendedType)
+                    ResolveContext.Report.Error(45, Location, "non static method extensions must have first parameter with same extended type.");
+                else  if (!rc.Extend(_fbd._ext.ExtendedType, method, _fbd._ext.Static))
+                    ResolveContext.Report.Error(45, Location, "Another method with same signature has already extended this type.");
+            }
             rc.CurrentMethod = method;
+            if (specs == Specifiers.Isolated && method.MemberType != BuiltinTypeSpec.Void)
+                ResolveContext.Report.Error(45, Location, "only void methods can be isolated.");
+
             if (!method.MemberType.IsBuiltinType)
                 ResolveContext.Report.Error(45, Location, "return type must be builtin type "+method.MemberType.ToString() + " is user-defined type.");
-            if (_b != null)
-                _b = (Block)_b.DoResolve(rc);
+            if (_fbd._b != null)
+                _fbd._b = (Block)_fbd._b.DoResolve(rc);
             return this;
         }
         public override bool Resolve(ResolveContext rc)
         {
             bool ok = _id.Resolve(rc);
 
-            if (_pal != null)
-                ok &= _pal.Resolve(rc);
-            if (_b != null)
-                ok &= _b.Resolve(rc);
+            if (_fbd._pdef != null)
+                ok &= _fbd._pdef.Resolve(rc);
+            if (_fbd._b != null)
+                ok &= _fbd._b.Resolve(rc);
             return ok;
         }
         public override bool Emit(EmitContext ec)
         {
-            if (EntryPoint)
+            
+            if (specs == Specifiers.Entry)
                 ec.SetEntry(method.Signature.ToString());
 
         
             Label mlb = ec.DefineLabel(method.Signature.ToString());
             mlb.Method = true;
             ec.MarkLabel(mlb);
-            ec.EmitComment("Method: Name = " + method.Name + ", EntryPoint = "+ EntryPoint);
+            ec.EmitComment("Method: Name = " + method.Name + ", EntryPoint = " + (specs == Specifiers.Entry));
             // create stack frame
             ec.EmitComment("create stackframe");
             ec.EmitInstruction(new Push() { DestinationReg = EmitContext.BP, Size = 80 });
             ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, SourceReg = EmitContext.SP, Size = 80 });
+            if (specs == Specifiers.Isolated)
+                ec.EmitInstruction(new Pushad());
             // allocate variables
 
             ushort size = 0;
@@ -753,15 +789,18 @@ namespace VTC.Core
             }
             ec.EmitComment("Block");
             // Emit Code
-            if (_b != null)
-                _b.Emit(ec);
+            if (_fbd._b != null)
+                _fbd._b.Emit(ec);
 
             ec.EmitComment("return label");
             // Return Label
             ec.MarkLabel(ec.DefineLabel(method.Signature + "_ret"));
             // Destroy Stack Frame
+            if (specs == Specifiers.Isolated)
+                ec.EmitInstruction(new Popad());
+            
             ec.EmitComment("destroy stackframe");
-            ec.EmitInstruction(new Leave());
+            ec.EmitInstruction(new Leave());       
             // ret
             ccvh.EmitDecl(ec, ref Parameters, ccv);
             return true;
@@ -835,7 +874,7 @@ namespace VTC.Core
                 {
                     if (par._id != null)
                     {
-                        ParameterSpec p = new ParameterSpec("param_" + paid, method, par._id.Type, false, par.loc);
+                        ParameterSpec p = new ParameterSpec("param_" + paid, method, par._id.Type,  par.loc);
                         Parameters.Add(p);
                         Params.Push(p);
                         tp.Add(p.MemberType);
@@ -1115,6 +1154,7 @@ namespace VTC.Core
         [Rule(@"<Decl>  ::= <Enum Decl>")]
         [Rule(@"<Decl>  ::= <Var Decl>")]
         [Rule(@"<Decl>  ::= <Typedef Decl>")]
+        [Rule(@"<Decl>  ::= <Extension Decl>")]
         public Declaration(Declaration decl)
         {
             BaseDeclaration = decl;
@@ -1243,5 +1283,41 @@ namespace VTC.Core
             }
             return true;
         }
+    }
+
+    public class ExtendDeclaration  : Declaration
+    {
+        Expr _varexpr;
+        TypeToken tt;
+        [Rule("<Extension Decl> ::= <Value> ~extends <Type>  ~';'")]
+        public ExtendDeclaration(Expr varexp, TypeToken t)
+        {
+            tt = t;
+            _varexpr = varexp;
+        }
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            tt = (TypeToken)tt.DoResolve(rc);
+            _varexpr = (Expr)_varexpr.DoResolve(rc);
+            if (_varexpr is VariableExpression)
+            {
+                VariableExpression v = _varexpr as VariableExpression;
+                if (v.variable is FieldSpec)
+                {
+                    if (!rc.Extend(tt.Type, (FieldSpec)v.variable))
+                        ResolveContext.Report.Error(0, Location, "Another field with same signature has already extended this type.");
+
+                }
+                else ResolveContext.Report.Error(0, Location, "Only fields can be extended");
+            }
+            else ResolveContext.Report.Error(0, Location, "Only fields can be extended");
+            return this;
+        }
+        public override bool Emit(EmitContext ec)
+        {
+
+            return true;
+        }
+
     }
 }

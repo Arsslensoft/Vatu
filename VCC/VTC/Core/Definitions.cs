@@ -201,9 +201,105 @@ namespace VTC.Core
         }
     }
 
-  
 
 
+    public class FunctionExtensionDefinition : Definition
+    {
+        public TypeSpec ExtendedType { get; set; }
+        public bool Static = false;
+        TypeToken tt;
+        [Rule(@"<Func Ext>  ::= ~extends <Type>")]
+        public FunctionExtensionDefinition(TypeToken t)
+      {
+          tt = t;
+      }
+        [Rule(@"<Func Ext>  ::= static ~extends <Type>")]
+        public FunctionExtensionDefinition(SimpleToken st,TypeToken t)
+        {
+            tt = t; Static = true;
+        }
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            tt = (TypeToken)tt.DoResolve(rc);
+            ExtendedType = tt.Type;
+            return this;
+        }
+    }
+
+    public class FunctionBodyDefinition : Definition
+    {
+       public Stack<ParameterSpec> Params { get; set; }
+        public List<ParameterSpec> Parameters { get; set; }
+        public List<TypeSpec> ParamTypes { get; set; }
+
+        public ParameterListDefinition _pdef;
+        public Block _b;
+        public FunctionExtensionDefinition _ext;
+      [Rule(@"<Func Body>  ::= ~'(' <Params>  ~')' <Block>")]
+        public FunctionBodyDefinition(ParameterListDefinition pdef, Block b)
+        {
+            _pdef = pdef;
+            _b = b;
+        }
+      [Rule(@"<Func Body>  ::= ~'('  ~')' <Block>")]
+      public FunctionBodyDefinition( Block b)
+      {
+          _pdef = null;
+          _b = b;
+      }
+      [Rule(@"<Func Body>  ::= ~'(' <Params>  ~')' <Func Ext>  <Block>")]
+      public FunctionBodyDefinition(ParameterListDefinition pdef, FunctionExtensionDefinition ext,Block b)
+      {
+          _pdef = pdef;
+          _b = b;
+          _ext = ext;
+      }
+      [Rule(@"<Func Body>  ::= ~'('  ~')' <Func Ext> <Block>")]
+      public FunctionBodyDefinition( FunctionExtensionDefinition ext,Block b)
+      {
+          _pdef = null;
+          _b = b;
+          _ext = ext;
+      }
+
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            if(_ext != null)
+            _ext = (FunctionExtensionDefinition)_ext.DoResolve(rc);
+           
+            ParamTypes = new List<TypeSpec>();
+
+            Params = new Stack<ParameterSpec>();
+            Parameters = new List<ParameterSpec>();
+            if (_pdef != null)
+            {
+                _pdef.Resolve(rc);
+                _pdef = (ParameterListDefinition)_pdef.DoResolve(rc);
+                ParameterListDefinition par = _pdef;
+                while (par != null)
+                {
+                    if (par._id != null)
+                    {
+                        Params.Push(par._id.ParameterName);
+                        Parameters.Add(par._id.ParameterName);
+                        ParamTypes.Add(par._id.ParameterName.MemberType);
+                    }
+                    par = par._nextid;
+                }
+            }
+            return this;
+        }
+
+        public override bool Resolve(ResolveContext rc)
+        {
+        
+            return true;
+        }
+        public override bool Emit(EmitContext ec)
+        {
+            return true;
+        }
+    }
 
     public class TypeIdentifierListDefinition : Definition
     {
@@ -257,12 +353,17 @@ namespace VTC.Core
         Identifier _id;
         TypeIdentifier _type;
         bool constant = false;
+        bool REF = false;
+
+        [Rule(@"<Param>      ::= ref <Type> Id")]
         [Rule(@"<Param>      ::= const <Type> Id")]
         public ParameterDefinition(SimpleToken tok, TypeIdentifier ptr, Identifier var)
         {
             _id = var;
             _type = ptr;
-            constant = true;
+            if (tok.Name == "const")
+                constant = true;
+            else REF = true;
         }
 
         [Rule(@"<Param>      ::= <Type> Id")]
@@ -271,13 +372,16 @@ namespace VTC.Core
             _id = var;
             _type = ptr;
             constant = false;
+            REF = false;
         }
-
+        
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             _type = (TypeIdentifier)_type.DoResolve(rc);
             ParameterType = _type.Type;
-            ParameterName = new ParameterSpec(_id.Name, rc.CurrentMethod, ParameterType,constant, loc, constant? Modifiers.Const: Modifiers.NoModifier);
+            Modifiers mods = constant? Modifiers.Const: Modifiers.NoModifier;
+            mods |= REF? Modifiers.Ref: 0;
+            ParameterName = new ParameterSpec(_id.Name, rc.CurrentMethod, ParameterType, loc,mods );
             return this;
         }
         public override bool Resolve(ResolveContext rc)

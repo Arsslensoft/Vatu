@@ -8,16 +8,33 @@ void print(string msg){
 asm{
 	"mov  dx, [BP+4]";
 	"mov  ah, 9 ";
-	"int  0x21";
 	}
+		interrupt 0x21;
 }
 void putc(byte c){
+
 asm{
 	"mov  dx, [BP+4]";
 	"mov  ah, 2 ";
-	"int  0x21";
 	}
+
 }
+
+namespace INTE;
+
+
+interrupt 0x85
+{
+uint desc = 0;
+desc = AX;
+if(desc == 1){
+ std::print("[Interrupt 85h Test]$");
+
+ }
+
+}
+
+
 namespace DOS;
 use std;
 
@@ -120,10 +137,6 @@ override struct MyS* operator +(struct MyS* a, struct MyS* b)
  a->b = a->b + b->b;
 	return a;
 }
-interrupt 0x85
-{
- print(HelloWorld);
-}
 entry  void main()
 {
 struct MyS m;
@@ -184,7 +197,7 @@ print(",r.a=$");
 tostring(pr->a);
 print("r.b=$");
 putc(pr->b);
-putc(a.x.v.CHAR);
+pr = &(a.x);
 print(a.x.u.ch);
 
 print("Before Cast ,a=$");
@@ -197,11 +210,12 @@ tostring(pb->c);
 print("b=$");
 putc(pb->d);
 
-asm{
-	"int 85h";
-	"mov  ah, 0x4c ";
-	"int  0x21";
-}
+AX = 1;
+interrupt 0x85;
+
+AH = 0x4C;
+interrupt 0x21;
+
 
 
 }

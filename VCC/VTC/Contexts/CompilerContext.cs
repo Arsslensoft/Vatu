@@ -50,8 +50,8 @@ namespace VTC
         public bool Test()
         {
          // Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.Kernel.vt");
-    Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.DOS.vt");
-         //  Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.SIGNED.vt");
+  //  Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.DOS.vt");
+          Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.STD.vt");
                 InputSource = new StreamReader(stream);
 
        

@@ -18,11 +18,13 @@ namespace VTC
         public string NormalSignature { get { return _nsig; } }
         Location _loc;
         public Location Location { get { return _loc; } }
-
+        string _extsig;
+        public string ExtensionSignature { get { return _extsig; } }
         public MemberSignature(Namespace ns, string name,TypeSpec[] param, Location loc)
         {
             _nsig = name;
             _signature = name;
+            _extsig = name;
             if (!ns.IsDefault)
             {
                 _signature = ns.Normalize() + "_" + _signature;
@@ -34,6 +36,7 @@ namespace VTC
                     _nsig += "(";
                 foreach (TypeSpec p in param)
                 {
+                    _extsig += "_" + p.GetTypeName(p).Replace("*", "P"); 
                     _signature += "_" + p.GetTypeName(p).Replace("*", "P");
                     _nsig +=  p.GetTypeName(p) + ",";
                 }
@@ -48,6 +51,7 @@ namespace VTC
         {
             _nsig = name;
             _signature = name;
+            _extsig = name;
             if (!ns.IsDefault)
             {
                 _signature = ns.Normalize() + "_" + _signature;
@@ -130,11 +134,17 @@ namespace VTC
         Extern = 1 << 1,
         NoModifier = 1 << 2,
         Prototype = 1 << 3,
-        
+       
         Const = 1 << 4,
-        Private = 1 << 5
+        Private = 1 << 5,
+        Ref = 1 << 6
     }
 
+    public enum Specifiers
+    {NoSpec=0,
+    Entry = 1,
+        Isolated = 2
+    }
     public abstract class MemberSpec :ReferenceSpec, IMember
     {
        protected MemberSignature _sig;
@@ -376,6 +386,11 @@ namespace VTC
             get { return !NS.IsDefault; }
         }
 
+        public List<MethodSpec> ExtendedMethods { get; set; }
+        public List<FieldSpec> ExtendedFields { get; set; }
+        public List<MethodSpec> StaticExtendedMethods { get; set; }
+    
+
         /// <summary>
         /// For typedef
         /// </summary>
@@ -436,7 +451,10 @@ namespace VTC
             _flags = flags;
             _base = basetype;
             _size = GetSize(this);
-
+         
+            StaticExtendedMethods = new List<MethodSpec>();
+            ExtendedFields = new List<FieldSpec>();
+            ExtendedMethods = new List<MethodSpec>();
         }
         public TypeSpec(Namespace ns, string name, int size, BuiltinTypes bt, TypeFlags flags, Modifiers mods, Location loc, TypeSpec basetype = null)
             : base(name, new MemberSignature(ns, name, loc), mods, ReferenceKind.Type)
@@ -446,7 +464,10 @@ namespace VTC
             _flags = flags;
             _base = basetype;
             _size = size;
-
+   
+            StaticExtendedMethods = new List<MethodSpec>();
+            ExtendedFields = new List<FieldSpec>();
+            ExtendedMethods = new List<MethodSpec>();
         }
 
         public TypeSpec MakePointer()
@@ -591,7 +612,7 @@ namespace VTC
     /// <summary>
     /// Global Variable Specs
     /// </summary>
-    public class FieldSpec : MemberSpec
+    public class FieldSpec : MemberSpec, IEquatable<FieldSpec>
     {
 
         public int FieldOffset { get; set; }
@@ -652,7 +673,7 @@ namespace VTC
         {
          
             ec.EmitComment("AddressOf Field " );
-            ec.EmitInstruction(new Lea() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceRef = ElementReference.New(Signature.ToString()) });
+            ec.EmitInstruction(new Lea() { DestinationReg = EmitContext.SI, SourceIsIndirect = true,SourceDisplacement = FieldOffset, Size = 16, SourceRef = ElementReference.New(Signature.ToString()) });
             ec.EmitPush(EmitContext.SI);
             return true;
         }
@@ -714,11 +735,17 @@ namespace VTC
         {
             return Signature.ToString();
         }
+
+        public bool Equals(FieldSpec tp)
+        {
+            return tp.Signature == Signature;
+        }
+       
     }
     /// <summary>
     /// Method Specs
     /// </summary>
-    public class MethodSpec : MemberSpec
+    public class MethodSpec : MemberSpec, IEquatable<MethodSpec>
     {
 
         public CallingConventions CallingConvention { get; set; }
@@ -746,13 +773,18 @@ namespace VTC
         {
             return Signature.ToString();
         }
+        public bool Equals(MethodSpec tp)
+        {
+            return tp.Signature == Signature;
+        }
+      
     }
 
 
     /// <summary>
     /// Local Variable Specs
     /// </summary>
-    public class VarSpec : MemberSpec
+    public class VarSpec : MemberSpec, IEquatable<VarSpec>
     {
        
         MethodSpec method;
@@ -913,12 +945,19 @@ namespace VTC
 
             return true;
         }
+
+
+        public bool Equals(VarSpec tp)
+        {
+            return tp.Signature == Signature;
+        }
+    
     }
 
     /// <summary>
     /// Local Variable Specs
     /// </summary>
-    public class ParameterSpec : MemberSpec
+    public class ParameterSpec : MemberSpec, IEquatable<ParameterSpec>
     {
  
         MethodSpec method;
@@ -940,13 +979,12 @@ namespace VTC
                 return true;
             }
         }
-        public ParameterSpec(string name, MethodSpec host, TypeSpec type,bool constant, Location loc, Modifiers mods = VTC.Modifiers.NoModifier)
+        public ParameterSpec(string name, MethodSpec host, TypeSpec type, Location loc, Modifiers mods = VTC.Modifiers.NoModifier)
             : base(name, new MemberSignature(Namespace.Default, host.Name + "_param_" + name, loc), mods,ReferenceKind.Parameter)
         {
             method = host;
             memberType = type;
-            if (constant)
-                _mod |= VTC.Modifiers.Const;
+
             StackIdx = 4;
         }
         public override string ToString()
@@ -1073,6 +1111,12 @@ namespace VTC
 
             return true;
         }
+        public bool Equals(ParameterSpec tp)
+        {
+            return tp.Signature == Signature;
+        }
+
+    
     }
 
     /// <summary>

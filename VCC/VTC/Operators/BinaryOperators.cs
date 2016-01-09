@@ -741,12 +741,15 @@ namespace VTC
 
             if (Left is RegisterExpression)
                 RegisterOperation = true;
-          
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Emit(EmitContext ec)
         {
-
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
 
             if (RegisterOperation)
             {
@@ -798,12 +801,15 @@ namespace VTC
 
             if (Left is RegisterExpression)
                 RegisterOperation = true;
-          
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Emit(EmitContext ec)
         {
-
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
 
             if (RegisterOperation)
             {
@@ -858,11 +864,15 @@ namespace VTC
 
             if (Left is RegisterExpression)
                 RegisterOperation = true;
-
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Emit(EmitContext ec)
         {
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
             if (RegisterOperation)
             {
                 RegisterExpression.EmitOperation(ec, new RotateLeft(), RotValue, ((RegisterExpression)Left).Register);
@@ -914,11 +924,15 @@ namespace VTC
 
             if (Left is RegisterExpression)
                 RegisterOperation = true;
-
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[2] { Left.Type, Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Emit(EmitContext ec)
         {
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
             if (RegisterOperation)
             {
                 RegisterExpression.EmitOperation(ec, new RotateRight(), RotValue, ((RegisterExpression)Left).Register);

@@ -279,7 +279,9 @@ namespace VTC
 
             if (Right is RegisterExpression)
                 RegisterOperation = true;
-
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[1] { Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Resolve(ResolveContext rc)
@@ -288,6 +290,8 @@ namespace VTC
         }
         public override bool Emit(EmitContext ec)
         {
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
             if (RegisterOperation)
             {
                 ec.EmitComment("~" + Right.CommentString());
@@ -332,7 +336,9 @@ namespace VTC
 
             if (Right is RegisterExpression)
                 RegisterOperation = true;
-
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[1] { Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Resolve(ResolveContext rc)
@@ -341,6 +347,8 @@ namespace VTC
         }
         public override bool Emit(EmitContext ec)
         {
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
             if (RegisterOperation)
             {
                 ec.EmitComment("£" + Right.CommentString());
@@ -368,6 +376,31 @@ namespace VTC
         {
             return Emit(ec);
         }
+        public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
+        {
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperatorBranchable(ec, truecase, v, ConditionalTestEnum.Zero, ConditionalTestEnum.NotZero);
+
+            if (RegisterOperation)
+            {
+                ec.EmitComment("£" + Right.CommentString());
+
+                ec.EmitInstruction(new Compare() { DestinationReg = ((RegisterExpression)Right).Register, SourceValue = 0, Size = 80 });
+                ec.EmitBoolean(ec.GetLow(Register.Value), ConditionalTestEnum.Zero, ConditionalTestEnum.NotZero);
+                ec.EmitPush(((RegisterExpression)Right).Register);
+
+                return true;
+            }
+            Right.EmitToStack(ec);
+            ec.EmitComment("£" + Right.CommentString());
+            ec.EmitPop(Register.Value);
+
+
+            ec.EmitInstruction(new Compare() { DestinationReg = Register.Value, SourceValue = 0, Size = 80 });
+            // jumps
+            ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.Zero, ConditionalTestEnum.NotZero);
+            return true;
+        }
 
     }
     [Terminal("$")]
@@ -388,7 +421,9 @@ namespace VTC
 
             if (Right is RegisterExpression)
                 RegisterOperation = true;
-
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[1] { Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Resolve(ResolveContext rc)
@@ -397,6 +432,8 @@ namespace VTC
         }
         public override bool Emit(EmitContext ec)
         {
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperator(ec);
             if (RegisterOperation)
             {
                 ec.EmitComment("$" + Right.CommentString());
@@ -423,7 +460,29 @@ namespace VTC
         {
             return Emit(ec);
         }
+        public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
+        {
+            if (OvlrdOp != null)
+                return base.EmitOverrideOperatorBranchable(ec,truecase,v, ConditionalTestEnum.ParityEven, ConditionalTestEnum.ParityOdd);
+            if (RegisterOperation)
+            {
+                ec.EmitComment("$" + Right.CommentString());
 
+                ec.EmitInstruction(new Test() { DestinationReg = ((RegisterExpression)Right).Register, SourceValue = 1, Size = 80 });
+                ec.EmitBoolean(ec.GetLow(Register.Value), ConditionalTestEnum.ParityEven, ConditionalTestEnum.ParityOdd);
+                ec.EmitPush(((RegisterExpression)Right).Register);
+
+                return true;
+            }
+            Right.EmitToStack(ec);
+            ec.EmitComment("$" + Right.CommentString());
+            ec.EmitPop(Register.Value);
+
+            ec.EmitInstruction(new Test() { DestinationReg = Register.Value, SourceValue = 1, Size = 80 });
+            // jumps
+            ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.ParityEven, ConditionalTestEnum.ParityOdd);
+            return true;
+        }
     }
 
     [Terminal("--")]
@@ -445,7 +504,9 @@ namespace VTC
             CommonType = Right.Type;
             if (Right is RegisterExpression)
                 RegisterOperation = true;
-
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[1] { Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Resolve(ResolveContext rc)
@@ -454,6 +515,12 @@ namespace VTC
         }
         public override bool Emit(EmitContext ec)
         {
+            if (OvlrdOp != null)
+            {
+                base.EmitOverrideOperator(ec);
+                
+                return Right.EmitFromStack(ec);
+            }
             if (RegisterOperation)
             {
                 ec.EmitComment( Right.CommentString()+"--");
@@ -480,6 +547,12 @@ namespace VTC
         }
         public override bool EmitToStack(EmitContext ec)
         {
+            if (OvlrdOp != null)
+            {
+                base.EmitOverrideOperator(ec);
+                ec.EmitPush(EmitContext.A);
+                return Right.EmitFromStack(ec);
+            }
             if (RegisterOperation)
             {
                 ec.EmitComment(Right.CommentString() + "--");
@@ -522,7 +595,9 @@ namespace VTC
             CommonType = Right.Type;
             if (Right is RegisterExpression)
                 RegisterOperation = true;
-
+            OvlrdOp = rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), new TypeSpec[1] { Right.Type });
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
             return this;
         }
         public override bool Resolve(ResolveContext rc)
@@ -531,6 +606,11 @@ namespace VTC
         }
         public override bool Emit(EmitContext ec)
         {
+            if (OvlrdOp != null)
+            {
+                base.EmitOverrideOperator(ec);
+                return Right.EmitFromStack(ec);
+            }
             if (RegisterOperation)
             {
                 ec.EmitComment(Right.CommentString() + "++");
@@ -557,6 +637,12 @@ namespace VTC
         }
         public override bool EmitToStack(EmitContext ec)
         {
+            if (OvlrdOp != null)
+            {
+                base.EmitOverrideOperator(ec);
+                ec.EmitPush(EmitContext.A);
+                return Right.EmitFromStack(ec);
+            }
             if (RegisterOperation)
             {
                 ec.EmitComment(Right.CommentString() + "++");

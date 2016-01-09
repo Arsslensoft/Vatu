@@ -86,7 +86,17 @@ namespace VTC
         public bool IsInUnion { get; set; }
         public bool IsInEnum { get; set; }
         public bool IsInVarDeclaration { get; set; }
-
+        public TypeSpec CurrentExtensionLookup
+        {
+            get { return Resolver.CurrentExtensionLookup; }
+            set { Resolver.CurrentExtensionLookup = value; }
+        }
+        public bool StaticExtensionLookup
+        {
+            get { return Resolver.IsExtensionStatic; }
+            set { Resolver.IsExtensionStatic = value; }
+        }
+        public Expr ExtensionVar { get; set; }
         public Namespace CurrentNamespace  { get { return Resolver.CurrentNamespace; }
             set { Resolver.CurrentNamespace = value; } }
         public List<Namespace> Imports { get; set; }
@@ -369,8 +379,16 @@ namespace VTC
 
             return false;
         }
-
-
+        public bool Extend(TypeSpec tp, FieldSpec mtd, bool stat = false)
+        {
+            return Resolver.Extend(tp, mtd);
+        }
+        public bool Extend(TypeSpec tp,MethodSpec mtd, bool stat=false)
+        {
+            if(!stat)
+           return Resolver.Extend(tp, mtd);
+            else return Resolver.ExtendStatic(tp, mtd);
+        }
         public void KnowMethod(MethodSpec mtd)
         {
             if (!Exist((MemberSpec)mtd, Resolver.KnownMethods.Cast<MemberSpec>().ToList<MemberSpec>()))

@@ -1,0 +1,93 @@
+﻿default asm {
+"[org 100h]";
+
+}
+namespace std;
+void print(string msg){
+asm{
+	"mov  dx, [BP+4]";
+	"mov  ah, 9 ";
+	}
+		interrupt 0x21;
+}
+void putc(byte c){
+
+asm{
+	"mov  dx, [BP+4]";
+	"mov  ah, 2 ";
+
+	}
+		interrupt 0x21;
+}
+
+namespace String;
+override bool operator ==(string b, string a)
+{
+ for(;*a == *b;) {
+
+   if(*a == 0)
+      return true;
+
+	  a++;
+	  b++;
+
+	 }
+	 
+return false;
+}
+
+namespace UINT;
+use std;
+uint MAX_VALUE = 65535u;
+uint MIN_VALUE = 0;
+
+
+MAX_VALUE extends uint;
+MIN_VALUE extends uint;
+void tostring(uint x) extends uint
+{
+if(x < 10u)
+putc((byte)x + 48);
+else
+{
+tostring(x / 10);
+putc((byte)(x % 10) + 48);
+}
+
+}
+void Hello() static extends string
+{
+ print("Hi$");
+}
+
+
+
+namespace DOS;
+use std;
+
+override string operator [](string s, uint d){
+
+s++;
+
+
+return s;
+}
+const string prompt = ">";
+string HelloWorld = "Hello World$";
+
+interrupt 0x85{
+print(HelloWorld);
+}
+
+entry  void main()
+{
+uint a = uint::MAX_VALUE;
+string x;
+a.tostring();
+putc(HelloWorld[0]);
+asm {
+"int 85h";
+}
+
+
+}

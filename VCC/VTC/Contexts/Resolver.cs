@@ -13,6 +13,8 @@ namespace VTC
     {
        public Resolver Parent { get; set; }
        public Namespace CurrentNamespace { get; set; }
+       public TypeSpec CurrentExtensionLookup { get; set; }
+       public bool IsExtensionStatic { get; set; }
        public List<Namespace> Imports { get; set; }
        public MethodSpec CurrentMethod { get; set; }
 
@@ -82,6 +84,60 @@ namespace VTC
         }
 
 
+        public bool Extend(TypeSpec tp, MethodSpec ms)
+        {
+            if (KnownTypes.Contains(tp))
+            {
+                for(int i = 0; i < KnownTypes.Count;i++)
+                    if (KnownTypes[i] == tp)
+                    {
+                        for(int j = 0; j < KnownTypes[i].ExtendedMethods.Count; j++)
+                             if (KnownTypes[i].ExtendedMethods[j].Signature.ExtensionSignature == ms.Signature.ExtensionSignature)
+                                return false;
+                     
+                            KnownTypes[i].ExtendedMethods.Add(ms);
+
+                    }
+            }
+            return true;
+        }
+        public bool Extend(TypeSpec tp, FieldSpec ms)
+        {
+            if (KnownTypes.Contains(tp))
+            {
+                for (int i = 0; i < KnownTypes.Count; i++)
+                    if (KnownTypes[i] == tp)
+                    {
+
+                        for (int j = 0; j < KnownTypes[i].ExtendedFields.Count; j++)
+                            if (KnownTypes[i].ExtendedFields[j].Signature.ExtensionSignature == ms.Signature.ExtensionSignature)
+                                return false;
+                     
+                            KnownTypes[i].ExtendedFields.Add(ms);
+
+                    }
+            }
+            return true                ;
+        }
+        public bool ExtendStatic(TypeSpec tp, MethodSpec ms)
+        {
+            if (KnownTypes.Contains(tp))
+            {
+                for (int i = 0; i < KnownTypes.Count; i++)
+                    if (KnownTypes[i] == tp)
+                    {
+                        for (int j = 0; j < KnownTypes[i].StaticExtendedMethods.Count; j++)
+                            if (KnownTypes[i].StaticExtendedMethods[j].Signature.ExtensionSignature == ms.Signature.ExtensionSignature)
+                                return false;
+
+                        KnownTypes[i].StaticExtendedMethods.Add(ms);
+
+                    }
+            }
+            return true;
+        }
+
+
         #region Resolve Members
         public MemberSpec TryResolveName(Namespace ns, string name)
         {
@@ -115,37 +171,85 @@ namespace VTC
         }
         public FieldSpec ResolveField(Namespace ns, string name)
         {
-            foreach (FieldSpec kt in KnownGlobals)
+            if (CurrentExtensionLookup == null)
             {
-                if (kt.NS.Name != ns.Name)
-                    continue;
-                if (kt.Name == name && !(kt.IsPrivate && kt.NS != CurrentNamespace))
-                    return kt;
-            }
-
-            return null;
-        }
-        public MethodSpec ResolveMethod(Namespace ns, string name, TypeSpec[] par=null)
-        {
-            if (par != null)
-            {
-                MemberSignature msig = new MemberSignature(ns, name,par, Location.Null);
-                foreach (MethodSpec kt in KnownMethods)
+                foreach (FieldSpec kt in KnownGlobals)
                 {
+
                     if (kt.NS.Name != ns.Name)
                         continue;
-                    if (kt.Signature == msig)
+                    if (kt.Name == name && !(kt.IsPrivate && kt.NS != CurrentNamespace))
                         return kt;
                 }
             }
             else
             {
-                foreach (MethodSpec kt in KnownMethods)
+                foreach (FieldSpec kt in CurrentExtensionLookup.ExtendedFields)
                 {
-                    if (kt.NS.Name != ns.Name)
-                        continue;
-                    if (kt.Name == name)
+                    if (kt.Name == name && !(kt.IsPrivate))
                         return kt;
+                }
+            }
+            return null;
+        }
+        public MethodSpec ResolveMethod(Namespace ns, string name, TypeSpec[] par=null)
+        {
+            if (CurrentExtensionLookup == null)
+            {
+                if (par != null)
+                {
+                    MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
+                    foreach (MethodSpec kt in KnownMethods)
+                    {
+                        if (kt.NS.Name != ns.Name)
+                            continue;
+                        if (kt.Signature == msig)
+                            return kt;
+                    }
+                }
+                else
+                {
+                    foreach (MethodSpec kt in KnownMethods)
+                    {
+                        if (kt.NS.Name != ns.Name)
+                            continue;
+                        if (kt.Name == name)
+                            return kt;
+                    }
+                }
+            }
+            else
+            {
+                List<MethodSpec> ml = CurrentExtensionLookup.ExtendedMethods;
+                if(IsExtensionStatic)
+                    ml = CurrentExtensionLookup.StaticExtendedMethods;
+                if (par != null && !IsExtensionStatic)
+                {
+                    List<TypeSpec> ts = new List<TypeSpec>();
+                    ts.AddRange(par);
+                    ts.Insert(0, CurrentExtensionLookup);
+                    par = ts.ToArray();
+                }
+                else if(!IsExtensionStatic)
+                    par = new TypeSpec[1] { CurrentExtensionLookup };
+
+                if (par != null)
+                {
+                    MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
+                    foreach (MethodSpec kt in ml)
+                    {
+                        if (kt.Signature.ExtensionSignature == msig.ExtensionSignature)
+                            return kt;
+                    }
+                }
+                else
+                {
+                    foreach (MethodSpec kt in ml)
+                    {
+                  
+                        if (kt.Name == name)
+                            return kt;
+                    }
                 }
             }
             return null;

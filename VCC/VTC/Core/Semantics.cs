@@ -10,6 +10,11 @@ using Vasm.x86;
 
 namespace VTC.Core
 {
+    [Terminal("[]")]
+    [Terminal("extends")]
+    [Terminal("vfastcall")]
+    [Terminal("ref")]
+    [Terminal("isolated")]
     [Terminal("interrupt")]
      [Terminal("union")]
     [Terminal("pascal")]
@@ -360,11 +365,30 @@ namespace VTC.Core
    
     public class AccessOp : Operator
     {
+        public MethodSpec OvlrdOp { get; set; }
         public virtual int  Offset { get { return 0; } }
         public virtual MemberSpec Member { get { return null; } }
         public AccessOperator _op;
         public RegistersEnum? Register { get; set; }
-   
+        public virtual bool EmitOverrideOperatorAddress(EmitContext ec)
+        {
+            Left.EmitToStack(ec);
+            Right.EmitToStack(ec);
+            ec.EmitComment("Override Operator : " + _op.ToString() + " " + Right.CommentString());
+            ec.EmitCall(OvlrdOp);
+            ec.EmitPush(EmitContext.A);
+            return true;
+        }
+        public virtual bool EmitOverrideOperatorValue(EmitContext ec)
+        {
+            Left.EmitToStack(ec);
+            Right.EmitToStack(ec);
+            ec.EmitComment("Override Operator : " + _op.ToString() + " " + Right.CommentString());
+            ec.EmitCall(OvlrdOp);
+            ec.EmitInstruction(new Mov() { SourceReg = EmitContext.A, DestinationReg = EmitContext.SI});
+            ec.EmitPush(EmitContext.SI, 80, true);
+            return true;
+        }
     }
     public class BinaryOp : Operator
     {
@@ -410,12 +434,42 @@ namespace VTC.Core
     }
     public class UnaryOp : Operator
     {
-
+        public MethodSpec OvlrdOp { get; set; }
         protected bool RegisterOperation = false;
         public RegistersEnum? Register { get; set; }
         public UnaryOperator Operator { get; set; }
 
-       
+        public virtual bool EmitOverrideOperator(EmitContext ec)
+        {
+
+            Right.EmitToStack(ec);
+            ec.EmitComment("Override Operator : " + Operator.ToString() + " " + Right.CommentString());
+            ec.EmitCall(OvlrdOp);
+            ec.EmitPush(EmitContext.A);
+            return true;
+        }
+        public virtual bool EmitOverrideOperatorBranchable(EmitContext ec, Label truecase, bool v, ConditionalTestEnum cond, ConditionalTestEnum acond)
+        {
+  
+            Right.EmitToStack(ec);
+            ec.EmitComment("Override Operator : " +  Operator.ToString() + " " + Right.CommentString());
+            ec.EmitCall(OvlrdOp);
+
+            ec.EmitPush(EmitContext.A);
+            ec.EmitPop(Register.Value);
+
+            if (CommonType.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(Register.Value), SourceValue = EmitContext.TRUE, Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = Register.Value, SourceValue = EmitContext.TRUE, Size = 80 });
+
+            if (v)
+                ec.EmitInstruction(new ConditionalJump() { Condition = cond, DestinationLabel = truecase.Name });
+            else
+                ec.EmitInstruction(new ConditionalJump() { Condition = acond, DestinationLabel = truecase.Name });
+
+            return true;
+        }
     }
     public class AssignOp : Operator
     {
