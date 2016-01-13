@@ -346,7 +346,7 @@ namespace VTC.Core
     {
         int _value;
         public NullConstant(Location loc)
-            : base(BuiltinTypeSpec.Int, loc)
+            : base(BuiltinTypeSpec.UInt, loc)
         {
             _value = 0;
         }
@@ -363,7 +363,18 @@ namespace VTC.Core
         {
             return _value;
         }
+        public override ConstantExpression ConvertImplicitly(ResolveContext rc, TypeSpec type, ref bool cv)
+        {
+            cv = false;
+            if (type.IsPointer)
+            {
+                cv = true;
+                this.type = type;
+          
 
+            }
+             return this;
+        }
         public override bool Emit(EmitContext ec)
         {
             EmitToStack(ec);

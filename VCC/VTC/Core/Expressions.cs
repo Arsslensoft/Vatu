@@ -209,7 +209,7 @@ namespace VTC.Core
     {
         public MethodSpec Method { get; set; }
         public List<Expr> Parameters { get; set; }
-        
+        bool isdelegate = false;
         protected Identifier _id;
         protected ParameterSequence<Expr> _param;
         [Rule(@"<Value>       ::= Id ~'(' <PARAM EXPR> ~')'")]
@@ -224,10 +224,32 @@ namespace VTC.Core
             _id = id;
             _param = null;
         }
-        //TODO:CALL PARAMS
+        MemberSpec DelegateVar;
+        bool ResolveDelegate(ResolveContext rc)
+        {
+            MemberSpec r = rc.Resolver.TryResolveName(_id.Name);
+            if (r is MethodSpec)
+                return false;
+            else if(r != null)
+            {
+                if (!r.MemberType.IsDelegate)
+                    ResolveContext.Report.Error(0, Location, "Only delegate can be called with parameters");
+                else
+                {
+                    isdelegate = true;
+                    if (MatchParameterTypes(r.MemberType as DelegateTypeSpec))
+                    {
+                        DelegateVar = r;
+                        return true;
+                    }
+                    else { ResolveContext.Report.Error(0, Location, "Delegate parameters mismatch"); return false; }
+                }
+            }
+            return false;
+        }
         public override bool Resolve(ResolveContext rc)
         {
-            Method = rc.Resolver.TryResolveMethod(_id.Name);
+        
             bool ok = true;
             if (_param != null)
                 ok &= _param.Resolve(rc);
@@ -253,24 +275,32 @@ namespace VTC.Core
             MemberSignature msig= new MemberSignature();
             if (tp.Count > 0)
             {
-                Method = rc.Resolver.TryResolveMethod(_id.Name, tp.ToArray());
+                if (!ResolveDelegate(rc))
+                    Method = rc.Resolver.TryResolveMethod(_id.Name, tp.ToArray());
+                else
+                {
+                    Type = (DelegateVar.MemberType as DelegateTypeSpec).ReturnType;
+                    return this;
+                }
+
                 if (Method == null)
                     msig = new MemberSignature(rc.CurrentNamespace, _id.Name, tp.ToArray(), loc);
 
             }
             else
             {
-                Method = rc.Resolver.TryResolveMethod(_id.Name);
+                if (!ResolveDelegate(rc))
+                    Method = rc.Resolver.TryResolveMethod(_id.Name);
                 if (Method == null)
                     msig = new MemberSignature(rc.CurrentNamespace, _id.Name, tp.ToArray(), loc);
             }
-           if ((rc.CurrentScope & ResolveScopes.AccessOperation) == ResolveScopes.AccessOperation)
+           if ((rc.CurrentScope & ResolveScopes.AccessOperation) == ResolveScopes.AccessOperation && rc.CurrentExtensionLookup != null)
             {
                 if (Method == null)
                     ResolveContext.Report.Error(46, Location, "Unresolved extension method");
-                else if (rc.ExtensionVar != null && Parameters.Count < Method.Parameters.Count)
+                else if (rc.ExtensionVar != null &&  Parameters.Count < Method.Parameters.Count)
                     Parameters.Add(rc.ExtensionVar);
-                else if(!rc.StaticExtensionLookup)
+                else if (!rc.StaticExtensionLookup)
                     ResolveContext.Report.Error(46, Location, "Extension methods must be called with less parameters by 1, the first is reserved for the extended type");
             }
             if(Method == null)
@@ -292,10 +322,24 @@ namespace VTC.Core
 
             return true;
         }
+        bool MatchParameterTypes(DelegateTypeSpec t)
+        {
+            for (int i = 0; i < t.Parameters.Count; i++)
+                if (!TypeChecker.CompatibleTypes(Parameters[i].Type, t.Parameters[i]))
+                    return false;
+
+            return true;
+        }
         CallingConventionsHandler ccvh;
         public override bool Emit(EmitContext ec)
         {
-
+            if (isdelegate && DelegateVar != null)
+            {
+                DelegateVar.EmitToStack(ec);
+                ec.EmitPop(RegistersEnum.BX);
+                ccvh.EmitCall(ec, Parameters, DelegateVar, RegistersEnum.BX, (DelegateVar.MemberType as DelegateTypeSpec).CCV);
+            }
+            else
             ccvh.EmitCall(ec, Parameters, Method);
                            
        
@@ -312,7 +356,13 @@ namespace VTC.Core
             throw new NotImplementedException();
        //     return base.EmitFromStack(ec);
         }
-
+        public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
+        {
+            Emit(ec);
+            ec.EmitInstruction(new Compare() { DestinationReg = EmitContext.A, SourceValue = (ushort)1 });
+            ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.Equal, ConditionalTestEnum.NotEqual);
+            return base.EmitBranchable(ec, truecase, v);
+        }
         public override string CommentString()
         {
             return _id.Name + ((_param== null)?"()":"(" + ")");
@@ -425,17 +475,55 @@ namespace VTC.Core
   
     public class AccessExpression : VariableExpression
     {
+        public static RegistersEnum LastUsed;
+        public static void SetNext()
+        {
+            if (LastUsed == RegistersEnum.SI)
+                LastUsed = RegistersEnum.DI;
+            else LastUsed = RegistersEnum.SI;
+        }
+
+      
         bool IsExpr { get; set; }
         bool IsByAdr { get; set; }
         int AccessIndex { get; set; }
         TypeSpec MemberT { get; set; }
+        MemberSpec RootVar = null;
+        AccessExpression Parent = null;
+
+        public bool IsByIndex { get; set; }
+
+        public AccessExpression(MemberSpec ms,AccessExpression parent )
+            : base(ms)
+        {
+
+            if (parent != null && parent.IsByAdr)
+                Parent = parent;
+           
+
+           
+
+            IsByAdr = false;
+            IsExpr = false;
+
+            Type = ms.MemberType;
+        }
         /// <summary>
         /// ByVal ccess operator
         /// </summary>
         /// <param name="ms"></param>
-        public AccessExpression(MemberSpec ms, bool adr = false, int index = 0, TypeSpec mem = null)
+        public AccessExpression(MemberSpec ms,AccessExpression parent, bool adr = false, int index = 0, TypeSpec mem = null)
             : base(ms)
         {
+            if (adr)
+            {
+                RootVar = ms;
+                SetNext();
+                variable = new RegisterSpec(mem, LastUsed,Location,index);
+              
+            }
+            if(parent != null)
+                Parent = parent;
             IsByAdr = adr;
            IsExpr = false;
            AccessIndex = index;
@@ -448,6 +536,7 @@ namespace VTC.Core
         public AccessOp Operator { get; set; }
         public AccessExpression(VariableExpression left, Expr right, AccessOp op) : base(left.variable)
         {
+            IsByIndex = true;
             IsExpr = true;
             Left = left;
             Right = right;
@@ -455,27 +544,68 @@ namespace VTC.Core
             Type = left.Type.BaseType;
         }
 
+       
+        public void EmitIndirections(EmitContext ec)
+        {
+
+
+            if (Parent != null && !Parent.IsByIndex && !IsExpr)
+            {
+                if (Parent.Parent != null)
+                    Parent.EmitIndirections(ec);
+
+                if (IsByAdr)
+                {
+
+                    Parent.variable.EmitToStack(ec);
+                    ec.EmitPop((variable as RegisterSpec).Register);
+                }
+            }
+            else if (Parent != null) // by index
+            {
+                Parent.EmitToStack(ec);
+                ec.EmitPop((variable as RegisterSpec).Register);
+            }
+        }
         public override bool Emit(EmitContext ec)
         {
+            ec.EmitComment("Indirections ");
+            EmitIndirections(ec);
+
             if (!IsExpr && !IsByAdr)
                 return base.Emit(ec);
             else if (IsByAdr)
-                return EmitToStack(ec);
+            {
+                if (variable is VarSpec)
+                    variable.ValueOfAccess(ec, AccessIndex, MemberT);
+                else if (variable is FieldSpec)
+                    variable.ValueOfAccess(ec, AccessIndex, MemberT);
+                else if (variable is ParameterSpec)
+                    variable.ValueOfAccess(ec, AccessIndex, MemberT);
+                else if (variable is RegisterSpec)
+                    variable.EmitToStack(ec);
+                return true;
+            }
             else
                 return Operator.Emit(ec);
         }
         public override bool EmitFromStack(EmitContext ec)
         {
+            ec.EmitComment("Indirections ");
+            EmitIndirections(ec);
             if (!IsExpr && !IsByAdr)
                 return base.EmitFromStack(ec);
             else if (IsByAdr)
             {
+
                 if (variable is VarSpec)
                     variable.ValueOfStackAccess(ec, AccessIndex, MemberT);
                 else if (variable is FieldSpec)
                     variable.ValueOfStackAccess(ec, AccessIndex, MemberT);
                 else if (variable is ParameterSpec)
                     variable.ValueOfStackAccess(ec, AccessIndex, MemberT);
+                else if (variable is RegisterSpec)
+                    variable.EmitFromStack(ec);
                 return true;
 
             }
@@ -484,6 +614,10 @@ namespace VTC.Core
         }
         public override bool EmitToStack(EmitContext ec)
         {
+            ec.EmitComment("Indirections ");
+            EmitIndirections(ec);
+
+
             if (!IsExpr && !IsByAdr)
                 return base.EmitToStack(ec);
             else if (IsByAdr)
@@ -495,7 +629,8 @@ namespace VTC.Core
                     variable.ValueOfAccess(ec, AccessIndex, MemberT);
                 else if (variable is ParameterSpec)
                     variable.ValueOfAccess(ec,AccessIndex,MemberT);
-
+                else if (variable is RegisterSpec)
+                    variable.EmitToStack(ec);
                 return true;
             }
             else
@@ -588,6 +723,8 @@ namespace VTC.Core
                 variable.EmitFromStack(ec);
             else if (variable is ParameterSpec)
                 variable.EmitFromStack(ec);
+            else if (variable is RegisterSpec)
+                variable.EmitFromStack(ec);
             return true;
         }
         public override bool EmitToStack(EmitContext ec)
@@ -602,7 +739,8 @@ namespace VTC.Core
                 variable.EmitToStack(ec);
             else if (variable is ParameterSpec)
                 variable.EmitToStack(ec);
-
+            else if (variable is RegisterSpec)
+                variable.EmitToStack(ec);
             return true;
         }
         public override string CommentString()
@@ -756,31 +894,30 @@ namespace VTC.Core
                    
             if (_op._op != AccessOperator.ByName)
             {
-             
-                _op.Left = (Expr)_op.Left.DoResolve(rc);
-                if (_op._op == AccessOperator.ByValue && _op.Left is VariableExpression)
+
+                if (_op.Right is MethodExpression)
                 {
+                    _op.Left = (Expr)_op.Left.DoResolve(rc);
+
                     rc.CurrentExtensionLookup = _op.Left.Type;
                     rc.StaticExtensionLookup = false;
                     rc.ExtensionVar = _op.Left;
-
                     _op.Right = (Expr)_op.Right.DoResolve(rc);
-                    if (_op.Right is VariableExpression && (_op.Right as VariableExpression).variable == null)
-                        ResolveContext.Report.Error(0,Location,"Unresolved extended field");
-                    else if (_op.Right is MethodExpression && (_op.Right as MethodExpression).Method == null)
-                        ResolveContext.Report.Error(0, Location, "Unresolved extended method");
-
+                    rc.StaticExtensionLookup = false;
                     rc.ExtensionVar = null;
-                    rc.CurrentExtensionLookup = null;
+
 
                     rc.CurrentScope &= ~ResolveScopes.AccessOperation;
                     return _op.Right;
                 }
-                else _op.Right = (Expr)_op.Right.DoResolve(rc);
-            
-                rc.CurrentScope &= ~ResolveScopes.AccessOperation;
-                 return _op.DoResolve(rc);
+                else
+                {
+                    _op.Right = (Expr)_op.Right.DoResolve(rc);
+                    _op.Left = (Expr)_op.Left.DoResolve(rc);
 
+                    rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+                    return _op.DoResolve(rc);
+                }
             }
             else
             {

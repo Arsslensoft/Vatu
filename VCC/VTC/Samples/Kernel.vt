@@ -252,7 +252,7 @@ if(a < 10)
   putc((byte)(a+48));
   else{
   	tostring(a / 10);
-  	putc(48+(a % 10));
+  	putc(48+(byte)(a % 10));
 
   }
 
@@ -263,7 +263,7 @@ if(a < 10)
     uint start = 0;
     uint end;
 
-	end = length -1;
+	end = length - 1;
     while (start < end)
     {
        str[start] <> str[end];
@@ -348,6 +348,8 @@ namespace VTOS;
 use std;
 use String;
 use OPERATIONS;
+
+
 const string prompt = ">";
 string input = "000000000000000000000000000000000000000000000000000000000";
 const string hello_cmd = "hello";
@@ -357,6 +359,7 @@ const string op_help = "help";
 const string op_sd = "shutdown";
 const string op_res = "restart";
 const string op_swap = "s";
+
 
 const string help_msg = "oper : Operation, help : Help, hello : Hello World, about : About, shutdown, restart";
 const string about_text = "This os is a simple demo written to test Vatu compiler";
@@ -380,57 +383,39 @@ asm{
     "int 0x15";
 	}
 }
-struct XA v;
-void testArrayCast(){
-int i=0;
-byte *p;
-byte bk;
-
-// allocation
-struct XA a;
-struct XA b;
-struct XA* px;
-v.b = 66;
-a.b = 65;
-px = &a;
-b = *px;
-bk = v.b;
-p = &(bk);
-putc(a.b);
-putc(b.b);
-putc(v.b);
-putc(*p);
-/*
-// assign
-buffer[0] =&a;
-buffer[1] = &b;
 
 
-
-struct XA x;
-struct XA* px;
-for(i = 0;i < 2; i++){
-	px = buffer[i];
-	x = *(px);
-	x.b = 65+i;
-	}
-
-	lnprint("Result : ");
-for(i = 0;i < 2; i++){
-px = buffer[i];
-		x = *(px);
-	putc(x.b);
-
-	}*/
-lnprint(" ");	
+interrupt 0x86
+{
+ uint dest;
+ dest = AX;
+ if(dest == 1)
+	shutdown();
+ else if(dest == 2)
+    restart();
 }
+interrupt 0
+{
+ lnprint("Division par zero");
+}
+
+void printA(string a) extends string
+{
+ print("Your message was ");
+ lnprint(a);
+ print("HGJ");
+}
+void Hello() static extends void
+ {
+ lnprint(" Hello from extend ");
+ }
 entry void main()
 {
 
 cls();
 	print_color("Welcome to Vatu OS Kernel", CONSOLE_COLORS.BLUE);
 	lnprint("Write your command : ");
-	testArrayCast();
+	
 	loop{
 	lnprint(prompt);
 	getstring(input);
@@ -440,14 +425,23 @@ cls();
 			lnprint(about_text);
 	else if(op_cmd == input)
 	  operate();
-	else if(op_help == input)
+	else if(op_help == input){
 	 lnprint(help_msg);
-	else if(op_sd == input)
-		shutdown();
+	 op_help.printA();
+	 void::Hello();
+	 }
+	else if(op_sd == input){
+	    AX = 1;
+		interrupt 0x86;
+
+		}
 	else if(op_res == input)
-		restart();
-	else if(op_res == input)
-		restart();
+	{
+	    AX = 2;
+		asm{"int 86h";}
+	
+
+		}
 
 	else
 		lnprint("Unknown command");

@@ -58,7 +58,7 @@ namespace VTC
                         vr.StackIdx += Left.Type.BaseType.Size*Index;
                        
 
-                        return new AccessExpression(vr);
+                       return new AccessExpression(vr,(Left is AccessExpression)?(Left as AccessExpression):null);
                     }
                     else if (ve.variable is FieldSpec)
                     {
@@ -68,7 +68,7 @@ namespace VTC
                
                        vr.FieldOffset  += Left.Type.BaseType.Size*Index;
                      
-                        return new AccessExpression(vr);
+                        return new AccessExpression(vr,(Left is AccessExpression)?(Left as AccessExpression):null);
                     }
                     
                 }
@@ -267,7 +267,35 @@ namespace VTC
             return false;
 
         }
+        public bool ResolveExtension(ResolveContext rc)
+        {
+            rc.CurrentExtensionLookup = Left.Type;
+            rc.StaticExtensionLookup = false;
+            rc.ExtensionVar = Left;
 
+            Right = (Expr)Right.DoResolve(rc);
+            if (Right is VariableExpression && (Right as VariableExpression).variable == null)
+            {
+
+                ResolveContext.Report.Error(0, Location, "Unresolved extended field");
+                rc.ExtensionVar = null;
+                rc.CurrentExtensionLookup = null;
+                return false;
+            }
+            else if (Right is MethodExpression && (Right as MethodExpression).Method == null)
+            {
+            
+                rc.ExtensionVar = null;
+                rc.CurrentExtensionLookup = null;
+                return false;
+            }
+
+            rc.ExtensionVar = null;
+            rc.CurrentExtensionLookup = null;
+
+      
+            return true;
+        }
         TypeMemberSpec tmp = null;
         public bool ResolveStructOrUnionMember(ResolveContext rc, MemberSpec mem, ref TypeMemberSpec tmp, VariableExpression lv, VariableExpression rv)
         {
@@ -275,13 +303,13 @@ namespace VTC
             if (!mem.MemberType.IsPointer)
             {
                 if (!mem.MemberType.IsForeignType)
-                    ResolveContext.Report.Error(15, Location, "'.' operator allowed only with struct union based types");
-                else if(mem.MemberType.IsStruct)
+                    return false;
+                else if (mem.MemberType.IsStruct)
                 {
                     StructTypeSpec stp = (StructTypeSpec)mem.MemberType;
                     tmp = stp.ResolveMember(rv.Name);
                     if (tmp == null)
-                        ResolveContext.Report.Error(16, Location, rv.Name + " is not defined in struct " + stp.Name);
+                        return false;
                     else
                     {
                         // Resolve
@@ -295,7 +323,7 @@ namespace VTC
                     UnionTypeSpec stp = (UnionTypeSpec)mem.MemberType;
                     tmp = stp.ResolveMember(rv.Name);
                     if (tmp == null)
-                        ResolveContext.Report.Error(16, Location, rv.Name + " is not defined in union " + stp.Name);
+                        return false;
                     else
                     {
                         // Resolve
@@ -306,7 +334,7 @@ namespace VTC
 
                 }
             }
-            else ResolveContext.Report.Error(17, Location, "Cannot use '.' operator with pointer types use '->' instead");
+            else return false;
 
 
             return false;
@@ -314,8 +342,15 @@ namespace VTC
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             // Check if left is type
+        
+            if (Left is VariableExpression && Right is MethodExpression)
+            {
+                if (!ResolveExtension(rc))
+                    ResolveContext.Report.Error(0, Location, "Unresolved extended method");
+                else return Right;
 
-          if (Left is VariableExpression && Right is VariableExpression)
+            }
+            else  if (Left is VariableExpression && Right is VariableExpression)
             {
 
 
@@ -324,25 +359,44 @@ namespace VTC
                 // enum
                 bool ok = ResolveEnumValue(rc, lv, rv);
                 if (ok)
-                    return new AccessExpression(enumval);
+                    return new AccessExpression(enumval,null);
 
                 // struct member
                 if (!ok)
                 {
                     struct_var = lv.variable;
-                  
+
                     if (struct_var != null)
                     {
                         ok = ResolveStructOrUnionMember(rc, struct_var, ref tmp, lv, rv);
                         rv.variable = tmp;
-                      
+                        if (!ok)
+                        {
+                
+                       // field extension
+                        if (!ResolveExtension(rc))
+                            ResolveContext.Report.Error(0, Location, "Unresolved extended field or member");
+                        else return Right;
+                   
+
+                    
+                        }
                         if (struct_var is VarSpec)
                         {
                             VarSpec v = (VarSpec)struct_var;
 
                             VarSpec dst = new VarSpec(v.NS, v.Name, v.MethodHost, tmp.MemberType, Location, v.Modifiers);
                             dst.StackIdx = v.StackIdx + index;
-                            return new AccessExpression(dst);
+                            return new AccessExpression(dst, Left as AccessExpression);
+
+                        }
+                        else if (struct_var is RegisterSpec)
+                        {
+                            RegisterSpec v = (RegisterSpec)struct_var;
+
+                            RegisterSpec dst = new RegisterSpec(tmp.MemberType, v.Register, Location,0);
+                            dst.RegisterIndex = v.RegisterIndex + index;
+                            return new AccessExpression(dst,Left as AccessExpression);
 
                         }
                         else if (struct_var is FieldSpec)
@@ -351,7 +405,7 @@ namespace VTC
 
                             FieldSpec dst = new FieldSpec(v.NS, v.Name, v.Modifiers, tmp.MemberType, Location);
                             dst.FieldOffset = v.FieldOffset + index;
-                            return new AccessExpression(dst);
+                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null);
                         }
                         else if (struct_var is ParameterSpec)
                         {
@@ -361,10 +415,11 @@ namespace VTC
 
                             dst.StackIdx = v.StackIdx + index;
 
-                            return new AccessExpression(dst);
+                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null);
                         }
                         this.CommonType = tmp.MemberType;
                     }
+                   
                 }
 
                 // error
@@ -421,7 +476,11 @@ namespace VTC
                     ResolveContext.Report.Error(15, Location, "'->' operator allowed only with struct union based types");
                 else if(mem.MemberType.IsStruct)
                 {
-                    StructTypeSpec stp = (StructTypeSpec)mem.MemberType.BaseType;
+                    StructTypeSpec stp = null;
+                    if(Left is AccessExpression && (Left as AccessExpression).IsByIndex)
+                       stp= (StructTypeSpec)mem.MemberType.BaseType.BaseType;
+                    else stp = (StructTypeSpec)mem.MemberType.BaseType;
+
                     tmp = stp.ResolveMember(rv.Name);
                     if (tmp == null)
                         ResolveContext.Report.Error(16, Location, rv.Name + " is not defined in struct " + stp.Name);
@@ -435,7 +494,10 @@ namespace VTC
                 }
                 else
                 {
-                    UnionTypeSpec stp = (UnionTypeSpec)mem.MemberType.BaseType;
+                    UnionTypeSpec stp =null;
+                    if (Left is AccessExpression && (Left as AccessExpression).IsByIndex)
+                        stp = (UnionTypeSpec)mem.MemberType.BaseType.BaseType;
+                    else stp = (UnionTypeSpec)mem.MemberType.BaseType;
                     tmp = stp.ResolveMember(rv.Name);
                     if (tmp == null)
                         ResolveContext.Report.Error(16, Location, rv.Name + " is not defined in union " + stp.Name);
@@ -459,6 +521,7 @@ namespace VTC
             // Check if left is type
             if (Left is VariableExpression && Right is VariableExpression)
             {
+          
 
 
                 VariableExpression lv = (VariableExpression)Left;
@@ -479,23 +542,28 @@ namespace VTC
                         if (struct_var is VarSpec)
                         {
                             VarSpec dst = (VarSpec)struct_var;
+                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, true, index, tmp.MemberType);
 
-                            return new AccessExpression(dst, true,index, tmp.MemberType);
+                        }
+                        else if (struct_var is RegisterSpec)
+                        {
+                            RegisterSpec dst = (RegisterSpec)struct_var;
+                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, true, index, tmp.MemberType);
 
                         }
                         else if (struct_var is FieldSpec)
                         {
                             FieldSpec dst = (FieldSpec)struct_var;
 
-                         
-                            return new AccessExpression(dst, true,index,tmp.MemberType);
+
+                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, true, index, tmp.MemberType);
                         }
                         else if (struct_var is ParameterSpec)
                         {
                             ParameterSpec dst = (ParameterSpec)struct_var;
 
-                           
-                            return new AccessExpression(dst,true,index,tmp.MemberType);
+
+                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, true, index, tmp.MemberType);
                         }
                         this.CommonType = tmp.MemberType;
                     }

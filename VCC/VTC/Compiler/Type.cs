@@ -122,7 +122,8 @@ namespace VTC
         Void = 1 << 7,
         Null = 1 << 8,
         Register = 1 << 9,
-        Union = 1 << 10
+        Union = 1 << 10,
+        Delegate = 1 << 11
     }
     /// <summary>
     /// Member Modifiers
@@ -137,7 +138,8 @@ namespace VTC
        
         Const = 1 << 4,
         Private = 1 << 5,
-        Ref = 1 << 6
+        Ref = 1 << 6,
+        Public = 1 << 7
     }
 
     public enum Specifiers
@@ -266,6 +268,7 @@ namespace VTC
         {
             get
             {
+               
                 if (IsTypeDef)
                     return GetTypeDefBase(this).Size;
                 return _size;
@@ -317,6 +320,14 @@ namespace VTC
             get
             {
                 return _bt == BuiltinTypes.Unknown && ((_flags & TypeFlags.Union) == TypeFlags.Union);
+            }
+
+        }
+        public bool IsDelegate
+        {
+            get
+            {
+                return _bt == BuiltinTypes.Unknown && ((_flags & TypeFlags.Delegate) == TypeFlags.Delegate);
             }
 
         }
@@ -442,6 +453,20 @@ namespace VTC
             }
             return 0;
         }
+        public TypeSpec(Namespace ns, string name, BuiltinTypes bt, TypeFlags flags, Modifiers mods, Location loc,List<TypeSpec> param, TypeSpec basetype = null)
+            : base(name, new MemberSignature(ns, name,param.ToArray(), loc), mods, ReferenceKind.Type)
+        {
+            NS = ns;
+            _bt = bt;
+            _flags = flags;
+            _base = basetype;
+            _size = GetSize(this);
+
+            StaticExtendedMethods = new List<MethodSpec>();
+            ExtendedFields = new List<FieldSpec>();
+            ExtendedMethods = new List<MethodSpec>();
+        }
+
 
         public TypeSpec(Namespace ns, string name, BuiltinTypes bt, TypeFlags flags, Modifiers mods, Location loc, TypeSpec basetype = null)
             : base(name, new MemberSignature(ns, name, loc), mods, ReferenceKind.Type)
@@ -509,7 +534,7 @@ namespace VTC
     }
 
     /// <summary>
-    /// Pointer Type
+    /// Register Type
     /// </summary>
     public class RegisterTypeSpec : TypeSpec
     {
@@ -649,7 +674,7 @@ namespace VTC
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            bool isind = !memberType.IsPointer;
+            bool isind = !memberType.IsPointer || FieldOffset > 0;
             if (memberType.Size == 1)
             {
                 ec.EmitComment("Push Field @" + Signature.ToString() + " " + FieldOffset);
@@ -779,7 +804,169 @@ namespace VTC
         }
       
     }
+    /// <summary>
+    /// Register Spec
+    /// </summary>
+    public class RegisterSpec : MemberSpec, IEquatable<RegisterSpec>
+    {
 
+
+        public int RegisterIndex { get; set; }
+        public RegistersEnum Register { get; set; }
+
+
+        public RegisterSpec(TypeSpec type, RegistersEnum rg, Location loc,int index)
+            : base(rg.ToString(), new MemberSignature(Namespace.Default, rg.ToString(), loc), Modifiers.NoModifier, ReferenceKind.LocalVariable)
+        {
+            Register = rg;
+            memberType = type;
+            RegisterIndex =index;
+        }
+        public override string ToString()
+        {
+            return Signature.ToString();
+        }
+
+        public override bool EmitToStack(EmitContext ec)
+        {
+            if (MemberType.Size == 1)
+            {
+
+                ec.EmitComment("Push Var @" + Register.ToString() + RegisterIndex);
+                ec.EmitInstruction(new MoveZeroExtend() { DestinationReg = EmitContext.D, SourceReg = Register, SourceDisplacement = RegisterIndex, SourceIsIndirect = true, Size = 8 });
+                ec.EmitInstruction(new Push() { DestinationReg = EmitContext.D, Size = 16 });
+            }
+            else if (MemberType.Size <= 2)
+            {
+                ec.EmitComment("Push Var @" + Register.ToString() + RegisterIndex);
+                ec.EmitInstruction(new Push() { DestinationReg = Register, DestinationDisplacement = RegisterIndex, DestinationIsIndirect = true, Size = MemberType.SizeInBits });
+            }
+            else // is composed type
+            {
+                ec.EmitComment("Push Var [TypeOf " + MemberType.Name + "] @" + Register.ToString() + RegisterIndex);
+                PushAllFromRegister(ec, Register, MemberType.Size, RegisterIndex);
+                //int s = MemberType.Size / 2;
+
+                //if (MemberType.Size % 2 != 0)
+                //    ec.EmitInstruction(new Push() { DestinationReg = Register, DestinationDisplacement = RegisterIndex-1+MemberType.Size, DestinationIsIndirect = true, Size = 8 });
+
+                //for (int i = s-1; i >= 0; i--)
+                //    ec.EmitInstruction(new Push() { DestinationReg = Register, DestinationDisplacement = RegisterIndex + 2 * i, DestinationIsIndirect = true, Size = 16 });
+
+
+            }
+            return true;
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            if (MemberType.Size == 1)
+            {
+                ec.EmitComment("Pop Var @" + Register.ToString() + RegisterIndex);
+                ec.EmitInstruction(new Pop() { DestinationReg = EmitContext.D, Size = 16 });
+                ec.EmitInstruction(new Mov() { DestinationReg = Register, Size = 8, DestinationDisplacement = RegisterIndex, DestinationIsIndirect = true, SourceReg = ec.GetLow(EmitContext.D) });
+            }
+            else if (MemberType.Size <= 2)
+            {
+                ec.EmitComment("Pop Var @" + Register.ToString() + RegisterIndex);
+                ec.EmitInstruction(new Pop() { Size = memberType.SizeInBits, DestinationReg = Register, DestinationDisplacement = RegisterIndex, DestinationIsIndirect = true });
+            }
+
+            else // composed type
+            {
+                ec.EmitComment("Pop Var [TypeOf " + MemberType.Name + "] @" + Register.ToString() + RegisterIndex);
+                PopAllToRegister(ec, Register, MemberType.Size, RegisterIndex);
+                /* int s = MemberType.Size / 2;
+
+             
+                 for (int i = 0; i < s; i++)
+                     ec.EmitInstruction(new Pop() { DestinationReg = Register, DestinationDisplacement = RegisterIndex + 2 * i, DestinationIsIndirect = true, Size = 16 });
+                 if (MemberType.Size % 2 != 0)
+                     ec.EmitInstruction(new Pop() { DestinationReg = Register, DestinationDisplacement = RegisterIndex - 1 + MemberType.Size, DestinationIsIndirect = true, Size = 8 });
+                 */
+
+            }
+
+
+            return true;
+        }
+
+        public override bool LoadEffectiveAddress(EmitContext ec)
+        {
+
+            ec.EmitComment("AddressOf @" + Register.ToString() + RegisterIndex);
+            ec.EmitInstruction(new Lea() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = Register, SourceDisplacement = RegisterIndex });
+            ec.EmitPush(EmitContext.SI);
+
+            /*       ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI,  Size = 16, SourceReg = Register });
+                   ec.EmitInstruction(new Sub() { DestinationReg = EmitContext.SI, SourceValue = (ushort)(-RegisterIndex) });
+                   ec.EmitPush(EmitContext.SI);*/
+            return true;
+        }
+        public override bool ValueOf(EmitContext ec)
+        {
+            ec.EmitComment("ValueOf @" + Register.ToString() + RegisterIndex);
+            ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = Register, SourceDisplacement = RegisterIndex });
+            if (MemberType.BaseType.Size <= 2)
+                ec.EmitPush(EmitContext.SI, MemberType.BaseType.SizeInBits, true);
+            else
+            {
+
+                ec.EmitComment("Push ValueOf Var [TypeOf " + MemberType.Name + "] @" + Register.ToString() + RegisterIndex);
+
+                PushAllFromRegister(ec, EmitContext.SI, MemberType.BaseType.Size, 0);
+            }
+            return true;
+        }
+        public override bool ValueOfStack(EmitContext ec)
+        {
+            ec.EmitComment("ValueOf Stack @" + Register.ToString() + RegisterIndex);
+            ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = Register, SourceDisplacement = RegisterIndex });
+            if (MemberType.BaseType.Size <= 2)
+                ec.EmitPop(EmitContext.SI, MemberType.BaseType.SizeInBits, true);
+
+            else
+                PopAllToRegister(ec, EmitContext.SI, MemberType.BaseType.Size, 0);
+
+
+            return true;
+        }
+
+        public override bool ValueOfAccess(EmitContext ec, int off, TypeSpec mem)
+        {
+            ec.EmitComment("ValueOf Access @" + Register.ToString() + RegisterIndex);
+            ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = Register, SourceDisplacement = RegisterIndex });
+            if (mem.Size <= 2)
+                ec.EmitPush(EmitContext.SI, mem.SizeInBits, true, off);
+            else
+            {
+
+                ec.EmitComment("Push ValueOf Access Var [TypeOf " + mem.Name + "] @" + Register.ToString() + RegisterIndex);
+
+                PushAllFromRegister(ec, EmitContext.SI, mem.Size, off);
+            }
+            return true;
+        }
+        public override bool ValueOfStackAccess(EmitContext ec, int off, TypeSpec mem)
+        {
+            ec.EmitComment("ValueOf Stack Access @" + Register.ToString() + RegisterIndex);
+            ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = Register, SourceDisplacement = RegisterIndex });
+            if (mem.Size <= 2)
+                ec.EmitPop(EmitContext.SI, mem.SizeInBits, true, off);
+
+            else
+                PopAllToRegister(ec, EmitContext.SI, mem.Size, off);
+
+
+            return true;
+        }
+
+
+        public bool Equals(RegisterSpec tp)
+        {
+            return tp.Signature == Signature;
+        }
+
+    }
 
     /// <summary>
     /// Local Variable Specs
@@ -1201,6 +1388,29 @@ namespace VTC
         }
     }
 
+    public class DelegateTypeSpec : TypeSpec
+    {
+        public TypeSpec ReturnType { get; set; }
+        public List<TypeSpec> Parameters { get; set; }
+        public CallingConventions CCV { get; set; }
+        public DelegateTypeSpec(Namespace ns, string name, TypeSpec ret, List<TypeSpec> param, CallingConventions ccv,Location loc)
+            : base(ns, name, BuiltinTypes.Unknown, TypeFlags.Delegate | TypeFlags.Pointer, Modifiers.NoModifier, loc)
+        {
+
+            Parameters = param;
+            Size = 0;
+            ReturnType = ret;
+                Size = 2;
+                CCV = ccv;
+        }
+
+        public override string ToString()
+        {
+            return Signature.ToString();
+        }
+
+    
+    }
 
     /// <summary>
     ///  Struct Type Spec

@@ -80,16 +80,23 @@ namespace VTC.Core
         TypeToken _typeid;
         Identifier _ident;
         StructDefinition _sdef;
-       
+        Expr exp;
 
         [Rule(@"<Base>     ::= struct Id")]
         [Rule(@"<Base>     ::= enum Id")]
-        [Rule(@"<Base>     ::= union Id")]  
+        [Rule(@"<Base>     ::= union Id")]
+        [Rule(@"<Base>     ::= delegate Id")]  
         public BaseTypeIdentifier(SimpleToken tok,Identifier type)
         {
             _ident = type;
         }
-      
+
+
+        [Rule(@"<Base> ::= ~typeof ~'(' <Expression> ~')'")]
+        public BaseTypeIdentifier(Expr op)
+        {
+            exp = op;
+        }
         [Rule(@"<Base>     ::= <Scalar>")]
         public BaseTypeIdentifier(ScalarTypeIdentifier type)
         {
@@ -101,9 +108,17 @@ namespace VTC.Core
         {
             _ident = type;
         }
-
+     
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+            if (exp != null)
+            {
+                exp = (Expr)exp.DoResolve(rc);
+                if (exp != null)
+                    Type = exp.Type;
+             
+                else ResolveContext.Report.Error(0, Location, "Unresolved type");
+            }
             if (_typeid != null)
             {
                 _typeid = (TypeToken)_typeid.DoResolve(rc);
@@ -150,6 +165,7 @@ namespace VTC.Core
     {
         public Identifier Id { get; set; }
         public TypeToken TType { get; set; }
+        public Modifiers Mods { get; set; }
         private CallingCV CCV { get; set; }
         public CallingConventions CV
         {
@@ -160,6 +176,7 @@ namespace VTC.Core
                 else return CallingConventions.Default;
             }
         }
+        Modifier _mod;
         [Rule(@"<Func ID> ::= <CallCV> <Type> Id")]
         public MethodIdentifier(CallingCV ccv, TypeToken type, Identifier id)
             : base(id.Name)
@@ -177,10 +194,33 @@ namespace VTC.Core
             CCV = null;
         }
 
-
+        [Rule(@"<Func ID> ::= <Mod> <CallCV> <Type> Id")]
+        public MethodIdentifier(Modifier mod,CallingCV ccv, TypeToken type, Identifier id)
+            : base(id.Name)
+        {
+            Id = id;
+            TType = type;
+            CCV = ccv;
+            _mod = mod;
+        }
+        [Rule(@"<Func ID> ::= <Mod> <Type> Id")]
+        public MethodIdentifier(Modifier mod, TypeToken type, Identifier id)
+            : base(id.Name)
+        {
+            Id = id;
+            TType = type;
+            CCV = null;
+            _mod = mod;
+        }
 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+            if (_mod != null)
+            {
+                _mod = (Modifier)_mod.DoResolve(rc);
+                Mods = _mod.ModifierList;
+            }
+            else Mods = Modifiers.Private;
             TType = (TypeToken)TType.DoResolve(rc);
             base.Type = TType.Type;
             if (CCV != null)
@@ -287,6 +327,7 @@ namespace VTC.Core
         [Rule(@"<Mod>      ::= static")]
         [Rule(@"<Mod>      ::= const")]
         [Rule(@"<Mod>      ::= private")]
+        [Rule(@"<Mod>      ::= public")]
         public Modifier(SimpleToken mod)
         {
             _mod = mod;
@@ -303,6 +344,8 @@ namespace VTC.Core
                 ModifierList = Modifiers.Const;
             else if (_mod.Name == "private")
                 ModifierList = Modifiers.Private;
+            else if (_mod.Name == "public")
+                ModifierList = Modifiers.Public;
             else ModifierList = Modifiers.NoModifier;
             return this;
         }

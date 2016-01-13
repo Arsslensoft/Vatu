@@ -405,6 +405,15 @@ namespace VTC
                 Resolver.KnownLocalVars.Add(mtd);
             }
         }
+        public void UpdateType(TypeSpec old, TypeSpec ne)
+        {
+            if (Exist((MemberSpec)old, Resolver.KnownTypes.Cast<MemberSpec>().ToList<MemberSpec>()))
+            {
+                Resolver.KnownTypes.Add(ne);
+                Resolver.KnownTypes.Remove(old);
+            }
+        }
+       
         public void KnowType(TypeSpec mtd)
         {
             if (!Exist((MemberSpec)mtd, Resolver.KnownTypes.Cast<MemberSpec>().ToList<MemberSpec>()))

@@ -91,10 +91,11 @@ namespace VTC
                 for(int i = 0; i < KnownTypes.Count;i++)
                     if (KnownTypes[i] == tp)
                     {
-                        for(int j = 0; j < KnownTypes[i].ExtendedMethods.Count; j++)
-                             if (KnownTypes[i].ExtendedMethods[j].Signature.ExtensionSignature == ms.Signature.ExtensionSignature)
+                        for (int j = 0; j < KnownTypes[i].ExtendedMethods.Count; j++)
+                            if (KnownTypes[i].ExtendedMethods[j].Signature.ExtensionSignature == ms.Signature.ExtensionSignature && (KnownTypes[i].ExtendedMethods[j].Modifiers & Modifiers.Prototype) == 0)
                                 return false;
-                     
+                            else if (KnownTypes[i].ExtendedMethods[j].Signature.ExtensionSignature == ms.Signature.ExtensionSignature)
+                                return true;
                             KnownTypes[i].ExtendedMethods.Add(ms);
 
                     }
@@ -203,7 +204,7 @@ namespace VTC
                     {
                         if (kt.NS.Name != ns.Name)
                             continue;
-                        if (kt.Signature == msig)
+                        if (kt.Signature == msig && (kt.Modifiers & Modifiers.Private) != Modifiers.Private)
                             return kt;
                     }
                 }
@@ -213,7 +214,7 @@ namespace VTC
                     {
                         if (kt.NS.Name != ns.Name)
                             continue;
-                        if (kt.Name == name)
+                        if (kt.Name == name && (kt.Modifiers & Modifiers.Private) != Modifiers.Private)
                             return kt;
                     }
                 }
@@ -238,7 +239,7 @@ namespace VTC
                     MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
                     foreach (MethodSpec kt in ml)
                     {
-                        if (kt.Signature.ExtensionSignature == msig.ExtensionSignature)
+                        if (kt.Signature.ExtensionSignature == msig.ExtensionSignature && (kt.Modifiers & Modifiers.Private) != Modifiers.Private)
                             return kt;
                     }
                 }
@@ -246,8 +247,8 @@ namespace VTC
                 {
                     foreach (MethodSpec kt in ml)
                     {
-                  
-                        if (kt.Name == name)
+
+                        if (kt.Name == name && (kt.Modifiers & Modifiers.Private) != Modifiers.Private)
                             return kt;
                     }
                 }

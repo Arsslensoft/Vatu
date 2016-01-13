@@ -173,6 +173,61 @@ namespace VTC
            
 
       }
+      public void EmitCall(EmitContext ec, List<Expr> exp, MemberSpec  method, RegistersEnum rg, CallingConventions ccv)
+      {
+          int size = 0;
+          if (ccv == CallingConventions.Pascal || ccv == CallingConventions.Default)
+          {
+              foreach (Expr e in exp)
+                  e.EmitToStack(ec);
+          }
+          else if (ccv == CallingConventions.StdCall || ccv == CallingConventions.Cdecl)
+          {
 
+              for (int i = exp.Count - 1; i >= 0; i--)
+              {
+                  exp[i].EmitToStack(ec);
+                  if (exp[i].Type.Size > 1)
+                  {
+                      size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
+                      if (exp[i].Type.Size % 2 != 0)
+                          size++;
+                  }
+                  else size += 2;
+              }
+
+          }
+          else if (ccv == CallingConventions.FastCall)
+          {
+              for (int i = exp.Count - 1; i >= 0; i--)
+              {
+
+                  exp[i].EmitToStack(ec);
+                  if (exp[i].Type.Size > 1)
+                  {
+                      size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
+                      if (exp[i].Type.Size % 2 != 0)
+                          size++;
+                  }
+                  else size += 2;
+              }
+              if (exp.Count >= 2)
+              {
+                  ec.EmitPop(EmitContext.C);
+                  ec.EmitPop(EmitContext.D);
+              }
+              else if (exp.Count == 1)
+                  ec.EmitPop(EmitContext.C);
+
+          }
+
+          // call
+          ec.EmitInstruction(new Call() { DestinationReg = rg });
+
+          if (ccv == CallingConventions.Cdecl && size > 0)
+              ec.EmitInstruction(new Add() { DestinationReg = EmitContext.SP, SourceValue = (ushort)size, Size = 80 });
+
+
+      }
     }
 }

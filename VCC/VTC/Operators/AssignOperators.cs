@@ -14,11 +14,14 @@ namespace VTC
     [Terminal("=")]
     public class SimpleAssignOperator : AssignOp
     {
-
+        bool IsDelegateMethodAssign = false;
         public override SimpleToken DoResolve(ResolveContext rc)
         {
          /*  if (Left.Type.IsStruct)
                 ResolveContext.Report.Error(44, Location, "Cannot assign struct values");*/
+            IsDelegateMethodAssign = (Left.Type.IsDelegate && Right is MethodExpression);
+          
+
             if(Left.Type.IsEnum)
                 ResolveContext.Report.Error(44, Location, "Cannot assign enum values outside it's declaration");
 
@@ -32,9 +35,12 @@ namespace VTC
         {
 
 
+            if (!IsDelegateMethodAssign)
+                Right.EmitToStack(ec);
+            else
+                ec.EmitInstruction(new Push() { DestinationRef =  Vasm.ElementReference.New((Right as MethodExpression).Method.Signature.ToString()), Size = 16 });
+      
 
-
-            Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + Name + Right.CommentString());
             Left.EmitFromStack(ec);
             return true;

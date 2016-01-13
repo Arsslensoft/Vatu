@@ -90,25 +90,69 @@ Comment Line  = '//'
           | <Inter Decl>
           | <Union Decl>
           | <Func Proto>
+          | <Oper Proto>
           | <Struct Decl>
           | <Enum Decl>
           | <Var Decl>    
           | <Typedef Decl>
           | <Extension Decl>
-
+          | <Delegate Decl>
 ! ===================================================================
 ! Extension  Declaration
 ! ===================================================================      
 
 <Extension Decl> ::= <Value> extends <Type> ';'
+                  
+! ===================================================================
+! Delegate  Declaration
+! ===================================================================
+
+<Delegate Decl> ::= <CallCV> delegate <Type> ID '(' <Types>  ')' ';'
+                  
 ! ===================================================================
 ! Function  Declaration
 ! ===================================================================
 
+
 <Func Proto> ::= <Func ID> '(' <Types>  ')' ';'
                | <Func ID> '(' <Params> ')' ';'
                | <Func ID> '(' ')' ';'
+               ! Extension prototype
+               | <Func ID> '(' <Types>  ')' <Func Ext> ';'
+               | <Func ID> '(' <Params> ')' <Func Ext> ';'
+               | <Func ID> '(' ')' <Func Ext> ';'
+               
+<Oper Proto> ::= 'override' <Type> 'operator' '=='  <Type>   ';'
+               | 'override' <Type> 'operator' '!='  <Type>  ';'
+               | 'override' <Type> 'operator' '<='  <Type>   ';'
+               | 'override' <Type> 'operator' '>='  <Type> ';'
+               | 'override' <Type> 'operator' '>'  <Type>   ';'
+               | 'override' <Type> 'operator' '<'  <Type>  ';'
+               | 'override' <Type> 'operator' '$' <Type>  ';'
+               | 'override' <Type> 'operator' '£' <Type>  ';'
+               
+               | 'override' <Type> 'operator' '+' ';'
+               | 'override' <Type> 'operator' '-' ';'
+               | 'override' <Type> 'operator' '*' ';'
+               | 'override' <Type> 'operator' '/' ';'
+               | 'override' <Type> 'operator' '%' ';'
+               | 'override' <Type> 'operator' '^' ';'
+               | 'override' <Type> 'operator' '&' ';'
+               | 'override' <Type> 'operator' '|' ';'
+                ! CAST Overload
+               | 'override' <Type> 'operator' <Type> ';'
+               !Shift Rotate
+               | 'override' <Type> 'operator' '~>' ';'
+               | 'override' <Type> 'operator' '<~' ';'
+               | 'override' <Type> 'operator' '>>' ';'
+               | 'override' <Type> 'operator' '<<' ';'
+               !Unary
+               | 'override' <Type> 'operator' '++' ';'
+               | 'override' <Type> 'operator' '--' ';'
+               | 'override' <Type> 'operator' '[]' ';'
 
+               | 'override' <Type> 'operator' '~' ';'
+              
 <Func Decl>  ::= <Func ID> <Func Body>
                | <Func Spec> <Func ID> <Func Body>
 
@@ -147,6 +191,7 @@ Comment Line  = '//'
 !Interrupt decl               
 <Inter Decl>  ::= 'interrupt' <CONSTANT> <Block>
 
+
 <Func Body>  ::= '(' <Params>  ')' <Block>
               | '(' ')' <Block>
               |  '(' <Params>  ')' <Func Ext> <Block>
@@ -163,7 +208,9 @@ Comment Line  = '//'
 <Types>      ::= <Type>  ',' <Types>
                | <Type> 
   
-<Func ID>    ::= <CallCV> <Type> ID
+<Func ID>    ::= <Mod> <CallCV> <Type> ID
+                | <Mod> <Type> ID
+                | <CallCV> <Type> ID
                 | <Type> ID
 
 <Func Ext>  ::= extends <Type>
@@ -223,6 +270,8 @@ Comment Line  = '//'
              | static
              | const   
              | private
+             | public
+             
 
 ! ===================================================================
 ! Enumerations
@@ -249,7 +298,9 @@ Comment Line  = '//'
              | struct Id 
              | enum Id
              | '@'Id  
+             | delegate Id
              | union Id
+             | typeof '(' <Expression> ')'
              
 <Scalar>   ::= byte
              | int
@@ -390,6 +441,8 @@ Comment Line  = '//'
                | '(' <Type> ')' <Op Unary>   !CAST
                | sizeof '(' <Type> ')'
                | sizeof '(' ID <Pointers> ')'
+               | nameof  '(' ID ')'
+    
                | <Op Pointer>
 
 <Op Pointer> ::= <Op Pointer> '.' <Value>

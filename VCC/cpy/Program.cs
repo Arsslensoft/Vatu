@@ -55,20 +55,28 @@ namespace cpy
 
                   sect = sect + k;
               }
+              ftw.Write("}");
+              ftw.Close();
 
               off = off + (k * 512);
+           
               devw.Seek(off, SeekOrigin.Begin);
-             ftw.Write("}");
-            ftw.Close();
-
+            
 	   
            BinaryReader ftr = new BinaryReader(File.OpenRead("filetable"));  
             ftr.Read(buf,0,512);
 	        devw.Write(buf, 0,512);
 	        ftr.Close();
+
+
+            // Floppy
+            for (i = (int)devw.BaseStream.Position; i < (2880) * 512; i++)
+            {
+                devw.Write((byte)0);
+            }
             devw.Close();
 
-            Process.Start(@"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe", "internalcommands createrawvmdk -filename vm10.vmdk -rawdisk a.bin");
+          //  Process.Start(@"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe", "internalcommands createrawvmdk -filename vm10.vmdk -rawdisk a.bin");
             Console.Read();
         }
     }

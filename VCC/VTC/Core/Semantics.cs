@@ -11,7 +11,11 @@ using Vasm.x86;
 namespace VTC.Core
 {
     [Terminal("[]")]
+    [Terminal("nameof")]
+    [Terminal("typeof")]
     [Terminal("extends")]
+    [Terminal("delegate")]
+    [Terminal("public")]
     [Terminal("vfastcall")]
     [Terminal("ref")]
     [Terminal("isolated")]
@@ -233,7 +237,7 @@ namespace VTC.Core
     } 
     public  class Expr : SimpleToken, IEmit,  IEmitExpr
     {
-       public Expr next;
+      
        public Expr current;
         [Rule("<Expression> ::= <Op Assign>")]
         public Expr(Expr expr)
@@ -282,8 +286,7 @@ namespace VTC.Core
             bool ok = true;
             if (current != null)
                ok &=  current.Resolve(rc);
-            if (next != null)
-                ok &= next.Resolve(rc);
+         
 
             return ok;
         }
@@ -291,8 +294,7 @@ namespace VTC.Core
         {
             if (current != null)
               current.Emit(ec);
-            if (next != null)
-                next.Emit(ec);
+      
             return true;
         }
         public override SimpleToken DoResolve(ResolveContext rc)
@@ -302,11 +304,10 @@ namespace VTC.Core
                 current = (Expr)current.DoResolve(rc);
                 Type = current.Type;
               
-                if (next == null)
+          
                     return current;
             }
-            if (next != null)
-                next = (Expr)next.DoResolve(rc);
+         
             return this;
         }
         public virtual bool EmitToStack(EmitContext ec)

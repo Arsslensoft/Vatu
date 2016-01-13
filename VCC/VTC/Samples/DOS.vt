@@ -1,34 +1,51 @@
 ﻿default asm {
 "[org 100h]";
+}
+namespace std;
+public void print(string);
+
+public void PrintStr(string) extends string;
+
+public void TestP()
+{
+int* p = null;
+int d = null;
+if(p == null){
+ string m ="Hello World$";
+ m.PrintStr();
+ }
 
 }
 
-namespace std;
-void print(string msg){
+public void PrintStr(string msg) extends string
+{
+print(msg);
+}
+public void print(string msg){
 asm{
 	"mov  dx, [BP+4]";
 	"mov  ah, 9 ";
 	}
 		interrupt 0x21;
 }
-void putc(byte c){
+public void putc(byte c){
 
 asm{
 	"mov  dx, [BP+4]";
 	"mov  ah, 2 ";
 	}
+	interrupt 0x21;
 
 }
 
 namespace INTE;
-
-
+use std;
 interrupt 0x85
 {
 uint desc = 0;
 desc = AX;
 if(desc == 1){
- std::print("[Interrupt 85h Test]$");
+ print("[Interrupt 85h Test]$");
 
  }
 
@@ -45,7 +62,7 @@ string HelloWorld = "Hello World $";
 
 
 string buff;
-void tostring(uint x){
+public void tostring(uint x){
 if(x < 10u)
 putc((byte)x + 48);
 else
@@ -66,34 +83,46 @@ else r = x;
 tostring(r);
 
 }
+struct GHJ{
+byte h;
+string MSG;
+
+};
 union MyU{
 byte b;
 int a;
 string ch;
+struct GHJ* g;
+};
+
+struct VG{
+byte CHAR;
+union MyU * myu;
+};
+struct Z{
+byte a;
+int d;
+byte c;
+struct VG v;
 };
 
 struct YD{
-byte CHAR;
+byte a;
+struct Z * m;
 };
+stdcall delegate void Hi(string);
 struct XA{
-union MyU u;
-struct YD v;
-};
-
-struct MyS{
 int a;
-byte b;
-struct XA x;
+struct YD b;
+byte c;
+};
+public cdecl void GHT(string aez)
+{
+print("Hi everyone $");
+print(aez);
+}
 
-};
-struct A{
-int a;
-byte b;
-};
-struct B{
-int c;
-byte d;
-};
+/*
 typedef struct B TB;
 typedef struct A TA;
 @TB OP_CAST_AB_TMP;
@@ -136,82 +165,69 @@ override struct MyS* operator +(struct MyS* a, struct MyS* b)
  a->a = a->a + b->a;
  a->b = a->b + b->b;
 	return a;
+}*/
+void Hello() static extends void
+{
+print("Hello World$");
 }
+struct XA *BUFFER[2];
+delegate Hi SCALL[3];
+
+
 entry  void main()
 {
-struct MyS m;
-struct MyS a;
-struct MyS r;
-struct MyS* pr ;
-@TB *pb;
-@TA tmp;
-tmp.a = 459i;
-tmp.b = 98;
+int j =0;
+delegate Hi HiHandler;
+SCALL[1] = GHT("HE$");
+
+HiHandler = SCALL[1];
+HiHandler("From delegate$ ");
+
+SCALL[1] = null;
+
+if(HiHandler == null)
+	print(" Null delegate $");
+else print(" Not Null delegate $");
+
+int i = 0;
+struct XA x;
+struct XA x2;
+struct XA* px;
+struct XA* px1;
+x2.c = 75;
+
+
+
+px1 = &x2;
 union MyU u;
-u.a = 45i;
-m.a = 500i;
-m.b = 65b;
-a.a = 65i;
-a.b = 32b;
-a.x.v.CHAR = 70;
-a.x.u.ch = HelloWorld;
+struct GHJ g;
+g.MSG = "Hi$";
+u.g = &g;
+struct Z m;
+m.v.myu = &u;
+x.b.m = &m;
+m.a = 65;
+px = &x;
 
-int z;
-print("FastCall : $");
-z = ft(4i,true,m,u);
-tostring(z);
 
-print("|StdCall : $");
-z = st(m,u);
-tostring(z);
+BUFFER[1] = px1;
+BUFFER[0] = px;
+//x.b.m->v.CHAR= 98; 
+BUFFER[i]->b.m->v.myu->g->h = 99;
+x.c = 75;
 
-print("|CdeclCall : $");
-z = ct(m,u);
-tostring(z);
-print("|Pascal : $");
-z = pt(m,u);
-tostring(z);
+BUFFER[i]->c=65;
+BUFFER[i+1]->c = 66;
+putc(x.c);
+putc(x2.c);
 
-print("|Default : $");
-z = dt(m,u);
-tostring(z);
-print("|Normal : $");
-z = ddt(m,u);
-tostring(z);
 
-print("|OP+ : $");
+x.b.m->v.myu->g->MSG = "Hello$";
+putc(g.h);
 
-pr = &a + &m;
+print(x.b.m->v.myu->g->MSG);
+putc(x.b.m->v.myu->g->MSG[3]);
 
-print("a.a=$");
-tostring(a.a);
-print("a.b=$");
-putc(a.b);
-
-print(",m.a=$");
-tostring(m.a);
-print("m.b=$");
-putc(m.b);
-
-print(",r.a=$");
-tostring(pr->a);
-print("r.b=$");
-putc(pr->b);
-pr = &(a.x);
-print(a.x.u.ch);
-
-print("Before Cast ,a=$");
-tostring(pb->c);
-print("b=$");
-putc(pb->d);
-pb = (@TB)tmp;
-print("After Cast ,a=$");
-tostring(pb->c);
-print("b=$");
-putc(pb->d);
-
-AX = 1;
-interrupt 0x85;
 
 AH = 0x4C;
 interrupt 0x21;

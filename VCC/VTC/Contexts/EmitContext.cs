@@ -262,9 +262,15 @@ namespace VTC
                 StructVar sv = new StructVar();
                 sv.Name = mem.Name;
                 sv.IsByte = mem.MemberType.Size == 1;
-                sv.IsStruct = mem.MemberType.IsStruct;
-                sv.Size = mem.MemberType.Size;
-                sv.Type = sv.IsStruct ? mem.MemberType.Signature.ToString() : "";
+              
+                sv.Size = mem.MemberType.IsPointer?2:mem.MemberType.Size;
+                if (!mem.MemberType.IsPointer)
+                {
+                    sv.IsStruct = mem.MemberType.IsStruct;
+                    sv.Type = sv.IsStruct ? mem.MemberType.Signature.ToString() : "";
+                }
+                else sv.Type = "";
+
                 st.Vars.Add(sv);
             }
             EmitStruct(st);
@@ -290,6 +296,8 @@ namespace VTC
         public void MarkLabel(Label lb)
         {
             ag.MarkLabel(lb);
+            if (ag.Externals.Contains(lb.Name))
+                ag.Externals.Remove(lb.Name);
         }
         public Label DefineLabel(string name)
         {
