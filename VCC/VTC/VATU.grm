@@ -22,16 +22,19 @@ DecLiteral       = ({Literal Prefix} [123456789]{digit}* | {Literal Prefix}[1234
 OctLiteral       = 0{Oct Digit}*
 HexLiteral       = 0x{Hex Digit}+
 BinaryLiteral    = 0b{Binary Digit}+
-                 
+             
 BooleanLiteral   = true | false
 NullLiteral      = null
 
 
-StringLiteral    = '"'( {String Ch} | '\'{Printable} )* '"'
+StringLiteral    = '"'( {String Ch} | '\'{Printable} )* '"'                 
 CharLiteral      = '' ( {Char Ch} | '\'{Printable} )''
 
 Id               = {Id Head}{Id Tail}*
 
+MacroLiteral     = '$' {Id Head}{Id Tail}*  
+                 
+!AsmLiteral       = '$>'  ( {String Ch} | '\'{Printable} )* '<$'
 
 
 ! ===================================================================
@@ -43,25 +46,10 @@ Comment End   = '*/'
 Comment Line  = '//'
 
 
-! Typically, C comments cannot be nested. As a result, the 
-! Comment Start and Comment End terminals cannot be used.
-!
-! To implement non-nested comments, the whitespace terminal is
-! modified to accept them. In the definition below, Whitespace 
-! is defined as one or more {Whitespace} characters OR a series
-! of characters delimited by /* and */. Note that the characters
-! between the two delimiters cannot contain the */ sequence. 
-!
-! Uncomment the following to prevent block commments. Make sure 
-! to comment the Comment Start and Comment End definitions.
-!
-! {Non Slash}     = {Printable} - [/]  
-! {Non Asterisk}  = {Printable} - [*]
-! 
-! Whitespace     = {Whitespace}+   
-!                | '/*' (  {Non Asterisk} | '*' {Non Slash}? )*  '*/'
+! ===================================================================
+! Import
+! ===================================================================
 
-!=======================================================
 <Import>   ::= 'use' Id ';'
             
 <Imports>  ::= <Import>
@@ -97,6 +85,64 @@ Comment Line  = '//'
           | <Typedef Decl>
           | <Extension Decl>
           | <Delegate Decl>
+          | <Preproc Decl>
+
+
+! ===================================================================
+! Preprocessor  
+! ===================================================================      
+
+<Preproc Decl> ::= <PP Define> 
+                 | <PP Conditional>
+                 | <PP Diag>
+                 | <PP Region>
+
+           
+<PP Define> ::= '#'define ID <PP Expr>
+               | '#'undef ID
+               
+                
+<PP Expr> ::= <PP Or Expr>
+           
+<PP Or Expr> ::= <PP Or Expr> '||' <PP And Expr>   
+               | <PP And Expr>   
+
+<PP And Expr>     ::= <PP And Expr>    '&&' <PP Compare Expr>
+               | <PP Compare Expr>                
+
+<PP Compare Expr> ::= <PP Compare Expr> '==' <PP Unary Expr>
+               | <PP Compare Expr> '!='  <PP Unary Expr>
+               | <PP Unary Expr>
+
+<PP Unary Expr> ::= '!'    <PP Unary Expr> 
+                 | <PP Primary Expr>
+                 
+<PP Primary Expr> ::= <CONSTANT> 
+                   | '(' <PP Expr> ')'
+                   | Id
+                   
+<PP Conditional> ::= <PP If>
+                    
+!if elif elif endif                    
+<PP If> ::= '#'if <PP Expr> '{' <Decls> '}' <PP Elif List> 
+            | '#'if <PP Expr> '{' <Decls> '}'
+            | '#'if <PP Expr> '{' <Decls> '}' <PP Elif List>  '#'else '{' <Decls>  '}'   
+             | '#'if <PP Expr>  '{'  <Decls> '}' '#'else  '{'  <Decls>  '}'
+             
+            
+<PP Elif List> ::=   <PP Elif> <PP Elif List> 
+              |   <PP Elif> 
+              
+
+<PP Elif> ::= '#'elif <PP Expr> '{' <Decls> '}'
+
+            
+<PP Diag> ::= '#'warn StringLiteral
+            | '#'error StringLiteral
+ 
+<PP Region> ::= '#'region StringLiteral  <Decls>  '#'endregion
+             
+                           
 ! ===================================================================
 ! Extension  Declaration
 ! ===================================================================      
@@ -128,8 +174,8 @@ Comment Line  = '//'
                | 'override' <Type> 'operator' '>='  <Type> ';'
                | 'override' <Type> 'operator' '>'  <Type>   ';'
                | 'override' <Type> 'operator' '<'  <Type>  ';'
-               | 'override' <Type> 'operator' '$' <Type>  ';'
-               | 'override' <Type> 'operator' '£' <Type>  ';'
+               | 'override' <Type> 'operator' '¤' <Type>  ';'
+               | 'override' <Type> 'operator' '??' <Type>  ';'
                
                | 'override' <Type> 'operator' '+' ';'
                | 'override' <Type> 'operator' '-' ';'
@@ -184,8 +230,8 @@ Comment Line  = '//'
                | 'override' <Type> 'operator' '++' <Func Body>
                | 'override' <Type> 'operator' '--' <Func Body>
                | 'override' <Type> 'operator' '[]' <Func Body>
-               | 'override' <Type> 'operator' '$' <Func Body>
-               | 'override' <Type> 'operator' '£' <Func Body>
+               | 'override' <Type> 'operator' '¤' <Func Body>
+               | 'override' <Type> 'operator' '??' <Func Body>
                | 'override' <Type> 'operator' '~' <Func Body>
                
 !Interrupt decl               
@@ -320,7 +366,11 @@ Comment Line  = '//'
 <Statement>        ::= <Var Decl>
                | Id ':'                            !Label
                | if '(' <Expression> ')' <Statement>          
-               | if '(' <Expression> ')' <Then Stm> else <Statement>         
+               | if '(' <Expression> ')' <Then Stm> else <Statement>      
+               ! Preprocess ifdef-ifndef
+               | '#'ifdef MacroLiteral <Statement> 
+               | '#'ifndef MacroLiteral <Statement> 
+               
                | while '(' <Expression> ')' <Statement> 
                | for '(' <Arg> ';' <Arg> ';' <Arg> ')' <Statement>
                | asm '{' <INSTRUCTIONS>  '}'
@@ -434,8 +484,8 @@ Comment Line  = '//'
                | '&'    <Op Unary>               
                | '++'   <Op Unary>
                | '--'   <Op Unary>
-               | '£'   <Op Unary>
-               | '$'   <Op Unary>
+               | '??'   <Op Unary>
+               | '¤'   <Op Unary>
                | <Op Pointer> '++'
                | <Op Pointer> '--'
                | '(' <Type> ')' <Op Unary>   !CAST
@@ -462,6 +512,7 @@ Comment Line  = '//'
 
 <CONSTANT>    ::= OctLiteral
                | HexLiteral
+               | MacroLiteral
                | DecLiteral  
                | StringLiteral
                | CharLiteral

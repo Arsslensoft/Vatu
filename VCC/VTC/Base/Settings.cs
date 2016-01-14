@@ -38,6 +38,11 @@ HelpText = "Enable optimizations")]
    HelpText = "Enable optimizations")]
         public bool Optimize { get; set; }
 
+        [Option('p', "pplevel", Required = false, DefaultValue = 1,
+ HelpText = "Preprocessing Level")]
+        public int PreprocessLevel { get; set; }
+
+
                [Option('z', "optimizelevel", Required = false, DefaultValue = 2,
    HelpText = "Optimizations Level")]
         public int OptimizeLevel { get; set; }
@@ -48,6 +53,9 @@ HelpText = "Enable optimizations")]
           
        [OptionArray('i', "include", HelpText = "Include directory.")]
         public string[] Includes { get; set; }
+
+       [OptionArray( "sym", HelpText = "Symbols.")]
+       public string[] Symbols { get; set; }
 
        [OptionArray('l', "library", HelpText = "Object files directory.")]
        public string[] Libraries { get; set; }
@@ -66,6 +74,7 @@ HelpText = "Bootloader")]
        [Option("flat", Required = false, DefaultValue = false,
 HelpText = "Flat output")]
        public bool IsFlat { get; set; }
+
 
 
        [Option("int", Required = false, DefaultValue = false,

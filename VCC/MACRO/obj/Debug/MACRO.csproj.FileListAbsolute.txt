@@ -1,0 +1,4 @@
+D:\Projects\Vatu\Vatu\VCC\MACRO\bin\Debug\MACRO.exe
+D:\Projects\Vatu\Vatu\VCC\MACRO\bin\Debug\MACRO.pdb
+D:\Projects\Vatu\Vatu\VCC\MACRO\obj\Debug\MACRO.exe
+D:\Projects\Vatu\Vatu\VCC\MACRO\obj\Debug\MACRO.pdb

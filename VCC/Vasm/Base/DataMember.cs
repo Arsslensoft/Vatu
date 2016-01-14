@@ -23,13 +23,15 @@ namespace Vasm {
       Name = aName;
     }
 
-    public DataMember(string aName, string aValue) {
+    public DataMember(string aName, string aValue, bool cnst) {
       Name = aName;
-      var xBytes = ASCIIEncoding.ASCII.GetBytes(aValue);
-      var xBytes2 = new byte[xBytes.Length + 1];
-      xBytes.CopyTo(xBytes2, 0);
-      xBytes2[xBytes2.Length - 1] = 0;
-      RawDefaultValue = xBytes2;
+      StrConst = cnst;
+      //var xBytes = ASCIIEncoding.ASCII.GetBytes(aValue);
+      //var xBytes2 = new byte[xBytes.Length + 1];
+      //xBytes.CopyTo(xBytes2, 0);
+      //xBytes2[xBytes2.Length - 1] = 0;
+      //RawDefaultValue = xBytes2;
+      StrVal = aValue;
     }
 
     public DataMember(string aName, params object[] aDefaultValue) {
@@ -37,6 +39,7 @@ namespace Vasm {
       UntypedDefaultValue = aDefaultValue;
     }
 
+  
     public DataMember(string aName, byte[] aDefaultValue) {
       Name = aName;
       RawDefaultValue = aDefaultValue;
@@ -82,7 +85,7 @@ namespace Vasm {
       //}
       UntypedDefaultValue = aDefaultValue.Cast<object>().ToArray();
     }
-
+    string StrVal;
     public DataMember(string aName, Stream aData) {
       Name = aName;
       RawDefaultValue = new byte[aData.Length];
@@ -101,11 +104,29 @@ namespace Vasm {
       }
       return String.Intern(xTempResult);
     }
-
+    bool StrConst = false;
     public override void WriteText(AsmContext ec, AssemblyWriter aOutput) {
       if (RawAsm != null) {
         aOutput.WriteLine(RawAsm);
         return;
+      }
+      if (StrVal != null)
+      {
+          if (IsGlobal)
+          {
+              aOutput.Write("global ");
+              aOutput.WriteLine(Name);
+          }
+          aOutput.Write(Name);
+          aOutput.Write(" db ");
+          aOutput.Write("\""+StrVal+"\"");
+          if (!StrConst)
+          {
+              aOutput.WriteLine();
+              aOutput.Write(" times " + (255 - StrVal.Length).ToString() + " db 0");
+          }
+          else aOutput.Write(",0");
+          return;
       }
 
       if (RawDefaultValue != null) {
@@ -124,6 +145,8 @@ namespace Vasm {
           }
           aOutput.Write(Name);
           aOutput.Write(" db ");
+      
+         
           for (int i = 0; i < (RawDefaultValue.Length - 1); i++) {
             aOutput.Write(RawDefaultValue[i]);
             aOutput.Write(", ");
@@ -167,6 +190,7 @@ namespace Vasm {
         aOutput.Write(xGetTextForItem(UntypedDefaultValue.Last()));
         return;
       }
+      
       throw new Exception("Situation unsupported!");
     }
 

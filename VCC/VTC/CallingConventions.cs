@@ -16,7 +16,7 @@ namespace VTC
        {
               L_R[i].StackIdx = paramidx;
               paramidx += (L_R[i].MemberType.Size == 1) ? 2 : L_R[i].MemberType.Size;
-            if(L_R[i].MemberType.Size % 2 != 0)
+              if (L_R[i].MemberType.Size != 1 && L_R[i].MemberType.Size % 2 != 0)
                 paramidx++;
           }
 
@@ -31,7 +31,7 @@ namespace VTC
                   L_R[i].StackIdx = paramidx;
                   paramidx += (L_R[i].MemberType.Size == 1) ? 2 : L_R[i].MemberType.Size;
 
-                  if (L_R[i].MemberType.Size % 2 != 0)
+                  if (L_R[i].MemberType.Size != 1 && L_R[i].MemberType.Size % 2 != 0)
                       paramidx++;
               }
           }
@@ -42,7 +42,7 @@ namespace VTC
               {
                   L_R[i].StackIdx = paramidx;
                   paramidx += (L_R[i].MemberType.Size == 1) ? 2 : L_R[i].MemberType.Size;
-                  if (L_R[i].MemberType.Size % 2 != 0)
+                  if (L_R[i].MemberType.Size != 1 && L_R[i].MemberType.Size % 2 != 0)
                       paramidx++;
               }
           }

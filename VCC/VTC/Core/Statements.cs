@@ -898,7 +898,53 @@ namespace VTC.Core
             }
         }
     }
-    
+    public class IfDefStatement : BaseStatement
+    {
+
+        Expr _expr;
+        Statement _stmt;
+        bool not = false;
+        [Rule(@"<Statement>        ::= ~'#'ifdef MacroLiteral <Statement>  ")]
+        [Rule(@"<Statement>        ::= ~'#'ifndef MacroLiteral <Statement>  ")]
+        public IfDefStatement(SimpleToken op,MacroLiteral expr, BaseStatement stmt)
+        {
+            not = (op.Name == "ifndef");
+            _expr = expr;
+            _stmt = stmt;
+        }
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+
+          
+
+            // enter if
+            _expr = (Expr)_expr.DoResolve(rc);
+
+            if (_expr.Type != BuiltinTypeSpec.Bool)
+                ResolveContext.Report.Error(30, Location, "Ifdef and ifndef condition must be a boolean expression");
+
+           if((_expr as BoolConstant)._value == not)
+                         _stmt = (Statement)_stmt.DoResolve(rc);
+     
+      
+            return this;
+        }
+        public override bool Emit(EmitContext ec)
+        {
+          if(not)
+              ec.EmitComment("Ifndef body");
+          else
+             ec.EmitComment("Ifdef body");
+
+          if ((_expr as BoolConstant)._value != not)
+                _stmt.Emit(ec);
+             
+            return true;
+        }
+   
+
+    }
+
     public class IfStatement : BaseStatement, IConditional
     {
         public IConditional ParentIf { get; set; }

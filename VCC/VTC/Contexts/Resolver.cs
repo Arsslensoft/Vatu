@@ -204,7 +204,7 @@ namespace VTC
                     {
                         if (kt.NS.Name != ns.Name)
                             continue;
-                        if (kt.Signature == msig && (kt.Modifiers & Modifiers.Private) != Modifiers.Private)
+                        if (kt.Signature == msig && ((kt.Modifiers & Modifiers.Private) != Modifiers.Private || CurrentNamespace == ns))
                             return kt;
                     }
                 }
@@ -214,7 +214,7 @@ namespace VTC
                     {
                         if (kt.NS.Name != ns.Name)
                             continue;
-                        if (kt.Name == name && (kt.Modifiers & Modifiers.Private) != Modifiers.Private)
+                        if (kt.Name == name && ((kt.Modifiers & Modifiers.Private) != Modifiers.Private || CurrentNamespace == ns))
                             return kt;
                     }
                 }
@@ -239,7 +239,7 @@ namespace VTC
                     MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
                     foreach (MethodSpec kt in ml)
                     {
-                        if (kt.Signature.ExtensionSignature == msig.ExtensionSignature && (kt.Modifiers & Modifiers.Private) != Modifiers.Private)
+                        if (kt.Signature.ExtensionSignature == msig.ExtensionSignature && ((kt.Modifiers & Modifiers.Private) != Modifiers.Private || CurrentNamespace == ns))
                             return kt;
                     }
                 }
@@ -248,7 +248,7 @@ namespace VTC
                     foreach (MethodSpec kt in ml)
                     {
 
-                        if (kt.Name == name && (kt.Modifiers & Modifiers.Private) != Modifiers.Private)
+                        if (kt.Name == name && ((kt.Modifiers & Modifiers.Private) != Modifiers.Private || CurrentNamespace == ns))
                             return kt;
                     }
                 }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Vasm.x86
 {
-    [Vasm.OpCode("popfd")]
+    [Vasm.OpCode("popf")]
     public class Popfd : Instruction
     {
     }

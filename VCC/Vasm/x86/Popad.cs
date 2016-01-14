@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 namespace Vasm.x86 {
-    [Vasm.OpCode("popad")]
+    [Vasm.OpCode("popa")]
     public class Popad : Instruction {
 	}
 }

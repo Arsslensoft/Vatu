@@ -30,6 +30,7 @@ namespace Vasm
           StringBuilder sb = new StringBuilder();
           sb.AppendLine("INSTALL_INTERRUPTS:");
           sb.AppendLine("\t\tcli");
+          sb.AppendLine("\t\tpush es");
           sb.AppendLine("\t\txor     ax, ax");
           sb.AppendLine("\t\tmov     es, ax");
           foreach (InterruptDef idef in interrupts)
@@ -40,6 +41,7 @@ namespace Vasm
               sb.AppendLine("\t\tmov     ax, cs");
               sb.AppendLine(string.Format("\t\tmov     [es:{0}*4+2], ax", idef.Number));
           }
+          sb.AppendLine("\t\tpop es");
           sb.AppendLine("\t\tsti");
           sb.AppendLine("\t\tret");
 

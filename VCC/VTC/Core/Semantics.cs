@@ -10,6 +10,18 @@ using Vasm.x86;
 
 namespace VTC.Core
 {
+    [Terminal("#")]
+    [Terminal("ifdef")]
+    [Terminal("ifndef")]
+    [Terminal("error")]
+    [Terminal("warn")]
+    [Terminal("define")]
+    [Terminal("undef")]
+    [Terminal("region")]
+    [Terminal("elif")]
+    [Terminal("endregion")]
+
+
     [Terminal("[]")]
     [Terminal("nameof")]
     [Terminal("typeof")]
@@ -675,6 +687,48 @@ namespace VTC.Core
         public IEnumerator<T> GetEnumerator()
         {
             for (ParameterSequence<T> sequence = this; sequence != null; sequence = sequence.next)
+            {
+                if (sequence.item != null)
+                {
+                    yield return sequence.item;
+                }
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        #endregion
+    }
+    public class ElifSequence<T> : SimpleToken, IEnumerable<T> where T : SimpleToken
+    {
+        private readonly T item;
+        private readonly ElifSequence<T> next;
+
+
+
+
+
+        [Rule("<PP Elif List>  ::= <PP Elif> ", typeof(ConditionalPreprocessor))]
+        public ElifSequence(T item)
+            : this(item, null)
+        {
+        }
+
+        [Rule("<PP Elif List>  ::= <PP Elif>  <PP Elif List>", typeof(ConditionalPreprocessor))]
+        public ElifSequence(T item, ElifSequence<T> next)
+        {
+            this.item = item;
+            this.next = next;
+        }
+
+        #region IEnumerable<T> Members
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            for (ElifSequence<T> sequence = this; sequence != null; sequence = sequence.next)
             {
                 if (sequence.item != null)
                 {

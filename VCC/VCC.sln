@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VTC", "VTC\VTC.csproj", "{7FB3A786-F973-4727-8EAE-3AD51C047C45}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vasm", "Vasm\Vasm.csproj", "{BF4E6A24-9204-4B24-A271-36C4D8EF8096}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bsn.GoldParser", "bsn.GoldParser\bsn.GoldParser.csproj", "{1A1A5AE9-7981-471C-9CC7-F7465E675A32}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VTC", "VTC\VTC.csproj", "{7FB3A786-F973-4727-8EAE-3AD51C047C45}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cpy", "cpy\cpy.csproj", "{F5BFBCE3-C06E-49B5-A288-827D49BF8C63}"
 EndProject

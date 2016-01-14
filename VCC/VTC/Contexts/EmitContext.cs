@@ -324,7 +324,11 @@ namespace VTC
         {
             DataMember dm;
             if (value is string)
-                dm = new DataMember(name, Encoding.ASCII.GetBytes(value.ToString()));
+            {
+                if(constant)
+                    dm = new DataMember(name, value.ToString(), true);
+                else dm = new DataMember(name, value.ToString(),false);
+            }
             else if (value is byte[])
                 dm = new DataMember(name, (byte[])value);
             else if (value is bool)

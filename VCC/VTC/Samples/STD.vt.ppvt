@@ -1,4 +1,4 @@
-﻿namespace std;
+namespace std;
 public void print(string msg){
 asm{
 	"mov  dx, [BP+4]";

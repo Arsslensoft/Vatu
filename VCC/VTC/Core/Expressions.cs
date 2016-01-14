@@ -8,8 +8,12 @@ using Vasm.x86;
 [assembly: RuleTrim("<Value> ::= '(' <Expression> ')'", "<Expression>", SemanticTokenType = typeof(VTC.Core.SimpleToken))]
 namespace VTC.Core
 {
+
     public class ConstantExpression : Expr
     {
+       
+
+    
 
         public ConstantExpression(TypeSpec type, Location loc)
             : base(type, loc)
@@ -42,7 +46,10 @@ namespace VTC.Core
         {
             cv = false;
             if (this.type == type)
+            {
+                cv = true;
                 return this;
+            }
             if (type is RegisterTypeSpec)
                 type = type.BaseType;
             if (!type.IsBuiltinType)
@@ -547,9 +554,13 @@ namespace VTC.Core
        
         public void EmitIndirections(EmitContext ec)
         {
+            if (Parent == null && RootVar != null && variable is RegisterSpec)
+            {
+                RootVar.EmitToStack(ec);
+                ec.EmitPop((variable as RegisterSpec).Register);
+            }
 
-
-            if (Parent != null && !Parent.IsByIndex && !IsExpr)
+            else if (Parent != null && !Parent.IsByIndex)
             {
                 if (Parent.Parent != null)
                     Parent.EmitIndirections(ec);
@@ -643,6 +654,16 @@ namespace VTC.Core
             else
                 return Operator.CommentString();
         }
+
+        public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
+        {
+            EmitToStack(ec);
+            ec.EmitPop(EmitContext.A);
+            ec.EmitInstruction(new Compare() { DestinationReg = EmitContext.A, SourceValue = (ushort)1 });
+
+            ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.Equal, ConditionalTestEnum.NotEqual);
+            return true;
+        }
     }
 
     /// <summary>
@@ -662,9 +683,7 @@ namespace VTC.Core
            Type = ms.MemberType;
            variable = ms;
        }
-
-   
-
+      
         [Rule(@"<Value>       ::= Id")]
         public VariableExpression(Identifier id)
             : base(id.Name)
@@ -742,6 +761,16 @@ namespace VTC.Core
             else if (variable is RegisterSpec)
                 variable.EmitToStack(ec);
             return true;
+        }
+
+        public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
+        {
+            EmitToStack(ec);
+            ec.EmitPop(EmitContext.A);
+            ec.EmitInstruction(new Compare() { DestinationReg = EmitContext.A, SourceValue = (ushort)1 });
+
+            ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.Equal, ConditionalTestEnum.NotEqual);
+            return true ;
         }
         public override string CommentString()
         {
@@ -1009,8 +1038,8 @@ namespace VTC.Core
         [Rule(@"<Op Unary>   ::= '&'    <Op Unary>")]
         [Rule(@"<Op Unary>   ::= '--'   <Op Unary>")]
         [Rule(@"<Op Unary>   ::= '++'   <Op Unary>")]
-        [Rule(@"<Op Unary>   ::= '£'   <Op Unary>")]
-        [Rule(@"<Op Unary>   ::= '$'   <Op Unary>")]
+        [Rule(@"<Op Unary>   ::= '??'   <Op Unary>")]
+        [Rule(@"<Op Unary>   ::= '¤'   <Op Unary>")]
         public UnaryOperation(Operator op, Expr target)
         {
             _op = op;

@@ -332,8 +332,8 @@ namespace VTC.Core
 
         [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '++' <Func Body> ")]
         [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '--' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '$' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '£' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '¤' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '??' <Func Body> ")]
         [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '~' <Func Body> ")]
         public OperatorDeclaration(TypeToken type, UnaryOp oper, FunctionBodyDefinition fbd)
         {
@@ -560,13 +560,13 @@ namespace VTC.Core
         {
             interrupt = ushort.Parse(hlit.Value.GetValue().ToString());
             _b = b;
-            ItName = "INTERRUPT_" + interrupt.ToString();
+            ItName = "INTERRUPT_" + interrupt.ToString("X2")+"H";
         }
  
         public override SimpleToken DoResolve(ResolveContext rc)
         {
 
-            ItName = "INTERRUPT_" + interrupt.ToString();
+            ItName = "INTERRUPT_" + interrupt.ToString("X2") + "H";
 
             method = rc.Resolver.TryResolveMethod(ItName);
                 if (method != null)
@@ -800,6 +800,12 @@ namespace VTC.Core
             ec.EmitComment("return label");
             // Return Label
             ec.MarkLabel(ec.DefineLabel(method.Signature + "_ret"));
+            // entry infinite loop
+            if (specs == Specifiers.Entry)
+            {
+                ec.EmitComment("entry infinite loop");
+                ec.EmitInstruction(new Jump() { DestinationLabel = method.Signature + "_ret" });
+            }
             // Destroy Stack Frame
             if (specs == Specifiers.Isolated)
                 ec.EmitInstruction(new Popad());
@@ -838,8 +844,8 @@ namespace VTC.Core
             _comptype = cmp;
             OpSym = oper;
         }
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '$' <Type> ~';' ")]
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '£' <Type> ~';' ")]
+        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '¤' <Type> ~';' ")]
+        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '??' <Type> ~';' ")]
         public OperatorPrototypeDeclaration(TypeToken type, UnaryOp oper, TypeToken cmp)
         {
             _mtype = type;
@@ -1472,6 +1478,7 @@ namespace VTC.Core
         [Rule(@"<Decl>  ::= <Var Decl>")]
         [Rule(@"<Decl>  ::= <Typedef Decl>")]
         [Rule(@"<Decl>  ::= <Extension Decl>")]
+        [Rule(@"<Decl>  ::= <Preproc Decl>")]
         public Declaration(Declaration decl)
         {
             BaseDeclaration = decl;

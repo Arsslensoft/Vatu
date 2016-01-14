@@ -47,16 +47,7 @@ namespace VTC
             ec.ag.IsInterruptOverload = Options.IsInterrupt;
             ec.ag.OLevel = Options.OptimizeLevel;
         }
-        public bool Test()
-        {
-        // Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.Kernel.vt");
- Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.DOS.vt");
-     //     Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.Samples.STD.vt");
-                InputSource = new StreamReader(stream);
-
-       
-            return true;
-        }
+     
         public bool Build()
         {
          Process p =   Process.Start("nasm", string.Format("{0} -f bin -o {1}", Options.Output, Options.Output.Replace(".asm",".bin")));
@@ -66,8 +57,35 @@ namespace VTC
         }
         public bool Preprocess()
         {
-          // TODO:ADD PREPROCESSOR
+            if(Options.Includes != null)
+                 Preprocessor.Paths.AddRange(Options.Includes);
+            // compiler symbols
+            if(Options.Symbols != null)
+            {
+                foreach (string sym in Options.Symbols)
+                    Preprocessor.Symbols.Add(sym, true);
+            }
+
+
+            // init default paths
        
+            string tmp = Path.ChangeExtension( Options.Output,".ppvt");
+            foreach (string src in Options.Sources)
+            {
+                  
+                if(File.Exists(src))
+                {
+                    if(!Preprocessor.Paths.Contains(Path.GetDirectoryName(src)))
+                             Preprocessor.Paths.Add(Path.GetDirectoryName(src));
+                string code  = File.ReadAllText(src);
+                File.WriteAllText(tmp, code);
+                }
+           
+            }
+            string outpfile = tmp + ".ppvt";
+            Preprocessor.PreprocessInclude(tmp, outpfile, Options.PreprocessLevel);
+
+            InputSource = new StreamReader(File.OpenRead(outpfile));
             return true;
         }
         public bool ResolveSemanticTree(GlobalSequence<Global> globals,ref ResolveContext RootCtx, ref List<Declaration> Resolved, ref List<ResolveContext> ResolveCtx)
@@ -82,11 +100,25 @@ namespace VTC
                 if (old_ctx != null)
                     RootCtx.FillKnownByKnown(old_ctx.Resolver);
                 if (stmts != null)
-                {
-
+                { 
+                    // PreProcess
+                    List<Declaration> Preprocessed = new List<Declaration>();
                     foreach (Declaration stmt in stmts.Declarations)
                     {
-
+                        if (stmt.BaseDeclaration is PreprocessorDeclaration)
+                        {
+                            DeclarationSequence<Declaration> declsofpp = null;
+                            (stmt.BaseDeclaration as PreprocessorDeclaration).Preprocess(ref declsofpp);
+                            if (declsofpp != null)
+                                foreach (Declaration d in declsofpp)
+                                    Preprocessed.Add(d);
+                        }
+                        else Preprocessed.Add(stmt);
+                    }
+                  
+                    foreach (Declaration stmt in Preprocessed)
+                    {
+                        
                         if (stmt.BaseDeclaration is MethodDeclaration)
                         {
                             MethodDeclaration md = (MethodDeclaration)stmt.BaseDeclaration;
@@ -172,7 +204,7 @@ namespace VTC
         }
         public bool ResolveAndEmit()
         {
-            bool ok = Test();
+            bool ok = Preprocess();
             try{
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.VATU.cgt"))
             {
@@ -216,7 +248,7 @@ namespace VTC
                 }
                 else{ ok = false;
                        IToken token = processor.CurrentToken;
-                            Console.WriteLine("At index: {0} [{1}] {2},{3}", token.Position.Index, parseMessage, token.Position.Line, token.Position.Column);
+                            Console.WriteLine("At index: {0} [{1}] {2},{3} {4}", token.Position.Index, parseMessage, token.Position.Line, token.Position.Column, token.Symbol.Name);
                 }
             }
             }

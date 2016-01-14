@@ -1,17 +1,49 @@
 ﻿default asm {
 "[org 100h]";
 }
-namespace std;
-public void print(string);
+#include "STD.vt"
+#line "SIGNED.vt" 12
+#code PHELLO print("Hello World Macro Code $");
+#code DISPLAY(m) print(m);
+#define HELLO_WORLD "Hello World Macro Message $"
+#define MY_ppdef true
+
+
+public void Test(byte c){
+
+}
+public void Test(int c)
+{
+
+}
+
+
+#if (MY_ppdef == true)
+{
 
 public void PrintStr(string) extends string;
+}
+#else
+{
+public void PrintStr(string)static  extends string;
+}
+
+struct GFT{
+int a;
+byte b;
+};
+
+public cdecl void writecolor(byte c,byte color, struct GFT g, struct GFT h, byte k)
+{
+     putc(c);  
+}
 
 public void TestP()
 {
 int* p = null;
 int d = null;
 if(p == null){
- string m ="Hello World$";
+ string m ="Hello \nWorld$";
  m.PrintStr();
  }
 
@@ -19,24 +51,12 @@ if(p == null){
 
 public void PrintStr(string msg) extends string
 {
+struct GFT k;
+writecolor(5b,7b,k,k,8b);
+
 print(msg);
 }
-public void print(string msg){
-asm{
-	"mov  dx, [BP+4]";
-	"mov  ah, 9 ";
-	}
-		interrupt 0x21;
-}
-public void putc(byte c){
 
-asm{
-	"mov  dx, [BP+4]";
-	"mov  ah, 2 ";
-	}
-	interrupt 0x21;
-
-}
 
 namespace INTE;
 use std;
@@ -99,12 +119,17 @@ struct VG{
 byte CHAR;
 union MyU * myu;
 };
+
+
 struct Z{
 byte a;
 int d;
 byte c;
 struct VG v;
 };
+
+
+
 
 struct YD{
 byte a;
@@ -113,6 +138,7 @@ struct Z * m;
 stdcall delegate void Hi(string);
 struct XA{
 int a;
+bool MYBOOL;
 struct YD b;
 byte c;
 };
@@ -166,13 +192,19 @@ override struct MyS* operator +(struct MyS* a, struct MyS* b)
  a->b = a->b + b->b;
 	return a;
 }*/
+
+
+
+
 void Hello() static extends void
 {
 print("Hello World$");
 }
+
+
 struct XA *BUFFER[2];
 delegate Hi SCALL[3];
-
+string PORG ="A\nB";
 
 entry  void main()
 {
@@ -209,7 +241,7 @@ x.b.m = &m;
 m.a = 65;
 px = &x;
 
-
+/*
 BUFFER[1] = px1;
 BUFFER[0] = px;
 //x.b.m->v.CHAR= 98; 
@@ -228,7 +260,20 @@ putc(g.h);
 print(x.b.m->v.myu->g->MSG);
 putc(x.b.m->v.myu->g->MSG[3]);
 
+$PHELLO
+$DISPLAY("VATU")
+*/
+#ifdef $WIN
+{
 
+}
+
+px->MYBOOL = true;
+if(px->MYBOOL)
+	{
+	print("ACCESS BRANCHABLE\r\t");
+
+	}
 AH = 0x4C;
 interrupt 0x21;
 

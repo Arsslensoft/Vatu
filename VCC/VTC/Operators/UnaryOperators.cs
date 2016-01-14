@@ -248,7 +248,6 @@ namespace VTC
             ec.EmitPop(Register.Value);
 
 
-
             ec.EmitInstruction(new Not() { DestinationReg =Register.Value, Size = 80 });
             ec.EmitInstruction(new And() { DestinationReg = Register.Value, SourceValue = 254, Size = 80 });
             ec.EmitPush(Register.Value);
@@ -316,8 +315,8 @@ namespace VTC
         }
 
     }
-  
-    [Terminal("£")]
+
+    [Terminal("??")]
     public class ZeroTestOperator : UnaryOp
     {
         public ZeroTestOperator()
@@ -351,7 +350,7 @@ namespace VTC
                 return base.EmitOverrideOperator(ec);
             if (RegisterOperation)
             {
-                ec.EmitComment("£" + Right.CommentString());
+                ec.EmitComment("??" + Right.CommentString());
               
                 ec.EmitInstruction(new Compare() { DestinationReg = ((RegisterExpression)Right).Register, SourceValue = 0, Size = 80 });
                 ec.EmitBoolean(ec.GetLow(Register.Value), ConditionalTestEnum.Zero, ConditionalTestEnum.NotZero);
@@ -360,7 +359,7 @@ namespace VTC
                 return true;
             }
             Right.EmitToStack(ec);
-            ec.EmitComment("£" + Right.CommentString());
+            ec.EmitComment("??" + Right.CommentString());
             ec.EmitPop(Register.Value);
 
 
@@ -383,7 +382,7 @@ namespace VTC
 
             if (RegisterOperation)
             {
-                ec.EmitComment("£" + Right.CommentString());
+                ec.EmitComment("??" + Right.CommentString());
 
                 ec.EmitInstruction(new Compare() { DestinationReg = ((RegisterExpression)Right).Register, SourceValue = 0, Size = 80 });
                 ec.EmitBoolean(ec.GetLow(Register.Value), ConditionalTestEnum.Zero, ConditionalTestEnum.NotZero);
@@ -392,7 +391,7 @@ namespace VTC
                 return true;
             }
             Right.EmitToStack(ec);
-            ec.EmitComment("£" + Right.CommentString());
+            ec.EmitComment("??" + Right.CommentString());
             ec.EmitPop(Register.Value);
 
 
@@ -403,7 +402,7 @@ namespace VTC
         }
 
     }
-    [Terminal("$")]
+    [Terminal("¤")]
     public class ParityTestOperator : UnaryOp
     {
         public ParityTestOperator()
@@ -436,7 +435,7 @@ namespace VTC
                 return base.EmitOverrideOperator(ec);
             if (RegisterOperation)
             {
-                ec.EmitComment("$" + Right.CommentString());
+                ec.EmitComment("¤" + Right.CommentString());
 
                 ec.EmitInstruction(new Test() { DestinationReg = ((RegisterExpression)Right).Register, SourceValue = 1, Size = 80 });
                 ec.EmitBoolean(ec.GetLow(Register.Value), ConditionalTestEnum.ParityEven, ConditionalTestEnum.ParityOdd);
@@ -445,7 +444,7 @@ namespace VTC
                 return true;
             }
             Right.EmitToStack(ec);
-            ec.EmitComment("$" + Right.CommentString());
+            ec.EmitComment("¤" + Right.CommentString());
             ec.EmitPop(Register.Value);
 
             ec.EmitInstruction(new Test() { DestinationReg = Register.Value, SourceValue = 1, Size = 80 });
@@ -466,7 +465,7 @@ namespace VTC
                 return base.EmitOverrideOperatorBranchable(ec,truecase,v, ConditionalTestEnum.ParityEven, ConditionalTestEnum.ParityOdd);
             if (RegisterOperation)
             {
-                ec.EmitComment("$" + Right.CommentString());
+                ec.EmitComment("¤" + Right.CommentString());
 
                 ec.EmitInstruction(new Test() { DestinationReg = ((RegisterExpression)Right).Register, SourceValue = 1, Size = 80 });
                 ec.EmitBoolean(ec.GetLow(Register.Value), ConditionalTestEnum.ParityEven, ConditionalTestEnum.ParityOdd);
@@ -475,7 +474,7 @@ namespace VTC
                 return true;
             }
             Right.EmitToStack(ec);
-            ec.EmitComment("$" + Right.CommentString());
+            ec.EmitComment("¤" + Right.CommentString());
             ec.EmitPop(Register.Value);
 
             ec.EmitInstruction(new Test() { DestinationReg = Register.Value, SourceValue = 1, Size = 80 });

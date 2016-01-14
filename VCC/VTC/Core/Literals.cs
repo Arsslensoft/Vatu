@@ -139,7 +139,7 @@ namespace VTC.Core
         public StringLiteral(string value) 
             : base(value)
         {
-            _value = new StringConstant(value.Remove(0,1).Remove(value.Length -2,1) + "\0", CompilerContext.TranslateLocation(position));
+            _value = new StringConstant(value.Remove(0,1).Remove(value.Length -2,1), CompilerContext.TranslateLocation(position));
 
         }
 
@@ -180,6 +180,37 @@ namespace VTC.Core
 
 
     }
+    [Terminal("MacroLiteral")]
+    public class MacroLiteral : Literal
+    {
+    
+        public MacroLiteral(string value)
+            : base(value)
+        {
+            string id = value.Remove(0, 1);
+            if (Preprocessor.TempSymbols.ContainsKey(id))
+            {
+                object d = Preprocessor.TempSymbols[id];
+                if (d is bool)
+                    _value = new BoolConstant((bool)d, Location);
+                else if (d is decimal)
+                    _value = new UIntConstant((ushort)d, Location);
+                else _value = new StringConstant(d.ToString(), Location);
+            }
+            else
+            {
+                Preprocessor.Symbols.Add(id, false);
+                Preprocessor.TempSymbols.Add(id, false);
+                _value = new BoolConstant(false, Location);
+            }
+        }
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            return _value.DoResolve(rc);
+        }
+
+
+    }
     [Terminal("NullLiteral")]
     public class NullLiteral : Literal
     {
@@ -189,7 +220,10 @@ namespace VTC.Core
         {
             _value = new NullConstant(CompilerContext.TranslateLocation(position));
         }
-
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            return _value.DoResolve(rc);
+        }
 
 
     }
