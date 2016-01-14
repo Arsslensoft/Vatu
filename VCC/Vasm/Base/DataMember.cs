@@ -105,6 +105,7 @@ namespace Vasm {
       return String.Intern(xTempResult);
     }
     bool StrConst = false;
+
     public override void WriteText(AsmContext ec, AssemblyWriter aOutput) {
       if (RawAsm != null) {
         aOutput.WriteLine(RawAsm);
@@ -117,13 +118,37 @@ namespace Vasm {
               aOutput.Write("global ");
               aOutput.WriteLine(Name);
           }
+          if (string.IsNullOrEmpty(StrVal))
+          {
+              aOutput.Write(Name);
+              aOutput.Write(" times 256 db 0");
+              return;
+          }
           aOutput.Write(Name);
           aOutput.Write(" db ");
-          aOutput.Write("\""+StrVal+"\"");
+          byte[] b = Encoding.ASCII.GetBytes(StrVal);
+          int i = 0;
+          string last = "";
+          foreach (char c in StrVal)
+          {
+              if (c == '\r' || c == '\n')
+              {
+                  if (!string.IsNullOrEmpty(last))
+                         aOutput.Write("\"" + last + "\", ");
+                  aOutput.Write(b[i].ToString());
+                  aOutput.Write(",");
+                  last = "";
+              }
+              else last += c + "";
+              i++;
+          }
+          if(!string.IsNullOrEmpty(last))
+             aOutput.Write("\""+last+"\"");
+
           if (!StrConst)
           {
               aOutput.WriteLine();
-              aOutput.Write(" times " + (255 - StrVal.Length).ToString() + " db 0");
+              aOutput.Write("\t\t  times " + (255 - StrVal.Length).ToString() + " db 0");
           }
           else aOutput.Write(",0");
           return;

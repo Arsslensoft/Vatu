@@ -281,6 +281,7 @@ namespace VTC
 
         public void EmitData(DataMember dm, MemberSpec v, bool constant = false)
         {
+            
             if (!Variables.ContainsKey(v.Signature.ToString()))
             {
                 v.Reference = ElementReference.New(v.Signature.ToString());

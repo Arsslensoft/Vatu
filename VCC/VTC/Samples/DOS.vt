@@ -78,7 +78,7 @@ use std;
 
 const string prompt = ">";
 string HelloWorld = "Hello World $";
-
+string MyTestBufer;
 
 
 string buff;
@@ -271,7 +271,7 @@ $DISPLAY("VATU")
 px->MYBOOL = true;
 if(px->MYBOOL)
 	{
-	print("ACCESS BRANCHABLE\r\t");
+	print("ACCESS BRANCHABLE\r\n\t");
 
 	}
 AH = 0x4C;

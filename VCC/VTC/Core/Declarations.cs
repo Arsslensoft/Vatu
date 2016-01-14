@@ -259,7 +259,11 @@ namespace VTC.Core
                        ec.EmitDataWithConv(f.Signature.ToString(), val, f, ((mods & Modifiers.Const) == Modifiers.Const));
 
                    }
-                   else ec.EmitData(new DataMember(f.Signature.ToString(), new byte[f.MemberType.Size]), f);
+                   else if(f.MemberType == BuiltinTypeSpec.String)
+                       ec.EmitDataWithConv(f.Signature.ToString(), "", f, ((mods & Modifiers.Const) == Modifiers.Const));
+
+                   else ec.EmitDataWithConv(f.Signature.ToString(), new byte[f.MemberType.Size], f, ((mods & Modifiers.Const) == Modifiers.Const));
+
                }
            }
            
