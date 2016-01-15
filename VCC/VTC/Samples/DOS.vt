@@ -1,314 +1,7 @@
-﻿default asm {
-"[org 100h]";
-}
-/*
-#define HELLO_WORLD "Hello World Macro Message $"
-#define MY_ppdef true
-
-
-public void Test(byte c){
-
-}
-public void Test(int c)
+﻿
+namespace Types
 {
-}
-
-
-
-#if (MY_ppdef == true)
-{
-
-public void PrintStr(string) extends string;
-}
-#else
-{
-public void PrintStr(string)static  extends string;
-}
-
-struct GFT{
-int a;
-byte b;
-struct GFT* g;
-};
-
-public cdecl void writecolor(byte c,byte color, struct GFT g, struct GFT h, byte k)
-{
-     putc(c);  
-g.g->b=5;
-}
-
-public void TestP()
-{
-int* p = null;
-int d = null;
-if(p == null){
- string m ="Hello \nWorld$";
- m.PrintStr();
- }
-
-}
-
-public void PrintStr(string msg) extends string
-{
-struct GFT k;
-writecolor(5b,7b,k,k,8b);
-
-print(msg);
-}
-
-
-namespace INTE;
-use std;
-interrupt 0x85
-{
-uint desc = 0;
-desc = AX;
-if(desc == 1){
- print("[Interrupt 85h Test]$");
-
- }
-
-}
-
-
-namespace DOS;
-use std;
-
-
-
-const string prompt = ">";
-string HelloWorld = "Hello World $";
-string MyTestBufer;
-
-
-string buff;
-
-
-
-public void tostring(uint x){
-if(x < 10u)
-putc((byte)x + 48);
-else
-{
-tostring(x / 10);
-putc((byte)(x % 10) + 48);
-}
-
-}
-void tostring(int x){
-uint r = 0;
-if(x < 0)
-{
-	putc('-');
-	r  = 65535 - (uint)x + 1u;
-}
-else r = x;
-tostring(r);
-
-}
-struct GHJ{
-byte h;
-string MSG;
-
-};
-union MyU{
-byte b;
-int a;
-string ch;
-struct GHJ* g;
-};
-
-struct VG{
-byte CHAR;
-union MyU * myu;
-};
-
-
-struct Z{
-byte a;
-int d;
-byte c;
-struct VG v;
-};
-
-
-
-
-struct YD{
-byte a;
-struct Z * m;
-};
-stdcall delegate void Hi(string);
-struct XA{
-int a;
-bool MYBOOL;
-struct YD b;
-byte c;
-};
-typedef delegate Hi HANDLER;
-public stdcall void GHT(string aez)
-{
-print("Hi everyone From VATU $");
-print(aez);
-}
-
-/*
-typedef struct B TB;
-typedef struct A TA;
-@TB OP_CAST_AB_TMP;
-override @TB* operator @TA(@TA a){
-@TB* pb;
-OP_CAST_AB_TMP.c = a.a;
-OP_CAST_AB_TMP.d = a.b;
-pb = &OP_CAST_AB_TMP;
-return pb;
-}
-override int operator union MyU(union MyU u)
-{
-return u.a;
-}
-override int operator struct MyS(struct MyS s)
-{
-return s.a;
-}
-
-fastcall int ft(int c,bool d,struct MyS u, union MyU m){
-return (int)u+ (int)m;
-}
-stdcall int st(struct MyS u, union MyU m){
-return (int)u+ (int)m;
-}
-cdecl int ct(struct MyS u, union MyU m){
-return (int)u+ (int)m;
-}
-pascal int pt(struct MyS u, union MyU m){
-return (int)u+ (int)m;
-}
-default int dt(struct MyS u, union MyU m){
-return (int)u+ (int)m;
-}
-int ddt(struct MyS u, union MyU m){
-return (int)u+ (int)m;
-}
-override struct MyS* operator +(struct MyS* a, struct MyS* b)
-{
- a->a = a->a + b->a;
- a->b = a->b + b->b;
-	return a;
-}*/
-
-
-
-void Hello() static extends void
-{
-print("Hello World$");
-}
-
-
-struct XA *BUFFER[2];
-delegate Hi SCALL[3];
-string PORG ="A\nB";
-
-
-entry  void main()
-{
-
-int j =0;
-@HANDLER HiHandler;
-SCALL[1] = GHT("HE$");
-
-HiHandler = SCALL[1];
-HiHandler("From delegate$ ");
-
-SCALL[1] = null;
-HiHandler = null;
-if(HiHandler == null)
-	print(" Null delegate $");
-else print(" Not Null delegate $");
-
-if(HelloWorld =="Hello World $")
-	print("Match$");
-else
-		print("Not Match$");
-int i = 0;
-struct XA x;
-struct XA x2;
-struct XA* px;
-struct XA* px1;
-x2.c = 75;
-
-
-
-px1 = &x2;
-union MyU u;
-struct GHJ g;
-g.MSG = "Hi$";
-u.g = &g;
-struct Z m;
-m.v.myu = &u;
-x.b.m = &m;
-m.a = 65;
-px = &x;
-
-/*
-BUFFER[1] = px1;
-BUFFER[0] = px;
-//x.b.m->v.CHAR= 98; 
-BUFFER[i]->b.m->v.myu->g->h = 99;
-x.c = 75;
-
-BUFFER[i]->c=65;
-BUFFER[i+1]->c = 66;
-putc(x.c);
-putc(x2.c);
-
-
-x.b.m->v.myu->g->MSG = "Hello$";
-putc(g.h);
-
-print(x.b.m->v.myu->g->MSG);
-putc(x.b.m->v.myu->g->MSG[3]);
-
-$PHELLO
-$DISPLAY("VATU")
-*/
-#ifdef $WIN
-{
-
-}
-
-px->MYBOOL = true;
-if(px->MYBOOL)
-	{
-	print("ACCESS BRANCHABLE\r\n\t");
-
-	}
-
-for(i = 0; i < 9;i++)
-{
-	for(j = 0; j < 9;j++)
-	{
-		if(i == 5 && j == 5)
-			exit 2;
-		else pass;
-		putc('(');
-		putc(48b + (byte)i);
-		putc(',');
-		putc(48b + (byte)j);
-		putc(')');
-	}
-	print("New line\r\n$");
-}
-AH = 0x4C;
-interrupt 0x21;
-
-
-
-}
-
-*/
 #include "STD.vt"
-namespace Types;
 public struct Point{
 int x;
 int y;
@@ -324,7 +17,9 @@ public struct LinkedList
 public typedef @Point PPoint;
 private typedef @Point PRPoint;
 
-namespace DOS;
+}
+namespace DOS
+{
 use std;
 use Types;
 extern asm {
@@ -398,6 +93,12 @@ public void Set(ref @LinkedList p,ref @LinkedList tmp,@Point pt, string name)
 	pt.Name = name; // point name
 	
 }
+public override string operator uint(uint a)
+{
+	print("CAST CALLED $");
+	string g = a;
+	return g;
+}
 bool Test(ref @LinkedList ll)
 {
 	return (??ll.Next);
@@ -439,4 +140,5 @@ print("Hel$" @@+,+++++ "lo ABD MOEZ $");
 print(" Hello World$");
 AH = 0x4C;
 interrupt 0x21;
+}
 }

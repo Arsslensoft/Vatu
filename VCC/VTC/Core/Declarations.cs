@@ -1707,7 +1707,7 @@ namespace VTC.Core
     public class NamespaceDeclaration : SimpleToken
     {
         public Namespace Namespace { get; set; }
-        [Rule("<Namespace> ::= ~namespace Id ~';'")]
+        [Rule("<Namespace> ::= ~namespace Id ")]
         public NamespaceDeclaration(Identifier id)
         {
             Namespace = new Namespace(id.Name);
@@ -1752,15 +1752,8 @@ namespace VTC.Core
         public Namespace Namespace { get; set; }
         public List<Namespace> Used { get; set; }
 
-        [Rule("<GLOBAL> ::= <Decls>")]
-        public Global(DeclarationSequence<Declaration> ds)
-        {
-            Used = new List<Namespace>();
-            Declarations = ds;
-            Namespace = Namespace.Default;
-
-        }
-        [Rule("<GLOBAL> ::= <Namespace> <Imports> <Decls>")]
+    
+        [Rule("<GLOBAL> ::= <Namespace> ~'{' <Imports> <Decls> ~'}'")]
         public Global(NamespaceDeclaration ndcl, Imports imp, DeclarationSequence<Declaration> ds)
         {
             Declarations = ds;
@@ -1768,15 +1761,15 @@ namespace VTC.Core
             Used = imp.Used;
 
         }
-        [Rule("<GLOBAL> ::= <Imports> <Decls>")]
-        public Global(Imports imp, DeclarationSequence<Declaration> ds)
+        [Rule("<GLOBAL> ::=  <Decls> ")]
+        public Global( DeclarationSequence<Declaration> ds)
         {
             Declarations = ds;
-            Namespace = Namespace.Default;
-            Used = imp.Used;
-        }
+            Namespace =Namespace.Default;
+            Used = new List<Namespace>();
 
-        [Rule("<GLOBAL> ::= <Namespace> <Decls>")]
+        }
+        [Rule("<GLOBAL> ::= <Namespace> ~'{' <Decls> ~'}'")]
         public Global(NamespaceDeclaration ndcl, DeclarationSequence<Declaration> ds)
         {
             Declarations = ds;

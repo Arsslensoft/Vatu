@@ -626,9 +626,9 @@ namespace VTC.Core
 
 
 
-        [Rule("<GLOBALS> ::= ", typeof(Global))]
-        public GlobalSequence()
-            : this(null, null)
+        [Rule("<GLOBALS> ::= <GLOBAL> ", typeof(Global))]
+        public GlobalSequence(T item)
+            : this(item, null)
         {
         }
 

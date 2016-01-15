@@ -144,7 +144,11 @@ namespace VTC
                         ResolveContext RootCtx = null;
                         List<Declaration> Resolved = new List<Declaration>();
                         List<ResolveContext> ResolveCtx = new List<ResolveContext>();
-
+                          // transfer
+                        
+                       
+                          
+                        
 
                         ok &= ResolveSemanticTree(globals, ref RootCtx, ref Resolved, ref ResolveCtx);
                         if (ok) // Emit
@@ -202,8 +206,13 @@ namespace VTC
 
 
                 RootCtx = ResolveContext.CreateRootContext(stmts.Used, stmts.Namespace, stmts.Declarations);
+
+            
+
                 if (isdef)
                     DefaultDependency.RootCtx = RootCtx;
+                else RootCtx.FillKnownByKnown(DefaultDependency.RootCtx.Resolver);
+
                 if (old_ctx != null)
                     RootCtx.FillKnownByKnown(old_ctx.Resolver);
                 if (stmts != null)

@@ -31,7 +31,7 @@ StringLiteral    = '"'( {String Ch} | '\'{Printable} )* '"'
 CharLiteral      = '' ( {Char Ch} | '\'{Printable} )''
 
 Id               = {Id Head}{Id Tail}*
-
+               
 MacroLiteral     = '$' {Id Head}{Id Tail}*  
 OperatorLiteralUnary  =  '@' [_-+-/*%£µ%§~#,.=<&|?:>!]+
 OperatorLiteralBinary  =  '@@' [_-+-/*%£µ%§~#.,=<&|?:>!]+             
@@ -57,19 +57,18 @@ Comment Line  = '//'
 <Imports>  ::= <Import>
             | <Import> <Imports>   
                    
-<Namespace> ::= 'namespace' Id ';'
+<Namespace> ::= 'namespace' Id
             
               
 ! ===================================================================
 !  Declaration
 ! ===================================================================
 <GLOBALS> ::= <GLOBAL> <GLOBALS>
-           | 
+           | <GLOBAL>
            
-<GLOBAL> ::= <Decls>
-          | <Namespace> <Imports> <Decls>
-          | <Imports> <Decls>
-          | <Namespace> <Decls>
+<GLOBAL> ::= <Namespace> '{' <Imports> <Decls> '}'
+          | <Namespace> '{' <Decls> '}'
+          | <Decls>
           
 <Decls> ::= <Decl> <Decls>
          | <Decl>
@@ -335,7 +334,7 @@ Comment Line  = '//'
              | const   
              | private
              | public
-             
+             |
 
 ! ===================================================================
 ! Enumerations

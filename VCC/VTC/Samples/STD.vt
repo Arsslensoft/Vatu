@@ -1,4 +1,5 @@
-﻿namespace std;
+﻿namespace std
+{
 public void print(string msg){
 asm{
 	"mov  dx, [BP+4]";
@@ -14,5 +15,6 @@ asm{
 
 	}
 		interrupt 0x21;
+}
 }
 //END

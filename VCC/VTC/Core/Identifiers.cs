@@ -322,15 +322,19 @@ namespace VTC.Core
         [Rule(@"<Mod>      ::= const")]
         [Rule(@"<Mod>      ::= private")]
         [Rule(@"<Mod>      ::= public")]
+  
         public Modifier(SimpleToken mod)
         {
             _mod = mod;
            
         }
 
+     
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-            if (_mod.Name == "extern")
+            if (_mod == null)
+                ModifierList = Modifiers.Private;
+            else if (_mod.Name == "extern")
                 ModifierList = Modifiers.Extern;
             else if (_mod.Name == "static")
                 ModifierList = Modifiers.Static;

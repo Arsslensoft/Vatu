@@ -179,8 +179,7 @@ namespace VTC.Core
                 throw new ArgumentException("Unrecognized escape sequence");
               }
               break;
-            default:
-              throw new ArgumentException("Unrecognized escape sequence");
+           
           }
         }
         pos++;
