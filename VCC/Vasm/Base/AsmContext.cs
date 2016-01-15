@@ -382,6 +382,7 @@ namespace Vasm
            // Emit
         
             writer.WriteLine("bits 16");
+            writer.WriteLine("PROGRAM_ORG:");
             foreach (Instruction inst in mDefInstructions)
             {
                 writer.Write("\t");
@@ -417,6 +418,7 @@ namespace Vasm
        }
        public virtual void EmitFinalize(AssemblyWriter writer)
        {
+           writer.WriteLine("PROGRAM_END:");
        }
        public virtual void Emit(AssemblyWriter writer)
        {

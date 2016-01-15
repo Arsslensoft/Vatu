@@ -26,6 +26,7 @@ namespace VTC.Core
     [Terminal("[]")]
     [Terminal("nameof")]
     [Terminal("typeof")]
+    [Terminal("addressof")]
     [Terminal("extends")]
     [Terminal("delegate")]
     [Terminal("public")]

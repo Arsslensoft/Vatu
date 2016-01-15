@@ -327,13 +327,17 @@ private typedef @Point PRPoint;
 namespace DOS;
 use std;
 use Types;
+extern asm {
+	"MYLABEL:";
+}
 public string result;
 
 public define bool op_TEqual operator @@=;
 public define op_UPPER operator @||;
-public define op_CONCAT operator @@+,+;
+public define op_CONCAT operator @@+,+++++;
 
-public override string operator @@+,+(string a,string b)
+
+public override string operator @@+,+++++(string a,string b)
 {
   string p = result;
   for(;*a != '$';p++){
@@ -366,7 +370,16 @@ public override bool operator @@=(string a,string b)
 {
 	return false;
 }
+public void tostring(uint x){
+if(x < 10u)
+putc((byte)x + 48);
+else
+{
+tostring(x / 10);
+putc((byte)(x % 10) + 48);
+}
 
+}
 public void Set(byte *b)
 {
 	*b = 65;
@@ -377,7 +390,7 @@ public void Set(ref byte c)
 
 }
 
-public void Set(ref @LinkedList p, @LinkedList tmp,  @Point pt, string name)
+public void Set(ref @LinkedList p,ref @LinkedList tmp,@Point pt, string name)
 {
 
 	p.Next = &tmp; // set next tmp
@@ -385,6 +398,7 @@ public void Set(ref @LinkedList p, @LinkedList tmp,  @Point pt, string name)
 	pt.Name = name; // point name
 	
 }
+
 entry void main()
 {
 @Point a;
@@ -392,6 +406,10 @@ entry void main()
 @LinkedList nl;
 byte ch = 97;
 // reference test
+
+tostring(addressof(result));
+print(" End $");
+tostring(addressof(MYLABEL));
 Set(ch);
 putc(ch);
 a.Name = "No Reference $";
@@ -408,7 +426,7 @@ print(l.Next->val.Name);
 string test = "uppercase$";
 test = @||test;
 print(test);	
-print("Hel$" @@+,+ "lo$");
+print("Hel$" @@+,+++++ "lo ABD MOEZ $");
 print(" Hello World$");
 AH = 0x4C;
 interrupt 0x21;

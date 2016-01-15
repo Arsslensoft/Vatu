@@ -515,6 +515,7 @@ Comment Line  = '//'
                | '(' <Type> ')' <Op Unary>   !CAST
                | sizeof '(' <Type> ')'
                | sizeof '(' ID <Pointers> ')'
+               | addressof '(' ID ')'
                | nameof  '(' ID ')'
     
                | <Op Pointer>
