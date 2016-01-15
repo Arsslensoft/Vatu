@@ -225,12 +225,7 @@ namespace VTC.Core
             _id = id;
             _param = expr;
         }
-        [Rule(@"<Value>       ::= Id ~'(' ~')'")]
-        public MethodExpression(Identifier id)
-        {
-            _id = id;
-            _param = null;
-        }
+       
         MemberSpec DelegateVar;
         bool ResolveDelegate(ResolveContext rc)
         {
@@ -872,7 +867,6 @@ namespace VTC.Core
 
         [Rule(@"<Op Pointer> ::= <Op Pointer> '.' <Value>")]
         [Rule(@"<Op Pointer> ::= <Op Pointer> '->' <Value>")]
-        [Rule(@"<Op Pointer> ::= <Value> '.' <Value>")]
         public AccessOperation(Expr left, AccessOp op, Expr target)
         {
             _op = op;
@@ -884,8 +878,8 @@ namespace VTC.Core
 
         }
 
-        [Rule(@"<Op Pointer> ::= Id '::' <Value>")]
-        public AccessOperation(Identifier id, AccessOp op, Expr target)
+        [Rule(@"<Op Pointer> ::= <Name> '::' <Value>")]
+        public AccessOperation(NameIdentifier id, AccessOp op, Expr target)
         {
             _op = op;
             _op.Namespace = new Namespace(id.Name);

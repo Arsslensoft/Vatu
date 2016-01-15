@@ -140,7 +140,7 @@ namespace VTC.Core
             return base.Resolve(rc);
         }
     }
-
+  
     [Terminal("Id")]
     public class Identifier : Expr
     {
@@ -154,6 +154,36 @@ namespace VTC.Core
         }
 
 
+    }
+    public class NameIdentifier : Expr
+    {
+        protected readonly string _idName;
+        public override string Name { get { return _idName; } }
+        [Rule(@"<Name> ::= Id")]
+        public NameIdentifier(Identifier idName)
+        {
+            loc = CompilerContext.TranslateLocation(position);
+            _idName = idName.Name;
+        }
+        [Rule(@"<Name> ::= <QualifiedName>")]
+        public NameIdentifier(QualifiedNameIdentifier idName)
+        {
+            loc = CompilerContext.TranslateLocation(position);
+            _idName = idName.Name;
+        }
+
+    }
+    public class QualifiedNameIdentifier : Expr
+    {
+        protected readonly string _idName;
+        public override string Name { get { return _idName; } }
+        [Rule(@"<QualifiedName> ::= <Name> ~'::' Id")]
+        public QualifiedNameIdentifier(NameIdentifier nid,Identifier idName)
+        {
+            loc = CompilerContext.TranslateLocation(position);
+            _idName = nid.Name + "::"+idName.Name ;
+        }
+      
     }
     public class MethodIdentifier : Identifier
     {

@@ -80,10 +80,10 @@
   <ItemGroup>
     <None Include="packages.config" />
     <EmbeddedResource Include="Samples\Kernel.vt" />
-    <EmbeddedResource Include="VATU.cgt" />
     <EmbeddedResource Include="Samples\DOS.vt" />
     <EmbeddedResource Include="Samples\SIGNED.vt" />
     <EmbeddedResource Include="Samples\STD.vt" />
+    <EmbeddedResource Include="VATU.egt" />
     <None Include="VATU.grm" />
   </ItemGroup>
   <ItemGroup />

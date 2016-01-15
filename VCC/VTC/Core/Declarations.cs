@@ -1707,8 +1707,8 @@ namespace VTC.Core
     public class NamespaceDeclaration : SimpleToken
     {
         public Namespace Namespace { get; set; }
-        [Rule("<Namespace> ::= ~namespace Id ")]
-        public NamespaceDeclaration(Identifier id)
+        [Rule("<Namespace> ::= ~namespace <Name> ")]
+        public NamespaceDeclaration(NameIdentifier id)
         {
             Namespace = new Namespace(id.Name);
         }
@@ -1718,8 +1718,8 @@ namespace VTC.Core
     public class ImportDeclaration : SimpleToken
     {
         public Namespace Import { get; set; }
-        [Rule("<Import>   ::= ~use Id ~';'")]
-        public ImportDeclaration(Identifier id)
+        [Rule("<Import>   ::= ~use <Name> ~';'")]
+        public ImportDeclaration(NameIdentifier id)
         {
             Import = new Namespace(id.Name);
         }
@@ -1761,10 +1761,10 @@ namespace VTC.Core
             Used = imp.Used;
 
         }
-        [Rule("<GLOBAL> ::=  <Decls> ")]
-        public Global( DeclarationSequence<Declaration> ds)
+        [Rule("<GLOBAL> ::=  <Decl> ")]
+        public Global( Declaration ds)
         {
-            Declarations = ds;
+            Declarations = new DeclarationSequence<Declaration>(ds);
             Namespace =Namespace.Default;
             Used = new List<Namespace>();
 

@@ -1,5 +1,4 @@
-﻿
-namespace Types
+﻿namespace Types.Type
 {
 #include "STD.vt"
 public struct Point{
@@ -20,8 +19,8 @@ private typedef @Point PRPoint;
 }
 namespace DOS
 {
-use std;
-use Types;
+use std.console;
+use Types.Type;
 extern asm {
 	"MYLABEL:";
 }

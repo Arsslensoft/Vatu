@@ -26,7 +26,7 @@ namespace VTC
         }
         public string Normalize()
         {
-            return Name.Replace(".", "_");
+            return Name.Replace("::", "_");
         }
         public override string ToString()
         {

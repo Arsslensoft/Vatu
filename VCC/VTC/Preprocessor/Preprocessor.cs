@@ -11,207 +11,20 @@ using Vasm;
 using Vasm.x86;
 namespace VTC.Core
 {
-    public class MacroEntry
-    {
-        public const string Custom = "##";
-        public string Subst;
-        public string[] Parms;
-    }
-    public class MacroSubstitutor
-    {
-       internal Hashtable macroTable = new Hashtable();
-
-        public void AddMacro(string name, string subst, string[] parms)
-        {
-            MacroEntry me = new MacroEntry();
-            string pstr = "";
-            if (parms != null)
-                pstr = string.Join(",", parms);
-            me.Subst = subst;
-            me.Parms = parms;
-            macroTable[name] = me;
-        }
-
-        public MacroEntry Lookup(string s)
-        {
-            return (MacroEntry)macroTable[s];
-        }
-
-        static Regex iden = new Regex(@"\$[a-zA-Z_]\w*");
-        static Regex piden = new Regex(@"[a-zA-Z_]\w*");
-        public string ReplaceParms(MacroEntry me, string[] actual_parms)
-        {
-            Match m;
-            int istart = 0;
-            string subst = me.Subst;
-            while ((m = piden.Match(subst, istart)) != Match.Empty)
-            {
-                int idx = Array.IndexOf(me.Parms, m.Value);
-                int len = m.Length;
-                if (idx != -1)
-                {
-                    string actual = actual_parms[idx];
-                    // A _single_ # before a token  means the 'stringizing' operator
-                    if (m.Index > 0 && subst[m.Index - 1] == '#')
-                    {
-                        // whereas ## means 'token-pasting'!  #s will be removed later!
-                        if (!(m.Index > 1 && subst[m.Index - 2] == '#'))
-                            actual = '\"' + actual + '\"';
-                    }
-                    subst = piden.Replace(subst, actual, 1, istart);
-                    len = actual.Length;
-                }
-                istart = m.Index + len;
-            }
-            subst = subst.Replace("#", "");
-            return subst;
-        }
-
-        public string Substitute(string str)
-        {
-            Match m;
-            int istart = 0;
-            while ((m = iden.Match(str, istart)) != Match.Empty)
-            {
-                MacroEntry me = (MacroEntry)macroTable[m.Value];
-                if (me != null)
-                {
-                    string subst = me.Subst;
-                    if (subst == MacroEntry.Custom)
-                        subst = CustomReplacement(m.Value);
-                    if (me.Parms != null)
-                    {
-                        int i = m.Index + m.Length;  // points to char just beyond match
-                        while (i < str.Length && str[i] != '(')
-                            i++;
-                        i++; // just past '('
-                        int parenDepth = 1;
-                        string[] actuals = new string[me.Parms.Length];
-                        int idx = 0, isi = i;
-                        while (parenDepth > 0)
-                        {
-                            if (parenDepth == 1 && (str[i] == ',' || str[i] == ')'))
-                            {
-                                actuals[idx] = str.Substring(isi, i - isi);
-                                idx++;
-                                isi = i + 1;  // past ',' or ')'
-                            }
-                            if (str[i] == '(') parenDepth++;
-                            else
-                                if (str[i] == ')') parenDepth--;
-                            i++;
-                        }
-                        subst = ReplaceParms(me, actuals);
-                        istart = m.Index;
-                        str = str.Remove(istart, i - istart);
-                        str = str.Insert(istart, subst);
-
-                    }
-                    else
-                    {
-                        //Console.WriteLine("{0} {1} {2}",str,subst,istart);
-                        //Console.In.ReadLine();
-
-                        str = iden.Replace(str, subst, 1, istart);
-                    }
-                }
-                else
-                    istart = m.Index + m.Length;
-            }
-            return str;
-        }
-
-        static Regex define = new Regex(@"#code (\w+)($|\s+|\(.+\)\s+)(.+)");
-
-        public string ProcessLine(string line,ref bool isdef)
-        {
-            isdef = false;
-            Match m = define.Match(line);
-            if (m != Match.Empty)
-            {
-                string[] parms = null;
-                string sym = m.Groups[1].ToString();
-                string subst = m.Groups[3].ToString();
-                string arg = m.Groups[2].ToString();
-                if (arg != "")
-                {
-                    arg = arg.ToString();
-                    if (arg[0] == '(')
-                    {
-                        arg = arg.TrimEnd(null);
-                        arg = arg.Substring(1, arg.Length - 2);
-                        parms = arg.Split(new char[] { ',' });
-                    }
-                }
-                isdef = true;
-                AddMacro("$" + sym, subst, parms);
-                return "";
-            }
-            else
-                return Substitute(line);
-        }
-        public string ProcessCode(string line)
-        {
-
-            Match m = define.Match(line);
-            if (m != Match.Empty)
-            {
-                string[] parms = null;
-                string sym = m.Groups[1].ToString();
-                string subst = m.Groups[3].ToString();
-                string arg = m.Groups[2].ToString();
-                if (arg != "")
-                {
-                    arg = arg.ToString();
-                    if (arg[0] == '(')
-                    {
-                        arg = arg.TrimEnd(null);
-                        arg = arg.Substring(1, arg.Length - 2);
-                        parms = arg.Split(new char[] { ',' });
-                    }
-                }
-                AddMacro("$" + sym, subst, parms);
-                return "";
-            }
-            else
-                return Substitute(line);
-        }
-
-        public virtual string CustomReplacement(string s)
-        {
-            return "";
-        }
-    }
-    class VTCMacroSubstitutor : MacroSubstitutor
-    {
-        public override string CustomReplacement(string s)
-        {
-            switch (s)
-            {
-                case "$DATE": return DateTime.Now.ToString();
-                case "$USER": return Environment.GetEnvironmentVariable("USERNAME");
-                case "$COMPILER": return "\"Arsslensoft Vatu Compiler\"";
-                case "$VERSION": return "\"" +Assembly.GetExecutingAssembly().GetName().Version.ToString()+"\"";
-                case "$OSVERSION": return "\"" +Environment.OSVersion.ToString() + "\"";
-            }
-            return "";
-        }
-    }
-
-
+ 
     public class Preprocessor
     {
 
         public static Stack<Location> PreprocessorStack = new Stack<Location>();
       
-         static VTCMacroSubstitutor VTMS = new VTCMacroSubstitutor();
+         
         static Preprocessor()
         {
-            VTMS.AddMacro("$DATE", MacroEntry.Custom, null);
-            VTMS.AddMacro("$USER", MacroEntry.Custom, null);
-            VTMS.AddMacro("$VERSION", MacroEntry.Custom, null);
-            VTMS.AddMacro("$OSVERSION", MacroEntry.Custom, null);
-            VTMS.AddMacro("$COMPILER", MacroEntry.Custom, null);
+           Symbols.Add("DATE", DateTime.Now.ToString());
+           Symbols.Add("USER", Environment.UserName);
+           Symbols.Add("VERSION", Assembly.GetExecutingAssembly().GetName().Version.ToString());
+           Symbols.Add("OSVERSION",Environment.OSVersion.ToString());
+           Symbols.Add("COMPILER","Arsslensoft Vatu Compiler");
     
         }
         public static Dictionary<string, object> Symbols = new Dictionary<string, object>();
@@ -239,11 +52,14 @@ namespace VTC.Core
         static Regex lnregex = new Regex("\\s*#line\\s*\"(?<include>.*?)\"\\s*(?<line>[0-9]+)|\\s*#include\\s*([<\"])(?<include>.*?)([>\"])");
         static  Regex incregex = new Regex("");
 
-     public static string FixInclude(string file)
-      {
+     public static string FixInclude(string file,string currentdir)
+        {
+            string tryout = Path.Combine(currentdir, file);
+            if (File.Exists(tryout))
+                return tryout;
           foreach (string path in Paths)
           {
-              string tryout = Path.Combine(path, file);
+               tryout = Path.Combine(path, file);
               if (File.Exists(tryout))
                   return tryout;
           }
@@ -297,21 +113,25 @@ namespace VTC.Core
 
      
     }
+    
 
   public class RegionPreprocessor : PreprocessorDeclaration
   {
-      DeclarationSequence<Declaration> decls;
-      [Rule(@"<PP Region>    ::= ~'#'~region StringLiteral <Decls> ~'#'~endregion")]
-      public RegionPreprocessor(StringLiteral name, DeclarationSequence<Declaration> decl)
+   
+      [Rule(@"<PP Region>    ::= ~'#'~region StringLiteral")]
+      public RegionPreprocessor(StringLiteral namel)
       {
-          decls = decl;
+      
       }
 
-
+      [Rule(@"<PP ERegion>    ::=  ~'#'~endregion")]
+      public RegionPreprocessor()
+      {
+      
+      }
       public override bool Preprocess(CompilerContext ctx, ref DeclarationSequence<Declaration> decl)
       {
-          if (decl != null)
-              decl = decls;
+       
           return true;
       }
 
@@ -326,7 +146,11 @@ namespace VTC.Core
       {
           DependencyParsing dep = new DependencyParsing();
           dep.File = id.Value.GetValue().ToString();
-          dep.File = Preprocessor.FixInclude(dep.File);
+          
+          dep.File = Preprocessor.FixInclude(dep.File,"");
+          string path = Path.GetDirectoryName(dep.File);
+          if (!Preprocessor.Paths.Contains(path))
+              Preprocessor.Paths.Add(path);
           if (ctx.InputSources.Contains(dep))
           {
               dep = ctx.InputSources[ctx.InputSources.IndexOf(dep)];
@@ -409,7 +233,7 @@ namespace VTC.Core
           Elifs = cpp;
       }
 
-      [Rule(@"<PP If>    ::= ~'#'if <PP Expr> ~'{' <Decls> ~'}' <PP Elif List>  ~'#'~else ~'{' <Decls>  ~'}'         ")]
+      [Rule(@"<PP If>    ::= ~'#'if <PP Expr> ~'{' <Decls> ~'}' <PP Elif List> ~else ~'{' <Decls>  ~'}'         ")]
       public ConditionalPreprocessor(SimpleToken tok, PreprocessorExpr expr, DeclarationSequence<Declaration> DECL, ElifSequence<ConditionalPreprocessor> cpp, DeclarationSequence<Declaration> els)
       {
           Decls = DECL;
@@ -419,7 +243,7 @@ namespace VTC.Core
           _cond = CondtionalPP.IfElifElse;
       }
 
-      [Rule(@"<PP If>    ::= ~'#'if <PP Expr> ~'{' <Decls> ~'}' ~'#'~else ~'{' <Decls>  ~'}'     ")]
+      [Rule(@"<PP If>    ::= ~'#'if <PP Expr> ~'{' <Decls> ~'}' ~else ~'{' <Decls>  ~'}'     ")]
       public ConditionalPreprocessor(SimpleToken tok, PreprocessorExpr expr, DeclarationSequence<Declaration> DECL,  DeclarationSequence<Declaration> els)
       {
           Decls = DECL;
@@ -428,7 +252,7 @@ namespace VTC.Core
           _cond = CondtionalPP.IfElse;
       }
 
-      [Rule(@"<PP Elif>    ::= ~'#'elif <PP Expr> ~'{' <Decls> ~'}'")]
+      [Rule(@"<PP Elif>    ::= elif <PP Expr> ~'{' <Decls> ~'}'")]
       [Rule(@"<PP If>    ::= ~'#'if <PP Expr> ~'{' <Decls>  ~'}'   ")]
       public ConditionalPreprocessor(SimpleToken tok, PreprocessorExpr expr, DeclarationSequence<Declaration> DECL)
       {

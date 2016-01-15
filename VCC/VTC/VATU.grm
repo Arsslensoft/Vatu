@@ -30,8 +30,9 @@ NullLiteral      = null
 StringLiteral    = '"'( {String Ch} | '\'{Printable} )* '"'                 
 CharLiteral      = '' ( {Char Ch} | '\'{Printable} )''
 
-Id               = {Id Head}{Id Tail}*
-               
+Id               = {Id Head}{Id Tail}*    
+
+                               
 MacroLiteral     = '$' {Id Head}{Id Tail}*  
 OperatorLiteralUnary  =  '@' [_-+-/*%£µ%§~#,.=<&|?:>!]+
 OperatorLiteralBinary  =  '@@' [_-+-/*%£µ%§~#.,=<&|?:>!]+             
@@ -48,30 +49,32 @@ Comment End   = '*/'
 Comment Line  = '//'
 
 
+<Name> ::= ID
+         |  <QualifiedName>
+
+<QualifiedName> ::= <Name> '::' ID
 ! ===================================================================
 ! Import
 ! ===================================================================
 
-<Import>   ::= 'use' Id ';'
+<Import>   ::= 'use' <Name> ';'
             
 <Imports>  ::= <Import>
             | <Import> <Imports>   
                    
-<Namespace> ::= 'namespace' Id
-            
-              
+<Namespace> ::= 'namespace' <Name>
+                
 ! ===================================================================
 !  Declaration
 ! ===================================================================
-<GLOBALS> ::= <GLOBAL> <GLOBALS>
-           | <GLOBAL>
+<GLOBALS> ::= <GLOBAL>
+           | <GLOBAL> <GLOBALS>
            
 <GLOBAL> ::= <Namespace> '{' <Imports> <Decls> '}'
           | <Namespace> '{' <Decls> '}'
-          | <Decls>
-          
-<Decls> ::= <Decl> <Decls>
-         | <Decl>
+          | <Decl>
+<Decls> ::= <Decl>
+         | <Decl> <Decls>
 
 <Decl>  ::= <Func Decl>
           | <ASM Decl>
@@ -98,7 +101,8 @@ Comment Line  = '//'
                  | <PP Diag>
                  | <PP Region>
                  | <PP Include>
-           
+                 | <PP ERegion>
+                 
 <PP Define> ::= '#'define ID <PP Expr>
                | '#'undef ID
                
@@ -128,22 +132,23 @@ Comment Line  = '//'
 !if elif elif endif                    
 <PP If> ::= '#'if <PP Expr> '{' <Decls> '}' <PP Elif List> 
             | '#'if <PP Expr> '{' <Decls> '}'
-            | '#'if <PP Expr> '{' <Decls> '}' <PP Elif List>  '#'else '{' <Decls>  '}'   
-             | '#'if <PP Expr>  '{'  <Decls> '}' '#'else  '{'  <Decls>  '}'
+            | '#'if <PP Expr> '{' <Decls> '}' <PP Elif List>  else '{' <Decls>  '}'   
+             | '#'if <PP Expr>  '{'  <Decls> '}' else  '{'  <Decls>  '}'
              
             
-<PP Elif List> ::=   <PP Elif> <PP Elif List> 
-              |   <PP Elif> 
+<PP Elif List> ::=  <PP Elif>  
+               | <PP Elif> <PP Elif List> 
+
               
 
-<PP Elif> ::= '#'elif <PP Expr> '{' <Decls> '}'
+<PP Elif> ::= elif <PP Expr> '{' <Decls> '}'
 
             
 <PP Diag> ::= '#'warn StringLiteral
             | '#'error StringLiteral
  
-<PP Region> ::= '#'region StringLiteral  <Decls>  '#'endregion
-             
+<PP Region> ::= '#'region StringLiteral
+<PP ERegion> ::= '#'endregion         
                            
 ! ===================================================================
 ! Extension  Declaration
@@ -334,7 +339,7 @@ Comment Line  = '//'
              | const   
              | private
              | public
-             |
+
 
 ! ===================================================================
 ! Enumerations
@@ -521,15 +526,13 @@ Comment Line  = '//'
 
 <Op Pointer> ::= <Op Pointer> '.' <Value>
                | <Op Pointer> '->' <Value>
-               | Id '::' <Value>
+               | <Name> '::' <Value>
                | <Type> '::' <Value>
-               | <Value> '.' <Value>
                | <Op Pointer> '[' <Expression> ']'
                | <Value>
 
 <Value>      ::= <CONSTANT>
-               | Id '(' <PARAM EXPR> ')'
-               | Id '(' ')'          
+               | Id '(' <PARAM EXPR> ')'        
                | Id
                | '(' <Expression> ')'
                | <REGISTER>

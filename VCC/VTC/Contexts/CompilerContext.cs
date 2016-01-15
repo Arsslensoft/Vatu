@@ -45,7 +45,7 @@ namespace VTC
         CompiledGrammar grammar; SemanticTypeActions<SimpleToken> actions;
         public void InitGrammar()
         {
-            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.VATU.cgt");
+            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.VATU.egt");
           
 
 
