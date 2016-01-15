@@ -274,9 +274,6 @@ namespace VTC
                 ResolveContext.Report.Error(26, Location, "Logical not must be used with boolean type, use ~ instead");
 
             CommonType = BuiltinTypeSpec.Bool;
-            ae = new AssignExpression(Right, new SimpleAssignOperator(), Right);
-            ae = (AssignExpression)ae.DoResolve(rc);
-
 
             if (Right is RegisterExpression)
                 RegisterOperation = true;
@@ -799,12 +796,12 @@ namespace VTC
                 else if (Type.IsPointer && _target.Type == BuiltinTypeSpec.UInt)
                 {
                     _target.Type = Type;
-                    nofix = false;
+                    nofix = true;
                 }
                 else if (_target.Type.IsPointer && Type == BuiltinTypeSpec.UInt)
                 {
                     Type = _target.Type;
-                    nofix = false;
+                    nofix = true;
                 }
                 else if (_target is ConstantExpression) // convert const
                 {

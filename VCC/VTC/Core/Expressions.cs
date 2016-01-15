@@ -377,7 +377,7 @@ namespace VTC.Core
             Emit(ec);
             ec.EmitInstruction(new Compare() { DestinationReg = EmitContext.A, SourceValue = (ushort)1 });
             ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.Equal, ConditionalTestEnum.NotEqual);
-            return base.EmitBranchable(ec, truecase, v);
+            return true;
         }
         public override string CommentString()
         {

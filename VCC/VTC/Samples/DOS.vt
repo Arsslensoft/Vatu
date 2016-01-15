@@ -398,26 +398,35 @@ public void Set(ref @LinkedList p,ref @LinkedList tmp,@Point pt, string name)
 	pt.Name = name; // point name
 	
 }
-
+bool Test(ref @LinkedList ll)
+{
+	return (??ll.Next);
+}
 entry void main()
 {
 @Point a;
 @LinkedList l;
 @LinkedList nl;
 byte ch = 97;
+uint adr;
+
 // reference test
 
-tostring(addressof(result));
-print(" End $");
-tostring(addressof(MYLABEL));
+
 Set(ch);
 putc(ch);
 a.Name = "No Reference $";
+adr = a.Name;
+tostring(adr);
+a.Name = adr;
+print((string)adr);
+
 nl.val.Name = "No Reference $";
 Set(l,nl,a,"With Reference $");
 print(a.Name);
 print(l.Next->val.Name);
-
+if(!Test(l))
+	print("Next not null $");
 
 	if("A" @@= "B")
 		print("True$");
