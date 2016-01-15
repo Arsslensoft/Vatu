@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using VTC.Core;
 
 namespace VTC
 {
@@ -29,25 +30,33 @@ namespace VTC
         public override void Error(Location location, string message)
         {
             error_count++;
-            if(!location.IsNull)
-            Console.Error.WriteLine("Error in file '{0}' in line {1} :{2}", location.FullPath, location.Row, message);
+            if (!location.IsNull)
+            {
+
+
+          
+               Console.Error.WriteLine("Error:VC{4}:{0}:{1},{2}:{3}",FilePath, location.Row, location.Column, message, "0000");
+            }
             else Console.Error.WriteLine("Error : {0}",  message);
         }
         public override void Error(int code,Location location, string message)
         {
             error_count++;
             if (!location.IsNull)
-                Console.Error.WriteLine("Error:VC{4}:{0}:{1},{2}:{3}", location.FullPath, location.Row,location.Column, message,code.ToString("0000"));
-            else Console.Error.WriteLine("Error:VC{1}:{0}", message,code.ToString("0000"));
+            {
+
+
+
+                Console.Error.WriteLine("Error:VC{4}:{0}:{1},{2}:{3}", FilePath, location.Row, location.Column, message, code.ToString("0000"));
+            }
+            else Console.Error.WriteLine("Error:VC{1}:{0}", message, code.ToString("0000"));
         }
         public override void Warning(Location location, string message)
         {
-            string location_str = " : ";
             if (!location.IsNull)
-                location_str = " (" + location.Row + ", " + location.Column + ") : ";
+                Console.Error.WriteLine("Warning:{0}:{1},{2}:{3}", FilePath, location.Row, location.Column, message);
 
-            Console.Error.WriteLine(String.Format("{0}{1}Warning -- {2}",
-                    (file_path != null ? file_path : ""), location_str, message));
+            else Console.Error.WriteLine("Warning:{0}", message);
         }
 
         public override void Message(string message)

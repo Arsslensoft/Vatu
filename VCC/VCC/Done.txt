@@ -1,2 +1,0 @@
-﻿Literals Resolved
-Constant Conversion

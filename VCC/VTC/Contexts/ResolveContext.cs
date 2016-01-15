@@ -256,7 +256,8 @@ namespace VTC
             foreach (TypeSpec ts in kn.KnownTypes)
                 KnowType(ts);
 
-
+            foreach (OperatorSpec op in kn.KnownOperators)
+                Resolver.KnowOperator(op);
         }
         public bool IsInGlobal()
         {
@@ -343,6 +344,9 @@ namespace VTC
                 KnowType(m);
             foreach (FieldSpec m in rc.Resolver.KnownGlobals)
                 KnowField(m);
+
+            foreach (OperatorSpec op in rc.Resolver.KnownOperators)
+                Resolver.KnowOperator(op);
         }
         public void UpdateChildContext(string name, ResolveContext crc)
         {
@@ -409,8 +413,8 @@ namespace VTC
         {
             if (Exist((MemberSpec)old, Resolver.KnownTypes.Cast<MemberSpec>().ToList<MemberSpec>()))
             {
-                Resolver.KnownTypes.Add(ne);
-                Resolver.KnownTypes.Remove(old);
+                Resolver.KnownTypes[Resolver.KnownTypes.IndexOf(old)] = ne;
+            
             }
         }
        

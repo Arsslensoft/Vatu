@@ -1,10 +1,7 @@
 ﻿default asm {
 "[org 100h]";
 }
-#include "STD.vt"
-#line "SIGNED.vt" 12
-#code PHELLO print("Hello World Macro Code $");
-#code DISPLAY(m) print(m);
+/*
 #define HELLO_WORLD "Hello World Macro Message $"
 #define MY_ppdef true
 
@@ -14,8 +11,8 @@ public void Test(byte c){
 }
 public void Test(int c)
 {
-
 }
+
 
 
 #if (MY_ppdef == true)
@@ -31,11 +28,13 @@ public void PrintStr(string)static  extends string;
 struct GFT{
 int a;
 byte b;
+struct GFT* g;
 };
 
 public cdecl void writecolor(byte c,byte color, struct GFT g, struct GFT h, byte k)
 {
      putc(c);  
+g.g->b=5;
 }
 
 public void TestP()
@@ -76,12 +75,16 @@ namespace DOS;
 use std;
 
 
+
 const string prompt = ">";
 string HelloWorld = "Hello World $";
 string MyTestBufer;
 
 
 string buff;
+
+
+
 public void tostring(uint x){
 if(x < 10u)
 putc((byte)x + 48);
@@ -142,9 +145,10 @@ bool MYBOOL;
 struct YD b;
 byte c;
 };
-public cdecl void GHT(string aez)
+typedef delegate Hi HANDLER;
+public stdcall void GHT(string aez)
 {
-print("Hi everyone $");
+print("Hi everyone From VATU $");
 print(aez);
 }
 
@@ -195,7 +199,6 @@ override struct MyS* operator +(struct MyS* a, struct MyS* b)
 
 
 
-
 void Hello() static extends void
 {
 print("Hello World$");
@@ -206,21 +209,27 @@ struct XA *BUFFER[2];
 delegate Hi SCALL[3];
 string PORG ="A\nB";
 
+
 entry  void main()
 {
+
 int j =0;
-delegate Hi HiHandler;
+@HANDLER HiHandler;
 SCALL[1] = GHT("HE$");
 
 HiHandler = SCALL[1];
 HiHandler("From delegate$ ");
 
 SCALL[1] = null;
-
+HiHandler = null;
 if(HiHandler == null)
 	print(" Null delegate $");
 else print(" Not Null delegate $");
 
+if(HelloWorld =="Hello World $")
+	print("Match$");
+else
+		print("Not Match$");
 int i = 0;
 struct XA x;
 struct XA x2;
@@ -274,6 +283,22 @@ if(px->MYBOOL)
 	print("ACCESS BRANCHABLE\r\n\t");
 
 	}
+
+for(i = 0; i < 9;i++)
+{
+	for(j = 0; j < 9;j++)
+	{
+		if(i == 5 && j == 5)
+			exit 2;
+		else pass;
+		putc('(');
+		putc(48b + (byte)i);
+		putc(',');
+		putc(48b + (byte)j);
+		putc(')');
+	}
+	print("New line\r\n$");
+}
 AH = 0x4C;
 interrupt 0x21;
 
@@ -281,3 +306,110 @@ interrupt 0x21;
 
 }
 
+*/
+#include "STD.vt"
+namespace Types;
+public struct Point{
+int x;
+int y;
+string Name;
+};
+
+public struct LinkedList
+{
+	@Point val;
+	 @LinkedList * Next;
+};
+
+public typedef @Point PPoint;
+private typedef @Point PRPoint;
+
+namespace DOS;
+use std;
+use Types;
+public string result;
+
+public define bool op_TEqual operator @@=;
+public define op_UPPER operator @||;
+public define op_CONCAT operator @@+,+;
+
+public override string operator @@+,+(string a,string b)
+{
+  string p = result;
+  for(;*a != '$';p++){
+			*p = *a;
+	a++;
+	}
+  for(;*b != '$';p++){
+			*p = *b;
+	b++;
+	}
+*p = '$';
+return result;
+
+}
+public override string operator @||(string a)
+{
+string p = a;
+
+  for(;*p != '$';)
+	{
+
+	if(*p >= 97b)
+		*p = *p - 32b;
+
+	p++;
+	}
+return a;
+}
+public override bool operator @@=(string a,string b)
+{
+	return false;
+}
+
+public void Set(byte *b)
+{
+	*b = 65;
+}
+public void Set(ref byte c)
+{
+	Set(&c);
+
+}
+
+public void Set(ref @LinkedList p, @LinkedList tmp,  @Point pt, string name)
+{
+
+	p.Next = &tmp; // set next tmp
+	tmp.val.Name = name; // tmp point 
+	pt.Name = name; // point name
+	
+}
+entry void main()
+{
+@Point a;
+@LinkedList l;
+@LinkedList nl;
+byte ch = 97;
+// reference test
+Set(ch);
+putc(ch);
+a.Name = "No Reference $";
+nl.val.Name = "No Reference $";
+Set(l,nl,a,"With Reference $");
+print(a.Name);
+print(l.Next->val.Name);
+
+
+	if("A" @@= "B")
+		print("True$");
+	else 
+		print("False$");
+string test = "uppercase$";
+test = @||test;
+print(test);	
+print("Hel$" @@+,+ "lo$");
+print(" Hello World$");
+AH = 0x4C;
+interrupt 0x21;
+}

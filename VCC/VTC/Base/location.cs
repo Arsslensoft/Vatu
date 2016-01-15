@@ -26,25 +26,28 @@ namespace VTC
     /// </remarks>
     public class Location : IEquatable<Location>
     {
+        public long Pos { get; set; }
         public int Row { get; set; }
         public int Column { get; set; }
         public string FileName { get { return Path.GetFileName(FullPath); } }
         public string FullPath { get; set; }
-        public Location(string file,int row, int col)
+        public Location(string file, int row, int col, long pos)
         {
             FullPath = file;
             Row = row;
             Column = col;
+            Pos = pos;
         }
-        public Location(int row, int col)
+        public Location(int row, int col, long pos)
         {
             FullPath = "default";
             Row = row;
             Column = col;
+            Pos = pos;
         }
         public bool IsNull { get { return Column == -1 || Row == -1; } }
 
-        public static Location Null = new Location(-1, -1);
+        public static Location Null = new Location(-1, -1,-1);
         #region IEquatable<Location> Members
 
         public bool Equals(Location other)
@@ -53,6 +56,10 @@ namespace VTC
         }
 
         #endregion
+        public override string ToString()
+        {
+            return string.Format("({0},{1},{2})", Row,Column,Pos);
+        }
     }
 
 

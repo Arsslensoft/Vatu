@@ -18,6 +18,7 @@ namespace VTC
        public List<Namespace> Imports { get; set; }
        public MethodSpec CurrentMethod { get; set; }
 
+       public List<OperatorSpec> KnownOperators { get; set; }
         public List<TypeSpec> KnownTypes { get; set; }
         public List<FieldSpec> KnownGlobals { get; set; }
         public List<MethodSpec> KnownMethods { get; set; }
@@ -27,7 +28,7 @@ namespace VTC
             : this(ns,imports,mtd)
         {
             Parent = parent;
-         
+     
         }
         public Resolver(Namespace ns, List<Namespace> imports, MethodSpec mtd = null)
         {
@@ -39,9 +40,19 @@ namespace VTC
             KnownMethods = new List<MethodSpec>();
             KnownTypes = new List<TypeSpec>();
             KnownLocalVars = new List<VarSpec>();
+            KnownOperators = new List<OperatorSpec>();
         }
 
+        public bool KnowOperator(OperatorSpec oper)
+        {
+            if (!KnownOperators.Contains(oper))
+            {
+                KnownOperators.Add(oper);
+                return true;
 
+            }
+            return false;
+        }
         public bool KnowType(TypeSpec tp)
         {
             if (!KnownTypes.Contains(tp))
@@ -158,17 +169,23 @@ namespace VTC
             }
             else return m;
         }
-        public TypeSpec ResolveType(Namespace ns, string name)
+        public bool ResolveType(Namespace ns, string name,ref TypeSpec tp)
         {
-            foreach (TypeSpec kt in KnownTypes)
+            tp = null;
+            for (int i = 0; i < KnownTypes.Count; i++)
             {
-                if (kt.NS.Name != ns.Name)
+                if (KnownTypes[i].NS.Name != ns.Name)
                     continue;
-                if (kt.Name == name)
-                    return kt;
-            }
+                if (KnownTypes[i].Name == name && ((!KnownTypes[i].IsPrivate || CurrentNamespace == ns)))
+                {
+                    tp = KnownTypes[i];
+                    return true;
 
-            return null;
+                }
+
+            }
+           
+            return false;
         }
         public FieldSpec ResolveField(Namespace ns, string name)
         {
@@ -204,7 +221,7 @@ namespace VTC
                     {
                         if (kt.NS.Name != ns.Name)
                             continue;
-                        if (kt.Signature == msig && ((kt.Modifiers & Modifiers.Private) != Modifiers.Private || CurrentNamespace == ns))
+                        if (kt.Signature == msig && ((!kt.IsPrivate || CurrentNamespace == ns)))
                             return kt;
                     }
                 }
@@ -214,7 +231,7 @@ namespace VTC
                     {
                         if (kt.NS.Name != ns.Name)
                             continue;
-                        if (kt.Name == name && ((kt.Modifiers & Modifiers.Private) != Modifiers.Private || CurrentNamespace == ns))
+                        if (kt.Name == name && ((!kt.IsPrivate || CurrentNamespace == ns)))
                             return kt;
                     }
                 }
@@ -239,7 +256,7 @@ namespace VTC
                     MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
                     foreach (MethodSpec kt in ml)
                     {
-                        if (kt.Signature.ExtensionSignature == msig.ExtensionSignature && ((kt.Modifiers & Modifiers.Private) != Modifiers.Private || CurrentNamespace == ns))
+                        if (kt.Signature.ExtensionSignature == msig.ExtensionSignature && ((!kt.IsPrivate || CurrentNamespace == ns)))
                             return kt;
                     }
                 }
@@ -248,7 +265,7 @@ namespace VTC
                     foreach (MethodSpec kt in ml)
                     {
 
-                        if (kt.Name == name && ((kt.Modifiers & Modifiers.Private) != Modifiers.Private || CurrentNamespace == ns))
+                        if (kt.Name == name && ((!kt.IsPrivate || CurrentNamespace == ns)))
                             return kt;
                     }
                 }
@@ -262,6 +279,17 @@ namespace VTC
                 if (kt.NS.Name != ns.Name)
                     continue;
                 if (kt.Name == name)
+                    return kt;
+            }
+            return null;
+        }
+        public OperatorSpec ResolveOperator(Namespace ns, string symb)
+        {
+            foreach (OperatorSpec kt in KnownOperators)
+            {
+                if (kt.NS.Name != ns.Name)
+                    continue;
+                if (kt.Symbol == symb && ((!kt.IsPrivate || CurrentNamespace == ns)))
                     return kt;
             }
             return null;
@@ -284,7 +312,7 @@ namespace VTC
             {
                 if (kt.NS.Name != ns.Name)
                     continue;
-                if (kt is EnumTypeSpec)
+                if (kt is EnumTypeSpec &&  ((!kt.IsPrivate || CurrentNamespace == ns)))
                 {
 
                     EnumTypeSpec ets = (EnumTypeSpec)kt;
@@ -336,6 +364,24 @@ namespace VTC
             }
             return ms;
         }
+        public OperatorSpec TryResolveOperator(string sym)
+        {
+            OperatorSpec ms = ResolveOperator(CurrentNamespace, sym);
+            if (ms == null)
+            {
+                ms = ResolveOperator(Namespace.Default, sym);
+                if (ms == null)
+                {
+                    foreach (Namespace ns in Imports)
+                    {
+                        ms = ResolveOperator(ns, sym);
+                        if (ms != null)
+                            return ms;
+                    }
+                }
+            }
+            return ms;
+        }
         public FieldSpec TryResolveField(string name)
         {
             FieldSpec ms = ResolveField(CurrentNamespace, name);
@@ -372,23 +418,23 @@ namespace VTC
             }
             else return m;
         }
-        public TypeSpec TryResolveType(string name)
+        public bool TryResolveType(string name, ref TypeSpec type)
         {
-            TypeSpec ms = ResolveType(CurrentNamespace, name);
-            if (ms == null)
+            bool ok = ResolveType(CurrentNamespace, name,ref type);
+            if (!ok)
             {
-                ms = ResolveType(Namespace.Default, name);
-                if (ms == null)
+                ok = ResolveType(Namespace.Default, name, ref type);
+                if (!ok)
                 {
                     foreach (Namespace ns in Imports)
                     {
-                        ms = ResolveType(ns, name);
-                        if (ms != null)
-                            return ms;
+                        ok = ResolveType(ns, name, ref type);
+                        if (ok)
+                            return true;
                     }
                 }
             }
-            return ms;
+            return ok;
         }
         public EnumMemberSpec TryResolveEnumValue(string name)
         {

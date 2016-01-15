@@ -314,18 +314,27 @@ namespace VTC.Core
                 ResolveContext.Report.Error(46, Location, "Unknown method " + msig.NormalSignature + " ");
             else if(Method.Parameters.Count != Parameters.Count)
                 ResolveContext.Report.Error(46, Location, "the method "+Method.Name + " has different parameters");
-            else if (!MatchParameterTypes())
+            else if (!MatchParameterTypes(rc))
                 ResolveContext.Report.Error(46, Location, "the method " + Method.Name + " has different parameters types. try casting");
        
             if (Method != null)
             Type = Method.MemberType;
             return this;
         }
-        bool MatchParameterTypes()
+        bool MatchParameterTypes(ResolveContext rc)
         {
             for (int i = 0; i < Method.Parameters.Count; i++)
                 if (!TypeChecker.CompatibleTypes(Parameters[i].Type, Method.Parameters[i].MemberType))
                     return false;
+                else if( Method.Parameters[i].IsReference)
+                {
+                 LoadEffectiveAddressOp lea =   new LoadEffectiveAddressOp();
+                 lea.loc = Parameters[i].loc;
+                 Parameters[i] = new UnaryOperation(Parameters[i], lea);
+                 Parameters[i].loc = lea.loc;
+                 Parameters[i] = (Expr)Parameters[i].DoResolve(rc);
+
+                }
 
             return true;
         }
@@ -1050,7 +1059,13 @@ namespace VTC.Core
                 _op = new ValueOfOp();
             _op.Right = target;
         }
-
+        [Rule(@"<Op Unary>   ::= OperatorLiteralUnary   <Op Unary>")]
+        public UnaryOperation(OperatorLiteralUnary op, Expr target)
+        {
+            _op = new ExtendedUnaryOperator(op.Sym, op.Value.GetValue().ToString());
+           
+            _op.Right = target;
+        }
         // Postfix
         [Rule(@"<Op Unary>   ::= <Op Pointer> '--'")]
         [Rule(@"<Op Unary>   ::= <Op Pointer> '++'")]
@@ -1124,7 +1139,7 @@ namespace VTC.Core
 
 
 
-
+        
         [Rule(@"<Op Or>      ::= <Op Or> '||' <Op And>")]
         [Rule(@"<Op And>     ::= <Op And> '&&' <Op BinOR>")]
         [Rule(@"<Op BinOR>   ::= <Op BinOR> '|' <Op BinXOR>")]
@@ -1148,6 +1163,16 @@ namespace VTC.Core
         public BinaryOperation(Expr left, BinaryOp op, Expr right)
         {
             _op = op;
+            _op.Left = left;
+            IsConstant = false;
+            _op.Right = right;
+        }
+
+        [Rule(@"<Op BinaryOpDef>     ::= <Op BinaryOpDef> OperatorLiteralBinary <Op Or>")]
+        public BinaryOperation(Expr left, OperatorLiteralBinary op, Expr right)
+        {
+            _op = new ExtendedBinaryOperator(op.Sym, op.Value.GetValue().ToString());
+  
             _op.Left = left;
             IsConstant = false;
             _op.Right = right;
@@ -1555,7 +1580,7 @@ namespace VTC.Core
         private Expr _true;
         private Expr _false;
 
-        [Rule(@"<Op If>      ::= <Op Or> ~'?' <Op If> ~':' <Op If>")]
+        [Rule(@"<Op If>      ::= <Op BinaryOpDef> ~'?' <Op If> ~':' <Op If>")]
         public IfExpression(Expr cnd, Expr tr, Expr fl)
         {
             _cond = cnd;

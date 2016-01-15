@@ -196,16 +196,14 @@ namespace VTC.Core
             }
             return "";
         }
-    } 
-    public class PreprocessorLocation
-    {
-      public int start;
-        public int end;
     }
+
+
     public class Preprocessor
     {
+
         public static Stack<Location> PreprocessorStack = new Stack<Location>();
-        public static List<PreprocessorLocation> ToBeRemoved = new List<PreprocessorLocation>();
+      
          static VTCMacroSubstitutor VTMS = new VTCMacroSubstitutor();
         static Preprocessor()
         {
@@ -238,10 +236,10 @@ namespace VTC.Core
         {
             return Symbols[name];
         }
-        static Regex lnregex = new Regex("\\s*#line\\s*\"(?<include>.*?)\"\\s*(?<line>[0-9]+)");
-        static  Regex incregex = new Regex("\\s*#include\\s*([<\"])(?<include>.*?)([>\"])");
+        static Regex lnregex = new Regex("\\s*#line\\s*\"(?<include>.*?)\"\\s*(?<line>[0-9]+)|\\s*#include\\s*([<\"])(?<include>.*?)([>\"])");
+        static  Regex incregex = new Regex("");
 
-      static string FixInclude(string file)
+     public static string FixInclude(string file)
       {
           foreach (string path in Paths)
           {
@@ -254,81 +252,7 @@ namespace VTC.Core
      internal static List<string> Paths = new List<string>();
 
       static List<string> pfiles = new List<string>();
-        public static void PreprocessInclude(string file,string outpreprocessed,int secondlvl)
-        {
-             
-            using (StreamWriter sw = new StreamWriter(outpreprocessed))
-            {
-                string src = File.ReadAllText(file);
-                int off = 0;
-
-                // line preprocessing
-                foreach (Match m in lnregex.Matches(src) )
-                {
-                    int line = int.Parse(m.Groups["line"].Value);
-                    string pfile = FixInclude(m.Groups["include"].Value);
-
-                    string ln = GetLine(line, pfile);
-                    src = src.Remove(m.Index, m.Length);
-                    src = src.Insert(m.Index, Environment.NewLine + ln);
-                    off = off - m.Length+ ln.Length+2;
-
-                }
-
-                // include preprocessing
-                off = 0;
-                foreach (Match m in incregex.Matches(src))
-                    {
-                        string pfile = FixInclude(m.Groups["include"].Value) + ".ppvt";
-                        if (!pfiles.Contains(pfile))
-                        {
-                            PreprocessInclude(FixInclude(m.Groups["include"].Value), pfile,secondlvl);
-                            pfiles.Add(pfile);
-                        }
-                      string incl =   File.ReadAllText(pfile);
-                      src = src.Remove(off + m.Index, m.Length);
-
-                      src = src.Insert(off + m.Index , Environment.NewLine +incl);
-                      off =off - m.Length + incl.Length+2;
-
-                    }
-
-                // 2nd Level Macro Code Replacement
-                // include preprocessing
-                if (secondlvl == 2)
-                {
-                    off = 0;
-                    bool isdef = false;
-                        string[] lines = Regex.Split(src, "\r\n");
-                        for (int i = 0; i < lines.Length; i++)
-                        {
-                            string ln = lines[i];
-                            if (ln.Contains('$') || ln.Contains("#code"))
-                                ln = VTMS.ProcessLine(ln,ref isdef);
-                           
-                            if(!isdef)
-                            sw.WriteLine(ln);
-                        }
-
-
-                        foreach (DictionaryEntry emt in VTMS.macroTable)
-                        {
-                            MacroEntry em = emt.Value as MacroEntry;
-                            if ((emt.Value as MacroEntry).Parms == null && !Symbols.ContainsKey(emt.Key.ToString()) && em.Subst == "##")
-                                Symbols.Add(emt.Key.ToString(), VTMS.CustomReplacement(emt.Key.ToString()));
-                            else if ((emt.Value as MacroEntry).Parms == null && !Symbols.ContainsKey(emt.Key.ToString())) 
-                                Symbols.Add(emt.Key.ToString(), em.Subst);
-                            
-                        }
-                
-                }
-                else                sw.Write(src);
-            }
-
-
-           
-        }
-     
+    
         public static string GetLine(int line, string file)
         {
             string ln = "";
@@ -384,7 +308,7 @@ namespace VTC.Core
       }
 
 
-      public override bool Preprocess(ref DeclarationSequence<Declaration> decl)
+      public override bool Preprocess(CompilerContext ctx, ref DeclarationSequence<Declaration> decl)
       {
           if (decl != null)
               decl = decls;
@@ -394,11 +318,43 @@ namespace VTC.Core
 
 
   }
+  public class IncludePreprocessor : PreprocessorDeclaration
+  {
+     
+      StringLiteral id;
+      public override bool Preprocess(CompilerContext ctx,ref DeclarationSequence<Declaration> decl)
+      {
+          DependencyParsing dep = new DependencyParsing();
+          dep.File = id.Value.GetValue().ToString();
+          dep.File = Preprocessor.FixInclude(dep.File);
+          if (ctx.InputSources.Contains(dep))
+          {
+              dep = ctx.InputSources[ctx.InputSources.IndexOf(dep)];
+              return ctx.ResolveDependency(ctx.InputSources.IndexOf(dep));
+          }
+          else
+          {
+              dep.InputStream = new StreamReader(File.OpenRead(dep.File));
+              ctx.InputSources.Add(dep);
+              return ctx.ResolveDependency(ctx.InputSources.Count -1);
+          }
+          return false;
+      }
+      [Rule(@"<PP Include>    ::= ~'#'~include StringLiteral")]
+      public IncludePreprocessor(StringLiteral src)
+      {
+
+          id = src;
+      }
+    
+
+
+  }
   public class DefinePreprocessor : PreprocessorDeclaration
   {
       PreprocessorExpr ppexpr;
       Identifier id;
-      public override bool Preprocess(ref DeclarationSequence<Declaration> decl)
+      public override bool Preprocess(CompilerContext ctx, ref DeclarationSequence<Declaration> decl)
       {
           if (ppexpr == null)
               Preprocessor.UndefineSymbol(id.Name);
@@ -496,10 +452,10 @@ namespace VTC.Core
      }
 
 
-     public override bool Preprocess(ref DeclarationSequence<Declaration> decl)
+     public override bool Preprocess(CompilerContext ctx,ref DeclarationSequence<Declaration> decl)
      {
          if (CPP != null)
-             return CPP.Preprocess(ref decl);
+             return CPP.Preprocess(ctx,ref decl);
          else if (PPExpr != null)
          {
              object eval = PPExpr.Evaluate();
@@ -581,10 +537,10 @@ namespace VTC.Core
   }
   public class PreprocessorDeclaration : Declaration
   {
-      public virtual bool Preprocess(ref DeclarationSequence<Declaration> decl)
+      public virtual bool Preprocess(CompilerContext ctx, ref DeclarationSequence<Declaration> decl)
       {
           if(PPDecl != null)
-                 return PPDecl.Preprocess(ref decl);
+                 return PPDecl.Preprocess(ctx,ref decl);
           return false;
       }
 
@@ -596,6 +552,7 @@ namespace VTC.Core
       [Rule(@"<Preproc Decl> ::= <PP Conditional> ")]
       [Rule(@"<Preproc Decl> ::= <PP Diag> ")]
       [Rule(@"<Preproc Decl> ::= <PP Region> ")]
+      [Rule(@"<Preproc Decl> ::= <PP Include> ")]
       public PreprocessorDeclaration(PreprocessorDeclaration decl)
       {
           PPDecl = decl;

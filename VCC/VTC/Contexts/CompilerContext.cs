@@ -13,22 +13,48 @@ using VTC.Core;
 
 namespace VTC
 {
+    public class DependencyParsing : IEquatable<DependencyParsing>
+    {
+        public ResolveContext RootCtx { get; set; }
+        public List<ResolveContext> ResolveCtx { get; set; }
+        public List<Declaration> Declarations { get; set; }
+        public bool Parsed { get; set; }
+        public string File { get; set; }
+        public List<DependencyParsing> DependsOn = new List<DependencyParsing>();
+        public StreamReader InputStream { get; set; }
 
+        public bool Equals(DependencyParsing dep)
+        {
+            return dep.File == File;
+        }
+    }
     public class CompilerContext
     {
         public AssemblyWriter Asmw { get; set; }
         public Settings Options { get; set; }
         public string TempSrcFile { get; set; }
-        public StreamReader InputSource { get; set; }
+        public List<DependencyParsing> InputSources;
         public CompilerContext(Settings opt)
         {
             Options = opt;
             TempSrcFile = Path.GetTempFileName();
-            
+            InputSources = new List<DependencyParsing>();
             Asmw = new AssemblyWriter(opt.Output);
+            InitGrammar();
         }
+        CompiledGrammar grammar; SemanticTypeActions<SimpleToken> actions;
+        public void InitGrammar()
+        {
+            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.VATU.cgt");
+          
 
 
+                // compile/run each statement one entry at a time
+                 grammar = CompiledGrammar.Load(stream);
+                 actions = new SemanticTypeActions<SimpleToken>(grammar);
+
+            
+        }
         public AsmContext CreateAsmContext()
         {
             return new AsmContext(Asmw);
@@ -55,6 +81,7 @@ namespace VTC
             return true;
 
         }
+        public DependencyParsing DefaultDependency { get; set; }
         public bool Preprocess()
         {
             if(Options.Includes != null)
@@ -69,7 +96,7 @@ namespace VTC
 
             // init default paths
        
-            string tmp = Path.ChangeExtension( Options.Output,".ppvt");
+     
             foreach (string src in Options.Sources)
             {
                   
@@ -77,18 +104,96 @@ namespace VTC
                 {
                     if(!Preprocessor.Paths.Contains(Path.GetDirectoryName(src)))
                              Preprocessor.Paths.Add(Path.GetDirectoryName(src));
-                string code  = File.ReadAllText(src);
-                File.WriteAllText(tmp, code);
+          
+                    DependencyParsing dep = new DependencyParsing();
+                    dep.File = src;
+                   
+                    if (!InputSources.Contains(dep))
+                    {
+                        dep.InputStream = new StreamReader(File.OpenRead(dep.File));
+                        InputSources.Add(dep);
+                        DefaultDependency = dep;
+                    }
+                    
                 }
            
             }
-            string outpfile = tmp + ".ppvt";
-            Preprocessor.PreprocessInclude(tmp, outpfile, Options.PreprocessLevel);
-
-            InputSource = new StreamReader(File.OpenRead(outpfile));
+      
+     
             return true;
         }
-        public bool ResolveSemanticTree(GlobalSequence<Global> globals,ref ResolveContext RootCtx, ref List<Declaration> Resolved, ref List<ResolveContext> ResolveCtx)
+        public bool ResolveDependency(int idx)
+        {
+            DependencyParsing dep = InputSources[idx];
+            if (dep.Parsed)
+                return true;
+            DefaultDependency.DependsOn.Add(dep);
+            string oldf = ResolveContext.Report.FilePath;
+            ResolveContext.Report.FilePath = dep.File;
+            bool ok = true;
+            try
+            {
+               
+
+                    var processor = new SemanticProcessor<SimpleToken>(dep.InputStream, actions);
+
+                    ParseMessage parseMessage = processor.ParseAll();
+                    if (parseMessage == ParseMessage.Accept)
+                    {
+                        var globals = processor.CurrentToken as GlobalSequence<Global>;
+                        ResolveContext RootCtx = null;
+                        List<Declaration> Resolved = new List<Declaration>();
+                        List<ResolveContext> ResolveCtx = new List<ResolveContext>();
+
+
+                        ok &= ResolveSemanticTree(globals, ref RootCtx, ref Resolved, ref ResolveCtx);
+                        if (ok) // Emit
+                        {
+                            dep.Declarations = Resolved;
+                            dep.ResolveCtx = ResolveCtx;
+                            dep.RootCtx = RootCtx;
+                            // transfer
+                            DefaultDependency.RootCtx.FillKnownByKnown(RootCtx.Resolver);
+                          
+                        }
+                        //{
+                        //    EmitContext ec = CreateEmit();
+                        //    int i = 0;
+                        //    foreach (Declaration stmt in Resolved)
+                        //    {
+                        //        ec.SetCurrentResolve(ResolveCtx[i]);
+                        //        stmt.Emit(ec);
+                        //        i++;
+                        //    }
+                        //    PrepareEmit(ec);
+
+                        //    ec.Emit();
+
+                        //    Asmw.Flush();
+                        //    Asmw.Close();
+                        //    Build();
+                        //}
+                    }
+                    else
+                    {
+                        ok = false;
+                        IToken token = processor.CurrentToken;
+                        ResolveContext.Report.Error(0, CompilerContext.TranslateLocation(token.Position), "Syntax error '" + token.Symbol.Name + "' expected");
+
+                    }
+                
+            }
+            catch (Exception ex)
+            {
+                ok = false;
+                Console.WriteLine("Error: " + ex.Message);
+                Console.WriteLine(ex.StackTrace);
+            }
+            dep.Parsed = ok;
+            ResolveContext.Report.FilePath = oldf;
+            return ok;
+        }
+        public bool ResolveSemanticTree(GlobalSequence<Global> globals,ref ResolveContext RootCtx, ref List<Declaration> Resolved, ref List<ResolveContext> ResolveCtx,bool isdef=false)
         {
             foreach (Global stmts in globals)
             {
@@ -97,6 +202,8 @@ namespace VTC
 
 
                 RootCtx = ResolveContext.CreateRootContext(stmts.Used, stmts.Namespace, stmts.Declarations);
+                if (isdef)
+                    DefaultDependency.RootCtx = RootCtx;
                 if (old_ctx != null)
                     RootCtx.FillKnownByKnown(old_ctx.Resolver);
                 if (stmts != null)
@@ -108,14 +215,23 @@ namespace VTC
                         if (stmt.BaseDeclaration is PreprocessorDeclaration)
                         {
                             DeclarationSequence<Declaration> declsofpp = null;
-                            (stmt.BaseDeclaration as PreprocessorDeclaration).Preprocess(ref declsofpp);
+                           bool ok =  (stmt.BaseDeclaration as PreprocessorDeclaration).Preprocess(this,ref declsofpp);
+                           if (!ok)
+                               return false;
+
                             if (declsofpp != null)
                                 foreach (Declaration d in declsofpp)
                                     Preprocessed.Add(d);
                         }
                         else Preprocessed.Add(stmt);
                     }
-                  
+                    //// fill default
+                    //if (isdef)
+                    //{
+                    //    foreach (DependencyParsing dep in DefaultDependency.DependsOn)
+                    //        RootCtx.FillKnownByKnown(dep.RootCtx.Resolver);
+                    //}
+                 
                     foreach (Declaration stmt in Preprocessed)
                     {
                         
@@ -204,18 +320,13 @@ namespace VTC
         }
         public bool ResolveAndEmit()
         {
+         
             bool ok = Preprocess();
+            ResolveContext.Report.FilePath = DefaultDependency.File;
             try{
-            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.VATU.cgt"))
-            {
+           
 
-
-                // compile/run each statement one entry at a time
-                CompiledGrammar grammar = CompiledGrammar.Load(stream);
-                var actions = new SemanticTypeActions<SimpleToken>(grammar);
-
-
-                var processor = new SemanticProcessor<SimpleToken>(InputSource, actions);
+                var processor = new SemanticProcessor<SimpleToken>(InputSources[0].InputStream, actions);
 
                 ParseMessage parseMessage = processor.ParseAll();
                 if (parseMessage == ParseMessage.Accept)
@@ -224,11 +335,27 @@ namespace VTC
                     ResolveContext RootCtx = null;
                     List<Declaration> Resolved = new List<Declaration>();
                     List<ResolveContext> ResolveCtx = new List<ResolveContext>();
+                    List<Declaration> RResolved = new List<Declaration>();
+                    List<ResolveContext> RResolveCtx = new List<ResolveContext>();
+
+                    ok &= ResolveSemanticTree(globals,ref RootCtx,ref Resolved,ref ResolveCtx, true);
 
 
-                    ok &= ResolveSemanticTree(globals,ref RootCtx,ref Resolved,ref ResolveCtx);
-                    if (ok) // Emit
-                    {
+                    if (ok) // Emit & Fill Dependencies
+                    { 
+                        // Fill Dependencies
+                        foreach (DependencyParsing dep in DefaultDependency.DependsOn)
+                        {
+                         foreach (ResolveContext rctx in dep.ResolveCtx)
+                             RResolveCtx.Add(rctx);
+                         
+                            // decls
+                            foreach (Declaration decl in dep.Declarations)
+                                RResolved.Add( decl);
+                        }
+                        Resolved.InsertRange(0, RResolved.ToArray());
+                        ResolveCtx.InsertRange(0, RResolveCtx.ToArray());
+
                         EmitContext ec = CreateEmit();
                         int i = 0;
                         foreach (Declaration stmt in Resolved)
@@ -248,9 +375,10 @@ namespace VTC
                 }
                 else{ ok = false;
                        IToken token = processor.CurrentToken;
-                            Console.WriteLine("At index: {0} [{1}] {2},{3} {4}", token.Position.Index, parseMessage, token.Position.Line, token.Position.Column, token.Symbol.Name);
+                       ResolveContext.Report.Error(0, CompilerContext.TranslateLocation(token.Position), "Syntax error '" + token.Symbol.Name +"' expected");
+
                 }
-            }
+            
             }
             catch(Exception ex){
                 ok = false;
@@ -262,7 +390,7 @@ namespace VTC
 
         public static Location TranslateLocation(bsn.GoldParser.Parser.LineInfo li)
         {
-            return new Location(li.Line, li.Column);
+            return new Location(li.Line, li.Column, li.Index);
         }
     }
 }

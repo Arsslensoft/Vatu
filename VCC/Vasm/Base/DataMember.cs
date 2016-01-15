@@ -128,23 +128,25 @@ namespace Vasm {
           aOutput.Write(" db ");
           byte[] b = Encoding.ASCII.GetBytes(StrVal);
           int i = 0;
+          string strdecl = "";
           string last = "";
           foreach (char c in StrVal)
           {
               if (c == '\r' || c == '\n')
               {
                   if (!string.IsNullOrEmpty(last))
-                         aOutput.Write("\"" + last + "\", ");
-                  aOutput.Write(b[i].ToString());
-                  aOutput.Write(",");
+                        strdecl+= "\"" + last + "\", ";
+                  strdecl += b[i].ToString();
+                  strdecl += ",";
                   last = "";
               }
               else last += c + "";
               i++;
           }
-          if(!string.IsNullOrEmpty(last))
-             aOutput.Write("\""+last+"\"");
-
+          if (!string.IsNullOrEmpty(last))
+              strdecl += "\"" + last + "\"";
+          else strdecl = strdecl.Remove(strdecl.Length - 1, 1);
+          aOutput.Write(strdecl);
           if (!StrConst)
           {
               aOutput.WriteLine();

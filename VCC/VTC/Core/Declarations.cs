@@ -304,62 +304,81 @@ namespace VTC.Core
 
 
         FunctionBodyDefinition _fbd;
-      
+
+        Modifier _mod;
         TypeToken _mtype;
         SimpleToken OpSym;
         TypeToken _casttype;
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '==' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '!=' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '>=' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '<=' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '>' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '<' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '+' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '*' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '-' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '/' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '%' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '^' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '&' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '|' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '<<' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '>>' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '<~' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '~>' <Func Body> ")]
-        public OperatorDeclaration(TypeToken type,BinaryOp oper, FunctionBodyDefinition fbd)
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '==' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '!=' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '>=' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '<=' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '>' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '<' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '+' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '*' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '-' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '/' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '%' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '^' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '&' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '|' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '<<' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '>>' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '<~' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '~>' <Func Body> ")]
+        public OperatorDeclaration(Modifier mod,TypeToken type,BinaryOp oper, FunctionBodyDefinition fbd)
         {
             _mtype = type;
             _fbd = fbd;
-       
+            _mod = mod;
             OpSym = oper;
         }
 
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '++' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '--' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '¤' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '??' <Func Body> ")]
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '~' <Func Body> ")]
-        public OperatorDeclaration(TypeToken type, UnaryOp oper, FunctionBodyDefinition fbd)
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator OperatorLiteralBinary <Func Body> ")]
+        public OperatorDeclaration(Modifier mod, TypeToken type, OperatorLiteralBinary oper, FunctionBodyDefinition fbd)
         {
             _mtype = type;
             _fbd = fbd;
-
-            OpSym = oper;
+            _mod = mod;
+            OpSym = new ExtendedBinaryOperator(oper.Sym, oper.Value.GetValue().ToString());
         }
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator '[]' <Func Body> ")]
-        public OperatorDeclaration(TypeToken type, SimpleToken oper, FunctionBodyDefinition fbd)
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator OperatorLiteralUnary <Func Body> ")]
+        public OperatorDeclaration(Modifier mod, TypeToken type, OperatorLiteralUnary oper, FunctionBodyDefinition fbd)
         {
             _mtype = type;
             _fbd = fbd;
-
-            OpSym = oper;
+            _mod = mod;
+            OpSym = new ExtendedUnaryOperator(oper.Sym,oper.Value.GetValue().ToString());
         }
 
-        [Rule(@"<Oper Decl> ::= ~override <Type> ~operator <Type> <Func Body> ")]
-        public OperatorDeclaration(TypeToken type, TypeToken oper, FunctionBodyDefinition fbd)
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '++' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '--' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '¤' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '??' <Func Body> ")]
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '~' <Func Body> ")]
+        public OperatorDeclaration(Modifier mod, TypeToken type, UnaryOp oper, FunctionBodyDefinition fbd)
         {
             _mtype = type;
             _fbd = fbd;
+            _mod = mod;
+            OpSym = oper;
+        }
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator '[]' <Func Body> ")]
+        public OperatorDeclaration(Modifier mod, TypeToken type, SimpleToken oper, FunctionBodyDefinition fbd)
+        {
+            _mtype = type;
+            _fbd = fbd;
+            _mod = mod;
+            OpSym = oper;
+        }
+
+        [Rule(@"<Oper Decl> ::= <Mod> ~override <Type> ~operator <Type> <Func Body> ")]
+        public OperatorDeclaration(Modifier mod, TypeToken type, TypeToken oper, FunctionBodyDefinition fbd)
+        {
+            _mtype = type;
+            _fbd = fbd;
+            _mod = mod;
             _casttype = oper;
         }
 
@@ -367,11 +386,76 @@ namespace VTC.Core
         {
             _fbd = (FunctionBodyDefinition)_fbd.DoResolve(rc);
             _mtype = (TypeToken)_mtype.DoResolve(rc);
+            _mod = (Modifier)_mod.DoResolve(rc);
+            mods = _mod.ModifierList;
             Params = _fbd.Params;
             Parameters = _fbd.Parameters;
             base._type = _mtype;
             bool hasproto = false;
-            if (_casttype == null && OpSym is BinaryOp)
+            if (_casttype == null && OpSym is ExtendedBinaryOperator)
+            {
+                ExtendedBinaryOperator bop = OpSym as ExtendedBinaryOperator;
+                OperatorSpec oper = rc.Resolver.TryResolveOperator(bop.SymbolName);
+                if (oper == null)
+                {
+                    ResolveContext.Report.Error(0, Location, "Unknown operator");
+                    return this;
+                }
+
+                OpName = _type.Type.NormalizedName + "_" + oper.Name;
+
+                method = rc.Resolver.TryResolveMethod(OpName);
+                if (method != null && (method.Modifiers & Modifiers.Prototype) == 0)
+                    ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
+                else if (method != null)
+                    hasproto = true;
+                // operator checks
+                if (_fbd.ParamTypes.Count != 2)
+                    ResolveContext.Report.Error(45, Location, "user defined binary operators must have 2 parameters with same type");
+              
+                    // match types
+                    if (!_fbd.ParamTypes[0].Equals(_fbd.ParamTypes[1]))
+                        ResolveContext.Report.Error(45, Location, "user defined binary operators must have same parameters type");
+                   
+                if (oper.IsLogic && _mtype.Type != BuiltinTypeSpec.Bool)
+                        ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
+                else if(!oper.IsLogic)
+                    if (!_mtype.Type.Equals(_fbd.ParamTypes[0]) || !_mtype.Type.Equals(_fbd.ParamTypes[1]) || !_fbd.ParamTypes[0].Equals(_fbd.ParamTypes[1]))
+                    ResolveContext.Report.Error(45, Location, "Non comparison operators must have same return and parameters type");
+            }
+            else if (_casttype == null && OpSym is ExtendedUnaryOperator)
+            {
+                ExtendedUnaryOperator uop = OpSym as ExtendedUnaryOperator;
+                
+                OperatorSpec oper = rc.Resolver.TryResolveOperator(uop.SymbolName);
+                if (oper == null)
+                {
+                    ResolveContext.Report.Error(0, Location, "Unknown operator");
+                    return this;
+                }
+                OpName = _type.Type.NormalizedName + "_" + oper.Name;
+             
+
+                method = rc.Resolver.TryResolveMethod(OpName);
+                if (method != null && (method.Modifiers & Modifiers.Prototype) == 0)
+                    ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
+                else if (method != null)
+                    hasproto = true;
+                // operator checks
+                if (_fbd.ParamTypes.Count != 1)
+                    ResolveContext.Report.Error(45, Location, "user defined unary operators must have 1 parameters with same return type");
+
+
+                // match types
+                if (oper.IsLogic && _mtype.Type != BuiltinTypeSpec.Bool)
+                    ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
+                 else if(!oper.IsLogic)
+                    if (!_mtype.Type.Equals(_fbd.ParamTypes[0]))
+                    ResolveContext.Report.Error(45, Location, "user defined unary operators must have same return and parameters type");
+
+
+            }
+            else  if (_casttype == null && OpSym is BinaryOp)
             {
                 BinaryOp bop = OpSym as BinaryOp;
                 OpName = _type.Type.NormalizedName + "_" + bop.Operator.ToString();
@@ -379,7 +463,7 @@ namespace VTC.Core
                 method = rc.Resolver.TryResolveMethod(OpName);
                 if (method != null && (method.Modifiers & Modifiers.Prototype) == 0)
                     ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
-                else if (method == null)
+                else if (method != null)
                     hasproto = true;
                 // operator checks
                 if (_fbd.ParamTypes.Count != 2)
@@ -402,7 +486,7 @@ namespace VTC.Core
                 method = rc.Resolver.TryResolveMethod(OpName);
                 if (method != null && (method.Modifiers & Modifiers.Prototype) == 0)
                     ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
-                else if (method == null)
+                else if (method != null)
                     hasproto = true;
                 // operator checks
                 if (_fbd.ParamTypes.Count!= 1)
@@ -423,7 +507,7 @@ namespace VTC.Core
                 method = rc.Resolver.TryResolveMethod(OpName);
                 if (method != null && (method.Modifiers & Modifiers.Prototype) == 0)
                     ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
-                else if (method == null)
+                else if (method != null)
                     hasproto = true;
                 // operator checks
                 if (_fbd.ParamTypes.Count != 2)
@@ -444,7 +528,7 @@ namespace VTC.Core
                 method = rc.Resolver.TryResolveMethod(OpName);
                 if (method != null && (method.Modifiers & Modifiers.Prototype) == 0)
                     ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
-                else if (method == null)
+                else if (method != null)
                     hasproto = true;
                 // operator checks
                 if (_fbd.ParamTypes.Count != 1)
@@ -822,6 +906,7 @@ namespace VTC.Core
         }
     }
 
+
     public class OperatorPrototypeDeclaration : Declaration
     {
         MethodSpec method;
@@ -831,98 +916,209 @@ namespace VTC.Core
         Stack<ParameterSpec> Params { get; set; }
         public List<ParameterSpec> Parameters { get; set; }
 
+        Modifier _mod;
         TypeToken _comptype;
         TypeToken _mtype;
         SimpleToken OpSym;
         TypeToken _casttype;
-         [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '==' <Type> ~';' ")]
-         [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '!=' <Type> ~';' ")]
-         [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '>=' <Type> ~';' ")]
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '<=' <Type> ~';' ")]
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '>' <Type> ~';' ")]
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '<' <Type> ~';' ")]
-        public OperatorPrototypeDeclaration(TypeToken type, BinaryOp oper, TypeToken cmp)
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '==' <Type> ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '!=' <Type> ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '>=' <Type> ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '<=' <Type> ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '>' <Type> ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '<' <Type> ~';' ")]
+        public OperatorPrototypeDeclaration(Modifier mod,TypeToken type, BinaryOp oper, TypeToken cmp)
         {
             _mtype = type;
-
+            _mod = mod;
             _comptype = cmp;
             OpSym = oper;
         }
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '¤' <Type> ~';' ")]
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '??' <Type> ~';' ")]
-        public OperatorPrototypeDeclaration(TypeToken type, UnaryOp oper, TypeToken cmp)
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '¤' <Type> ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '??' <Type> ~';' ")]
+        public OperatorPrototypeDeclaration(Modifier mod, TypeToken type, UnaryOp oper, TypeToken cmp)
         {
             _mtype = type;
-
+            _mod = mod;
             _comptype = cmp;
             OpSym = oper;
         }
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '+' ~';' ")]
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '*' ~';' ")]
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '-' ~';' ")]
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '/' ~';' ")]
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '%' ~';' ")]
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '^' ~';' ")]
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '&' ~';' ")]
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '|' ~';' ")]
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '<<' ~';' ")]
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '>>' ~';' ")]
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '<~' ~';' ")]
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '~>' ~';' ")]
-        public OperatorPrototypeDeclaration(TypeToken type, BinaryOp oper)
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '+' ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '*' ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '-' ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '/' ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '%' ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '^' ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '&' ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '|' ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '<<' ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '>>' ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '<~' ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '~>' ~';' ")]
+        public OperatorPrototypeDeclaration(Modifier mod, TypeToken type, BinaryOp oper)
         {
             _mtype = type;
+            _mod = mod;
+
+            OpSym = oper;
+        }
+
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '++' ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '--' ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '~' ~';' ")]
+        public OperatorPrototypeDeclaration(Modifier mod, TypeToken type, UnaryOp oper)
+        {
+            _mtype = type;
+
+            _mod = mod;
+            OpSym = oper;
+        }
     
+        // Operator Userdef
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator OperatorLiteralUnary ~';' ")]
+        public OperatorPrototypeDeclaration(Modifier mod, TypeToken type, OperatorLiteralUnary oper)
+        {
+            _mtype = type;
 
+            _mod = mod;
+            OpSym = new ExtendedUnaryOperator(oper.Sym, oper.Value.GetValue().ToString());
+        }
+
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator OperatorLiteralBinary ~';' ")]
+        public OperatorPrototypeDeclaration(Modifier mod, TypeToken type, OperatorLiteralBinary oper)
+        {
+            _mtype = type;
+            _mod = mod;
+
+            OpSym = new ExtendedBinaryOperator(oper.Sym, oper.Value.GetValue().ToString());
+        }
+        // Operator userdef compare
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator OperatorLiteralBinary <Type> ~';' ")]
+        public OperatorPrototypeDeclaration(Modifier mod, TypeToken type, OperatorLiteralBinary oper,TypeToken cmp)
+        {
+            _mtype = type;
+            _mod = mod;
+            _comptype = cmp;
+            OpSym = new ExtendedBinaryOperator(oper.Sym, oper.Value.GetValue().ToString());
+        }
+
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator OperatorLiteralUnary <Type> ~';' ")]
+        public OperatorPrototypeDeclaration(Modifier mod, TypeToken type, OperatorLiteralUnary oper, TypeToken cmp)
+        {
+            _mtype = type;
+            _comptype = cmp;
+            _mod = mod;
+            OpSym = new ExtendedUnaryOperator(oper.Sym, oper.Value.GetValue().ToString());
+        }
+
+        // Index Operator
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator '[]' ~';' ")]
+        public OperatorPrototypeDeclaration(Modifier mod, TypeToken type, SimpleToken oper)
+        {
+            _mtype = type;
+
+            _mod = mod;
             OpSym = oper;
         }
 
-         [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '++' ~';' ")]
-         [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '--' ~';' ")]
-         [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '~' ~';' ")]
-        public OperatorPrototypeDeclaration(TypeToken type, UnaryOp oper)
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator <Type> ~';'")]
+        public OperatorPrototypeDeclaration(Modifier mod, TypeToken type, TypeToken oper)
         {
             _mtype = type;
-        
-
-            OpSym = oper;
-        }
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator '[]' ~';' ")]
-        public OperatorPrototypeDeclaration(TypeToken type, SimpleToken oper)
-        {
-            _mtype = type;
-        
-
-            OpSym = oper;
-        }
-
-        [Rule(@"<Oper Proto> ::= ~override <Type> ~operator <Type> ~';'")]
-        public OperatorPrototypeDeclaration(TypeToken type, TypeToken oper)
-        {
-            _mtype = type;
-           
+            _mod = mod;
             _casttype = oper;
         }
         public void DefaultParams( MethodSpec host,params TypeSpec[] par)
         {
             int i =0;
             foreach (TypeSpec p in par)
-                Parameters.Add(new ParameterSpec("Param_oper_" + i.ToString(), host, p, Location.Null, Modifiers.NoModifier));
+                Parameters.Add(new ParameterSpec("Param_oper_" + i.ToString(), host, p, Location.Null, 4, Modifiers.NoModifier));
                
             
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-        
+            _mod = (Modifier)_mod.DoResolve(rc);
+            mods = _mod.ModifierList | Modifiers.Prototype;
             _mtype = (TypeToken)_mtype.DoResolve(rc);
             List<TypeSpec> tp = new List<TypeSpec>();
             Parameters = new List<ParameterSpec>();
+
             if (_comptype != null)
                 _comptype = (TypeToken)_comptype.DoResolve(rc);
 
             base._type = _mtype;
             bool hasproto = false;
-            if (_casttype == null && OpSym is BinaryOp)
+            if (_casttype == null && OpSym is ExtendedBinaryOperator)
+            {
+                ExtendedBinaryOperator bop = OpSym as ExtendedBinaryOperator;
+                 OperatorSpec oper = rc.Resolver.TryResolveOperator(bop.SymbolName);
+                 if (oper == null)
+                 {
+                ResolveContext.Report.Error(0, Location, "Unknown operator");
+                return this;
+                 }
+               
+                if(oper.IsLogic && _comptype == null)
+                    ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
+
+                OpName = _type.Type.NormalizedName + "_" + oper.Name;
+
+                method = rc.Resolver.TryResolveMethod(OpName);
+                if (method != null && (method.Modifiers & Modifiers.Prototype) == Modifiers.Prototype)
+                    ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
+
+                if(_mtype.Type != BuiltinTypeSpec.Bool && _comptype != null)
+                     ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
+
+                // operator checks
+                if (_comptype != null)
+                {
+                    tp.Add(_comptype.Type);
+                    tp.Add(_comptype.Type);
+                }
+                else
+                {
+                    tp.Add(_mtype.Type);
+                    tp.Add(_mtype.Type);
+                }
+             
+            }
+            else if (_casttype == null && OpSym is ExtendedUnaryOperator)
+            {
+          
+                ExtendedUnaryOperator uop = OpSym as ExtendedUnaryOperator;
+                OperatorSpec oper = rc.Resolver.TryResolveOperator(uop.SymbolName);
+                if (oper == null)
+                {
+                    ResolveContext.Report.Error(0, Location, "Unknown operator");
+                    return this;
+                }
+                if (oper.IsLogic && _comptype == null)
+                    ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
+
+                OpName = _type.Type.NormalizedName + "_" + oper.Name;
+
+                method = rc.Resolver.TryResolveMethod(OpName);
+                if (method != null && (method.Modifiers & Modifiers.Prototype) == Modifiers.Prototype)
+                    ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
+                else if (method == null)
+                    hasproto = true;
+           
+                if (_mtype.Type != BuiltinTypeSpec.Bool && _comptype != null)
+                    ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
+
+
+                // match types      
+
+                if (_comptype != null)
+                    tp.Add(_comptype.Type);
+                else tp.Add(_mtype.Type);
+              
+
+
+            }
+            else if (_casttype == null && OpSym is BinaryOp)
             {
                 BinaryOp bop = OpSym as BinaryOp;
                 OpName = _type.Type.NormalizedName + "_" + bop.Operator.ToString();
@@ -958,7 +1154,9 @@ namespace VTC.Core
                     ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
                 else if (method == null)
                     hasproto = true;
-               
+
+                if (_mtype.Type != BuiltinTypeSpec.Bool && _comptype != null)
+                    ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
 
                 // match types
                 if (uop.Operator == UnaryOperator.ParityTest || uop.Operator == UnaryOperator.ZeroTest)
@@ -1121,7 +1319,7 @@ namespace VTC.Core
                 {
                     if (par._id != null)
                     {
-                        ParameterSpec p = new ParameterSpec("param_" + paid, method, par._id.Type,  par.loc);
+                        ParameterSpec p = new ParameterSpec("param_" + paid, method, par._id.Type,  par.loc,4);
                         Parameters.Add(p);
                         Params.Push(p);
                         tp.Add(p.MemberType);
@@ -1177,27 +1375,57 @@ namespace VTC.Core
         public UnionTypeSpec TypeName { get; set; }
         public int Size { get; set; }
         StructDefinition _def;
-        [Rule(@"<Union Decl>  ::= ~union Id ~'{' <Struct Def> ~'}'  ~';' ")]
-        public UnionDeclaration(Identifier id, StructDefinition sdef)
+        Modifier _mod;
+        bool istypedef=false;
+        [Rule(@"<Union Decl>  ::= <Mod> ~union Id ~'{' <Struct Def> ~'}'  ~';' ")]
+        public UnionDeclaration(Modifier mod,Identifier id, StructDefinition sdef)
         {
+            _mod = mod;
             _name = id;
             _def = sdef;
             Size = 0;
         }
-
+        [Rule(@"<Union Decl>  ::= <Mod> ~typedef ~union  ~'{' <Struct Def> ~'}' Id ~';' ")]
+        public UnionDeclaration(Modifier mod, StructDefinition sdef, Identifier id)
+        {
+            istypedef =true;
+            _mod = mod;
+            _name = id;
+            _def = sdef;
+            Size = 0;
+        }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+            _mod = (Modifier)_mod.DoResolve(rc);
+            TypeName = new UnionTypeSpec(rc.CurrentNamespace, _name.Name, new List<TypeMemberSpec>(), loc);
+            rc.KnowType(TypeName);
             _def = (StructDefinition)_def.DoResolve(rc);
             if (_def != null)
                 Size = _def.Size;
             int idx = 0;
+            int i = 0;
+            List<int> tobeupdated = new List<int>();
+            TypeSpec ts = null;
             foreach (TypeMemberSpec m in _def.Members)
             {
                 m.Index = 0;
                 idx += m.MemberType.Size;
+                m.MemberType.GetBase(m.MemberType, ref ts);
+                if (ts == TypeName)
+                    tobeupdated.Add(i);
+
+                i++;
             }
-            TypeName = new UnionTypeSpec(rc.CurrentNamespace, _name.Name, _def.Members, loc);
-            rc.KnowType(TypeName);
+
+            UnionTypeSpec NewType = new UnionTypeSpec(rc.CurrentNamespace, _name.Name, _def.Members, loc);
+            NewType.Modifiers = _mod.ModifierList;
+            foreach (int id in tobeupdated)
+                _def.Members[id].MemberType.MakeBase(ref _def.Members[id].memberType, NewType);
+
+            rc.UpdateType(TypeName, NewType);
+
+
+        
             return this;
         }
         public override bool Resolve(ResolveContext rc)
@@ -1219,30 +1447,62 @@ namespace VTC.Core
         public StructTypeSpec TypeName { get; set; }
         public int Size { get; set; }
         StructDefinition _def;
-        [Rule(@"<Struct Decl>  ::= ~struct Id ~'{' <Struct Def> ~'}'  ~';' ")]
-        public StructDeclaration(Identifier id, StructDefinition sdef)
+        Modifier _mod;
+        bool istypedef=false;
+        [Rule(@"<Struct Decl>  ::= <Mod> ~struct Id ~'{' <Struct Def> ~'}'  ~';' ")]
+        public StructDeclaration(Modifier mod,Identifier id, StructDefinition sdef)
         {
+            _mod = mod;
+            _name = id;
+            _def = sdef;
+            Size = 0;
+        }
+        [Rule(@"<Struct Decl>  ::= <Mod> ~typedef ~struct  ~'{' <Struct Def> ~'}' Id ~';' ")]
+        public StructDeclaration(Modifier mod, StructDefinition sdef, Identifier id)
+        {
+            istypedef = true;
+            _mod = mod;
             _name = id;
             _def = sdef;
             Size = 0;
         }
 
+
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-          
+            _mod = (Modifier)_mod.DoResolve(rc);
+
+            TypeName = new StructTypeSpec(rc.CurrentNamespace, _name.Name, new List<TypeMemberSpec>(), loc);
+           
+            rc.KnowType(TypeName);
             _def = (StructDefinition)_def.DoResolve(rc);
             if (_def != null)
                 Size = _def.Size;
             int idx = 0;
+            int i=0;
+            List<int> tobeupdated = new List<int>();
+            TypeSpec ts=null;
             foreach (TypeMemberSpec m in _def.Members)
             {
+              
                 m.Index = idx;
                 idx += m.MemberType.Size;
+                m.MemberType.GetBase(m.MemberType,ref ts);
+                if ( ts== TypeName)
+                    tobeupdated.Add(i);
+
+                  i++;
             }
 
-            TypeName = new StructTypeSpec(rc.CurrentNamespace, _name.Name, _def.Members, loc);
-            rc.KnowType(TypeName);
-    
+            StructTypeSpec NewType = new StructTypeSpec(rc.CurrentNamespace, _name.Name, _def.Members, loc);
+            NewType.Modifiers = _mod.ModifierList;
+            foreach (int id in tobeupdated)
+                _def.Members[id].MemberType.MakeBase(ref _def.Members[id].memberType, NewType);
+   
+
+            rc.UpdateType(TypeName, NewType);
+
+        
             return this;
         }
         public override bool Resolve(ResolveContext rc)
@@ -1266,17 +1526,34 @@ namespace VTC.Core
         TypeIdentifierListDefinition _tdl;
         CallingCV _ccv;
         TypeToken _ret;
-        [Rule(@"<Delegate Decl>  ::=  <CallCV> ~delegate <Type> Id ~'(' <Types>  ~')' ~';' ")]
-        public DelegateDeclaration(CallingCV ccv,TypeToken ret,Identifier id,TypeIdentifierListDefinition tid )
+        Modifier _mod;
+        [Rule(@"<Delegate Decl>  ::=  <Mod> <CallCV> ~delegate <Type> Id ~'(' <Types>  ~')' ~';' ")]
+        public DelegateDeclaration(Modifier mod,CallingCV ccv,TypeToken ret,Identifier id,TypeIdentifierListDefinition tid )
         {
             _ccv = ccv;
             _name = id;
+            _mod = mod;
+            _tdl = tid;
+            _ret = ret;
+        }
+        [Rule(@"<Delegate Decl>  ::=  <Mod> ~typedef <CallCV> ~delegate <Type> ~'(' <Types>  ~')' Id ~';' ")]
+        public DelegateDeclaration(Modifier mod, CallingCV ccv, TypeToken ret, TypeIdentifierListDefinition tid, Identifier id)
+        {
+            _ccv = ccv;
+            _name = id;
+            _mod = mod;
             _tdl = tid;
             _ret = ret;
         }
 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+            _mod = (Modifier)_mod.DoResolve(rc);
+            TypeName = new DelegateTypeSpec(rc.CurrentNamespace, _name.Name, _ret.Type, new List<TypeSpec>(), _ccv.CallingConvention, loc);
+            TypeName.Modifiers = _mod.ModifierList;
+            rc.KnowType(TypeName);
+
+
             List<TypeSpec> tp = new List<TypeSpec>();
             _tdl = (TypeIdentifierListDefinition)_tdl.DoResolve(rc);
             _ret = (TypeToken)_ret.DoResolve(rc);
@@ -1298,8 +1575,9 @@ namespace VTC.Core
                 }
             }
 
-          TypeName = new DelegateTypeSpec(rc.CurrentNamespace, _name.Name, _ret.Type, tp, _ccv.CallingConvention,loc);
-            rc.KnowType(TypeName);
+          DelegateTypeSpec NT = new DelegateTypeSpec(rc.CurrentNamespace, _name.Name, _ret.Type, tp, _ccv.CallingConvention, loc);
+
+          rc.UpdateType(TypeName, NT);
 
             return this;
         }
@@ -1317,6 +1595,74 @@ namespace VTC.Core
             return true;
         }
     }
+    public class OperatorDefinitionDeclaration : Declaration
+    {
+        OperatorSpec ops;
+        string _name=null;
+        OperatorLiteralBinary _operb;
+        OperatorLiteralUnary _operu;
+        Modifier _mod;
+        bool islogic;
+        [Rule(@"<Oper Def Decl>  ::=  <Mod> ~define Id ~operator OperatorLiteralBinary ~';' ")]
+        public OperatorDefinitionDeclaration(Modifier mod, Identifier name, OperatorLiteralBinary oper)
+        {
+            _name = name.Name;
+            _mod = mod;
+            _operb = oper;
+        }
+        [Rule(@"<Oper Def Decl>  ::=  <Mod> ~define Id ~operator OperatorLiteralUnary ~';' ")]
+        public OperatorDefinitionDeclaration(Modifier mod, Identifier name, OperatorLiteralUnary oper)
+        {
+            _name = name.Name;
+            _mod = mod;
+            _operu = oper;
+        }
+
+        // Comparison Operator
+        [Rule(@"<Oper Def Decl>  ::=  <Mod> ~define bool Id ~operator OperatorLiteralBinary ~';' ")]
+        public OperatorDefinitionDeclaration(Modifier mod, SimpleToken t, Identifier name, OperatorLiteralBinary oper)
+        {
+            islogic = true;
+            _name = name.Name;
+            _mod = mod;
+            _operb = oper;
+        }
+        [Rule(@"<Oper Def Decl>  ::=  <Mod> ~define bool Id ~operator OperatorLiteralUnary ~';' ")]
+        public OperatorDefinitionDeclaration(Modifier mod, SimpleToken t, Identifier name, OperatorLiteralUnary oper)
+        {
+            islogic = true;
+            _name = name.Name;
+            _mod = mod;
+            _operu = oper;
+        }
+
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            _mod = (Modifier)_mod.DoResolve(rc);
+            string val;
+            if(_operb != null)
+                val = _operb.Value.GetValue().ToString();
+            else val = _operu.Value.GetValue().ToString();
+            ops = new OperatorSpec(rc.CurrentNamespace, _name, val, _mod.ModifierList, loc);
+            ops.IsBinary = (_operb != null);
+            ops.IsLogic = islogic;
+            rc.Resolver.KnowOperator(ops);
+            return this;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+
+
+            return true;
+
+        }
+        public override bool Emit(EmitContext ec)
+        {
+
+
+            return true;
+        }
+    }
     public class TypeDefDeclaration : Declaration
     {
 
@@ -1326,18 +1672,22 @@ namespace VTC.Core
             set;
 
         }
+        Modifier _mod;
         TypeIdentifier _typedef;
-        [Rule(@"<Typedef Decl> ::= ~typedef <Type> Id ~';'")]
-        public TypeDefDeclaration(TypeIdentifier type, Identifier id)
+        [Rule(@"<Typedef Decl> ::= <Mod> ~typedef <Type> Id ~';'")]
+        public TypeDefDeclaration(Modifier mod,TypeIdentifier type, Identifier id)
         {
+            _mod = mod;
             _name = id;
             _typedef = type;
 
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+            _mod = (Modifier)_mod.DoResolve(rc); 
             _typedef = (TypeIdentifier)_typedef.DoResolve(rc);
             TypeName = new TypeSpec(rc.CurrentNamespace, _name.Name, _typedef.Type.Size, BuiltinTypes.Unknown, TypeFlags.TypeDef, Modifiers.NoModifier, loc, _typedef.Type);
+            TypeName.Modifiers = _mod.ModifierList;
             rc.KnowType(TypeName);
             return this;
         }
@@ -1515,18 +1865,28 @@ namespace VTC.Core
         public EnumTypeSpec TypeName { get; set; }
         public int Size { get; set; }
 
-
+        Modifier _mod;
         EnumDefinition _def;
-        [Rule(@"<Enum Decl>    ::= ~enum Id ~'{' <Enum Def> ~'}'  ~';'")]
-        public EnumDeclaration(Identifier id, EnumDefinition edef)
+        [Rule(@"<Enum Decl>    ::= <Mod> ~enum Id ~'{' <Enum Def> ~'}'  ~';'")]
+        public EnumDeclaration(Modifier mod,Identifier id, EnumDefinition edef)
         {
+            _mod = mod;
             _name = id;
             _def = edef;
 
         }
+        [Rule(@"<Enum Decl>    ::= <Mod> ~typedef ~enum ~'{' <Enum Def> ~'}' Id ~';'")]
+        public EnumDeclaration(Modifier mod, EnumDefinition edef, Identifier id)
+        {
+            _mod = mod;
+            _name = id;
+            _def = edef;
 
+        }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+            _mod = (Modifier)_mod.DoResolve(rc);
+
             List<ushort> UsedValues = new List<ushort>();
             List<EnumMemberSpec> mem = new List<EnumMemberSpec>();
             _def = (EnumDefinition)_def.DoResolve(rc);
@@ -1564,6 +1924,7 @@ namespace VTC.Core
             }
 
             TypeName = new EnumTypeSpec(rc.CurrentNamespace, _name.Name, Size, mem, loc);
+            TypeName.Modifiers = _mod.ModifierList;
             if (TypeName.Members.Count >= 65536)
                 ResolveContext.Report.Error(11, Location, "Max enum values exceeded, only 65536 values are allowed");
             rc.KnowType(TypeName);

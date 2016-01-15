@@ -381,7 +381,7 @@ namespace VTC.Core
             ParameterType = _type.Type;
             Modifiers mods = constant? Modifiers.Const: Modifiers.NoModifier;
             mods |= REF? Modifiers.Ref: 0;
-            ParameterName = new ParameterSpec(_id.Name, rc.CurrentMethod, ParameterType, loc,mods );
+            ParameterName = new ParameterSpec(_id.Name, rc.CurrentMethod, ParameterType, loc,4,mods );
             return this;
         }
         public override bool Resolve(ResolveContext rc)

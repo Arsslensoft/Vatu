@@ -65,7 +65,7 @@
     <Compile Include="Core\Declarations.cs" />
     <Compile Include="Core\Definitions.cs" />
     <Compile Include="Core\Expressions.cs" />
-    <Compile Include="Core\Preprocessor.cs" />
+    <Compile Include="Preprocessor\Preprocessor.cs" />
     <Compile Include="Operators\AccessOperators.cs" />
     <Compile Include="Operators\AssignOperators.cs" />
     <Compile Include="Operators\BinaryOperators.cs" />
@@ -86,9 +86,7 @@
     <EmbeddedResource Include="Samples\STD.vt" />
     <None Include="VATU.grm" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Preprocessor\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="TODO.txt" />
     <Content Include="WORKING.txt" />

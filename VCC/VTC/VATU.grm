@@ -33,6 +33,8 @@ CharLiteral      = '' ( {Char Ch} | '\'{Printable} )''
 Id               = {Id Head}{Id Tail}*
 
 MacroLiteral     = '$' {Id Head}{Id Tail}*  
+OperatorLiteralUnary  =  '@' [_-+-/*%£µ%§~#,.=<&|?:>!]+
+OperatorLiteralBinary  =  '@@' [_-+-/*%£µ%§~#.,=<&|?:>!]+             
                  
 !AsmLiteral       = '$>'  ( {String Ch} | '\'{Printable} )* '<$'
 
@@ -86,7 +88,7 @@ Comment Line  = '//'
           | <Extension Decl>
           | <Delegate Decl>
           | <Preproc Decl>
-
+          | <Oper Def Decl>
 
 ! ===================================================================
 ! Preprocessor  
@@ -96,12 +98,13 @@ Comment Line  = '//'
                  | <PP Conditional>
                  | <PP Diag>
                  | <PP Region>
-
+                 | <PP Include>
            
 <PP Define> ::= '#'define ID <PP Expr>
                | '#'undef ID
                
-                
+<PP Include> ::= '#'include StringLiteral
+                            
 <PP Expr> ::= <PP Or Expr>
            
 <PP Or Expr> ::= <PP Or Expr> '||' <PP And Expr>   
@@ -153,8 +156,8 @@ Comment Line  = '//'
 ! Delegate  Declaration
 ! ===================================================================
 
-<Delegate Decl> ::= <CallCV> delegate <Type> ID '(' <Types>  ')' ';'
-                  
+<Delegate Decl> ::= <Mod> <CallCV> delegate <Type> ID '(' <Types>  ')' ';'
+                  | <Mod> typedef <CallCV> delegate <Type> '(' <Types>  ')' ID ';'
 ! ===================================================================
 ! Function  Declaration
 ! ===================================================================
@@ -167,72 +170,87 @@ Comment Line  = '//'
                | <Func ID> '(' <Types>  ')' <Func Ext> ';'
                | <Func ID> '(' <Params> ')' <Func Ext> ';'
                | <Func ID> '(' ')' <Func Ext> ';'
+   
+<Oper Def Decl> ::= <Mod> 'define' Id 'operator' OperatorLiteralUnary ';'
+                 | <Mod> 'define' bool Id 'operator' OperatorLiteralUnary ';'
+<Oper Def Decl> ::= <Mod> 'define' Id 'operator' OperatorLiteralBinary ';' 
+                  |  <Mod> 'define' bool Id 'operator' OperatorLiteralBinary ';' 
+                                          
+<Oper Proto> ::= <Mod> 'override' <Type> 'operator' '=='  <Type>   ';'
+               | <Mod> 'override' <Type> 'operator' '!='  <Type>  ';'
+               | <Mod> 'override' <Type> 'operator' '<='  <Type>   ';'
+               | <Mod> 'override' <Type> 'operator' '>='  <Type> ';'
+               | <Mod> 'override' <Type> 'operator' '>'  <Type>   ';'
+               | <Mod> 'override' <Type> 'operator' '<'  <Type>  ';'
+               | <Mod> 'override' <Type> 'operator' '¤' <Type>  ';'
+               | <Mod> 'override' <Type> 'operator' '??' <Type>  ';'
                
-<Oper Proto> ::= 'override' <Type> 'operator' '=='  <Type>   ';'
-               | 'override' <Type> 'operator' '!='  <Type>  ';'
-               | 'override' <Type> 'operator' '<='  <Type>   ';'
-               | 'override' <Type> 'operator' '>='  <Type> ';'
-               | 'override' <Type> 'operator' '>'  <Type>   ';'
-               | 'override' <Type> 'operator' '<'  <Type>  ';'
-               | 'override' <Type> 'operator' '¤' <Type>  ';'
-               | 'override' <Type> 'operator' '??' <Type>  ';'
-               
-               | 'override' <Type> 'operator' '+' ';'
-               | 'override' <Type> 'operator' '-' ';'
-               | 'override' <Type> 'operator' '*' ';'
-               | 'override' <Type> 'operator' '/' ';'
-               | 'override' <Type> 'operator' '%' ';'
-               | 'override' <Type> 'operator' '^' ';'
-               | 'override' <Type> 'operator' '&' ';'
-               | 'override' <Type> 'operator' '|' ';'
+               | <Mod> 'override' <Type> 'operator' '+' ';'
+               | <Mod> 'override' <Type> 'operator' '-' ';'
+               | <Mod> 'override' <Type> 'operator' '*' ';'
+               | <Mod> 'override' <Type> 'operator' '/' ';'
+               | <Mod> 'override' <Type> 'operator' '%' ';'
+               | <Mod> 'override' <Type> 'operator' '^' ';'
+               | <Mod> 'override' <Type> 'operator' '&' ';'
+               | <Mod> 'override' <Type> 'operator' '|' ';'
                 ! CAST Overload
-               | 'override' <Type> 'operator' <Type> ';'
+               | <Mod> 'override' <Type> 'operator' <Type> ';'
                !Shift Rotate
-               | 'override' <Type> 'operator' '~>' ';'
-               | 'override' <Type> 'operator' '<~' ';'
-               | 'override' <Type> 'operator' '>>' ';'
-               | 'override' <Type> 'operator' '<<' ';'
+               | <Mod> 'override' <Type> 'operator' '~>' ';'
+               | <Mod> 'override' <Type> 'operator' '<~' ';'
+               | <Mod> 'override' <Type> 'operator' '>>' ';'
+               | <Mod> 'override' <Type> 'operator' '<<' ';'
                !Unary
-               | 'override' <Type> 'operator' '++' ';'
-               | 'override' <Type> 'operator' '--' ';'
-               | 'override' <Type> 'operator' '[]' ';'
+               | <Mod> 'override' <Type> 'operator' '++' ';'
+               | <Mod> 'override' <Type> 'operator' '--' ';'
+               | <Mod> 'override' <Type> 'operator' '[]' ';'
 
-               | 'override' <Type> 'operator' '~' ';'
-              
+               | <Mod>'override' <Type> 'operator' '~' ';'
+               ! Oper def
+               | <Mod>'override' <Type> 'operator' OperatorLiteralBinary ';'
+               | <Mod>'override' <Type> 'operator' OperatorLiteralUnary ';'
+               ! OperDef Logic
+               | <Mod>'override' <Type> 'operator' OperatorLiteralBinary <Type>  ';'
+               | <Mod>'override' <Type> 'operator' OperatorLiteralUnary  <Type>  ';'
 <Func Decl>  ::= <Func ID> <Func Body>
                | <Func Spec> <Func ID> <Func Body>
 
 
 
 !Operators Overloading         
-<Oper Decl>  ::= 'override' <Type> 'operator' '==' <Func Body>
-               | 'override' <Type> 'operator' '!=' <Func Body>
-               | 'override' <Type> 'operator' '<=' <Func Body>
-               | 'override' <Type> 'operator' '>=' <Func Body>
-               | 'override' <Type> 'operator' '>' <Func Body>
-               | 'override' <Type> 'operator' '<' <Func Body>
-               | 'override' <Type> 'operator' '+' <Func Body>
-               | 'override' <Type> 'operator' '-' <Func Body>
-               | 'override' <Type> 'operator' '*' <Func Body>
-               | 'override' <Type> 'operator' '/' <Func Body>
-               | 'override' <Type> 'operator' '%' <Func Body>
-               | 'override' <Type> 'operator' '^' <Func Body>
-               | 'override' <Type> 'operator' '&' <Func Body>
-               | 'override' <Type> 'operator' '|' <Func Body>
+<Oper Decl>  ::= <Mod> 'override' <Type> 'operator' '==' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '!=' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '<=' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '>=' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '>' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '<' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '+' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '-' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '*' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '/' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '%' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '^' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '&' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '|' <Func Body>
+            
                 ! CAST Overload
-               | 'override' <Type> 'operator' <Type> <Func Body>
+               |<Mod> 'override' <Type> 'operator' <Type> <Func Body>
                !Shift Rotate
-               | 'override' <Type> 'operator' '~>' <Func Body>
-               | 'override' <Type> 'operator' '<~' <Func Body>
-               | 'override' <Type> 'operator' '>>' <Func Body>
-               | 'override' <Type> 'operator' '<<' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '~>' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '<~' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '>>' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '<<' <Func Body>
                !Unary
-               | 'override' <Type> 'operator' '++' <Func Body>
-               | 'override' <Type> 'operator' '--' <Func Body>
-               | 'override' <Type> 'operator' '[]' <Func Body>
-               | 'override' <Type> 'operator' '¤' <Func Body>
-               | 'override' <Type> 'operator' '??' <Func Body>
-               | 'override' <Type> 'operator' '~' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '++' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '--' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '[]' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '¤' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '??' <Func Body>
+               |<Mod> 'override' <Type> 'operator' '~' <Func Body>
+               
+                !OperDef
+               |<Mod> 'override' <Type> 'operator' OperatorLiteralBinary <Func Body>
+               |<Mod> 'override' <Type> 'operator' OperatorLiteralUnary <Func Body>
                
 !Interrupt decl               
 <Inter Decl>  ::= 'interrupt' <CONSTANT> <Block>
@@ -281,12 +299,12 @@ Comment Line  = '//'
 ! Type Declaration
 ! ===================================================================
 
-<Typedef Decl> ::= typedef <Type> ID ';'
+<Typedef Decl> ::= <Mod> typedef <Type> ID ';'
 
-<Struct Decl>  ::= struct Id '{' <Struct Def> '}'  ';' 
-                
-<Union Decl>   ::= union Id '{' <Struct Def> '}'  ';' 
-
+<Struct Decl>  ::= <Mod> struct Id '{' <Struct Def> '}'  ';' 
+                | <Mod> typedef struct '{' <Struct Def> '}'  Id ';' 
+<Union Decl>   ::= <Mod> union Id '{' <Struct Def> '}'  ';' 
+                | <Mod> typedef union '{' <Struct Def> '}' Id ';' 
 <Struct Def>   ::= <Var Decl> <Struct Def>
                  | <Var Decl>
 
@@ -323,8 +341,9 @@ Comment Line  = '//'
 ! Enumerations
 ! ===================================================================
 
-<Enum Decl>    ::= enum Id '{' <Enum Def> '}'  ';'
- 
+<Enum Decl>    ::= <Mod> enum Id '{' <Enum Def> '}'  ';'
+                    | <Mod> typedef enum '{' <Enum Def> '}'  Id ';'
+                    
 <Enum Def>     ::= <Enum Val> ',' <Enum Def>
                  | <Enum Val>
 
@@ -341,11 +360,8 @@ Comment Line  = '//'
 <Type>     ::= <Base> <Pointers> 
 
 <Base>     ::= <Scalar>
-             | struct Id 
-             | enum Id
              | '@'Id  
-             | delegate Id
-             | union Id
+             | typeof Id
              | typeof '(' <Expression> ')'
              
 <Scalar>   ::= byte
@@ -393,6 +409,9 @@ Comment Line  = '//'
                | goto case DecLiteral ';'
                | goto default ';'
                | next ';'
+               | exit ';'
+               | exit DecLiteral ';'
+               | pass ';'
                | interrupt <CONSTANT> ';'
                | return <Expression> ';'
                | ';'              !Null statement
@@ -431,11 +450,15 @@ Comment Line  = '//'
                | <Op If> '<<=' <Op Assign>
                | <Op If>
 
-<Op If>      ::= <Op Or> '?' <Op If> ':' <Op If>
-               | <Op Or>
+<Op If>      ::= <Op BinaryOpDef>  '?' <Op If> ':' <Op If>
+               | <Op BinaryOpDef> 
 
+<Op BinaryOpDef>     ::= <Op BinaryOpDef>  OperatorLiteralBinary <Op Or>
+              | <Op Or> 
+              
 <Op Or>      ::= <Op Or> '||' <Op And>
                | <Op And>
+
 
 <Op And>     ::= <Op And> '&&' <Op BinOR>
                | <Op BinOR>
@@ -485,6 +508,7 @@ Comment Line  = '//'
                | '++'   <Op Unary>
                | '--'   <Op Unary>
                | '??'   <Op Unary>
+               | OperatorLiteralUnary <Op Unary>
                | '¤'   <Op Unary>
                | <Op Pointer> '++'
                | <Op Pointer> '--'

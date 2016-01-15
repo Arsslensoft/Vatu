@@ -24,7 +24,7 @@ namespace VTC
                 if (ctx.ResolveAndEmit())
                 {
                     Console.WriteLine("Compilation succeeded - {0} Optimizations performed", Optimizer.Optimizations);
-                    Process.Start("nasm", string.Format(" \"{0}\" -fbin -o \"{1}\"", options.Output, options.OutputBinary));
+                    Process.Start("nasm", string.Format(" \"{0}\" -f bin -o \"{1}\"", options.Output, options.OutputBinary));
                 }
             }
             Console.Read();

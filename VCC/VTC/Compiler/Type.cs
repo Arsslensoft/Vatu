@@ -152,10 +152,10 @@ namespace VTC
        protected MemberSignature _sig;
        protected Modifiers _mod;
        protected string _name;
-       protected TypeSpec memberType;
+       internal TypeSpec memberType;
 
        public  bool IsConstant { get { return ((_mod & Modifiers.Const) == Modifiers.Const); } }
-
+       public bool IsReference { get { return ((_mod & Modifiers.Ref) == Modifiers.Ref); } }
        public TypeSpec MemberType
        {
            get
@@ -196,6 +196,7 @@ namespace VTC
        public Modifiers Modifiers
        {
            get { return _mod; }
+           set { _mod = value; }
 
        }
 
@@ -408,7 +409,7 @@ namespace VTC
         public TypeSpec BaseType
         {
             get { return _base; }
-
+            set { _base = value; }
         }
         /// <summary>
         /// Builtin Type
@@ -511,11 +512,26 @@ namespace VTC
                 return GetTypeName(tp.BaseType) + "*";
             else return tp._name;
         }
+
         public TypeSpec GetTypeDefBase(TypeSpec ts)
         {
             if (ts.IsTypeDef)
-                return GetTypeDefBase(ts.BaseType);
+               return GetTypeDefBase(ts.BaseType);
             else return ts;
+        }
+        public void MakeBase(ref TypeSpec ts,  TypeSpec tp)
+        {
+            if (ts.BaseType != null && ts.BaseType.BaseType == null)
+                ts.BaseType = tp;
+            else  if (ts.BaseType != null)
+                MakeBase(ref ts._base, tp);
+            else tp = ts;
+        }
+        public void GetBase(TypeSpec ts, ref TypeSpec tp)
+        {
+            if (ts.BaseType != null)
+                GetBase(ts.BaseType, ref tp);
+            else tp = ts;
         }
         public override string ToString()
         {
@@ -803,6 +819,32 @@ namespace VTC
             return tp.Signature == Signature;
         }
       
+    }
+    /// <summary>
+    /// Operator Spec
+    /// </summary>
+    public class OperatorSpec : MemberSpec, IEquatable<MethodSpec>
+    {
+        public bool IsLogic { get; set; }
+        public bool IsBinary { get; set; }
+        public Namespace NS { get; set; }
+        public string Symbol { get; set; }
+        public OperatorSpec(Namespace ns, string name,string sym, Modifiers mods, Location loc)
+            : base(name, new MemberSignature(ns, name,  loc), mods, ReferenceKind.Operator)
+        {
+            NS = ns;
+            Symbol = sym;
+  
+        }
+        public override string ToString()
+        {
+            return Signature.ToString();
+        }
+        public bool Equals(MethodSpec tp)
+        {
+            return tp.Signature == Signature;
+        }
+
     }
     /// <summary>
     /// Register Spec
@@ -1146,11 +1188,12 @@ namespace VTC
     /// </summary>
     public class ParameterSpec : MemberSpec, IEquatable<ParameterSpec>
     {
- 
+        public ParameterSpec ReferenceParameter { get; set; }
+
         MethodSpec method;
        
         public int StackIdx { get; set; }
-       
+        public int InitialStackIndex { get; set; }
       
         public MethodSpec MethodHost
         {
@@ -1166,12 +1209,16 @@ namespace VTC
                 return true;
             }
         }
-        public ParameterSpec(string name, MethodSpec host, TypeSpec type, Location loc, Modifiers mods = VTC.Modifiers.NoModifier)
+        public ParameterSpec(string name, MethodSpec host, TypeSpec type, Location loc,int initstackidx, Modifiers mods = VTC.Modifiers.NoModifier)
             : base(name, new MemberSignature(Namespace.Default, host.Name + "_param_" + name, loc), mods,ReferenceKind.Parameter)
         {
             method = host;
             memberType = type;
-
+            if (IsReference)
+            {
+                ReferenceParameter = new ParameterSpec(name, host, type.MakePointer(), loc, initstackidx);
+            }
+            InitialStackIndex = initstackidx;
             StackIdx = 4;
         }
         public override string ToString()
@@ -1182,6 +1229,21 @@ namespace VTC
  
         public override bool EmitFromStack(EmitContext ec)
         {
+            if (IsReference)
+            {
+                ec.EmitComment("Pop Reference Parameter @BP " + StackIdx);
+                if (InitialStackIndex != StackIdx)
+                {
+                    ReferenceParameter.StackIdx = InitialStackIndex;
+                    return ReferenceParameter.ValueOfStackAccess(ec, StackIdx - InitialStackIndex, memberType);
+                }
+                else
+                {
+                    ReferenceParameter.StackIdx = StackIdx;
+                    return ReferenceParameter.ValueOfStack(ec);
+                }
+            }
+
             if (memberType.Size == 1)
             {
                 ec.EmitComment("Pop Parameter @BP " + StackIdx);
@@ -1212,6 +1274,13 @@ namespace VTC
         }
         public override bool EmitToStack(EmitContext ec)
         {
+            if (IsReference)
+            {
+                ec.EmitComment("Push Reference Parameter @BP " + StackIdx);
+                ReferenceParameter.StackIdx = StackIdx;
+                return ReferenceParameter.ValueOf(ec);
+
+            }
             if (memberType.Size == 1)
             {
                 ec.EmitComment("Push Parameter @BP " + StackIdx);
@@ -1243,6 +1312,13 @@ namespace VTC
 
         public override bool LoadEffectiveAddress(EmitContext ec)
         {
+            if (IsReference)
+            {
+                ec.EmitComment("AddressOf Reference @BP+" + StackIdx);
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement = StackIdx });
+                ec.EmitPush(EmitContext.SI);
+                return true;
+            }
 
             ec.EmitComment("AddressOf @BP+" + StackIdx);
             ec.EmitInstruction(new Lea() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement = StackIdx });
@@ -1251,6 +1327,21 @@ namespace VTC
         }
         public override bool ValueOf(EmitContext ec)
         {
+            if (IsReference)
+            {
+                ec.EmitComment("ValueOf Reference @BP+" + StackIdx);
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.DI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement = StackIdx });
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.DI });
+             
+                if (MemberType.BaseType.Size <= 2)
+                    ec.EmitPush(EmitContext.SI, MemberType.BaseType.SizeInBits, true);
+                else
+
+                    PushAllFromRegister(ec, EmitContext.SI, MemberType.BaseType.Size, 0);
+
+                return true;
+            }
+
             ec.EmitComment("ValueOf @BP+" + StackIdx);
             ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement = StackIdx });
             if (MemberType.BaseType.Size <= 2)
@@ -1263,7 +1354,21 @@ namespace VTC
         }
         public override bool ValueOfStack(EmitContext ec)
         {
-            ec.EmitComment("ValueOf @BP+" + StackIdx);
+            if (IsReference)
+            {
+                ec.EmitComment("ValueOf Reference Stack @BP+" + StackIdx);
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.DI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement = StackIdx });
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.DI });
+               
+                if (MemberType.BaseType.Size <= 2)
+                    ec.EmitPop(EmitContext.SI, MemberType.BaseType.SizeInBits, true);
+
+                else
+                    PopAllToRegister(ec, EmitContext.SI, MemberType.BaseType.Size, 0);
+
+                return true;
+            }
+            ec.EmitComment("ValueOf  Stack @BP+" + StackIdx);
             ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement = StackIdx });
             if (MemberType.BaseType.Size <= 2)
                 ec.EmitPop(EmitContext.SI, MemberType.BaseType.SizeInBits, true);
@@ -1276,6 +1381,20 @@ namespace VTC
 
         public override bool ValueOfAccess(EmitContext ec, int off, TypeSpec mem)
         {
+            if (IsReference)
+            {
+                ec.EmitComment("ValueOf Reference Access @BP+" + StackIdx);
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.DI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement = StackIdx });
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.DI });
+
+                if (mem.Size <= 2)
+                    ec.EmitPush(EmitContext.SI, mem.SizeInBits, true, off);
+                else
+
+                    PushAllFromRegister(ec, EmitContext.SI, mem.Size, off);
+
+                return true;
+            }
             ec.EmitComment("ValueOf Access @BP+" + StackIdx);
             ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement = StackIdx });
             if (mem.Size <= 2)
@@ -1288,7 +1407,21 @@ namespace VTC
         }
         public override bool ValueOfStackAccess(EmitContext ec, int off,TypeSpec mem)
         {
-            ec.EmitComment("ValueOf Access @BP+" + StackIdx);
+            if (IsReference)
+            {
+                ec.EmitComment("ValueOf Reference Access Stack @BP+" + StackIdx);
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.DI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement = StackIdx });
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.DI });
+              
+                if (mem.Size <= 2)
+                    ec.EmitPop(EmitContext.SI, mem.SizeInBits, true, off);
+
+                else
+                    PopAllToRegister(ec, EmitContext.SI, mem.Size, off);
+
+                return true;
+            }
+            ec.EmitComment("ValueOf Access Stack @BP+" + StackIdx);
             ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement = StackIdx });
             if (mem.Size <= 2)
                 ec.EmitPop(EmitContext.SI, mem.SizeInBits, true, off);
@@ -1545,7 +1678,8 @@ namespace VTC
         EnumValue,
         Type,
         Member,
-        Method
+        Method,
+        Operator
     }
     public abstract class ReferenceSpec
     {

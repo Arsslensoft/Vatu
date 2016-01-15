@@ -15,9 +15,16 @@ namespace VTC
        for(int i = L_R.Count - 1; i >= 0;i--)
        {
               L_R[i].StackIdx = paramidx;
-              paramidx += (L_R[i].MemberType.Size == 1) ? 2 : L_R[i].MemberType.Size;
-              if (L_R[i].MemberType.Size != 1 && L_R[i].MemberType.Size % 2 != 0)
-                paramidx++;
+              L_R[i].InitialStackIndex = paramidx;
+              if (L_R[i].IsReference)
+                  paramidx += 2;
+              else
+              {
+                  paramidx += (L_R[i].MemberType.Size == 1) ? 2 : L_R[i].MemberType.Size;
+
+                  if (L_R[i].MemberType.Size != 1 && L_R[i].MemberType.Size % 2 != 0)
+                      paramidx++;
+              }
           }
 
       }
@@ -29,10 +36,16 @@ namespace VTC
               for (int i = 0; i < L_R.Count; i++)
               {
                   L_R[i].StackIdx = paramidx;
-                  paramidx += (L_R[i].MemberType.Size == 1) ? 2 : L_R[i].MemberType.Size;
+                  L_R[i].InitialStackIndex = paramidx;
+                  if (L_R[i].IsReference)
+                      paramidx += 2;
+                  else
+                  {
+                      paramidx += (L_R[i].MemberType.Size == 1) ? 2 : L_R[i].MemberType.Size;
 
-                  if (L_R[i].MemberType.Size != 1 && L_R[i].MemberType.Size % 2 != 0)
-                      paramidx++;
+                      if (L_R[i].MemberType.Size != 1 && L_R[i].MemberType.Size % 2 != 0)
+                          paramidx++;
+                  }
               }
           }
           else if(L_R.Count > 2)
@@ -41,9 +54,15 @@ namespace VTC
               for (int i = 2; i < L_R.Count; i++)
               {
                   L_R[i].StackIdx = paramidx;
-                  paramidx += (L_R[i].MemberType.Size == 1) ? 2 : L_R[i].MemberType.Size;
-                  if (L_R[i].MemberType.Size != 1 && L_R[i].MemberType.Size % 2 != 0)
-                      paramidx++;
+                  L_R[i].InitialStackIndex = paramidx;
+                  if (L_R[i].IsReference)
+                      paramidx += 2;
+                  else
+                  {
+                      paramidx += (L_R[i].MemberType.Size == 1) ? 2 : L_R[i].MemberType.Size;
+                      if (L_R[i].MemberType.Size != 1 && L_R[i].MemberType.Size % 2 != 0)
+                          paramidx++;
+                  }
               }
           }
       }
@@ -64,15 +83,16 @@ namespace VTC
           {
               rc.LocalStackIndex -= 2;
               par[0].StackIdx = rc.LocalStackIndex;
+              par[0].InitialStackIndex = rc.LocalStackIndex;
               rc.LocalStackIndex -= 2;
               par[1].StackIdx = rc.LocalStackIndex;
-             
+              par[1].InitialStackIndex = rc.LocalStackIndex;
           }
           else if (par.Count == 1)
           {
               rc.LocalStackIndex -= 2;
               par[0].StackIdx = rc.LocalStackIndex;
-           
+              par[0].InitialStackIndex = rc.LocalStackIndex;
           }
 
       }
@@ -89,7 +109,7 @@ namespace VTC
           int size = 0;
           foreach (ParameterSpec p in L_R)
           {
-              if (p.MemberType.Size > 1)
+              if (p.MemberType.Size > 1 && !p.IsReference)
               {
                   size += p.MemberType.Size;
                   if (p.MemberType.Size % 2 != 0)
@@ -133,7 +153,8 @@ namespace VTC
                   exp[i].EmitToStack(ec);
                   if (exp[i].Type.Size > 1)
                   {
-                      size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
+
+                      size += (exp[i].Type.Size == 1 ) ? 2 : exp[i].Type.Size;
                       if (exp[i].Type.Size % 2 != 0)
                           size++;
                   }

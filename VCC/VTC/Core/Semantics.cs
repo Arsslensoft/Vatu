@@ -13,6 +13,7 @@ namespace VTC.Core
     [Terminal("#")]
     [Terminal("ifdef")]
     [Terminal("ifndef")]
+    [Terminal("include")]
     [Terminal("error")]
     [Terminal("warn")]
     [Terminal("define")]
@@ -20,8 +21,8 @@ namespace VTC.Core
     [Terminal("region")]
     [Terminal("elif")]
     [Terminal("endregion")]
-
-
+    [Terminal("exit")]
+    [Terminal("pass")]
     [Terminal("[]")]
     [Terminal("nameof")]
     [Terminal("typeof")]
@@ -411,6 +412,7 @@ namespace VTC.Core
         protected bool ConstantOperation = false;
         protected bool RegisterOperation = false;
         public  BinaryOperator Operator {get;set;}
+
        protected bool unsigned = true;
      
         public virtual bool EmitOverrideOperator(EmitContext ec)
@@ -524,6 +526,7 @@ namespace VTC.Core
  
         LeftRotate = 18 | ShiftMask,
         RightRotate = 19 | ShiftMask,
+        UserDefine = 20,
         //
         // Operator masks
         //
@@ -544,7 +547,7 @@ namespace VTC.Core
     public enum UnaryOperator : byte
     {
         UnaryPlus, UnaryNegation, LogicalNot, OnesComplement,
-        AddressOf, ValueOf, PostfixIncrement, PostfixDecrement, ZeroTest ,      ParityTest 
+        AddressOf, ValueOf, PostfixIncrement, PostfixDecrement, ZeroTest ,      ParityTest , UserDefined
     }
     public enum AccessOperator : byte
     {

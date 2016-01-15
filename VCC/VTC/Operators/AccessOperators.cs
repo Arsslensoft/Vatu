@@ -257,7 +257,7 @@ namespace VTC
         // *p
         public bool ResolveEnumValue(ResolveContext rc, VariableExpression lv, VariableExpression rv)
         {
-            tp = rc.Resolver.TryResolveType(lv.Name);
+            rc.Resolver.TryResolveType(lv.Name,ref tp);
             if (tp != null && tp.IsEnum)
             {
      
@@ -411,7 +411,7 @@ namespace VTC
                         {
                             ParameterSpec v = (ParameterSpec)struct_var;
 
-                            ParameterSpec dst = new ParameterSpec(v.Name, v.MethodHost, tmp.MemberType, Location, v.Modifiers);
+                            ParameterSpec dst = new ParameterSpec(v.Name, v.MethodHost, tmp.MemberType, Location,v.InitialStackIndex, v.Modifiers);
 
                             dst.StackIdx = v.StackIdx + index;
 

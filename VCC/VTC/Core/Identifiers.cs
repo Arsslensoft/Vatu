@@ -32,6 +32,8 @@ namespace VTC.Core
 
             _base = (BaseTypeIdentifier)_base.DoResolve(rc);
             Type = _base.Type;
+           
+
             if (_pointers != null)
             {
           
@@ -79,14 +81,11 @@ namespace VTC.Core
     {
         TypeToken _typeid;
         Identifier _ident;
-        StructDefinition _sdef;
         Expr exp;
 
-        [Rule(@"<Base>     ::= struct Id")]
-        [Rule(@"<Base>     ::= enum Id")]
-        [Rule(@"<Base>     ::= union Id")]
-        [Rule(@"<Base>     ::= delegate Id")]  
-        public BaseTypeIdentifier(SimpleToken tok,Identifier type)
+         [Rule(@"<Base>     ::= ~'@'Id")]
+        [Rule(@"<Base>     ::= ~typeof Id")]  
+        public BaseTypeIdentifier(Identifier type)
         {
             _ident = type;
         }
@@ -103,11 +102,7 @@ namespace VTC.Core
             _typeid = type;
         }
 
-        [Rule(@"<Base>     ::= ~'@'Id")]
-        public BaseTypeIdentifier(Identifier type)
-        {
-            _ident = type;
-        }
+     
      
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -125,13 +120,13 @@ namespace VTC.Core
                 Type = _typeid.Type;
             }
             if (_ident != null)
-                Type = rc.Resolver.TryResolveType(_ident.Name);
-            if (_sdef != null)
             {
-                _sdef = (StructDefinition)_sdef.DoResolve(rc);
-                if (_sdef._var != null)
-                    Type = _sdef._var.Type;
+                rc.Resolver.TryResolveType(_ident.Name, ref _ts);
+                  if(_ts == null)
+                      ResolveContext.Report.Error(0, Location, "Unresolved type");
             }
+          
+
             return this;
         }
         public override bool Resolve(ResolveContext rc)
@@ -140,9 +135,8 @@ namespace VTC.Core
               _typeid.Resolve(rc);
 
             if (_ident != null)
-                Type = rc.Resolver.TryResolveType(_ident.Name);
-            if (_sdef != null)
-                _sdef.Resolve(rc);
+               rc.Resolver.TryResolveType(_ident.Name,ref _ts);
+           
             return base.Resolve(rc);
         }
     }
@@ -392,7 +386,7 @@ namespace VTC.Core
     [Terminal("bool")]
     public class TypeToken : SimpleToken, IResolve
     {
-        TypeSpec _ts;
+       protected TypeSpec _ts;
         public TypeSpec Type
         {
             get
@@ -419,7 +413,9 @@ namespace VTC.Core
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-            Type = rc.Resolver.TryResolveType(this.symbol.Name);
+             rc.Resolver.TryResolveType(this.symbol.Name,ref _ts);
+             if (_ts == null)
+                 ResolveContext.Report.Error(0, loc, "Unresolved type");
             return this;
         }
     }
