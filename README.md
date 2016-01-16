@@ -1,5 +1,5 @@
 # Vatu
-Vatu Native a ANSI-C variant Compiler for 8086 16 bits.
+Vatu Native a ANSI-C variant Compiler for 16 bits intel and amd processors.
 The Language was simply designed to support the basics of the C langage and simplify it.
 This project was based on Cosmos assembler (some classes of Vasm and BSN Gold Parser for c#).
 
