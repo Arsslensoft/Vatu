@@ -258,6 +258,10 @@ namespace VTC
 
             foreach (OperatorSpec op in kn.KnownOperators)
                 Resolver.KnowOperator(op);
+
+
+            foreach (VarSpec ms in kn.KnownLocalVars)
+                Resolver.KnowGVar(ms);
         }
         public bool IsInGlobal()
         {

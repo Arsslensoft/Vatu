@@ -42,6 +42,14 @@ namespace VTC
             Asmw = new AssemblyWriter(opt.Output);
             InitGrammar();
         }
+        public CompilerContext(string file)
+        {
+            Options = new Settings();
+            Options.Sources = new string[1] { file };
+            InputSources = new List<DependencyParsing>();
+
+            InitGrammar();
+        }
         CompiledGrammar grammar; SemanticTypeActions<SimpleToken> actions;
         public void InitGrammar()
         {
@@ -396,7 +404,47 @@ namespace VTC
             }
             return ok;
         }
+        public bool Resolve()
+        {
+              bool ok = Preprocess();
+            ResolveContext.Report.FilePath = DefaultDependency.File;
+            try{
+           
 
+                var processor = new SemanticProcessor<SimpleToken>(InputSources[0].InputStream, actions);
+
+                ParseMessage parseMessage = processor.ParseAll();
+                if (parseMessage == ParseMessage.Accept)
+                {
+                    var globals = processor.CurrentToken as GlobalSequence<Global>;
+                    ResolveContext RootCtx = null;
+                    List<Declaration> Resolved = new List<Declaration>();
+                    List<ResolveContext> ResolveCtx = new List<ResolveContext>();
+                    List<Declaration> RResolved = new List<Declaration>();
+                    List<ResolveContext> RResolveCtx = new List<ResolveContext>();
+
+                    ok &= ResolveSemanticTree(globals,ref RootCtx,ref Resolved,ref ResolveCtx, true);
+
+                    DefaultDependency.ResolveCtx = RResolveCtx;
+                    DefaultDependency.Declarations = RResolved;
+                }
+                else
+                {
+                    ok = false;
+                    IToken token = processor.CurrentToken;
+                    ResolveContext.Report.Error(0, CompilerContext.TranslateLocation(token.Position), "Syntax error '" + token.Symbol.Name + "' expected");
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                ok = false;
+                Console.WriteLine("Error: " + ex.Message);
+                Console.WriteLine(ex.StackTrace);
+            }
+            return ok;
+        }
         public static Location TranslateLocation(bsn.GoldParser.Parser.LineInfo li)
         {
             return new Location(li.Line, li.Column, li.Index);

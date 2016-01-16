@@ -23,6 +23,7 @@ namespace VTC
         public List<FieldSpec> KnownGlobals { get; set; }
         public List<MethodSpec> KnownMethods { get; set; }
         public List<VarSpec> KnownLocalVars { get; set; }
+        public List<VarSpec> GloballyKnownLocals { get; set; }
 
         public Resolver(Resolver parent, Namespace ns, List<Namespace> imports, MethodSpec mtd = null)
             : this(ns,imports,mtd)
@@ -41,6 +42,7 @@ namespace VTC
             KnownTypes = new List<TypeSpec>();
             KnownLocalVars = new List<VarSpec>();
             KnownOperators = new List<OperatorSpec>();
+            GloballyKnownLocals = new List<VarSpec>();
         }
 
         public bool KnowOperator(OperatorSpec oper)
@@ -78,6 +80,17 @@ namespace VTC
             if (!KnownLocalVars.Contains(v))
             {
                 KnownLocalVars.Add(v);
+                GloballyKnownLocals.Add(v);
+                return true;
+
+            }
+            return false;
+        }
+        public bool KnowGVar(VarSpec v)
+        {
+            if (!this.GloballyKnownLocals.Contains(v))
+            {
+                GloballyKnownLocals.Add(v);
                 return true;
 
             }

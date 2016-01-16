@@ -65,7 +65,7 @@ namespace VTC
                         FieldSpec v = (FieldSpec)ve.variable;
                         FieldSpec vr = new FieldSpec(v.NS, v.Name, v.Modifiers, v.MemberType.BaseType, Location);
                         vr.FieldOffset = v.FieldOffset;
-               
+                        vr.IsIndexed = true;
                        vr.FieldOffset  += Left.Type.BaseType.Size*Index;
                      
                         return new AccessExpression(vr,(Left is AccessExpression)?(Left as AccessExpression):null);

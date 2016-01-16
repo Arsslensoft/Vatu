@@ -37,7 +37,7 @@ namespace VTC
           
                Console.Error.WriteLine("Error:VC{4}:{0}:{1},{2}:{3}",FilePath, location.Row, location.Column, message, "0000");
             }
-            else Console.Error.WriteLine("Error : {0}",  message);
+            else Console.Error.WriteLine("Error:VC0000:default:0,0:{0}",  message);
         }
         public override void Error(int code,Location location, string message)
         {

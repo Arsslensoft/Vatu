@@ -655,7 +655,7 @@ namespace VTC
     /// </summary>
     public class FieldSpec : MemberSpec, IEquatable<FieldSpec>
     {
-
+        public bool IsIndexed { get; set; }
         public int FieldOffset { get; set; }
         public Namespace NS { get; set; }
         public FieldSpec(Namespace ns,string name, Modifiers mods, TypeSpec type, Location loc)
@@ -663,6 +663,7 @@ namespace VTC
         {
             FieldOffset = 0;
             NS = ns;
+            IsIndexed = true;
             memberType = type;
         }
     
@@ -690,7 +691,7 @@ namespace VTC
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            bool isind = !memberType.IsPointer || FieldOffset > 0;
+            bool isind = !memberType.IsPointer || FieldOffset > 0 || IsIndexed;
             if (memberType.Size == 1)
             {
                 ec.EmitComment("Push Field @" + Signature.ToString() + " " + FieldOffset);
