@@ -22,17 +22,30 @@ namespace VTC
         Intel16,
         x86
     }
+    public enum Target
+    {
+        fbin,
+        bin,
+        vtexec,
+        obj
+    }
    public class Settings
     {
 
        [Option('v', "verbose", HelpText = "Print details during execution.",DefaultValue=false)]
          public bool Verbose { get; set; }
 
+       [Option('g', "debug", HelpText = "Debug option", DefaultValue = false)]
+       public bool Debug { get; set; }
+
 
        [Option('p', "platform", Required = false, DefaultValue = Platform.Intel16,
-HelpText = "Enable optimizations")]
+HelpText = "Platform")]
        public Platform Platform { get; set; }
 
+       [Option('t', "target", Required = false, DefaultValue = Target.Binary,
+HelpText = "Target output")]
+       public Target Target { get; set; }
 
         [Option( "optimize", Required = false, DefaultValue = false,
    HelpText = "Enable optimizations")]
@@ -47,10 +60,21 @@ HelpText = "Enable optimizations")]
    HelpText = "Optimizations Level")]
         public int OptimizeLevel { get; set; }
 
-            [Option('w', "warnaserror", Required = false, DefaultValue = false,
+            [Option("Werror", Required = false, DefaultValue = false,
    HelpText = "Enable optimizations")]
                public bool WarningsAreErrors { get; set; }
-          
+
+            [Option( "Wall", Required = false, DefaultValue = false,
+    HelpText = "Warn all")]
+            public bool WarnAll { get; set; }
+
+            [Option("W", Required = false, DefaultValue = false,
+  HelpText = "Enable Warnings.")]
+            public bool Warn { get; set; }
+
+
+
+
        [OptionArray('i', "include", HelpText = "Include directory.")]
         public string[] Includes { get; set; }
 
@@ -81,11 +105,7 @@ HelpText = "Flat output")]
 HelpText = "Interrupts definition")]
        public bool IsInterrupt { get; set; }
 
-       [Option("ovrl", Required = false, DefaultValue = true,
-HelpText = "Enable method overload")]
-       public bool Overload { get; set; }
-
-
+   
        [Option('o', "out", Required = false, DefaultValue = "",
 HelpText = "Output file")]
        public string OutputBinary { get; set; }

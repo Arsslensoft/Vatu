@@ -20,3 +20,5 @@ D:\Projects\Vatu\Vatu\VCC\VTC\bin\Debug\bsn.GoldParser.pdb
 D:\Projects\Vatu\Vatu\VCC\VTC\bin\Debug\Vasm.pdb
 D:\Projects\Vatu\Vatu\VCC\VTC\bin\Debug\CommandLine.xml
 D:\Projects\Vatu\Vatu\VCC\VTC\obj\Debug\VTC.csprojResolveAssemblyReference.cache
+D:\Projects\Rava\monodevelop\main\build\bin\VTC.exe
+D:\Projects\Rava\monodevelop\main\build\bin\VTC.pdb

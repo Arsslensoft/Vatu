@@ -48,10 +48,9 @@ Comment Start = '/*'
 Comment End   = '*/'
 Comment Line  = '//'
 
-
 <Name> ::= ID
          |  <QualifiedName>
-
+         | global
 <QualifiedName> ::= <Name> '::' ID
 ! ===================================================================
 ! Import
@@ -333,13 +332,15 @@ Comment Line  = '//'
 
 <Var Item> ::= <Pointers> <Var>
 
-             
-<Mod>      ::= extern 
+  
+<Mod>       ::= <Modifier>
+             | <Modifier> <Mod> 
+<Modifier>      ::= extern 
              | static
              | const   
              | private
              | public
-
+            
 
 ! ===================================================================
 ! Enumerations
@@ -394,6 +395,7 @@ Comment Line  = '//'
                | while '(' <Expression> ')' <Statement> 
                | for '(' <Arg> ';' <Arg> ';' <Arg> ')' <Statement>
                | asm '{' <INSTRUCTIONS>  '}'
+               | use <Name> <Statement>
                | loop <Statement>
                | <Normal Stm>
               
@@ -418,6 +420,7 @@ Comment Line  = '//'
                | pass ';'
                | interrupt <CONSTANT> ';'
                | return <Expression> ';'
+                
                | ';'              !Null statement
 
 
@@ -526,17 +529,23 @@ Comment Line  = '//'
 
 <Op Pointer> ::= <Op Pointer> '.' <Value>
                | <Op Pointer> '->' <Value>
+               
                | <Name> '::' <Value>
                | <Type> '::' <Value>
+               
                | <Op Pointer> '[' <Expression> ']'
                | <Value>
 
+
 <Value>      ::= <CONSTANT>
-               | Id '(' <PARAM EXPR> ')'        
-               | Id
+               | <Method Expr>     
+               | <Var Expr>
                | '(' <Expression> ')'
                | <REGISTER>
 
+<Var Expr>     ::= Id
+<Method Expr>  ::= Id '(' <PARAM EXPR> ')'   
+                
 <CONSTANT>    ::= OctLiteral
                | HexLiteral
                | MacroLiteral

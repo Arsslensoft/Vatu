@@ -15,6 +15,7 @@ namespace VTC
 {
     public class DependencyParsing : IEquatable<DependencyParsing>
     {
+        
         public ResolveContext RootCtx { get; set; }
         public List<ResolveContext> ResolveCtx { get; set; }
         public List<Declaration> Declarations { get; set; }
@@ -30,12 +31,17 @@ namespace VTC
     }
     public class CompilerContext
     {
+        internal static bool EntryPointFound = false;
+        internal static Settings CompilerOptions { get; set; }
         public AssemblyWriter Asmw { get; set; }
         public Settings Options { get; set; }
         public string TempSrcFile { get; set; }
         public List<DependencyParsing> InputSources;
+       
         public CompilerContext(Settings opt)
         {
+            CompilerOptions = opt;
+            EntryPointFound = false;
             Options = opt;
             TempSrcFile = Path.GetTempFileName();
             InputSources = new List<DependencyParsing>();
@@ -45,9 +51,13 @@ namespace VTC
         public CompilerContext(string file)
         {
             Options = new Settings();
-            Options.Sources = new string[1] { file };
-            InputSources = new List<DependencyParsing>();
 
+            Options.IsInterrupt = true;
+            Options.Sources = new string[1] { file };
+            CompilerOptions = Options;
+            EntryPointFound = false;
+            InputSources = new List<DependencyParsing>();
+            BuiltinTypeSpec.ResetBuiltins();
             InitGrammar();
         }
         CompiledGrammar grammar; SemanticTypeActions<SimpleToken> actions;
@@ -207,14 +217,15 @@ namespace VTC
         }
         public bool ResolveSemanticTree(GlobalSequence<Global> globals,ref ResolveContext RootCtx, ref List<Declaration> Resolved, ref List<ResolveContext> ResolveCtx,bool isdef=false)
         {
-            foreach (Global stmts in globals)
+            foreach (Global gb in globals)
             {
-
+             
+                
                 ResolveContext old_ctx = RootCtx;
 
 
-                RootCtx = ResolveContext.CreateRootContext(stmts.Used, stmts.Namespace, stmts.Declarations);
-
+                RootCtx = ResolveContext.CreateRootContext(gb.Used, gb.Namespace, gb.Declarations);
+                Global stmts = (Global)gb.DoResolve(RootCtx);
             
 
                 if (isdef)
@@ -424,7 +435,8 @@ namespace VTC
                     List<ResolveContext> RResolveCtx = new List<ResolveContext>();
 
                     ok &= ResolveSemanticTree(globals,ref RootCtx,ref Resolved,ref ResolveCtx, true);
-
+                  
+                 
                     DefaultDependency.ResolveCtx = RResolveCtx;
                     DefaultDependency.Declarations = RResolved;
                 }
@@ -445,6 +457,24 @@ namespace VTC
             }
             return ok;
         }
+        void CloseDep(DependencyParsing d)
+        {
+            if (d == null)
+                return;
+            foreach (DependencyParsing p in d.DependsOn)
+                CloseDep(p);
+            
+            d.InputStream.Close();
+        }
+      
+        public void Close()
+        {
+            CloseDep(DefaultDependency);
+
+       
+            
+        }
+
         public static Location TranslateLocation(bsn.GoldParser.Parser.LineInfo li)
         {
             return new Location(li.Line, li.Column, li.Index);

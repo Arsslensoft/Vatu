@@ -12,6 +12,7 @@ namespace VTC
     /// </summary>
     public struct MemberSignature
     {
+     
         string _signature;
         public string Signature { get { return _signature; } }
         string _nsig;
@@ -432,9 +433,11 @@ namespace VTC
         //
         // Returns the size of type if known, otherwise, 0
         //
-        private int GetSize(TypeSpec type)
-        {
-            if (type.IsBuiltinType)
+        protected int GetSize(TypeSpec type)
+        {   
+            if (type.IsArray)
+                return (type as ArrayTypeSpec).ArrayCount * type.BaseType.Size;
+            else if (type.IsBuiltinType)
             {
                 switch (type.BuiltinType)
                 {
@@ -452,6 +455,31 @@ namespace VTC
                         return 0;
                 }
             }
+         
+            return type.Size;
+        }
+
+        protected int GetSizeBt(TypeSpec type)
+        {
+            if (type.IsBuiltinType)
+            {
+                switch (type.BuiltinType)
+                {
+                    case BuiltinTypes.Bool:
+                    case BuiltinTypes.SByte:
+                    case BuiltinTypes.Byte:
+                        return 1;
+                    case BuiltinTypes.Int:
+                    case BuiltinTypes.UInt:
+                    case BuiltinTypes.String:
+                        return 2;
+
+
+                    default:
+                        return 0;
+                }
+            }
+        
             return 0;
         }
         public TypeSpec(Namespace ns, string name, BuiltinTypes bt, TypeFlags flags, Modifiers mods, Location loc,List<TypeSpec> param, TypeSpec basetype = null)
@@ -461,7 +489,7 @@ namespace VTC
             _bt = bt;
             _flags = flags;
             _base = basetype;
-            _size = GetSize(this);
+            _size = GetSizeBt(this);
 
             StaticExtendedMethods = new List<MethodSpec>();
             ExtendedFields = new List<FieldSpec>();
@@ -476,7 +504,7 @@ namespace VTC
             _bt = bt;
             _flags = flags;
             _base = basetype;
-            _size = GetSize(this);
+            _size = GetSizeBt(this);
          
             StaticExtendedMethods = new List<MethodSpec>();
             ExtendedFields = new List<FieldSpec>();
@@ -640,6 +668,23 @@ namespace VTC
         {
             return GetTypeName(this);
         }
+        static void Reset(BuiltinTypeSpec bt)
+        {
+            bt.ExtendedMethods.Clear();
+            bt.ExtendedFields.Clear();
+            bt.StaticExtendedMethods.Clear();
+        }
+        public static void ResetBuiltins()
+        {
+            Reset(Byte);
+            Reset(SByte);
+            Reset(Int);
+            Reset(UInt);
+            Reset(Bool);
+            Reset(Null);
+            Reset(Void);
+            Reset(String);
+        }
         public static BuiltinTypeSpec Byte = new BuiltinTypeSpec("byte", BuiltinTypes.Byte);
         public static BuiltinTypeSpec SByte = new BuiltinTypeSpec("sbyte", BuiltinTypes.SByte);
         public static BuiltinTypeSpec Int = new BuiltinTypeSpec("int", BuiltinTypes.Int);
@@ -663,7 +708,7 @@ namespace VTC
         {
             FieldOffset = 0;
             NS = ns;
-            IsIndexed = true;
+            IsIndexed = false;
             memberType = type;
         }
     
@@ -1491,7 +1536,7 @@ namespace VTC
             Members = mem;
             Size = 0;
             foreach (TypeMemberSpec m in mem)
-                Size += m.MemberType.Size;
+                Size += GetSize( m.MemberType);
             
         }
 

@@ -24,6 +24,7 @@ namespace VTC
         public List<MethodSpec> KnownMethods { get; set; }
         public List<VarSpec> KnownLocalVars { get; set; }
         public List<VarSpec> GloballyKnownLocals { get; set; }
+        public List<Namespace> KnownNamespaces { get; set; }
 
         public Resolver(Resolver parent, Namespace ns, List<Namespace> imports, MethodSpec mtd = null)
             : this(ns,imports,mtd)
@@ -43,6 +44,7 @@ namespace VTC
             KnownLocalVars = new List<VarSpec>();
             KnownOperators = new List<OperatorSpec>();
             GloballyKnownLocals = new List<VarSpec>();
+            KnownNamespaces = new List<Namespace>();
         }
 
         public bool KnowOperator(OperatorSpec oper)
@@ -60,6 +62,16 @@ namespace VTC
             if (!KnownTypes.Contains(tp))
             {
                 KnownTypes.Add(tp);
+                return true;
+
+            }
+            return false;
+        }
+        public bool KnowNamespace(Namespace tp)
+        {
+            if (!KnownNamespaces.Contains(tp))
+            {
+                KnownNamespaces.Add(tp);
                 return true;
 
             }
@@ -295,6 +307,16 @@ namespace VTC
                     return kt;
             }
             return null;
+        }
+        public Namespace ResolveNS(string name)
+        {
+            foreach (Namespace kt in KnownNamespaces)
+            {
+                if (kt.Name == name)
+                    return kt;
+             
+            }
+            return Namespace.Default;
         }
         public OperatorSpec ResolveOperator(Namespace ns, string symb)
         {

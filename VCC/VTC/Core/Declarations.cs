@@ -139,6 +139,7 @@ namespace VTC.Core
                 Type = new ArrayTypeSpec(Type.NS, Type, ArraySize);
             else if (ArraySize == 0)
                 Type = new PointerTypeSpec(Type.NS, Type);
+
             Members = new List<TypeMemberSpec>();
 
             // Childs
@@ -660,8 +661,9 @@ namespace VTC.Core
                 if (method != null)
                     ResolveContext.Report.Error(9, Location, "Duplicate interrupt name, multiple interrupt definition is not allowed");
 
-             
-            
+
+                if (!CompilerContext.CompilerOptions.IsInterrupt)
+                    ResolveContext.Report.Error(0, Location, "Interrupt definition disabled, check interrupt option");
             method = new MethodSpec(rc.CurrentNamespace, ItName, mods, BuiltinTypeSpec.Void, CallingConventions.StdCall,null, this.loc);
        
             rc.KnowMethod(method);
@@ -778,6 +780,12 @@ namespace VTC.Core
             base._type = _id.TType;
 
 
+            if (specs == Specifiers.Entry && CompilerContext.EntryPointFound)
+                ResolveContext.Report.Error(0, Location, "Entry point already defined");
+            else  if (specs == Specifiers.Entry)
+                CompilerContext.EntryPointFound = true;
+
+         
 
             method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods, _id.TType.Type, ccv, _fbd.ParamTypes.ToArray(), this.loc);
 
@@ -785,12 +793,20 @@ namespace VTC.Core
             ccvh.SetParametersIndex(ref Parameters, ccv);
             if(ccv == CallingConventions.FastCall)
                  ccvh.ReserveFastCall(rc, Parameters);
+            else if (ccv == CallingConventions.VeryFastCall)
+                ccvh.ReserveVFastCall(rc, Parameters);
+
             method.Parameters = Parameters;
+
          
-                 if(ccv == CallingConventions.FastCall && Parameters.Count >= 1 && Parameters[0].MemberType.Size > 2)
+                 if((ccv == CallingConventions.FastCall || ccv == CallingConventions.VeryFastCall) && Parameters.Count >= 1 && Parameters[0].MemberType.Size > 2)
                      ResolveContext.Report.Error(9, Location, "Cannot use fast call with struct or union parameter at index 1");
-                 else if (ccv == CallingConventions.FastCall && Parameters.Count >= 2 && (Parameters[0].MemberType.Size > 2 || Parameters[1].MemberType.Size > 2))
+                 else if ((ccv == CallingConventions.FastCall || ccv == CallingConventions.VeryFastCall) && Parameters.Count >= 2 && (Parameters[0].MemberType.Size > 2 || Parameters[1].MemberType.Size > 2))
                      ResolveContext.Report.Error(9, Location, "Cannot use fast call with struct or union parameter at index 1 or 2");
+                 else if ( ccv == CallingConventions.VeryFastCall && Parameters.Count >= 3 && (Parameters[0].MemberType.Size > 2 || Parameters[1].MemberType.Size > 2 || Parameters[2].MemberType.Size > 2))
+                     ResolveContext.Report.Error(9, Location, "Cannot use very fast call with struct or union parameter at index 1 , 2 or 3");
+                 else if (ccv == CallingConventions.VeryFastCall && Parameters.Count >= 4 && (Parameters[0].MemberType.Size > 2 || Parameters[1].MemberType.Size > 2 || Parameters[2].MemberType.Size > 2 || Parameters[3].MemberType.Size > 2))
+                     ResolveContext.Report.Error(9, Location, "Cannot use very fast call with struct or union parameter at index 1, 2, 3 or 4");
 
 
             MethodSpec m = rc.Resolver.TryResolveMethod(method.Signature.ToString());
@@ -814,6 +830,8 @@ namespace VTC.Core
                 ResolveContext.Report.Error(45, Location, "return type must be builtin type "+method.MemberType.ToString() + " is user-defined type.");
             if (_fbd._b != null)
                 _fbd._b = (Block)_fbd._b.DoResolve(rc);
+
+       
             return this;
         }
         public override bool Resolve(ResolveContext rc)
@@ -862,6 +880,29 @@ namespace VTC.Core
                 {
                     size += 2;
                     ccvh.EmitFastCall(ec, 1);
+                }
+            }
+            else if (ccv == CallingConventions.VeryFastCall)
+            {
+                if (Parameters.Count >= 4)
+                {
+                    size += 8;
+                    ccvh.EmitVFastCall(ec, 4);
+                }
+                else if (Parameters.Count >= 3)
+                {
+                    size += 6;
+                    ccvh.EmitVFastCall(ec, 3);
+                }
+                else if (Parameters.Count >= 2)
+                {
+                    size += 4;
+                    ccvh.EmitVFastCall(ec, 2);
+                }
+                else if (Parameters.Count == 1)
+                {
+                    size += 2;
+                    ccvh.EmitVFastCall(ec, 1);
                 }
             }
         
@@ -1710,10 +1751,17 @@ namespace VTC.Core
         [Rule("<Namespace> ::= ~namespace <Name> ")]
         public NamespaceDeclaration(NameIdentifier id)
         {
-            Namespace = new Namespace(id.Name);
+            Namespace = new Namespace(id.Name,id.loc);
+           
         }
 
-
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            if (Namespace.Default == Namespace)
+                ResolveContext.Report.Error(0, Location, "Global namespace cannot be overriden");
+            rc.Resolver.KnowNamespace(Namespace);
+            return this;
+        }
     }
     public class ImportDeclaration : SimpleToken
     {
@@ -1722,6 +1770,18 @@ namespace VTC.Core
         public ImportDeclaration(NameIdentifier id)
         {
             Import = new Namespace(id.Name);
+        }
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+          Namespace ns =  rc.Resolver.ResolveNS(Import.Name);
+
+          if (Namespace.Default == Import)
+              ResolveContext.Report.Error(0, Location, "Global namespace cannot be imported");
+
+
+          if (ns != Import)
+              ResolveContext.Report.Error(0, Location, "Unknown namespace");
+            return this;
         }
     }
     public class Imports : SimpleToken
@@ -1752,10 +1812,14 @@ namespace VTC.Core
         public Namespace Namespace { get; set; }
         public List<Namespace> Used { get; set; }
 
-    
+        NamespaceDeclaration ncd;
+        Imports im;
         [Rule("<GLOBAL> ::= <Namespace> ~'{' <Imports> <Decls> ~'}'")]
         public Global(NamespaceDeclaration ndcl, Imports imp, DeclarationSequence<Declaration> ds)
         {
+            im = imp;
+            ncd = ndcl;
+
             Declarations = ds;
             Namespace = ndcl.Namespace;
             Used = imp.Used;
@@ -1772,10 +1836,21 @@ namespace VTC.Core
         [Rule("<GLOBAL> ::= <Namespace> ~'{' <Decls> ~'}'")]
         public Global(NamespaceDeclaration ndcl, DeclarationSequence<Declaration> ds)
         {
+
+            ncd = ndcl;
             Declarations = ds;
             Namespace = ndcl.Namespace;
             Used = new List<Namespace>();
 
+        }
+
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            if (ncd != null)
+                ncd.DoResolve(rc);
+            if (im != null)
+                im.DoResolve(rc);
+            return this;
         }
     }
     public class Declaration : DeclarationToken

@@ -26,6 +26,7 @@ namespace VTC
                 // Values are available here
                 CompilerContext ctx = new CompilerContext(options);
                 Compile(ctx);
+             
             }
             Console.Read();
         }

@@ -467,8 +467,13 @@ namespace VTC.Core
             Members = new List<TypeMemberSpec>();
             _var = (VariableDeclaration)_var.DoResolve(rc);
             if (_var != null)
-                Size += _var.Type.Size;
+            {
 
+                if (_var.Members[0].MemberType is ArrayTypeSpec)
+                    Size += (_var.Members[0].MemberType as ArrayTypeSpec).ArrayCount * _var.Members[0].MemberType.BaseType.Size;
+                else
+                  Size += _var.Type.Size;
+            }
             foreach (TypeMemberSpec sv in _var.Members)
                 Members.Add(sv);
 

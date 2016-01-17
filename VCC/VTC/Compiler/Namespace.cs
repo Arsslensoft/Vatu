@@ -17,12 +17,25 @@ namespace VTC
         }
         string _name;
         public string Name { get { return _name; } }
-        public static Namespace Default = new Namespace("@global@");
-        public bool IsDefault { get { return Name == "@global@"; } }
+        public static Namespace Default = new Namespace("global");
+        public bool IsDefault { get { return Name == "global"; } }
+        Location l;
+        public Location Location
+        {
+            get { return l; }
+        }
         public Namespace(string name)
         {
             _name = name;
-
+            l = Location.Null;
+        }
+        public Namespace(string name,Location loc)
+        {
+            _name = name;
+            if(loc == null)
+                l = Location.Null;
+            else
+            l = loc;
         }
         public string Normalize()
         {

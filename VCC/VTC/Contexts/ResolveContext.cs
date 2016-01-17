@@ -99,7 +99,7 @@ namespace VTC
         public Expr ExtensionVar { get; set; }
         public Namespace CurrentNamespace  { get { return Resolver.CurrentNamespace; }
             set { Resolver.CurrentNamespace = value; } }
-        public List<Namespace> Imports { get; set; }
+        public List<Namespace> Imports { get { return Resolver.Imports; } set { Resolver.Imports = value; } }
 
         public ResolveScopes CurrentScope { get; set; }
 
@@ -137,7 +137,7 @@ namespace VTC
         }
         public ResolveContext(List<Namespace> imp, Namespace ns, Block b, MethodSpec cm, Resolver known)
         {
-            Imports = imp;
+          
       
             Resolver = known;
             CurrentNamespace = ns;
@@ -147,7 +147,7 @@ namespace VTC
         }
         public ResolveContext(List<Namespace> imp, Namespace ns, Block b, MethodSpec cm)
         {
-            Imports = imp;
+     
        
             Resolver = new Resolver(ns, imp,cm);
             current_block = b;
@@ -157,18 +157,18 @@ namespace VTC
         }
         public ResolveContext(List<Namespace> imp, Namespace ns, DeclarationSequence<Declaration> decl)
         {
-            Imports = imp;
+       
 
             Init();
             Resolver = new Resolver(ns,imp,new MethodSpec(ns, "<root-decl-list>", Modifiers.NoModifier, null, CallingConventions.StdCall,null, Location.Null));
-     
+          
             FillKnown();
             ChildContexts = new List<ResolveContext>();
 
         }
         public ResolveContext(List<Namespace> imp, Namespace ns, InterruptDeclaration decl)
         {
-            Imports = imp;
+      
 
             Init();
             Resolver = new Resolver(ns, imp, new MethodSpec(ns, decl.ItName, Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
@@ -180,7 +180,7 @@ namespace VTC
         }
         public ResolveContext(List<Namespace> imp, Namespace ns, OperatorDeclaration decl)
         {
-            Imports = imp;
+      
 
             Init();
             Resolver = new Resolver(ns, imp, new MethodSpec(ns, decl.OpName, Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
@@ -192,7 +192,7 @@ namespace VTC
         }
         public ResolveContext(List<Namespace> imp, Namespace ns, MethodDeclaration decl)
         {
-            Imports = imp;
+         
  
             Init();
             Resolver = new Resolver(ns, imp, new MethodSpec(ns, decl.Identifier.Name, Modifiers.NoModifier, null, CallingConventions.StdCall,null, Location.Null));
@@ -204,7 +204,7 @@ namespace VTC
         }
         public ResolveContext(List<Namespace> imp, Namespace ns, StructDeclaration decl)
         {
-            Imports = imp;
+          
             
             Init();
             Resolver = new Resolver(ns, imp, new MethodSpec(ns, "<struct-decl>", Modifiers.NoModifier, null, CallingConventions.StdCall,null, Location.Null));
@@ -216,7 +216,7 @@ namespace VTC
         }
         public ResolveContext(List<Namespace> imp, Namespace ns, UnionDeclaration decl)
         {
-            Imports = imp;
+       
 
             Init();
             Resolver = new Resolver(ns, imp, new MethodSpec(ns, "<union-decl>", Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
@@ -228,7 +228,7 @@ namespace VTC
         }
         public ResolveContext(List<Namespace> imp, Namespace ns, EnumDeclaration decl)
         {
-            Imports = imp;
+          
         
             Init();
             Resolver = new Resolver(ns, imp,new MethodSpec(ns, "<enum-decl>", Modifiers.NoModifier, null,CallingConventions.StdCall,null, Location.Null));
@@ -259,6 +259,8 @@ namespace VTC
             foreach (OperatorSpec op in kn.KnownOperators)
                 Resolver.KnowOperator(op);
 
+            foreach (Namespace ns in kn.KnownNamespaces)
+                Resolver.KnowNamespace(ns);
 
             foreach (VarSpec ms in kn.KnownLocalVars)
                 Resolver.KnowGVar(ms);

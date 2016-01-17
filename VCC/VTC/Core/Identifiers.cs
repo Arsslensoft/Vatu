@@ -165,6 +165,12 @@ namespace VTC.Core
             loc = CompilerContext.TranslateLocation(position);
             _idName = idName.Name;
         }
+        [Rule(@"<Name> ::= ~global")]
+        public NameIdentifier()
+        {
+            loc = CompilerContext.TranslateLocation(position);
+            _idName = "global";
+        }
         [Rule(@"<Name> ::= <QualifiedName>")]
         public NameIdentifier(QualifiedNameIdentifier idName)
         {
@@ -185,6 +191,8 @@ namespace VTC.Core
         }
       
     }
+
+
     public class MethodIdentifier : Identifier
     {
         public Identifier Id { get; set; }
@@ -347,12 +355,11 @@ namespace VTC.Core
              | volatile
              | const   */
        protected SimpleToken _mod;
-        [Rule(@"<Mod>      ::= extern")]
-        [Rule(@"<Mod>      ::= static")]
-        [Rule(@"<Mod>      ::= const")]
-        [Rule(@"<Mod>      ::= private")]
-        [Rule(@"<Mod>      ::= public")]
-  
+        [Rule(@"<Modifier>      ::= extern")]
+        [Rule(@"<Modifier>      ::= static")]
+        [Rule(@"<Modifier>      ::= const")]
+        [Rule(@"<Modifier>      ::= private")]
+        [Rule(@"<Modifier>      ::= public")]
         public Modifier(SimpleToken mod)
         {
             _mod = mod;
@@ -360,21 +367,49 @@ namespace VTC.Core
         }
 
      
+         [Rule(@"<Mod>      ::= <Modifier>")]
+        public Modifier(Modifier mod)
+        {
+            _mod = mod;
+
+        }
+
+         Modifier nxt;
+         [Rule(@"<Mod>      ::= <Modifier> <Mod>")]
+         public Modifier(Modifier mod,Modifier next)
+         {
+             nxt = next;
+             _mod = mod;
+
+         }
+
+
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+            ModifierList = Modifiers.NoModifier;
+            if (nxt != null)
+            {
+                nxt = (Modifier)nxt.DoResolve(rc);
+                nxt.ModifierList = nxt.ModifierList;
+            }
             if (_mod == null)
-                ModifierList = Modifiers.Private;
+                ModifierList |= Modifiers.Private;
             else if (_mod.Name == "extern")
-                ModifierList = Modifiers.Extern;
+                ModifierList |= Modifiers.Extern;
             else if (_mod.Name == "static")
-                ModifierList = Modifiers.Static;
+                ModifierList |= Modifiers.Static;
             else if (_mod.Name == "const")
-                ModifierList = Modifiers.Const;
+                ModifierList |= Modifiers.Const;
             else if (_mod.Name == "private")
-                ModifierList = Modifiers.Private;
+                ModifierList |= Modifiers.Private;
             else if (_mod.Name == "public")
-                ModifierList = Modifiers.Public;
-            else ModifierList = Modifiers.NoModifier;
+                ModifierList |= Modifiers.Public;
+
+            if ((ModifierList & Modifiers.Private) == Modifiers.Private && (ModifierList & Modifiers.Extern) == Modifiers.Extern)
+                ResolveContext.Report.Error(0, Location, "A member cannot be private and extern at the same time");
+            else if ((ModifierList & Modifiers.Private) == Modifiers.Private && (ModifierList & Modifiers.Public) == Modifiers.Public)
+                ResolveContext.Report.Error(0, Location, "A member cannot be private and public at the same time");
+
             return this;
         }
         public override bool Resolve(ResolveContext rc)

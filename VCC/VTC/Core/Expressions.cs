@@ -219,7 +219,7 @@ namespace VTC.Core
         bool isdelegate = false;
         protected Identifier _id;
         protected ParameterSequence<Expr> _param;
-        [Rule(@"<Value>       ::= Id ~'(' <PARAM EXPR> ~')'")]
+        [Rule(@"<Method Expr>       ::= Id ~'(' <PARAM EXPR> ~')'")]
         public MethodExpression(Identifier id, ParameterSequence<Expr> expr)
         {
             _id = id;
@@ -687,8 +687,8 @@ namespace VTC.Core
            Type = ms.MemberType;
            variable = ms;
        }
-      
-        [Rule(@"<Value>       ::= Id")]
+
+        [Rule(@"<Var Expr>       ::= Id")]
         public VariableExpression(Identifier id)
             : base(id.Name)
         {
@@ -860,10 +860,11 @@ namespace VTC.Core
     public class AccessOperation : Expr
     {
 
-        public int  Offset { get; set; }
+        public int Offset { get; set; }
         public MemberSpec Member { get; set; }
-        private  AccessOp _op;
+        private AccessOp _op;
         TypeToken tt;
+  
 
         [Rule(@"<Op Pointer> ::= <Op Pointer> '.' <Value>")]
         [Rule(@"<Op Pointer> ::= <Op Pointer> '->' <Value>")]
@@ -887,7 +888,7 @@ namespace VTC.Core
 
 
         }
-  
+
 
         [Rule(@"<Op Pointer> ::= <Type> '::' <Value>")]
         public AccessOperation(TypeToken id, AccessOp op, Expr target)
@@ -898,6 +899,7 @@ namespace VTC.Core
 
 
         }
+
         [Rule(@"<Op Pointer> ::= <Op Pointer> ~'[' <Expression> ~']'")]
         public AccessOperation(Expr left, Expr target)
         {
@@ -923,7 +925,7 @@ namespace VTC.Core
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             rc.CurrentScope |= ResolveScopes.AccessOperation;
-                   
+
             if (_op._op != AccessOperator.ByName)
             {
 
@@ -961,7 +963,7 @@ namespace VTC.Core
                     else
                     {
 
-                        rc.CurrentExtensionLookup =tt.Type;
+                        rc.CurrentExtensionLookup = tt.Type;
                         rc.StaticExtensionLookup = true;
                         _op.Right = (Expr)_op.Right.DoResolve(rc);
                         if (_op.Right is VariableExpression && (_op.Right as VariableExpression).variable == null)
@@ -976,7 +978,7 @@ namespace VTC.Core
                     rc.CurrentScope &= ~ResolveScopes.AccessOperation;
                     return _op.Right;
                 }
-              
+
                 else
                 {
                     Namespace lastns = rc.CurrentNamespace;
@@ -988,11 +990,6 @@ namespace VTC.Core
                     return _op.Right;
                 }
             }
-    
-           //Type = _op.CommonType;
-           //Offset = _op.Offset;
-           //Member = _op.Member;
-           // return this;
         }
         public override bool Resolve(ResolveContext rc)
         {

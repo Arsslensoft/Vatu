@@ -229,7 +229,6 @@ namespace VTC
             return Right.EmitToRegister(ec, rg);
         }
     }
-
     [Terminal(".")]
     public class ByValueOperator : AccessOp
     {

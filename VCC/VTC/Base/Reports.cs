@@ -7,6 +7,84 @@ using VTC.Core;
 
 namespace VTC
 {
+    public enum ErrorType
+    {
+        Error,
+        Warning
+    };
+
+    /// <summary>
+    /// Simple Errors Store
+    /// </summary>
+    public class Error
+    {
+        public int ID;
+        public string Description;
+        public int Line;
+        public ErrorType Type;
+        public string File;
+        public int Col;
+        public Error() { }
+        public Error(int errid, string desc, int line,int col,string file, ErrorType errtype)
+        {
+            File = file;
+            Col = col;
+            ID = errid;
+            Description = desc;
+            Line = line;
+            Type = errtype;
+        }
+    }
+    public class ListReporter : Report
+    {
+
+
+        public List<Error> Errors;
+        public ListReporter()
+            : base()
+        {
+            Errors  = new List<Error>();
+            quiet = true;
+        }
+
+        public override void AssembleFile(string file, string listing,
+                                  string target, string output)
+        {
+            if (quiet)
+                return;
+        
+        }
+
+        public override void Error(Location location, string message)
+        {
+            error_count++;
+            if (!location.IsNull)
+                Errors.Add(new VTC.Error(0,message,location.Row,location.Column,FilePath, ErrorType.Error));
+            else Errors.Add(new VTC.Error(0, message, 0,0, "default",ErrorType.Error));
+        }
+        public override void Error(int code, Location location, string message)
+        {
+            error_count++;
+            if (!location.IsNull)
+                Errors.Add(new VTC.Error(code, message, location.Row, location.Column, FilePath, ErrorType.Error));
+            else Errors.Add(new VTC.Error(code, message, 0, 0, "default", ErrorType.Error));
+        }
+        public override void Warning(Location location, string message)
+        {
+            if (!location.IsNull)
+                Errors.Add(new VTC.Error(0, message, location.Row, location.Column, FilePath, ErrorType.Warning));
+            else Errors.Add(new VTC.Error(0, message, 0, 0, "default", ErrorType.Warning));
+        }
+
+        public override void Message(string message)
+        {
+            if (quiet)
+                return;
+       
+        }
+
+
+    }
     public class ConsoleReporter : Report
     {
 

@@ -48,7 +48,24 @@ namespace VTC
                   }
               }
           }
-          else if(L_R.Count > 2)
+          else if(L_R.Count > 2 && CallingConventions.FastCall == ccv)
+          {
+              int paramidx = 4; // Initial Stack Position
+              for (int i = 2; i < L_R.Count; i++)
+              {
+                  L_R[i].StackIdx = paramidx;
+                  L_R[i].InitialStackIndex = paramidx;
+                  if (L_R[i].IsReference)
+                      paramidx += 2;
+                  else
+                  {
+                      paramidx += (L_R[i].MemberType.Size == 1) ? 2 : L_R[i].MemberType.Size;
+                      if (L_R[i].MemberType.Size != 1 && L_R[i].MemberType.Size % 2 != 0)
+                          paramidx++;
+                  }
+              }
+          }
+          else if (L_R.Count > 4 && CallingConventions.VeryFastCall == ccv)
           {
               int paramidx = 4; // Initial Stack Position
               for (int i = 2; i < L_R.Count; i++)
@@ -77,6 +94,34 @@ namespace VTC
               ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -2, DestinationIsIndirect = true, SourceReg = EmitContext.C });
 
       }
+      public void EmitVFastCall(EmitContext ec, int par)
+      {
+         
+          if (par == 4)
+          {
+              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -2, DestinationIsIndirect = true, SourceReg = EmitContext.A });
+              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -4, DestinationIsIndirect = true, SourceReg = EmitContext.B });
+              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -6, DestinationIsIndirect = true, SourceReg = EmitContext.C });
+              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -8, DestinationIsIndirect = true, SourceReg = EmitContext.D});
+          }
+          else if (par == 3)
+          {
+              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -2, DestinationIsIndirect = true, SourceReg = EmitContext.A });
+              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -4, DestinationIsIndirect = true, SourceReg = EmitContext.B });
+              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -6, DestinationIsIndirect = true, SourceReg = EmitContext.C });
+           
+          }
+          else if (par == 2)
+          {
+              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -2, DestinationIsIndirect = true, SourceReg = EmitContext.A });
+              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -4, DestinationIsIndirect = true, SourceReg = EmitContext.B });
+
+          }
+          else if (par == 1)
+              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -2, DestinationIsIndirect = true, SourceReg = EmitContext.A });
+
+          
+      }
       public void ReserveFastCall(ResolveContext rc, List<ParameterSpec> par)
       {
           if (par.Count >= 2)
@@ -96,9 +141,22 @@ namespace VTC
           }
 
       }
+
+      public void ReserveVFastCall(ResolveContext rc, List<ParameterSpec> par)
+      {
+          for (int i = 0; i < par.Count; i++)
+          {
+              rc.LocalStackIndex -= 2;
+              par[i].StackIdx = rc.LocalStackIndex;
+              par[i].InitialStackIndex = rc.LocalStackIndex;
+          }
+       
+
+      }
+
       public void SetParametersIndex(ref  List<ParameterSpec> L_R, CallingConventions ccv)
       {
-          if (ccv == CallingConventions.StdCall || ccv == CallingConventions.Cdecl || ccv == CallingConventions.FastCall)
+          if (ccv == CallingConventions.StdCall || ccv == CallingConventions.Cdecl || ccv == CallingConventions.FastCall || ccv == CallingConventions.VeryFastCall)
               HandleRightToLeft(ref L_R,ccv);
           else if (ccv == CallingConventions.Pascal || ccv == CallingConventions.Default)
               HandleLeftToRight(ref L_R);
@@ -132,7 +190,12 @@ namespace VTC
                   ec.EmitInstruction(new Return() { DestinationValue = (ushort)(size - 4) });
               else ec.EmitInstruction(new SimpleReturn());
           }
-
+          else if (ccv == CallingConventions.VeryFastCall)
+          {
+              if (size > 8)
+                  ec.EmitInstruction(new Return() { DestinationValue = (ushort)(size - 8) });
+              else ec.EmitInstruction(new SimpleReturn());
+          }
         
         
             
@@ -185,7 +248,44 @@ namespace VTC
                   ec.EmitPop(EmitContext.C);
 
           }
+          else if (method.CallingConvention == CallingConventions.VeryFastCall)
+          {
+              for (int i = exp.Count - 1; i >= 0; i--)
+              {
 
+                  exp[i].EmitToStack(ec);
+                  if (exp[i].Type.Size > 1)
+                  {
+                      size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
+                      if (exp[i].Type.Size % 2 != 0)
+                          size++;
+                  }
+                  else size += 2;
+              }
+              if (exp.Count >= 4)
+              {
+                  ec.EmitPop(EmitContext.A);
+                  ec.EmitPop(EmitContext.B);
+                  ec.EmitPop(EmitContext.C);
+                  ec.EmitPop(EmitContext.D);
+              }
+              else if (exp.Count == 3)
+              {
+                  ec.EmitPop(EmitContext.A);
+                  ec.EmitPop(EmitContext.B);
+                  ec.EmitPop(EmitContext.C);
+
+              }
+              else if (exp.Count == 1)
+              {
+                  ec.EmitPop(EmitContext.A);
+                  ec.EmitPop(EmitContext.B);
+
+              }
+              else if (exp.Count == 1)
+                  ec.EmitPop(EmitContext.A);
+
+          }
           // call
           ec.EmitCall(method);
 
@@ -241,7 +341,44 @@ namespace VTC
                   ec.EmitPop(EmitContext.C);
 
           }
+          else if (ccv == CallingConventions.VeryFastCall)
+          {
+              for (int i = exp.Count - 1; i >= 0; i--)
+              {
 
+                  exp[i].EmitToStack(ec);
+                  if (exp[i].Type.Size > 1)
+                  {
+                      size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
+                      if (exp[i].Type.Size % 2 != 0)
+                          size++;
+                  }
+                  else size += 2;
+              }
+              if (exp.Count >= 4)
+              {
+                  ec.EmitPop(EmitContext.A);
+                  ec.EmitPop(EmitContext.B);
+                  ec.EmitPop(EmitContext.C);
+                  ec.EmitPop(EmitContext.D);
+              }
+              else if (exp.Count == 3)
+              {
+                  ec.EmitPop(EmitContext.A);
+                  ec.EmitPop(EmitContext.B);
+                  ec.EmitPop(EmitContext.C);
+
+              }
+              else if (exp.Count == 1)
+              {
+                  ec.EmitPop(EmitContext.A);
+                  ec.EmitPop(EmitContext.B);
+
+              }
+              else if (exp.Count == 1)
+                  ec.EmitPop(EmitContext.A);
+
+          }
           // call
           ec.EmitInstruction(new Call() { DestinationReg = rg });
 

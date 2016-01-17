@@ -165,7 +165,7 @@ namespace Vasm {
         if ((from item in RawDefaultValue
              group item by item
                into i
-               select i).Count() > 1 || RawDefaultValue.Length < 250) {
+               select i).Count() > 1 || RawDefaultValue.Length < 10) {
           if (IsGlobal) {
             aOutput.Write("global ");
             aOutput.WriteLine(Name);
@@ -181,8 +181,11 @@ namespace Vasm {
           aOutput.Write(RawDefaultValue.Last());
         } else {
           //aOutputWriter.WriteLine("TIMES 0x50000 db 0");
-          aOutput.Write("global ");
-          aOutput.WriteLine(Name);
+            if (IsGlobal)
+            {
+                aOutput.Write("global ");
+                aOutput.WriteLine(Name);
+            }
           aOutput.Write(Name);
           aOutput.Write(": TIMES ");
           aOutput.Write(RawDefaultValue.Length);
