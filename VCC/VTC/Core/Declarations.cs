@@ -1450,7 +1450,7 @@ namespace VTC.Core
             foreach (TypeMemberSpec m in _def.Members)
             {
                 m.Index = 0;
-                idx += m.MemberType.Size;
+                idx += m.MemberType.GetSize(m.MemberType);
                 m.MemberType.GetBase(m.MemberType, ref ts);
                 if (ts == TypeName)
                     tobeupdated.Add(i);
@@ -1527,7 +1527,7 @@ namespace VTC.Core
             {
               
                 m.Index = idx;
-                idx += m.MemberType.Size;
+                idx += m.MemberType.GetSize(m.MemberType);
                 m.MemberType.GetBase(m.MemberType,ref ts);
                 if ( ts== TypeName)
                     tobeupdated.Add(i);
@@ -1932,7 +1932,7 @@ namespace VTC.Core
     {
         public EnumTypeSpec TypeName { get; set; }
         public int Size { get; set; }
-
+        public bool IsFlags=false;
         Modifier _mod;
         EnumDefinition _def;
         [Rule(@"<Enum Decl>    ::= <Mod> ~enum Id ~'{' <Enum Def> ~'}'  ~';'")]
@@ -1951,26 +1951,37 @@ namespace VTC.Core
             _def = edef;
 
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+
+        [Rule(@"<Enum Decl>    ::= <Mod> setof ~enum Id ~'{' <Enum Def> ~'}'  ~';'")]
+        public EnumDeclaration(Modifier mod,SimpleToken t, Identifier id, EnumDefinition edef)
         {
-            _mod = (Modifier)_mod.DoResolve(rc);
+            IsFlags = true;
+            _mod = mod;
+            _name = id;
+            _def = edef;
 
-            List<ushort> UsedValues = new List<ushort>();
-            List<EnumMemberSpec> mem = new List<EnumMemberSpec>();
-            _def = (EnumDefinition)_def.DoResolve(rc);
+        }
+        [Rule(@"<Enum Decl>    ::= <Mod> ~typedef setof ~enum ~'{' <Enum Def> ~'}' Id ~';'")]
+        public EnumDeclaration(Modifier mod, SimpleToken t, EnumDefinition edef, Identifier id)
+        {
+            IsFlags = true;
+            _mod = mod;
+            _name = id;
+            _def = edef;
 
-            if (_def != null)
-                Size = _def.Size;
-            if (_def.Members.Count > 255)
-                Size = 2;
+        }
+
+        void GetValues(List<ushort> UsedValues, List<EnumMemberSpec> mem)
+        {
             // Get Values
             foreach (EnumMemberSpec em in _def.Members)
                 if (em.IsAssigned)
                 {
                     if (UsedValues.Contains(em.Value))
-                        ResolveContext.Report.Error(10,Location,"Each enum member must have a unique value");
+                        ResolveContext.Report.Error(10, Location, "Each enum member must have a unique value");
                     UsedValues.Add(em.Value);
                 }
+
             // Auto-Assign
 
             foreach (EnumMemberSpec em in _def.Members)
@@ -1990,8 +2001,72 @@ namespace VTC.Core
 
                 mem.Add(em);
             }
+        }
+        void GetValuesFlags(List<ushort> UsedValues, List<EnumMemberSpec> mem)
+        {
+            ushort f= 1;
+            // generate flags
+            List<ushort> allowed = new List<ushort>();
+
+            for (int i = 0; i < 16; i++)
+            {
+                allowed.Add(f);
+                f = (ushort)(f << 1);
+            }
+
+            // Get Values
+            foreach (EnumMemberSpec em in _def.Members)
+                if (em.IsAssigned)
+                {
+                    if (UsedValues.Contains(em.Value))
+                        ResolveContext.Report.Error(10, Location, "Each enum member must have a unique value");
+                    else if(!allowed.Contains(em.Value))
+                        ResolveContext.Report.Error(10, Location, "Each setof member must have a power of 2 value");
+                    
+                    UsedValues.Add(em.Value);
+                }
+
+            // Auto-Assign
+
+            foreach (EnumMemberSpec em in _def.Members)
+            {
+                if (!em.IsAssigned)
+                {
+                   foreach(ushort v in allowed)
+                    {
+                        if (!UsedValues.Contains(v))
+                        {
+                            em.Value = v;
+                            UsedValues.Add(v);
+                            break;
+                        }
+                    }
+                }
+
+                mem.Add(em);
+            }
+        }
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            _mod = (Modifier)_mod.DoResolve(rc);
+
+            List<ushort> UsedValues = new List<ushort>();
+            List<EnumMemberSpec> mem = new List<EnumMemberSpec>();
+            _def = (EnumDefinition)_def.DoResolve(rc);
+
+            if (_def != null)
+                Size = _def.Size;
+            if (_def.Members.Count > 8)
+                Size = 2;
+            else if (_def.Members.Count > 16)
+                ResolveContext.Report.Error(10, Location, "Flags based enum cannot hold more than 16 values");
+            if(IsFlags)
+                GetValuesFlags(UsedValues, mem);
+            else
+                GetValues(UsedValues, mem);
 
             TypeName = new EnumTypeSpec(rc.CurrentNamespace, _name.Name, Size, mem, loc);
+            TypeName.IsFlags = IsFlags;
             TypeName.Modifiers = _mod.ModifierList;
             if (TypeName.Members.Count >= 65536)
                 ResolveContext.Report.Error(11, Location, "Max enum values exceeded, only 65536 values are allowed");

@@ -16,7 +16,9 @@ namespace VTC
             {
                 
                 Console.WriteLine("Compilation succeeded - {0} Optimizations performed", Optimizer.Optimizations);
-                Compile(ctx.Options.Output, ctx.Options.OutputBinary);
+                if(ctx.Options.Target == Target.bin || ctx.Options.Target == Target.bin || ctx.Options.Target == Target.vtexec)
+                    Compile(ctx.Options.Output, ctx.Options.OutputBinary, "-f bin");
+                else Compile(ctx.Options.Output, ctx.Options.OutputBinary, "");
                 return true;
             }
             return false;
@@ -29,17 +31,18 @@ namespace VTC
                 // Values are available here
                 CompilerContext ctx = new CompilerContext(options);
                 if (Compile(ctx))
-                    return 1;
+                    return 0;
              
             }
-            return 0;
+          
+            return 1;
         }
-        static void Compile(string outsrc, string outbin)
+        static void Compile(string outsrc, string outbin,string target)
         {
           
             Process compiler = new Process();
             compiler.StartInfo.FileName = "nasm.exe";
-            compiler.StartInfo.Arguments = string.Format(" \"{0}\" -f bin -o \"{1}\"", outsrc, outbin);
+            compiler.StartInfo.Arguments = string.Format(" \"{0}\" {2} -o \"{1}\"", outsrc, outbin,target);
             compiler.StartInfo.UseShellExecute = false;
             compiler.StartInfo.RedirectStandardOutput = true;
             compiler.Start();

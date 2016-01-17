@@ -122,6 +122,7 @@ namespace VTC
             Resolver.KnowType(BuiltinTypeSpec.Int);
             Resolver.KnowType(BuiltinTypeSpec.UInt);
             Resolver.KnowType(BuiltinTypeSpec.String);
+            Resolver.KnowType(BuiltinTypeSpec.Pointer);
             Resolver.KnowType(BuiltinTypeSpec.Void);
         }
         void Init()

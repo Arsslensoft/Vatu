@@ -186,12 +186,13 @@ namespace VTC.Core
         {
             if (t.BuiltinType == BuiltinTypes.String)
                 return new StringConstant(v.ToString(), loc);
+        
             long l = long.Parse(v.ToString());
             switch (t.BuiltinType)
             {
                 case BuiltinTypes.Int:
                     return new IntConstant((short)l, loc);
-             
+                case BuiltinTypes.Pointer:
                 case BuiltinTypes.UInt:
                     return new UIntConstant((ushort)l, loc);
                 case BuiltinTypes.SByte:
@@ -483,7 +484,7 @@ namespace VTC.Core
         }
     }
 
-  
+   
     public class AccessExpression : VariableExpression
     {
         public static RegistersEnum LastUsed;
@@ -863,7 +864,7 @@ namespace VTC.Core
         public int Offset { get; set; }
         public MemberSpec Member { get; set; }
         private AccessOp _op;
-        TypeToken tt;
+     
   
 
         [Rule(@"<Op Pointer> ::= <Op Pointer> '.' <Value>")]
@@ -894,7 +895,7 @@ namespace VTC.Core
         public AccessOperation(TypeToken id, AccessOp op, Expr target)
         {
             _op = op;
-            tt = id;
+            _op.LeftType = id;
             _op.Right = target;
 
 
@@ -954,42 +955,9 @@ namespace VTC.Core
                 }
             }
             else
-            {
-                if (tt != null)
-                {
-                    tt = (TypeToken)tt.DoResolve(rc);
-                    if (tt.Type == null)
-                        ResolveContext.Report.Error("Failed to resolve type");
-                    else
-                    {
-
-                        rc.CurrentExtensionLookup = tt.Type;
-                        rc.StaticExtensionLookup = true;
-                        _op.Right = (Expr)_op.Right.DoResolve(rc);
-                        if (_op.Right is VariableExpression && (_op.Right as VariableExpression).variable == null)
-                            ResolveContext.Report.Error(0, Location, "Unresolved extended field");
-                        else if (_op.Right is MethodExpression && (_op.Right as MethodExpression).Method == null)
-                            ResolveContext.Report.Error(0, Location, "Unresolved extended method");
-                        rc.CurrentExtensionLookup = null;
-                        rc.StaticExtensionLookup = false;
-                        rc.CurrentScope &= ~ResolveScopes.AccessOperation;
-                        return _op.Right;
-                    }
-                    rc.CurrentScope &= ~ResolveScopes.AccessOperation;
-                    return _op.Right;
-                }
-
-                else
-                {
-                    Namespace lastns = rc.CurrentNamespace;
-                    rc.CurrentNamespace = _op.Namespace;
-                    _op.Right = (Expr)_op.Right.DoResolve(rc);
-
-                    rc.CurrentNamespace = lastns;
-                    rc.CurrentScope &= ~ResolveScopes.AccessOperation;
-                    return _op.Right;
-                }
-            }
+                return _op.DoResolve(rc);
+            
+          
         }
         public override bool Resolve(ResolveContext rc)
         {

@@ -13,9 +13,17 @@ namespace VTC.Core
     {
         BaseTypeIdentifier _base;
         TypePointer _pointers;
+        NameIdentifier ni;
         [Rule(@"<Type>     ::= <Base> <Pointers>")]
         public TypeIdentifier(BaseTypeIdentifier tbase, TypePointer pointers)
         {
+            _base = tbase;
+            _pointers = pointers;
+        }
+        [Rule(@"<Type>     ::= <Name> ~'::' <Base> <Pointers>")]
+        public TypeIdentifier(NameIdentifier ns,BaseTypeIdentifier tbase, TypePointer pointers)
+        {
+            ni = ns;
             _base = tbase;
             _pointers = pointers;
         }
@@ -29,11 +37,18 @@ namespace VTC.Core
         {
             if (_pointers != null)
                 _pointers = (TypePointer)_pointers.DoResolve(rc);
-
-            _base = (BaseTypeIdentifier)_base.DoResolve(rc);
+            if (ni != null)
+            {
+                Namespace ns = new Namespace(ni.Name);
+                rc.CurrentScope |= ResolveScopes.AccessOperation;
+                Namespace lastns = rc.CurrentNamespace;
+                rc.CurrentNamespace = ns;
+                _base = (BaseTypeIdentifier)_base.DoResolve(rc);
+                rc.CurrentNamespace = lastns;
+                rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+            }
+            else _base = (BaseTypeIdentifier)_base.DoResolve(rc);
             Type = _base.Type;
-           
-
             if (_pointers != null)
             {
           
@@ -61,12 +76,14 @@ namespace VTC.Core
         [Rule(@"<Scalar>   ::= bool")]
         [Rule(@"<Scalar>   ::= void")]
         [Rule(@"<Scalar>   ::= string")]
+        [Rule(@"<Scalar>   ::= pointer")]
         public ScalarTypeIdentifier(TypeToken type)
         {
           
           _type = type;
         }
-
+      
+   
         public override SimpleToken DoResolve(ResolveContext rc)
         {
            _type = (TypeToken)_type.DoResolve(rc);
@@ -462,6 +479,7 @@ namespace VTC.Core
     [Terminal("uint")]
     [Terminal("string")]
     [Terminal("bool")]
+    [Terminal("pointer")]
     public class TypeToken : SimpleToken, IResolve
     {
        protected TypeSpec _ts;

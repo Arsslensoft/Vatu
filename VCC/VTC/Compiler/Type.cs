@@ -103,9 +103,10 @@ namespace VTC
 
         UInt=4, // 32 bits unsigned
         Void=5, // void
-
+       
         String=6,
-        Unknown=7
+        Pointer = 7,
+        Unknown = 8
     }
     /// <summary>
     /// Type Flags
@@ -433,7 +434,7 @@ namespace VTC
         //
         // Returns the size of type if known, otherwise, 0
         //
-        protected int GetSize(TypeSpec type)
+        internal int GetSize(TypeSpec type)
         {   
             if (type.IsArray)
                 return (type as ArrayTypeSpec).ArrayCount * type.BaseType.Size;
@@ -448,6 +449,7 @@ namespace VTC
                     case BuiltinTypes.Int:
                     case BuiltinTypes.UInt:
                     case  BuiltinTypes.String:
+                    case BuiltinTypes.Pointer:
                         return 2;
 
 
@@ -472,6 +474,7 @@ namespace VTC
                     case BuiltinTypes.Int:
                     case BuiltinTypes.UInt:
                     case BuiltinTypes.String:
+                    case BuiltinTypes.Pointer:
                         return 2;
 
 
@@ -690,6 +693,7 @@ namespace VTC
         public static BuiltinTypeSpec Int = new BuiltinTypeSpec("int", BuiltinTypes.Int);
         public static BuiltinTypeSpec UInt = new BuiltinTypeSpec("uint", BuiltinTypes.UInt);
 
+        public static BuiltinTypeSpec Pointer = new BuiltinTypeSpec("pointer", BuiltinTypes.Pointer, TypeFlags.Pointer);
         public static BuiltinTypeSpec Bool = new BuiltinTypeSpec("bool", BuiltinTypes.Bool);
         public static BuiltinTypeSpec Void = new BuiltinTypeSpec("void", BuiltinTypes.Void);
         public static BuiltinTypeSpec String = new BuiltinTypeSpec("string", BuiltinTypes.String, TypeFlags.Pointer, Byte);
@@ -1561,7 +1565,7 @@ namespace VTC
                 if (off == offset)
                     return tm;
 
-                off += tm.MemberType.Size;
+                off += GetSize(tm.MemberType);
             }
             return null;
         }
@@ -1602,10 +1606,10 @@ namespace VTC
             : base(ns, name, BuiltinTypes.Unknown, TypeFlags.Union, Modifiers.NoModifier, loc)
         {
             Members = mem;
-            Size = 0;
+            Size = 0; 
             foreach (TypeMemberSpec m in mem)
-                if(Size < m.MemberType.Size)
-                  Size = m.MemberType.Size;
+                if (Size < GetSize(m.MemberType))
+                    Size = GetSize(m.MemberType);
 
         }
 
@@ -1630,7 +1634,7 @@ namespace VTC
                 if (off == offset)
                     return tm;
 
-                off += tm.MemberType.Size;
+                off += GetSize(tm.MemberType);
             }
             return null;
         }
@@ -1690,7 +1694,7 @@ namespace VTC
     public class EnumTypeSpec : TypeSpec
     {
         public List<EnumMemberSpec> Members { get; set; }
-
+        public bool IsFlags { get; set; }
         public EnumTypeSpec(Namespace ns, string name, int size, List<EnumMemberSpec> mem, Location loc)
             : base(ns,name, BuiltinTypes.Unknown, TypeFlags.Enum, Modifiers.NoModifier, loc)
         {

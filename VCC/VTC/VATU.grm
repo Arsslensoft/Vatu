@@ -343,12 +343,13 @@ Comment Line  = '//'
             
 
 ! ===================================================================
-! Enumerations
+! Enumerations & Flags
 ! ===================================================================
 
 <Enum Decl>    ::= <Mod> enum Id '{' <Enum Def> '}'  ';'
-                    | <Mod> typedef enum '{' <Enum Def> '}'  Id ';'
-                    
+                  | <Mod> typedef enum '{' <Enum Def> '}'  Id ';'
+                  | <Mod> setof enum Id '{' <Enum Def> '}'  ';'
+                  | <Mod> typedef setof enum '{' <Enum Def> '}'  Id ';'
 <Enum Def>     ::= <Enum Val> ',' <Enum Def>
                  | <Enum Val>
 
@@ -363,7 +364,8 @@ Comment Line  = '//'
 ! ===================================================================
 
 <Type>     ::= <Base> <Pointers> 
-
+             | <Name> '::' <Base> <Pointers>
+             
 <Base>     ::= <Scalar>
              | '@'Id  
              | typeof Id
@@ -376,7 +378,8 @@ Comment Line  = '//'
              | bool
              | void           
              | string
-
+             | pointer
+             
 <Pointers> ::= '*' <Pointers>
              |
 
@@ -527,6 +530,7 @@ Comment Line  = '//'
     
                | <Op Pointer>
 
+!<Type Expr> ::= <Name> '::' <Type>
 <Op Pointer> ::= <Op Pointer> '.' <Value>
                | <Op Pointer> '->' <Value>
                

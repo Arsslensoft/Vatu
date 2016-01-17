@@ -210,7 +210,41 @@ namespace VTC
 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-            return base.DoResolve(rc);
+           
+            if (LeftType != null)
+            {
+                LeftType = (TypeToken)LeftType.DoResolve(rc);
+                if (LeftType.Type == null)
+                    ResolveContext.Report.Error("Failed to resolve type");
+                else
+                {
+
+                    rc.CurrentExtensionLookup = LeftType.Type;
+                    rc.StaticExtensionLookup = true;
+                    Right = (Expr)Right.DoResolve(rc);
+                    if (Right is VariableExpression && (Right as VariableExpression).variable == null)
+                        ResolveContext.Report.Error(0, Location, "Unresolved extended field");
+                    else if (Right is MethodExpression && (Right as MethodExpression).Method == null)
+                        ResolveContext.Report.Error(0, Location, "Unresolved extended method");
+                    rc.CurrentExtensionLookup = null;
+                    rc.StaticExtensionLookup = false;
+                    rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+                    return Right;
+                }
+            }
+            else if (Namespace != null) // NS::Value
+            {
+                Namespace lastns = rc.CurrentNamespace;
+                rc.CurrentNamespace = Namespace;
+                Right = (Expr)Right.DoResolve(rc);
+
+                rc.CurrentNamespace = lastns;
+                rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+                return Right;
+            }
+         
+            rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+            return this;
         }
         public override bool Emit(EmitContext ec)
         {

@@ -10,6 +10,7 @@ using Vasm.x86;
 
 namespace VTC.Core
 {
+    [Terminal("setof")]
     [Terminal("global")]
     [Terminal("#")]
     [Terminal("ifdef")]
@@ -382,7 +383,7 @@ namespace VTC.Core
     public class AccessOp : Operator
     {
         public AccessOp RightOp;
-     
+        public TypeToken LeftType;
  
         public MethodSpec OvlrdOp { get; set; }
         public virtual int  Offset { get { return 0; } }
