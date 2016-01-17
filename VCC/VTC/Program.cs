@@ -10,25 +10,29 @@ namespace VTC
 {
     class Program
     {
-        static void Compile(CompilerContext ctx)
+        static bool Compile(CompilerContext ctx)
         {
             if (ctx.ResolveAndEmit())
             {
+                
                 Console.WriteLine("Compilation succeeded - {0} Optimizations performed", Optimizer.Optimizations);
                 Compile(ctx.Options.Output, ctx.Options.OutputBinary);
+                return true;
             }
+            return false;
         }
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             var options = new Settings(); 
             if (CommandLine.Parser.Default.ParseArguments(args, options))
             {
                 // Values are available here
                 CompilerContext ctx = new CompilerContext(options);
-                Compile(ctx);
+                if (Compile(ctx))
+                    return 1;
              
             }
-            Console.Read();
+            return 0;
         }
         static void Compile(string outsrc, string outbin)
         {

@@ -366,11 +366,11 @@ namespace VTC.Core
            
         }
 
-     
+        Modifier nmod;
          [Rule(@"<Mod>      ::= <Modifier>")]
         public Modifier(Modifier mod)
         {
-            _mod = mod;
+            nmod = mod;
 
         }
 
@@ -386,14 +386,23 @@ namespace VTC.Core
 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-            ModifierList = Modifiers.NoModifier;
+            ModifierList = 0;
             if (nxt != null)
             {
                 nxt = (Modifier)nxt.DoResolve(rc);
-                nxt.ModifierList = nxt.ModifierList;
+                ModifierList |= nxt.ModifierList;
             }
+          
             if (_mod == null)
-                ModifierList |= Modifiers.Private;
+            {
+                if (nmod != null)
+                {
+                    nmod = (Modifier)nmod.DoResolve(rc);
+                    ModifierList |= nmod.ModifierList;
+
+                }
+                else                ModifierList |= Modifiers.Private;
+            }
             else if (_mod.Name == "extern")
                 ModifierList |= Modifiers.Extern;
             else if (_mod.Name == "static")

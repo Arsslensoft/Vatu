@@ -43,7 +43,7 @@ namespace VTC
 HelpText = "Platform")]
        public Platform Platform { get; set; }
 
-       [Option('t', "target", Required = false, DefaultValue = Target.Binary,
+       [Option('t', "target", Required = false, DefaultValue = Target.bin,
 HelpText = "Target output")]
        public Target Target { get; set; }
 
