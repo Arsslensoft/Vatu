@@ -6,7 +6,9 @@ default asm{
 namespace DOS
 {
 use std;
-
+//global public byte HEL,JHL,JFF;
+public string H="HELLO", I="INTERMEDIATE",W="World";
+//global public string MY;
 void tostring(bool v)
 {
 if(v == true)
@@ -28,11 +30,12 @@ if(a < 10)
 }
 public struct HELLO
 {
-int a;
+int a,c,d,e;
 byte b;
 };
 entry void main()
 {
+uint i=4,j=5,k=6,l=7;
 @HELLO h;
 h.a = 65535;
 h.b = 0;
@@ -59,6 +62,7 @@ putc(' ');
 putc(h[1]);
 putc(' ');
 tostring((uint)(h.a));
+
 /*byte a = 1;
 a[2] = true;
 a[2] = false;

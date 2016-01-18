@@ -10,6 +10,8 @@ namespace Vasm
     {
        public bool IsInterruptOverload { get; set; }
        public bool IsFlat { get; set; }
+       public bool IsLibrary { get; set; }
+       public bool IsVTExec { get; set; }
        public int OLevel { get; set; }
        private static AsmContext mCurrentInstance;
        Stack<RegistersEnum> rg = new Stack<RegistersEnum>();
@@ -205,7 +207,12 @@ namespace Vasm
             get { return mextern; }
             set { mextern = value; }
         }
-
+        protected List<string> mglobals = new List<string>();
+        public List<string> Globals
+        {
+            get { return mglobals; }
+            set { mglobals = value; }
+        }
         protected List<StructElement> mStructs = new List<StructElement>();
         public List<StructElement> Structs
         {
@@ -377,38 +384,47 @@ namespace Vasm
        {
            Externals.Add(func);
        }
+       void EmitInterruptInstallCode(AssemblyWriter writer)
+       {
+           
+  
+               if (IsInterruptOverload && Interrupts.Count > 0)
+                   writer.WriteLine("\tcall	INSTALL_INTERRUPTS");
+
+               writer.Write("\tcall " + EntryPoint);
+               
+
+               writer.WriteLine();
+           
+       }
        public virtual void EmitPrepare(AssemblyWriter writer)
        {
            // Emit
         
             writer.WriteLine("bits 16");
             writer.WriteLine("PROGRAM_ORG:");
-            foreach (Instruction inst in mDefInstructions)
+            if (!IsLibrary)
             {
-                writer.Write("\t");
-                inst.WriteText(this, writer);
-                writer.WriteLine();
+                foreach (Instruction inst in mDefInstructions)
+                {
+                    writer.Write("\t");
+                    inst.WriteText(this, writer);
+                    writer.WriteLine();
+                }
             }
-            if (IsFlat)
-            {
-                if (IsInterruptOverload && Interrupts.Count > 0)
-                    writer.WriteLine("\tcall	INSTALL_INTERRUPTS");
-                writer.Write("\tcall "+EntryPoint);
-               
-                writer.WriteLine();
-            }
-
-           // define
-           foreach (StructElement xMember in mStructs)
-           {
-               xMember.Emit(writer);
-              
-               writer.WriteLine();
-           }
+           // INT Install         
+           if (IsFlat)           
+            EmitInterruptInstallCode(writer);
+           //// define
+           //foreach (StructElement xMember in mStructs)
+           //{
+           //    xMember.Emit(writer);           
+           //    writer.WriteLine();
+           //}
        
            // alloc vars
            if (!IsFlat)
-           writer.WriteLine("section .bss");
+                 writer.WriteLine(";section .bss");
            foreach (KeyValuePair<string,StructElement> p in DeclaredStructVars)
            {
                p.Value.EmitAlloc(writer, p.Key);
@@ -429,7 +445,7 @@ namespace Vasm
            EmitPrepare(writer);
            // Write out readonly
            if(!IsFlat)
-           writer.WriteLine("section .rodata");
+           writer.WriteLine(";section .rodata");
 
            foreach (DataMember xMember in mCDataMembers)
            {
@@ -448,7 +464,7 @@ namespace Vasm
            writer.WriteLine();
            // Write out data declarations
            if (!IsFlat)
-           writer.WriteLine("section .data");
+           writer.WriteLine(";section .data");
  
            foreach (DataMember xMember in mDataMembers)
            {
@@ -472,17 +488,22 @@ namespace Vasm
            }
            writer.WriteLine();
            if (!IsFlat)
-           writer.WriteLine("section .text");
-           // define externs
-           foreach (string ex in Externals)
-               writer.WriteLine("extern\t" + ex);
+              writer.WriteLine(";section .text");
+
+           if (!IsFlat)
+           {
+               // define externs
+               foreach (string ex in Externals)
+                   writer.WriteLine("extern\t" + ex);
+               writer.WriteLine();
+           }
+           // define globals
+           foreach (string ex in Globals)
+               writer.WriteLine("global\t" + ex);
            writer.WriteLine();
-           if (!IsFlat && IsInterruptOverload && Interrupts.Count > 0)
-               writer.WriteLine("\tcall	INSTALL_INTERRUPTS");
-         
-         
+
            if(!IsFlat)
-                  writer.Write("call	" + EntryPoint);
+                 EmitInterruptInstallCode(writer);
 
            if (IsInterruptOverload && Interrupts.Count > 0)
            {

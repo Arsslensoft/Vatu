@@ -18,7 +18,7 @@ namespace VTC
                 Console.WriteLine("Compilation succeeded - {0} Optimizations performed", Optimizer.Optimizations);
                 if(ctx.Options.Target == Target.bin || ctx.Options.Target == Target.bin || ctx.Options.Target == Target.vtexec)
                     Compile(ctx.Options.Output, ctx.Options.OutputBinary, "-f bin");
-                else Compile(ctx.Options.Output, ctx.Options.OutputBinary, "");
+                else Compile(ctx.Options.Output, ctx.Options.OutputBinary, "-f elf");
                 return true;
             }
             return false;

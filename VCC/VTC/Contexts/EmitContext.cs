@@ -359,10 +359,15 @@ namespace VTC
                 return ag.DefineStructInstance(varname, st.Signature.ToString());
             else return false;
         }
-        public void DefineExtern(MethodSpec method)
+        public void DefineExtern(MemberSpec method)
         {
             ag.AddExtern(method.Signature.ToString());
         }
+        public void DefineGlobal(MemberSpec method)
+        {
+            ag.Globals.Add(method.Signature.ToString());
+        }
+     
     }
 
 

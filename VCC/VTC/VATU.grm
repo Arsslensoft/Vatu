@@ -90,7 +90,7 @@ Comment Line  = '//'
           | <Delegate Decl>
           | <Preproc Decl>
           | <Oper Def Decl>
-
+          | <Var Prototype>
 ! ===================================================================
 ! Preprocessor  
 ! ===================================================================      
@@ -315,6 +315,8 @@ Comment Line  = '//'
 ! Variable Declaration
 ! ===================================================================
 
+<Var Prototype> ::= global <Var Decl>
+
 <Var Decl>     ::= <Mod> <Type> <Var> <Var List>  ';'
                  |       <Type> <Var> <Var List>  ';'
                  | <Mod>        <Var> <Var List>  ';'
@@ -340,7 +342,6 @@ Comment Line  = '//'
              | const   
              | private
              | public
-            
 
 ! ===================================================================
 ! Enumerations & Flags

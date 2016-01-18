@@ -12,17 +12,19 @@ namespace VTC.Core
 
     public class VariableItemDefinition : Definition
     {
-
+        public bool IsAbstract=false;
         TypePointer _ptr;
         public VariableDefinition _vardef;
         [Rule(@"<Var Item> ::= <Pointers> <Var>")]
         public VariableItemDefinition(TypePointer ptr, VariableDefinition var)
         {
+           
             _vardef = var;
             _ptr = ptr;
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+            _vardef.IsAbstract = IsAbstract;
             _vardef = (VariableDefinition)_vardef.DoResolve(rc);
             _ptr = (TypePointer)_ptr.DoResolve(rc);
             return this;
@@ -38,6 +40,7 @@ namespace VTC.Core
     }
     public class VariableListDefinition : Definition
     {
+        public bool IsAbstract = false;
         public VariableItemDefinition _vardef;
         public VariableListDefinition _nextvars;
         [Rule(@"<Var List> ::=  ~',' <Var Item> <Var List>")]
@@ -57,9 +60,12 @@ namespace VTC.Core
         {
             if (_nextvars != null)
             {
+                _nextvars.IsAbstract = IsAbstract;
                 _nextvars = (VariableListDefinition)_nextvars.DoResolve(rc);
-
+              
+                _vardef.IsAbstract = IsAbstract;
                 _vardef = (VariableItemDefinition)_vardef.DoResolve(rc);
+            
                 return this;
             }
             else return null;
@@ -124,6 +130,10 @@ namespace VTC.Core
     }
     public class VariableDefinition : Definition
     {
+        public MemberSpec FieldOrLocal { get; set; }
+        public TypeMemberSpec Member { get; set; }
+        
+        public bool IsAbstract = false;
         public int ArraySize { get; set; }
         public ArrayVariableDefinition _avd;
         public Identifier _id;
