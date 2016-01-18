@@ -300,7 +300,7 @@ namespace VTC
 
 
             ec.EmitInstruction(new Not() { DestinationReg =Register.Value, Size = 80 });
-            ec.EmitInstruction(new And() { DestinationReg = Register.Value, SourceValue = 254, Size = 80 });
+            ec.EmitInstruction(new And() { DestinationReg = Register.Value, SourceValue = 1, Size = 80 });
             ec.EmitPush(Register.Value);
   
 

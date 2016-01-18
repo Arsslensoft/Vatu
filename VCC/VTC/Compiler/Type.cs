@@ -238,6 +238,18 @@ namespace VTC
         {
             return true;
         }
+        public static bool BitAccessible(TypeSpec a)
+        {
+            return a == BuiltinTypeSpec.Byte || a == BuiltinTypeSpec.Int || a == BuiltinTypeSpec.Pointer || a == BuiltinTypeSpec.SByte || a == BuiltinTypeSpec.UInt;
+        }
+        public static bool ByteAccessible(TypeSpec a)
+        {
+            return a.IsForeignType && !a.IsPointer;
+        }
+        public static bool IsNumeric(TypeSpec a)
+        {
+            return a.IsNumeric;
+        }
     }
     /// <summary>
     /// Basic type specs
@@ -283,7 +295,7 @@ namespace VTC
         {
             get
             {
-                return IsBuiltinType && (BuiltinType == BuiltinTypes.Byte || BuiltinType == BuiltinTypes.SByte || BuiltinType == BuiltinTypes.Int || BuiltinType == BuiltinTypes.UInt);
+                return IsBuiltinType && (BuiltinType == BuiltinTypes.Byte || BuiltinType == BuiltinTypes.SByte || BuiltinType == BuiltinTypes.Int || BuiltinType == BuiltinTypes.UInt || BuiltinType == BuiltinTypes.Pointer);
             }
 
         }

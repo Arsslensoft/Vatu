@@ -1,4 +1,4 @@
-﻿namespace std.console
+﻿namespace std
 {
 public void print(string msg){
 asm{
@@ -16,5 +16,6 @@ asm{
 	}
 		interrupt 0x21;
 }
+
 }
 //END

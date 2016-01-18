@@ -530,13 +530,16 @@ Comment Line  = '//'
     
                | <Op Pointer>
 
-!<Type Expr> ::= <Name> '::' <Type>
+<VALUE POS> ::= HIGH
+             | LOW
+
 <Op Pointer> ::= <Op Pointer> '.' <Value>
+               | <Op Pointer> '.' <VALUE POS>
                | <Op Pointer> '->' <Value>
-               
+               ! Naming
                | <Name> '::' <Value>
                | <Type> '::' <Value>
-               
+                               
                | <Op Pointer> '[' <Expression> ']'
                | <Value>
 

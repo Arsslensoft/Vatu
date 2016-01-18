@@ -8,7 +8,7 @@ using System.Text;
 namespace VTC.Core
 {
     // START TYPE
-  
+   
     public class TypeIdentifier : TypeToken
     {
         BaseTypeIdentifier _base;
@@ -157,7 +157,22 @@ namespace VTC.Core
             return base.Resolve(rc);
         }
     }
-  
+   
+    public class ValuePosIdentifier : Expr
+    {
+        protected readonly string _idName;
+        public override string Name { get { return _idName; } }
+
+    
+        [Rule(@"<VALUE POS> ::= HIGH")]
+         [Rule(@"<VALUE POS> ::= LOW")]
+        public ValuePosIdentifier(SimpleToken vid)
+        {
+            loc = vid.loc;
+            _idName = vid.Name;
+        }
+
+    }
     [Terminal("Id")]
     public class Identifier : Expr
     {

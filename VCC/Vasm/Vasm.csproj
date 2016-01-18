@@ -67,6 +67,7 @@
     <Compile Include="x86\Add.cs" />
     <Compile Include="x86\AddWithCarry.cs" />
     <Compile Include="x86\And.cs" />
+    <Compile Include="x86\BT.cs" />
     <Compile Include="x86\Call.cs" />
     <Compile Include="x86\ClearInterruptFlag.cs" />
     <Compile Include="x86\ClrCarryFlag.cs" />

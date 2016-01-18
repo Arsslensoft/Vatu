@@ -33,15 +33,36 @@ namespace VTC
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
 
-            if (!Left.Type.IsPointer && !Left.Type.IsArray)
-                ResolveContext.Report.Error(51, Location, "Indexed access is only allowed on pointers and arrays");
+            if (!Left.Type.IsPointer && !Left.Type.IsArray && !TypeChecker.BitAccessible(Left.Type) && !TypeChecker.ByteAccessible(Left.Type))
+                ResolveContext.Report.Error(51, Location, "Indexed access is only allowed on pointers, arrays and builtin bit/byte accessible types");
+            else if (TypeChecker.BitAccessible(Left.Type))
+            {
+                if (Left is VariableExpression && Right.Type.IsNumeric)
+                {
+                    VariableExpression ve = (VariableExpression)Left;  
+                    return new BitAccessExpression(ve.variable, Right);
+                }
+                else
+                    ResolveContext.Report.Error(51, Location, "Bit Indexed access is only allowed on variables");
 
-            else if(OvlrdOp != null)
+            }
+         else if (TypeChecker.ByteAccessible(Left.Type))
+            {
+                if (Left is VariableExpression && Right.Type.IsNumeric)
+                {
+                    VariableExpression ve = (VariableExpression)Left;  
+                    return new ByteAccessExpression(ve.variable, Right,ve,rc);
+                }
+                else
+                    ResolveContext.Report.Error(51, Location, "Byte Indexed access is only allowed on variables");
+
+            }
+            else if (OvlrdOp != null)
                 return new AccessExpression(Left as VariableExpression, Right, this);
             else if (Left.Type.IsArray)
             {
                 IsByte = Left.Type.BaseType.Size != 2;
-           
+
                 if (Left is VariableExpression && Right is ConstantExpression)
                 {
                     VariableExpression ve = (VariableExpression)Left;
@@ -49,16 +70,16 @@ namespace VTC
                     GetIndex(ce);
                     if (Index < 0)
                         ResolveContext.Report.Error(50, ce.Location, "Invalid array index");
-                   if (ve.variable is VarSpec)
+                    if (ve.variable is VarSpec)
                     {
                         VarSpec v = (VarSpec)ve.variable;
                         VarSpec vr = new VarSpec(v.NS, v.Name, v.MethodHost, v.MemberType.BaseType, Location, v.Modifiers);
                         vr.StackIdx = v.StackIdx;
-                     
-                        vr.StackIdx += Left.Type.BaseType.Size*Index;
-                       
 
-                       return new AccessExpression(vr,(Left is AccessExpression)?(Left as AccessExpression):null);
+                        vr.StackIdx += Left.Type.BaseType.Size * Index;
+
+
+                        return new AccessExpression(vr, (Left is AccessExpression) ? (Left as AccessExpression) : null);
                     }
                     else if (ve.variable is FieldSpec)
                     {
@@ -66,18 +87,18 @@ namespace VTC
                         FieldSpec vr = new FieldSpec(v.NS, v.Name, v.Modifiers, v.MemberType.BaseType, Location);
                         vr.FieldOffset = v.FieldOffset;
                         vr.IsIndexed = true;
-                       vr.FieldOffset  += Left.Type.BaseType.Size*Index;
-                     
-                        return new AccessExpression(vr,(Left is AccessExpression)?(Left as AccessExpression):null);
+                        vr.FieldOffset += Left.Type.BaseType.Size * Index;
+
+                        return new AccessExpression(vr, (Left is AccessExpression) ? (Left as AccessExpression) : null);
                     }
-                    
+
                 }
                 else return new AccessExpression(Left as VariableExpression, Right, this);
 
             }
             else
             {
-              
+
                 IsByte = Left.Type.BaseType.Size != 2;
                 if (Left is VariableExpression && Right is ConstantExpression)
                 {
@@ -375,8 +396,15 @@ namespace VTC
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             // Check if left is type
-        
-            if (Left is VariableExpression && Right is MethodExpression)
+            if (Left is VariableExpression && Right is ValuePosIdentifier)
+            { 
+             VariableExpression lv = (VariableExpression)Left;
+            if (Left.Type.Size == 2)
+                return new ByteAccessExpression(lv.variable, Right);
+            else ResolveContext.Report.Error(0, Location, "Cannot perform HIGH or LOW operation on non 16 bits types");
+
+            }
+            else if (Left is VariableExpression && Right is MethodExpression)
             {
                 if (!ResolveExtension(rc))
                     ResolveContext.Report.Error(0, Location, "Unresolved extended method");

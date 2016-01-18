@@ -34,7 +34,7 @@ namespace VTC
                     return 0;
              
             }
-          
+            Console.Read();
             return 1;
         }
         static void Compile(string outsrc, string outbin,string target)

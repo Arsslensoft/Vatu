@@ -10,6 +10,8 @@ using Vasm.x86;
 
 namespace VTC.Core
 {
+    [Terminal("LOW")]
+    [Terminal("HIGH")]
     [Terminal("setof")]
     [Terminal("global")]
     [Terminal("#")]
@@ -496,6 +498,15 @@ namespace VTC.Core
     {
         public BinaryOp _op;
 
+        public bool CommonCheck()
+        {
+            if (Left is BitAccessExpression && Right.Type != BuiltinTypeSpec.Bool)
+            {
+                ResolveContext.Report.Error("Bit indexed access must have bool");
+
+                return false;
+            } return true;
+        }
      
     }
 

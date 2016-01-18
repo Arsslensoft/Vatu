@@ -1,143 +1,78 @@
-﻿namespace Types.Type
-{
-#include "STD.vt"
-public struct Point{
-int x;
-int y;
-string Name;
-};
-
-public struct LinkedList
-{
-	@Point val;
-	 @LinkedList * Next;
-};
-
-public typedef @Point PPoint;
-private typedef @Point PRPoint;
+﻿#include "STD.vt"
+default asm{
+"[org 100h]";
 
 }
 namespace DOS
 {
-use std.console;
-use Types.Type;
-extern asm {
-	"MYLABEL:";
-}
-public string result;
+use std;
 
-public define bool op_TEqual operator @@=;
-public define op_UPPER operator @||;
-public define op_CONCAT operator @@+,+++++;
-
-
-public override string operator @@+,+++++(string a,string b)
+void tostring(bool v)
 {
-  string p = result;
-  for(;*a != '$';p++){
-			*p = *a;
-	a++;
-	}
-  for(;*b != '$';p++){
-			*p = *b;
-	b++;
-	}
-*p = '$';
-return result;
-
-}
-public override string operator @||(string a)
-{
-string p = a;
-
-  for(;*p != '$';)
-	{
-
-	if(*p >= 97b)
-		*p = *p - 32b;
-
-	p++;
-	}
-return a;
-}
-public override bool operator @@=(string a,string b)
-{
-	return false;
-}
-public void tostring(uint x){
-if(x < 10u)
-putc((byte)x + 48);
+if(v == true)
+ print("TRUE $");
 else
-{
-tostring(x / 10);
-putc((byte)(x % 10) + 48);
-}
+print("FALSE $");
 
 }
-public void Set(byte *b)
-{
-	*b = 65;
-}
-public void Set(ref byte c)
-{
-	Set(&c);
+ void tostring(uint a){
+if(a < 10)
+  putc((byte)(a+48));
+  else{
+  	tostring(a / 10);
+  	putc(48+(byte)(a % 10));
+
+  }
+
 
 }
-
-public void Set(ref @LinkedList p,ref @LinkedList tmp,@Point pt, string name)
+public struct HELLO
 {
-
-	p.Next = &tmp; // set next tmp
-	tmp.val.Name = name; // tmp point 
-	pt.Name = name; // point name
-	
-}
-public override string operator uint(uint a)
-{
-	print("CAST CALLED $");
-	string g = a;
-	return g;
-}
-bool Test(ref @LinkedList ll)
-{
-	return (??ll.Next);
-}
+int a;
+byte b;
+};
 entry void main()
 {
-@Point a;
-@LinkedList l;
-@LinkedList nl;
-byte ch = 97;
-uint adr;
-
-// reference test
-
-
-Set(ch);
-putc(ch);
-a.Name = "No Reference $";
-adr = a.Name;
-tostring(adr);
-a.Name = adr;
-print((string)adr);
-
-nl.val.Name = "No Reference $";
-Set(l,nl,a,"With Reference $");
-print(a.Name);
-print(l.Next->val.Name);
-if(!Test(l))
-	print("Next not null $");
-
-	if("A" @@= "B")
-		print("True$");
-	else 
-		print("False$");
-string test = "uppercase$";
-test = @||test;
-print(test);	
-print("Hel$" @@+,+++++ "lo ABD MOEZ $");
-print(" Hello World$");
+@HELLO h;
+h.a = 65535;
+h.b = 0;
+uint a = 65535;
+tostring((uint)(h[1]));
+putc(' ');
+tostring((uint)(h[2]));
+putc(' ');
+tostring((uint)(h[0]));
+putc(' ');
+tostring((uint)(h.a.HIGH));
+putc(' ');
+tostring((uint)(h.a.LOW));
+putc(' ');
+h[0] = 65;
+tostring((uint)(h.a.LOW));
+putc(' ');
+putc(h[0]);
+putc(' ');
+h[1] = 97;
+h.a.HIGH = 98;
+tostring((uint)(h.a.HIGH));
+putc(' ');
+putc(h[1]);
+putc(' ');
+tostring((uint)(h.a));
+/*byte a = 1;
+a[2] = true;
+a[2] = false;
+tostring((uint)a);
+print(" Bit Values $");
+//
+a[3] = true;
+a[2] = true;
+tostring(a[0]);
+tostring(a[1]);
+tostring(a[2]);
+tostring(a[3]);*/
 AH = 0x4C;
 interrupt 0x21;
 }
+
 }
