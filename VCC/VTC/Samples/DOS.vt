@@ -3,11 +3,21 @@ default asm{
 "[org 100h]";
 
 }
+namespace Type{
+	public struct MYTYPE{
+		byte J[9];
+		string K[3];
+		uint L[4];
+		bool M[6];
+		pointer ptr[4];
+		int d ;
+	};
+}
 namespace DOS
 {
 use std;
 //global public byte HEL,JHL,JFF;
-public string H="HELLO", I="INTERMEDIATE",W="World";
+public string H="HELLO",W="World";
 //global public string MY;
 void tostring(bool v)
 {
@@ -28,53 +38,220 @@ if(a < 10)
 
 
 }
-public struct HELLO
-{
-int a,c,d,e;
-byte b;
+Type::@MYTYPE s;
+Type::@MYTYPE* I[4];
+void TestStructs(){
+	use Type{
+		@MYTYPE m;
+		I[1] = &m;
+		uint ra = &m;
+			m.J[0]='A';
+		m.J[1]='B';
+		m.J[2]='$';
+
+		m.K[2] = "Hello Word from K[2]$";
+		m.K[0] = "Hello Word from K[0]$";
+
+		m.L[1] = 4523u;
+		m.M[3]=true;
+		m.ptr[1] = &(m);
+	
+		print(m.J);
+		print(m.K[0]);
+		putc(' ');
+		print(m.K[2]);
+		putc(' ');
+		tostring(m.L[1]);
+		putc(' ');
+		tostring(m.M[3]);
+		putc(' ');
+		tostring(m.M[2]);
+		putc(' ');
+
+		uint la =I[1];
+		tostring(la);
+
+		putc(' ');
+		
+		uint lp = m.ptr[1];
+		tostring(lp);
+		putc(' ');
+		tostring(ra);
+		putc(' ');
+
+	}
+}
+Type::@MYTYPE m;
+void TestStructs(ref Type::@MYTYPE m){
+	use Type{
+		I[1] = &m;
+		uint ra = &m;
+			m.J[0]='A';
+		m.J[1]='B';
+		m.J[2]='$';
+
+		m.K[2] = "Hello Word from K[2]$";
+		m.K[0] = "Hello Word from K[0]$";
+
+		m.L[1] = 4523u;
+		m.M[3]=true;
+		m.ptr[1] = &(m);
+	
+		print(m.J);
+		putc(' ');
+	//print(*(m.K)); // bug access expression in valueofOP
+	print(m.K[0]);
+		putc(' ');
+
+		print(m.K[2]);
+		putc(' ');
+		tostring(m.L[1]);
+		putc(' ');
+		tostring(m.M[3]);
+
+		putc(' ');
+		tostring(m.M[2]);
+		putc(' ');
+
+		uint la =I[1];
+		tostring(la);
+
+		putc(' ');
+		
+		uint lp = m.ptr[1];
+
+		tostring(lp);
+		putc(' ');
+		tostring(ra);
+		putc(' ');
+
+	}
+}
+public struct KI{
+	Type::@MYTYPE** S;
+
 };
+public @KI v;
+public Type::@MYTYPE *IPTR;
+void TestStructsFields(){
+	use Type{
+		I[1] = &m;
+		uint ra = &m;
+			m.J[0]='A';
+		m.J[1]='B';
+		m.J[2]='$';
+
+		m.K[2] = "Hello Word from K[2]$";
+		m.K[0] = "Hello Word from K[0]$";
+
+		m.L[1] = 4523u;
+		m.M[3]=true;
+		m.ptr[1] = &(m);
+	   pointer p = I;
+
+		print(m.J);
+		putc(' ');
+	//print(*(m.K)); // bug access expression in valueofOP
+	print(m.K[0]);
+		putc(' ');
+
+		print(m.K[2]);
+		putc(' ');
+		tostring(m.L[1]);
+		putc(' ');
+		tostring(m.M[3]);
+
+		putc(' ');
+		tostring(m.M[2]);
+		putc(' ');
+
+		uint la =I[1];
+		tostring(la);
+
+		putc(' ');
+		
+		uint lp = m.ptr[1];
+		tostring(lp);
+		putc(' ');
+		tostring(ra);
+		putc(' ');
+
+		
+		print("\nFrom array : \n $");
+		print(I[1]->J);	
+		putc(' ');
+	//print(*(m.K)); // bug access expression in valueofOP
+	print(I[1]->K[0]);
+		putc(' ');
+
+		print(I[1]->K[2]);
+		putc(' ');
+		tostring(I[1]->L[1]);
+		putc(' ');
+		tostring(I[1]->M[3]);
+
+		putc(' ');
+		tostring(I[1]->M[2]);
+		putc(' ');
+
+		uint la =I[1];
+		tostring(la);
+
+		putc(' ');
+		
+		uint lp = I[1]->ptr[1];
+		tostring(lp);
+		putc(' ');
+		tostring(ra);
+		putc(' ');
+		
+		*(I[1]->K) = "Hi$";
+		print(*(m.K)); 
+v.S = I;
+v.S =I;
+IPTR = I[1];
+print(v.S[1]->K[0]);
+	}
+}
+
+string MSG[4];
+string REP[4];
+void ArrayTestValidation(string* m, string * c)
+{
+		string *K = m, r = c;
+		string S[3];
+		K[0] = "\n Hello $";
+		r[0] = "World $";
+		S[2] = "My name  $";
+		S[1] = " is $";
+	    S[0] = " Arsslen Idadi$";
+
+		K[1] = "\n What is your name? $";
+		*r[1] =  S[0];
+		
+
+		print(K[1]);
+		print(S[0]);
+		print(S[1]);
+		print(S[2]);
+
+	
+
+}
 entry void main()
 {
-uint i=4,j=5,k=6,l=7;
-@HELLO h;
-h.a = 65535;
-h.b = 0;
-uint a = 65535;
-tostring((uint)(h[1]));
-putc(' ');
-tostring((uint)(h[2]));
-putc(' ');
-tostring((uint)(h[0]));
-putc(' ');
-tostring((uint)(h.a.HIGH));
-putc(' ');
-tostring((uint)(h.a.LOW));
-putc(' ');
-h[0] = 65;
-tostring((uint)(h.a.LOW));
-putc(' ');
-putc(h[0]);
-putc(' ');
-h[1] = 97;
-h.a.HIGH = 98;
-tostring((uint)(h.a.HIGH));
-putc(' ');
-putc(h[1]);
-putc(' ');
-tostring((uint)(h.a));
+Type::@MYTYPE l,*k;
+print("\nTest Structs & Arrays Local : \n\0$");
+TestStructs();
+print("\nTest Structs & Arrays Ref Parameter : \n$");
+TestStructs(l);
+print("\nTest Structs & Arrays Field and Field Array : \n$");
+TestStructsFields();
 
-/*byte a = 1;
-a[2] = true;
-a[2] = false;
-tostring((uint)a);
-print(" Bit Values $");
-//
-a[3] = true;
-a[2] = true;
-tostring(a[0]);
-tostring(a[1]);
-tostring(a[2]);
-tostring(a[3]);*/
+ArrayTestValidation(MSG,REP);
+print(MSG[0]);
+print(REP[0]);
+
 AH = 0x4C;
 interrupt 0x21;
 }

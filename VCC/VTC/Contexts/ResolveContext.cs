@@ -354,6 +354,9 @@ namespace VTC
 
             foreach (OperatorSpec op in rc.Resolver.KnownOperators)
                 Resolver.KnowOperator(op);
+
+            foreach (VarSpec op in rc.Resolver.KnownLocalVars)
+                Resolver.KnowGVar(op);
         }
         public void UpdateChildContext(string name, ResolveContext crc)
         {
@@ -411,9 +414,9 @@ namespace VTC
         {
             if (!Exist((MemberSpec)mtd, Resolver.KnownLocalVars.Cast<MemberSpec>().ToList<MemberSpec>()))
             {
-                LocalStackIndex -= mtd.MemberType.Size;
+                LocalStackIndex -= mtd.memberType.IsArray?mtd.memberType.GetSize(mtd.memberType): mtd.MemberType.Size;
                 mtd.StackIdx = LocalStackIndex;
-                Resolver.KnownLocalVars.Add(mtd);
+                Resolver.KnowVar(mtd) ;
             }
         }
         public void UpdateType(TypeSpec old, TypeSpec ne)

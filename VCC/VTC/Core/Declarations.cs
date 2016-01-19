@@ -605,10 +605,13 @@ namespace VTC.Core
             }
             method = new MethodSpec(rc.CurrentNamespace, OpName, mods, _mtype.Type, CallingConventions.StdCall, _fbd.ParamTypes.ToArray(), this.loc);
             method.Parameters = Params.ToList<ParameterSpec>();
-            if(!hasproto)
-             rc.KnowMethod(method);
-
+            if (!hasproto)
+            {
+                method.IsOperator = true;
+                rc.KnowMethod(method);
+            }
             rc.CurrentMethod = method;
+       
             if (!method.MemberType.IsBuiltinType && !method.MemberType.IsPointer)
                 ResolveContext.Report.Error(45, Location, "return type must be builtin type " + method.MemberType.ToString() + " is user-defined type.");
             if (_fbd._b != null)
@@ -651,7 +654,7 @@ namespace VTC.Core
 
             ushort size = 0;
             foreach (VarSpec v in ec.CurrentResolve.GetLocals())
-                size += (ushort)v.MemberType.Size;
+                size += (ushort)(v.memberType.IsArray ? v.memberType.GetSize(v.memberType) : v.MemberType.Size);
 
             if (size != 0)         // no allocation
                 ec.EmitInstruction(new Sub() { DestinationReg = EmitContext.SP, SourceValue = size, Size = 80 });
@@ -768,7 +771,7 @@ namespace VTC.Core
 
             ushort size = 0;
             foreach (VarSpec v in ec.CurrentResolve.GetLocals())
-                size += (ushort)v.MemberType.Size;
+                size += (ushort)(v.memberType.IsArray ? v.memberType.GetSize(v.memberType) : v.MemberType.Size);
 
             if (size != 0)         // no allocation
                 ec.EmitInstruction(new Sub() { DestinationReg = EmitContext.SP, SourceValue = size, Size = 80 });
@@ -933,7 +936,7 @@ namespace VTC.Core
             ushort size = 0;
             List<VarSpec> locals = ec.CurrentResolve.GetLocals();
             foreach (VarSpec v in locals)
-                size += (ushort)v.MemberType.Size;
+                size += (ushort)(v.memberType.IsArray ? v.memberType.GetSize(v.memberType) : v.MemberType.Size);
 
             // fast call
             if (ccv == CallingConventions.FastCall)
@@ -1303,7 +1306,7 @@ namespace VTC.Core
             method = new MethodSpec(rc.CurrentNamespace, OpName, mods, _mtype.Type, CallingConventions.StdCall,tp.ToArray(), this.loc);
             DefaultParams(method, tp.ToArray());
             method.Parameters =Parameters;
-         
+            method.IsOperator = true;
                 rc.KnowMethod(method);
 
             rc.CurrentMethod = method;

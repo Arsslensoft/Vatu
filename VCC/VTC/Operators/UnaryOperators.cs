@@ -116,7 +116,7 @@ namespace VTC
                 ec.EmitComment("ValueOf @Var");
                 Right.EmitToStack(ec);
                 ec.EmitPop(EmitContext.SI);
-                if (MemberType.BaseType.Size <= 2)
+                if  (MemberType.BaseType.Size <= 2)
                     ec.EmitPush(EmitContext.SI, MemberType.BaseType.SizeInBits, true);
                 else
                 {
@@ -146,11 +146,14 @@ namespace VTC
             }
             else
             {
-                Right.Emit(ec); 
+                
+
+                 Right.Emit(ec);
                 ec.EmitPop(EmitContext.SI); // pop @var 
                 ec.EmitComment("ValueOf Stack @Var");
 
-                if (MemberType.BaseType.Size <= 2)
+               
+                 if (MemberType.BaseType.Size <= 2)
                     ec.EmitPop(EmitContext.SI, MemberType.BaseType.SizeInBits, true);
                 else
                     PopAllToRegister(ec, EmitContext.SI, MemberType.BaseType.Size, 0);
@@ -801,6 +804,11 @@ namespace VTC
                 else if (_target.Type.IsPointer && Type == BuiltinTypeSpec.UInt)
                 {
                     Type = _target.Type;
+                    nofix = true;
+                }
+                else if (_target.Type == BuiltinTypeSpec.Pointer && Type == BuiltinTypeSpec.UInt)
+                {
+                    Type = BuiltinTypeSpec.UInt;
                     nofix = true;
                 }
                 else if (_target is ConstantExpression) // convert const

@@ -405,7 +405,7 @@ namespace VTC
                 }
                 else{ ok = false;
                        IToken token = processor.CurrentToken;
-                       ResolveContext.Report.Error(0, CompilerContext.TranslateLocation(token.Position), "Syntax error '" + token.Symbol.Name +"' expected");
+                       ResolveContext.Report.Error(0, CompilerContext.TranslateLocation(token.Position), "Syntax error at '" + token.Symbol.Name +"' ["+parseMessage.ToString()+"]");
 
                 }
             

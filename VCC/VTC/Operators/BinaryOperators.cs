@@ -1328,6 +1328,10 @@ namespace VTC
         
             return true;
         }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            return Emit(ec) ;
+        }
     }
     #endregion
 }

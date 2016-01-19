@@ -54,7 +54,9 @@ namespace VTC.Core
 
      public static string FixInclude(string file,string currentdir)
         {
-            string tryout = Path.Combine(currentdir, file);
+            if (!Directory.Exists(currentdir))
+                currentdir = "";
+            string tryout = Path.GetFullPath(Path.Combine(currentdir, file));
             if (File.Exists(tryout))
                 return tryout;
           foreach (string path in Paths)
@@ -147,7 +149,7 @@ namespace VTC.Core
           DependencyParsing dep = new DependencyParsing();
           dep.File = id.Value.GetValue().ToString();
           
-          dep.File = Preprocessor.FixInclude(dep.File,"");
+          dep.File = Preprocessor.FixInclude(dep.File,Path.GetDirectoryName(ResolveContext.Report.FilePath));
           string path = Path.GetDirectoryName(dep.File);
           if (!Preprocessor.Paths.Contains(path))
               Preprocessor.Paths.Add(path);

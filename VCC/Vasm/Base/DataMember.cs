@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.IO;
+using System.Globalization;
 
 namespace Vasm {
   public class DataMember : BaseAssemblerElement, IComparable<DataMember> {
@@ -126,27 +127,26 @@ namespace Vasm {
           }
           aOutput.Write(Name);
           aOutput.Write(" db ");
-          byte[] b = Encoding.ASCII.GetBytes(StrVal);
-          int i = 0;
-          string strdecl = "";
-          string last = "";
-          foreach (char c in StrVal)
-          {
-              if (c == '\r' || c == '\n')
-              {
-                  if (!string.IsNullOrEmpty(last))
-                        strdecl+= "\"" + last + "\", ";
-                  strdecl += b[i].ToString();
-                  strdecl += ",";
-                  last = "";
-              }
-              else last += c + "";
-              i++;
-          }
-          if (!string.IsNullOrEmpty(last))
-              strdecl += "\"" + last + "\"";
-          else strdecl = strdecl.Remove(strdecl.Length - 1, 1);
-          aOutput.Write(strdecl);
+       
+     
+          //foreach (char c in StrVal)
+          //{
+          //    if (c == '\r' || c == '\n')
+          //    {
+          //        if (!string.IsNullOrEmpty(last))
+          //              strdecl+= "\"" + last + "\", ";
+          //        strdecl += b[i].ToString();
+          //        strdecl += ",";
+          //        last = "";
+          //    }
+          //    else last += c + "";
+          //    i++;
+          //}
+          //if (!string.IsNullOrEmpty(last))
+          //    strdecl += "\"" + last + "\"";
+          //else strdecl = strdecl.Remove(strdecl.Length - 1, 1);
+          StringHelper.WriteNormalizedString(StrVal,aOutput);
+         
           if (!StrConst)
           {
               aOutput.WriteLine();
@@ -314,5 +314,290 @@ namespace Vasm {
         aOutput.Write(RawDefaultValue, 0, RawDefaultValue.Length);
       }
     }
+  }
+  public static class StringHelper
+  {
+      public static void WriteNormalizedString(string source,AssemblyWriter writer)
+      {
+          writer.Write("\"");
+          int pos = 0;
+          while (pos < source.Length)
+          {
+              bool def = false;
+              char c = source[pos];
+              if (c == '\\')
+              {
+                  // --- Handle escape sequences
+                  pos++;
+                  if (pos >= source.Length) throw new ArgumentException("Missing escape sequence");
+                  switch (source[pos])
+                  {
+                      // --- Simple character escapes
+                      case '\'': c = '\'';       break;
+                      case '\"': c = '\"'; break;
+                      case '\\': c = '\\'; break;
+                      case '0': c = '\0'; break;
+                      case 'a': c = '\a'; break;
+                      case 'b': c = '\b'; break;
+                      case 'f': c = '\f'; break;
+                      case 'n': c = '\n'; break;
+                      case 'r': c = '\r'; break;
+                      case 't': c = '\t'; break;
+                      case 'v': c = '\v'; break;
+                      case 'x':
+                          // --- Hexa escape (1-4 digits)
+                          StringBuilder hexa = new StringBuilder(10);
+                          pos++;
+                          if (pos >= source.Length)
+                              throw new ArgumentException("Missing escape sequence");
+                          c = source[pos];
+                          if (Char.IsDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
+                          {
+                              hexa.Append(c);
+                              pos++;
+                              if (pos < source.Length)
+                              {
+                                  c = source[pos];
+                                  if (Char.IsDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
+                                  {
+                                      hexa.Append(c);
+                                      pos++;
+                                      if (pos < source.Length)
+                                      {
+                                          c = source[pos];
+                                          if (Char.IsDigit(c) || (c >= 'a' && c <= 'f') ||
+                                            (c >= 'A' && c <= 'F'))
+                                          {
+                                              hexa.Append(c);
+                                              pos++;
+                                              if (pos < source.Length)
+                                              {
+                                                  c = source[pos];
+                                                  if (Char.IsDigit(c) || (c >= 'a' && c <= 'f') ||
+                                                    (c >= 'A' && c <= 'F'))
+                                                  {
+                                                      hexa.Append(c);
+                                                      pos++;
+                                                  }
+                                              }
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                          c = (char)Int32.Parse(hexa.ToString(), NumberStyles.HexNumber);
+                          pos--;
+                          break;
+                      case 'u':
+                          // Unicode hexa escape (exactly 4 digits)
+                          pos++;
+                          if (pos + 3 >= source.Length)
+                              throw new ArgumentException("Unrecognized escape sequence");
+                          try
+                          {
+                              uint charValue = UInt32.Parse(source.Substring(pos, 4),
+                                NumberStyles.HexNumber);
+                              c = (char)charValue;
+                              pos += 3;
+                          }
+                          catch (SystemException)
+                          {
+                              throw new ArgumentException("Unrecognized escape sequence");
+                          }
+                          break;
+                      case 'U':
+                          // Unicode hexa escape (exactly 8 digits, first four must be 0000)
+                          pos++;
+                          if (pos + 7 >= source.Length)
+                              throw new ArgumentException("Unrecognized escape sequence");
+                          try
+                          {
+                              uint charValue = UInt32.Parse(source.Substring(pos, 8),
+                                NumberStyles.HexNumber);
+                              if (charValue > 0xffff)
+                                  throw new ArgumentException("Unrecognized escape sequence");
+                              c = (char)charValue;
+                              pos += 7;
+                          }
+                          catch (SystemException)
+                          {
+                              throw new ArgumentException("Unrecognized escape sequence");
+                          }
+                          break;
+                  }
+            
+                      writer.Write("\", ");
+                      writer.Write((byte)c);
+                      writer.Write(",\"");
+                  
+              }
+              else writer.Write(c);
+              pos++;
+       
+          }
+          writer.Write("\"");
+      }
+      // --------------------------------------------------------------------------------
+      /// <summary>
+      /// Converts a C# literal string into a normal string.
+      /// </summary>
+      /// <param name="source">Source C# literal string.</param>
+      /// <returns>
+      /// Normal string representation.
+      /// </returns>
+      // --------------------------------------------------------------------------------
+      public static string StringFromCSharpLiteral(string source)
+      {
+          StringBuilder sb = new StringBuilder(source.Length);
+          int pos = 0;
+          while (pos < source.Length)
+          {
+              char c = source[pos];
+              if (c == '\\')
+              {
+                  // --- Handle escape sequences
+                  pos++;
+                  if (pos >= source.Length) throw new ArgumentException("Missing escape sequence");
+                  switch (source[pos])
+                  {
+                      // --- Simple character escapes
+                      case '\'': c = '\''; break;
+                      case '\"': c = '\"'; break;
+                      case '\\': c = '\\'; break;
+                      case '0': c = '\0'; break;
+                      case 'a': c = '\a'; break;
+                      case 'b': c = '\b'; break;
+                      case 'f': c = '\f'; break;
+                      case 'n': c = '\n'; break;
+                      case 'r': c = '\r'; break;
+                      case 't': c = '\t'; break;
+                      case 'v': c = '\v'; break;
+                      case 'x':
+                          // --- Hexa escape (1-4 digits)
+                          StringBuilder hexa = new StringBuilder(10);
+                          pos++;
+                          if (pos >= source.Length)
+                              throw new ArgumentException("Missing escape sequence");
+                          c = source[pos];
+                          if (Char.IsDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
+                          {
+                              hexa.Append(c);
+                              pos++;
+                              if (pos < source.Length)
+                              {
+                                  c = source[pos];
+                                  if (Char.IsDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
+                                  {
+                                      hexa.Append(c);
+                                      pos++;
+                                      if (pos < source.Length)
+                                      {
+                                          c = source[pos];
+                                          if (Char.IsDigit(c) || (c >= 'a' && c <= 'f') ||
+                                            (c >= 'A' && c <= 'F'))
+                                          {
+                                              hexa.Append(c);
+                                              pos++;
+                                              if (pos < source.Length)
+                                              {
+                                                  c = source[pos];
+                                                  if (Char.IsDigit(c) || (c >= 'a' && c <= 'f') ||
+                                                    (c >= 'A' && c <= 'F'))
+                                                  {
+                                                      hexa.Append(c);
+                                                      pos++;
+                                                  }
+                                              }
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                          c = (char)Int32.Parse(hexa.ToString(), NumberStyles.HexNumber);
+                          pos--;
+                          break;
+                      case 'u':
+                          // Unicode hexa escape (exactly 4 digits)
+                          pos++;
+                          if (pos + 3 >= source.Length)
+                              throw new ArgumentException("Unrecognized escape sequence");
+                          try
+                          {
+                              uint charValue = UInt32.Parse(source.Substring(pos, 4),
+                                NumberStyles.HexNumber);
+                              c = (char)charValue;
+                              pos += 3;
+                          }
+                          catch (SystemException)
+                          {
+                              throw new ArgumentException("Unrecognized escape sequence");
+                          }
+                          break;
+                      case 'U':
+                          // Unicode hexa escape (exactly 8 digits, first four must be 0000)
+                          pos++;
+                          if (pos + 7 >= source.Length)
+                              throw new ArgumentException("Unrecognized escape sequence");
+                          try
+                          {
+                              uint charValue = UInt32.Parse(source.Substring(pos, 8),
+                                NumberStyles.HexNumber);
+                              if (charValue > 0xffff)
+                                  throw new ArgumentException("Unrecognized escape sequence");
+                              c = (char)charValue;
+                              pos += 7;
+                          }
+                          catch (SystemException)
+                          {
+                              throw new ArgumentException("Unrecognized escape sequence");
+                          }
+                          break;
+
+                  }
+              }
+              pos++;
+              sb.Append(c);
+          }
+          return sb.ToString();
+      }
+
+      // --------------------------------------------------------------------------------
+      /// <summary>
+      /// Converts a C# verbatim literal string into a normal string.
+      /// </summary>
+      /// <param name="source">Source C# literal string.</param>
+      /// <returns>
+      /// Normal string representation.
+      /// </returns>
+      // --------------------------------------------------------------------------------
+      public static string StringFromVerbatimLiteral(string source)
+      {
+          StringBuilder sb = new StringBuilder(source.Length);
+          int pos = 0;
+          while (pos < source.Length)
+          {
+              char c = source[pos];
+              if (c == '\"')
+              {
+                  // --- Handle escape sequences
+                  pos++;
+                  if (pos >= source.Length) throw new ArgumentException("Missing escape sequence");
+                  if (source[pos] == '\"') c = '\"';
+                  else throw new ArgumentException("Unrecognized escape sequence");
+              }
+              pos++;
+              sb.Append(c);
+          }
+          return sb.ToString();
+      }
+
+
+      public static char CharFromCSharpLiteral(string source)
+      {
+          string result = StringFromCSharpLiteral(source);
+          if (result.Length != 1)
+              throw new ArgumentException("Invalid char literal");
+          return result[0];
+      }
   }
 }

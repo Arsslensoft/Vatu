@@ -28,7 +28,8 @@ namespace VTC
             if (!TypeChecker.CompatibleTypes(Left.Type,Right.Type))
                 ResolveContext.Report.Error(35, Location, "Source and target must have same types");
 
-
+            if(Left.Type is ArrayTypeSpec)
+                ResolveContext.Report.Error(35, Location, "Cannot assign array variables, use intermediate pointers instead");
 
             return this;
         }
