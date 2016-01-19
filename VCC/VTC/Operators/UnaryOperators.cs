@@ -796,12 +796,12 @@ namespace VTC
                     Type = _target.Type;
                 else if (_target.Type.IsTypeDef && _target.Type.GetTypeDefBase(_target.Type) == Type) // simple fix (type => typedef)
                     _target.Type = Type;
-                else if (Type.IsPointer && _target.Type == BuiltinTypeSpec.UInt)
+                else if (Type.IsPointer && (_target.Type == BuiltinTypeSpec.UInt || Type == BuiltinTypeSpec.Pointer))
                 {
                     _target.Type = Type;
                     nofix = true;
                 }
-                else if (_target.Type.IsPointer && Type == BuiltinTypeSpec.UInt)
+                else if (_target.Type.IsPointer && (Type == BuiltinTypeSpec.UInt|| Type == BuiltinTypeSpec.Pointer))
                 {
                     Type = _target.Type;
                     nofix = true;
@@ -809,6 +809,11 @@ namespace VTC
                 else if (_target.Type == BuiltinTypeSpec.Pointer && Type == BuiltinTypeSpec.UInt)
                 {
                     Type = BuiltinTypeSpec.UInt;
+                    nofix = true;
+                }
+                else if (_target.Type == BuiltinTypeSpec.UInt && Type == BuiltinTypeSpec.Pointer)
+                {
+                    Type = BuiltinTypeSpec.Pointer;
                     nofix = true;
                 }
                 else if (_target is ConstantExpression) // convert const

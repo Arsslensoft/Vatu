@@ -619,10 +619,11 @@ namespace VTC
         public PointerTypeSpec(Namespace ns, TypeSpec _basetype)
             : this(ns,_basetype,0)
         {
+             
             _size = 2;
         }
         public PointerTypeSpec(Namespace ns,TypeSpec _basetype,TypeFlags _flags)
-            : base(ns,_basetype.Name, _basetype.Size,_basetype.BuiltinType, _basetype.Flags | TypeFlags.Pointer | _flags, _basetype.Modifiers, _basetype.Signature.Location, _basetype)
+            : base(ns,_basetype.Name+"*", _basetype.Size,_basetype.BuiltinType, _basetype.Flags | TypeFlags.Pointer | _flags, _basetype.Modifiers, _basetype.Signature.Location, _basetype)
         {
             _size = 2;
         }
@@ -758,10 +759,11 @@ namespace VTC
                 ec.EmitComment("Push Field @" + Signature.ToString() + " " + FieldOffset);
                 ec.EmitInstruction(new Push() { DestinationRef = ElementReference.New(Signature.ToString()), DestinationDisplacement = FieldOffset, DestinationIsIndirect = false, Size = 16 });
             }
+            
             else if (memberType.Size == 2)
             {
                 ec.EmitComment("Push Field @" + Signature.ToString() + " " + FieldOffset);
-                ec.EmitInstruction(new Push() { DestinationRef = ElementReference.New(Signature.ToString()), DestinationDisplacement = FieldOffset, DestinationIsIndirect = true, Size = 16 });
+                ec.EmitInstruction(new Push() { DestinationRef = ElementReference.New(Signature.ToString()), DestinationDisplacement = FieldOffset, DestinationIsIndirect = isind , Size = 16 });
             }
             else if (memberType.Size == 1)
             {

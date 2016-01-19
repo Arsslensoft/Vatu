@@ -214,6 +214,8 @@ namespace VTC.Core
         {
             _value = new List<byte>();
             _value .AddRange(b);
+            if (_value[_value.Count - 1] == 0)
+                _value.RemoveAt(_value.Count - 1);
         }
 
         public override string CommentString()

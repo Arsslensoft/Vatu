@@ -18,6 +18,7 @@ namespace DOS
 use std;
 //global public byte HEL,JHL,JFF;
 public string H="HELLO",W="World";
+public byte hjg[];
 //global public string MY;
 void tostring(bool v)
 {
@@ -216,6 +217,7 @@ print(v.S[1]->K[0]);
 
 string MSG[4];
 string REP[4];
+byte a[5];
 void ArrayTestValidation(string* m, string * c)
 {
 		string *K = m, r = c;
@@ -234,12 +236,13 @@ void ArrayTestValidation(string* m, string * c)
 		print(S[0]);
 		print(S[1]);
 		print(S[2]);
-
+		
 	
 
 }
 entry void main()
 {
+	print(H);
 Type::@MYTYPE l,*k;
 print("\nTest Structs & Arrays Local : \n\0$");
 TestStructs();

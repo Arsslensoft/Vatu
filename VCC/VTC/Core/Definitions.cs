@@ -98,7 +98,7 @@ namespace VTC.Core
             _expr = expr;
         }
 
-        [Rule(@"<Array>    ::= ~'[' ~']'")]
+        [Rule(@"<Array>    ::= ~'[]'")]
         public ArrayVariableDefinition()
         {
             _expr = null;

@@ -327,7 +327,7 @@ Comment Line  = '//'
              | ID '=' <Op If> 
 
 <Array>    ::= '[' <Expression> ']'
-             | '[' ']'
+             | '[]'
              
 <Var List> ::=  ',' <Var Item> <Var List>
              | 

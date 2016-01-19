@@ -130,7 +130,7 @@ namespace VTC.Core
             if ((vadef.expr is ArrayConstant) && ArraySize != 0)
                 ResolveContext.Report.Error(49, Location, "Array value cannot be used without the array specifier,  ex : (type k[] = 65a;)");
             // emit init priority to string
-             if(Type == BuiltinTypeSpec.String && vadef.expr != null && vadef.expr is ConstantExpression) // conert string to const
+             if(Type.Equals( BuiltinTypeSpec.String) && vadef.expr != null && vadef.expr is ConstantExpression) // conert string to const
                  vadef.expr = ConstantExpression.CreateConstantFromValue(BuiltinTypeSpec.String, ((ConstantExpression)(vadef.expr)).GetValue(), vadef.expr.Location);
 
              else if (Type.IsPointer && vadef.expr != null && vadef.expr is ConstantExpression) // convert constant to uint (pointers)
