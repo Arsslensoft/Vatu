@@ -30,10 +30,11 @@ namespace VTC
             {
                 // Values are available here
                 CompilerContext ctx = new CompilerContext(options);
-                if (Compile(ctx))
-                    return 0;
+                Compile(ctx);
+              
              
             }
+
             Console.Read();
             return 1;
         }

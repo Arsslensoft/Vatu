@@ -1,0 +1,355 @@
+using bsn.GoldParser.Parser;
+using bsn.GoldParser.Semantic;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Vasm;
+using Vasm.x86;
+using VTC.Core;
+
+namespace VTC
+{
+	public class CastOperator : Expr
+    {
+        bool nofix = true;
+        bool to16 = false;
+        bool tosign = false;
+        protected MethodSpec OvlrdOp;
+        protected TypeIdentifier _type;
+        protected Expr _target;
+        public virtual bool EmitOverrideOperatorFromStack(EmitContext ec)
+        {
+ 
+            ec.EmitComment("Override Cast Operator : " + " (" + _type.Type.Name + ")" + _target.CommentString());
+            ec.EmitCall(OvlrdOp);
+            ec.EmitPush(EmitContext.A);
+            return true;
+        }
+        public virtual bool EmitOverrideOperator(EmitContext ec)
+        {
+            _target.EmitToStack(ec);
+            ec.EmitComment("Override Cast Operator : " + " (" + _type.Type.Name + ")" + _target.CommentString());
+            ec.EmitCall(OvlrdOp);
+            ec.EmitPush(EmitContext.A);
+            return true;
+        }
+        public virtual bool EmitOverrideOperatorBranchable(EmitContext ec, Label truecase, bool v, ConditionalTestEnum cond, ConditionalTestEnum acond)
+        {
+            _target.EmitToStack(ec);
+            ec.EmitComment("Override Cast Operator : " + " (" + _type.Type.Name + ")" + _target.CommentString());
+            ec.EmitCall(OvlrdOp);
+
+
+
+            if (_type.Type.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(EmitContext.A), SourceValue = EmitContext.TRUE, Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = EmitContext.A, SourceValue = EmitContext.TRUE, Size = 80 });
+
+            if (v)
+                ec.EmitInstruction(new ConditionalJump() { Condition = cond, DestinationLabel = truecase.Name });
+            else
+                ec.EmitInstruction(new ConditionalJump() { Condition = acond, DestinationLabel = truecase.Name });
+
+            return true;
+        }
+      
+        public Expr Target
+        {
+            get { return _target; }
+        }
+        [Rule(@"<Op Unary> ::= ~'(' <Type> ~')' <Op Unary>")]
+        public CastOperator(TypeIdentifier id, Expr target)
+        {
+            _target = target;
+            _type = id;
+
+        }
+
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            _type = (TypeIdentifier)_type.DoResolve(rc);
+            Type = _type.Type;
+            _target = (Expr)_target.DoResolve(rc);
+
+
+            rc.Resolver.TryResolveMethod("Op_explicit_Cast_" + _type.Type.NormalizedName, ref OvlrdOp, new TypeSpec[1] { _target.Type });
+      
+
+            if (rc.CurrentMethod == OvlrdOp)
+                OvlrdOp = null;
+            if (OvlrdOp == null)
+            {
+                // simple fix typedef typedef => type
+                if (TypeDefFix())
+                {
+                    _target.Type = Type;
+                    return Target;
+                }
+                else if (Type.Equals(_target.Type))
+                    return _target;
+                else if (PointerFix())
+                    return Target;
+                else if (ConstantFix(rc))
+                    return Target;
+                else if (_target is CastOperator) // cast under cast
+                    return Target;
+
+                else if (!WordToByteFix() && !ByteToWordFix())
+                    ResolveContext.Report.Error(27, Location, "Invalid cast " + Type.Name + " to " + _target.Type.Name);
+            }
+            return this;
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+
+            return _type.Resolve(rc) && _target.Resolve(rc);
+        }
+        public override string CommentString()
+        {
+            return "Cast " + _target.CommentString() + " to " + Type.ToString();
+        }
+        public override bool Emit(EmitContext ec)
+        {
+            if (OvlrdOp != null)
+                return EmitOverrideOperator(ec);
+
+            if (nofix)
+            {
+                ec.EmitComment(CommentString());
+                return _target.Emit(ec);
+            }
+            else
+            {
+                _target.Emit(ec);
+                // cast
+                RegistersEnum src = RegistersEnum.AX;
+
+                ec.EmitPop(src); // take target
+                ec.EmitComment(CommentString());
+                if (to16 && tosign)
+                    Conversion.EmitConvert8To16Signed(ec, src);
+                else if (to16 && !tosign)
+                    Conversion.EmitConvert8To16Unsigned(ec, src);
+                else if (!to16)
+                    Conversion.EmitConvert16To8(ec, src);
+                ec.EmitPush(src);
+
+             
+                return true;
+
+            }
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            if (OvlrdOp != null)
+                return EmitOverrideOperator(ec);
+
+            if (nofix)
+            {
+                ec.EmitComment(CommentString());
+                return _target.EmitToStack(ec);
+            }
+            else
+            {
+                _target.EmitToStack(ec);
+                // cast
+
+                RegistersEnum dst = RegistersEnum.AX;
+                ec.EmitPop(dst); // take target
+                ec.EmitComment(CommentString());
+                if (to16 && tosign)
+                    Conversion.EmitConvert8To16Signed(ec, dst);
+                else if (to16 && !tosign)
+                    Conversion.EmitConvert8To16Unsigned(ec, dst);
+                else if (!to16)
+                    Conversion.EmitConvert16To8(ec, dst);
+                ec.EmitPush(dst);
+
+         
+                return true;
+
+            }
+        }
+        public override bool EmitToRegister(EmitContext ec, RegistersEnum rg)
+        {
+            if (OvlrdOp != null)
+            {
+                EmitOverrideOperator(ec);
+                ec.EmitPop(rg);
+                return true;
+            }
+            if (nofix)
+                return _target.EmitToRegister(ec, rg);
+            else
+            {
+                _target.EmitToRegister(ec, rg);
+                // cast
+                RegistersEnum src = rg;
+
+                ec.EmitPop(src); // take target
+                if (to16 && tosign)
+                    Conversion.EmitConvert8To16Signed(ec, src);
+                else if (to16 && !tosign)
+                    Conversion.EmitConvert8To16Unsigned(ec, src);
+                else if (!to16)
+                    Conversion.EmitConvert16To8(ec, src);
+
+
+
+                return true;
+            }
+        }
+        public override bool EmitFromStack(EmitContext ec)
+        {
+            if (OvlrdOp != null)
+            {
+                EmitOverrideOperatorFromStack(ec);
+                return _target.EmitFromStack(ec);
+            }
+            if (nofix)
+                return _target.EmitFromStack(ec);
+            else
+            {
+
+                // cast
+                RegistersEnum src = RegistersEnum.AX;
+
+                ec.EmitPop(src); // take target
+                if (to16 && tosign)
+                    Conversion.EmitConvert8To16Signed(ec, src);
+                else if (to16 && !tosign)
+                    Conversion.EmitConvert8To16Unsigned(ec, src);
+                else if (!to16)
+                    Conversion.EmitConvert16To8(ec, src);
+
+                ec.EmitPush(src);
+
+
+
+                return _target.EmitFromStack(ec);
+            }
+        }
+
+        bool ByteToWordFix()
+        {
+            if (_target.Type.BuiltinType == BuiltinTypes.Byte || _target.Type.BuiltinType == BuiltinTypes.SByte) // byte or sbyte => int or uint
+            {
+                if (Type.BuiltinType == BuiltinTypes.UInt)
+                {
+                    nofix = false;
+                    to16 = true;
+                    tosign = false;
+                    return true;
+                }
+                else if (Type.BuiltinType == BuiltinTypes.Int)
+                {
+                    nofix = false;
+                    to16 = true;
+                    tosign = true;
+                    return true;
+                }
+                else ResolveContext.Report.Error(27, Location, "Invalid cast " + Type.Name + " to " + _target.Type.Name);
+            }
+            return false;
+        }
+        bool WordToByteFix(){
+             if (_target.Type.BuiltinType == BuiltinTypes.Int || _target.Type.BuiltinType == BuiltinTypes.UInt) // int or uint => byte or sbyte
+                {
+                    if (Type.BuiltinType == BuiltinTypes.Byte)
+                    {
+                        nofix = false;
+                        to16 = false;
+                        tosign = false;
+                        return true;
+                    }
+                    else if (Type.BuiltinType == BuiltinTypes.SByte)
+                    {
+                        nofix = false;
+                        to16 = false;
+                        tosign = true;
+                        return true;
+                    }
+                    else if (Type.BuiltinType == BuiltinTypes.Int || Type.BuiltinType == BuiltinTypes.UInt)
+                    {
+                        nofix = true;
+                          return true;
+                    }
+
+                    else ResolveContext.Report.Error(27, Location, "Invalid cast " + Type.Name + " to " + _target.Type.Name);
+                }
+            return false;
+        }
+        bool ConstantFix(ResolveContext rc)
+        {
+            if (_target is ConstantExpression) // convert const
+            {
+                bool c = false;
+                try
+                {
+                    _target = ((ConstantExpression)_target).ConvertExplicitly(rc, Type, ref c);
+                }
+                catch
+                {
+                    c = false;
+                }
+                if (!c)
+                    ResolveContext.Report.Error(27, Location, "Invalid cast " + Type.Name + " to " + _target.Type.Name);
+                else return true;
+            }
+            return false;
+        }
+        bool PointerFix()
+        {   
+            if (Type.IsPointer && (_target.Type == BuiltinTypeSpec.UInt || Type == BuiltinTypeSpec.Pointer))
+                {
+                    _target.Type = Type;
+                    nofix = true;
+                    return true;
+                }
+                else if (_target.Type.IsPointer && (Type == BuiltinTypeSpec.UInt || Type == BuiltinTypeSpec.Pointer))
+                {
+                    _target.Type = Type;
+                    nofix = true;
+                    return true;
+                }
+            else if (Type.IsDelegate && (_target.Type == BuiltinTypeSpec.UInt || Type == BuiltinTypeSpec.Pointer))
+            {
+                _target.Type = Type;
+                nofix = true;
+                return true;
+            }
+            else if (_target.Type.IsDelegate && (Type == BuiltinTypeSpec.UInt || Type == BuiltinTypeSpec.Pointer))
+            {
+                _target.Type = Type;
+                nofix = true;
+                return true;
+            }
+                else if (_target.Type == BuiltinTypeSpec.Pointer && Type == BuiltinTypeSpec.UInt)
+                {
+                    _target.Type = BuiltinTypeSpec.UInt;
+                    nofix = true;
+                    return true;
+                }
+                else if (_target.Type == BuiltinTypeSpec.UInt && Type == BuiltinTypeSpec.Pointer)
+                {
+                    _target.Type = BuiltinTypeSpec.Pointer;
+                    
+                    nofix = true;
+                    return true;
+                }
+            return false;
+        }
+        bool TypeDefFix()
+        {
+            TypeSpec a=Type.GetTypeDefBase(Type),b=_target.Type.GetTypeDefBase(_target.Type);
+            
+            if (a .Equals(b))
+                return true;
+            else return false;
+        }
+    }
+  
+	
+}

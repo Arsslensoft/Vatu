@@ -1,0 +1,58 @@
+﻿include <STD.vt>
+include <ArraysTest.vt>
+include <BitAccessTest.vt>
+include <OperatorsTest.vt>
+default asm{
+"[org 100h]";
+
+}
+namespace DOS
+{
+use std;
+use ArrayTest;
+use BitAccessTest;
+use Operators;
+void tostring(bool v)
+{
+if(v == true)
+ print("TRUE $");
+else
+print("FALSE $");
+
+}
+ void tostring(uint a){
+if(a < 10)
+  putc((byte)(a+48));
+  else{
+  	tostring(a / 10);
+  	putc(48+(byte)(a % 10));
+
+  }
+
+
+}
+
+public default delegate void TestHandler();
+public @TestHandler Tests[5];
+
+
+entry void main()
+{
+@TestHandler caller=null;
+uint i;
+Tests[0] += StartArrayTest;
+Tests[1] += StartBATest;
+Tests[2]  += StartOpTest;
+for(i = 0; i < 3;i++){
+caller = Tests[i];
+caller();
+print("\nPress any key to perform next test $");
+getc();
+}
+
+print("\nAll Tests has been executed $");
+
+interrupt 0x21(0x004C);
+}
+
+}

@@ -1,5 +1,11 @@
-﻿namespace Vasm {
-  public class Label : Instruction {
+﻿using System;
+namespace Vasm {
+  public class Label : Instruction,IEquatable<Label> {
+
+      public override string ToString()
+      {
+          return Name;
+      }
       public string Comment
       {
           get
@@ -43,7 +49,7 @@
     }
 
     public static string LastFullLabel { get; set; }
-
+     
     public string QualifiedName {
         get
         {
@@ -86,7 +92,10 @@
       public override bool IsComplete(AsmContext aAssembler) {
       return true;
     }
-
+      public bool Equals(Label lb)
+      {
+          return lb.Name == Name;
+      }
     public override void WriteData(AsmContext ec, System.IO.Stream aOutput) { }
   }
 }

@@ -2,15 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using VTC.Core;
 
 namespace VTC
 {
     public struct Reachability
     {
         readonly bool unreachable;
-
+        public Location Loc;
         Reachability(bool unreachable)
         {
+            Loc = Location.Null;
             this.unreachable = unreachable;
         }
 
@@ -193,7 +195,7 @@ namespace VTC
             large_bits = (int[])large_bits.Clone();
         }
 
-        bool GetBit(int index)
+       public bool GetBit(int index)
         {
             return large_bits == null ?
                 (bits & (1 << index)) != 0 :
@@ -222,33 +224,88 @@ namespace VTC
             return true;
         }
     }
+    public class CodePath
+    {
+        public Location PathLocation { get; set; }
+        public bool Returns { get; set; }
+        public List<CodePath> CodePaths { get; set; }
 
+        public CodePath(Location loc)
+        {
+            Returns = false;
+            CodePaths = new List<CodePath>();
+            PathLocation = loc;
+        }
+
+        public void AddPath(CodePath cp)
+        {
+            CodePaths.Add(cp);
+        }
+       
+        public bool CheckReturn()
+        {
+        
+            if (CodePaths.Count == 0 || Returns) // end of path or returns
+                return Returns;
+
+            bool ret = true;
+            foreach (CodePath cp in CodePaths)
+                ret &= cp.CheckReturn();
+           
+            return ret;
+        }
+    }
+    public interface IFlow : IFlowAnalysis
+    {
+        Reachability MarkReachable(Reachability rc);
+
+    }
+    public interface IFlowAnalysis
+    {
   
+        bool DoFlowAnalysis(FlowAnalysisContext fc);
+    }
 
     public class FlowAnalysisContext
     {
+        public bool NoReturnCheck=false;
+        public CodePath CodePathReturn { get; set; }
+        public DefiniteAssignmentBitSet AssignmentBitSet { get; set; }
         public bool UnreachableReported { get; set; }
+        public Declaration Decl { get; set; }
+        public FlowAnalysisContext(int variable_count,Declaration decl)
+        {
+            CodePathReturn = new CodePath(decl.loc);
+            Decl = decl;
+            AssignmentBitSet = new DefiniteAssignmentBitSet(variable_count);
+        }
+        public bool FindUnreachableCode(ref Location loc)
+        {
+            Reachability rc = new Reachability();
+            rc = Decl.MarkReachable(rc);
+            loc = rc.Loc;
+            return rc.IsUnreachable;
+        }
+        public bool FindNoReturn()
+        {
+         return   CodePathReturn.CheckReturn();
+        }
+        public bool DoFlowAnalysis(ResolveContext rc)
+        {
+     
+            
+          bool fl =  Decl.DoFlowAnalysis(this);
+          if (!NoReturnCheck && !FindNoReturn())
+              ResolveContext.Report.Warning(CodePathReturn.PathLocation, "Not all code paths returns a value ");
+          Location loc = CodePathReturn.PathLocation;
+          if (FindUnreachableCode(ref loc))
+              ResolveContext.Report.Warning(loc, "Unreachable code detected");
 
-        /*
-                public bool IsDefinitelyAssigned(VariableInfo variable)
-                {
-                    return variable.IsAssigned(DefiniteAssignment);
-                }
-
-                public bool IsStructFieldDefinitelyAssigned(VariableInfo variable, string name)
-                {
-                    return variable.IsStructFieldAssigned(DefiniteAssignment, name);
-                }
-
-                public void SetVariableAssigned(VariableInfo variable, bool generatedAssignment = false)
-                {
-                    variable.SetAssigned(DefiniteAssignment, generatedAssignment);
-                }
-
-                public void SetStructFieldAssigned(VariableInfo variable, string name)
-                {
-                    variable.SetStructFieldAssigned(DefiniteAssignment, name);
-                }
-                */
+          for (int i = 0; i < rc.Resolver.KnownLocalVars.Count; i++)
+            if(!AssignmentBitSet.GetBit(i))
+                ResolveContext.Report.Warning(CodePathReturn.PathLocation, "Use of unassigned local variable " + rc.Resolver.KnownLocalVars[i].Name);
+          return fl;
+        }
+       
     }
 }

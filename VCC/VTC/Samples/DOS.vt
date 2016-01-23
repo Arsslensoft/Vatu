@@ -1,31 +1,35 @@
-﻿#include "STD.vt"
+﻿include <STD.vt>
 default asm{
 "[org 100h]";
 
 }
-namespace Type{
-	public struct MYTYPE{
-		byte J[9];
-		string K[3];
-		uint L[4];
-		bool M[6];
-		pointer ptr[4];
-		int d ;
-	};
-}
+
 namespace DOS
 {
 use std;
-//global public byte HEL,JHL,JFF;
-public string H="HELLO",W="World";
-public byte hjg[];
-//global public string MY;
-void tostring(bool v)
+public stdcall delegate void HelloHolder();
+public define OP_float_add operator @@+;
+public define OP_print operator @@>>;
+public define OP_print_UNARY operator @@>>>>>>>>>>>>;
+public override float operator @@+(float a,float b)
 {
-if(v == true)
- print("TRUE $");
-else
-print("FALSE $");
+	print("\nCalled float operator $");
+}
+
+public typedef struct {
+	uint val;
+	
+}UINT;
+public byte a[] = "ABCDEFGH";
+public override string operator @@>>>>>>>>>>>>(string a,string b)
+{
+	
+	print(a);
+		print(b);
+	return b;
+}
+public override pointer operator delete(uint size)
+{
 
 }
  void tostring(uint a){
@@ -39,224 +43,107 @@ if(a < 10)
 
 
 }
-Type::@MYTYPE s;
-Type::@MYTYPE* I[4];
-void TestStructs(){
-	use Type{
-		@MYTYPE m;
-		I[1] = &m;
-		uint ra = &m;
-			m.J[0]='A';
-		m.J[1]='B';
-		m.J[2]='$';
-
-		m.K[2] = "Hello Word from K[2]$";
-		m.K[0] = "Hello Word from K[0]$";
-
-		m.L[1] = 4523u;
-		m.M[3]=true;
-		m.ptr[1] = &(m);
-	
-		print(m.J);
-		print(m.K[0]);
-		putc(' ');
-		print(m.K[2]);
-		putc(' ');
-		tostring(m.L[1]);
-		putc(' ');
-		tostring(m.M[3]);
-		putc(' ');
-		tostring(m.M[2]);
-		putc(' ');
-
-		uint la =I[1];
-		tostring(la);
-
-		putc(' ');
-		
-		uint lp = m.ptr[1];
-		tostring(lp);
-		putc(' ');
-		tostring(ra);
-		putc(' ');
-
-	}
-}
-Type::@MYTYPE m;
-void TestStructs(ref Type::@MYTYPE m){
-	use Type{
-		I[1] = &m;
-		uint ra = &m;
-			m.J[0]='A';
-		m.J[1]='B';
-		m.J[2]='$';
-
-		m.K[2] = "Hello Word from K[2]$";
-		m.K[0] = "Hello Word from K[0]$";
-
-		m.L[1] = 4523u;
-		m.M[3]=true;
-		m.ptr[1] = &(m);
-	
-		print(m.J);
-		putc(' ');
-	//print(*(m.K)); // bug access expression in valueofOP
-	print(m.K[0]);
-		putc(' ');
-
-		print(m.K[2]);
-		putc(' ');
-		tostring(m.L[1]);
-		putc(' ');
-		tostring(m.M[3]);
-
-		putc(' ');
-		tostring(m.M[2]);
-		putc(' ');
-
-		uint la =I[1];
-		tostring(la);
-
-		putc(' ');
-		
-		uint lp = m.ptr[1];
-
-		tostring(lp);
-		putc(' ');
-		tostring(ra);
-		putc(' ');
-
-	}
-}
-public struct KI{
-	Type::@MYTYPE** S;
-
-};
-public @KI v;
-public Type::@MYTYPE *IPTR;
-void TestStructsFields(){
-	use Type{
-		I[1] = &m;
-		uint ra = &m;
-			m.J[0]='A';
-		m.J[1]='B';
-		m.J[2]='$';
-
-		m.K[2] = "Hello Word from K[2]$";
-		m.K[0] = "Hello Word from K[0]$";
-
-		m.L[1] = 4523u;
-		m.M[3]=true;
-		m.ptr[1] = &(m);
-	   pointer p = I;
-
-		print(m.J);
-		putc(' ');
-	//print(*(m.K)); // bug access expression in valueofOP
-	print(m.K[0]);
-		putc(' ');
-
-		print(m.K[2]);
-		putc(' ');
-		tostring(m.L[1]);
-		putc(' ');
-		tostring(m.M[3]);
-
-		putc(' ');
-		tostring(m.M[2]);
-		putc(' ');
-
-		uint la =I[1];
-		tostring(la);
-
-		putc(' ');
-		
-		uint lp = m.ptr[1];
-		tostring(lp);
-		putc(' ');
-		tostring(ra);
-		putc(' ');
-
-		
-		print("\nFrom array : \n $");
-		print(I[1]->J);	
-		putc(' ');
-	//print(*(m.K)); // bug access expression in valueofOP
-	print(I[1]->K[0]);
-		putc(' ');
-
-		print(I[1]->K[2]);
-		putc(' ');
-		tostring(I[1]->L[1]);
-		putc(' ');
-		tostring(I[1]->M[3]);
-
-		putc(' ');
-		tostring(I[1]->M[2]);
-		putc(' ');
-
-		uint la =I[1];
-		tostring(la);
-
-		putc(' ');
-		
-		uint lp = I[1]->ptr[1];
-		tostring(lp);
-		putc(' ');
-		tostring(ra);
-		putc(' ');
-		
-		*(I[1]->K) = "Hi$";
-		print(*(m.K)); 
-v.S = I;
-v.S =I;
-IPTR = I[1];
-print(v.S[1]->K[0]);
-	}
-}
-
-string MSG[4];
-string REP[4];
-byte a[5];
-void ArrayTestValidation(string* m, string * c)
+public override pointer operator new(uint size)
 {
-		string *K = m, r = c;
-		string S[3];
-		K[0] = "\n Hello $";
-		r[0] = "World $";
-		S[2] = "My name  $";
-		S[1] = " is $";
-	    S[0] = " Arsslen Idadi$";
-
-		K[1] = "\n What is your name? $";
-		*r[1] =  S[0];
-		
-
-		print(K[1]);
-		print(S[0]);
-		print(S[1]);
-		print(S[2]);
-		
-	
-
+	print("\nAllocating : $");
+	tostring(size);
+	return size + 20u;
 }
+
+
+public override string operator explicit(int k)
+{
+a = "5 Casted$";
+return a;
+}
+
+public override uint operator implicit(@UINT k)
+{
+
+return k.val;
+}
+
+void PrintHi(){
+	print("Hi\n$");
+}
+string Hl = "Hello World Field$";
+const string KLA = "Hello$";
 entry void main()
 {
-	print(H);
-Type::@MYTYPE l,*k;
-print("\nTest Structs & Arrays Local : \n\0$");
-TestStructs();
-print("\nTest Structs & Arrays Ref Parameter : \n$");
-TestStructs(l);
-print("\nTest Structs & Arrays Field and Field Array : \n$");
-TestStructsFields();
+	@UINT uv;
+	uv.val = 50u;
+	uint duv;
+	duv = uv;
+	tostring(duv);
+	@HelloHolder mydelegate = null;
+	print("Value of Delegate : $");
+	tostring((uint)mydelegate);
+	print("\nCall of Delegate : $");
+	mydelegate += PrintHi;
+	mydelegate();
 
-ArrayTestValidation(MSG,REP);
-print(MSG[0]);
-print(REP[0]);
+	print("\nValue of Delegate : $");
+	tostring((uint)mydelegate);
 
-AH = 0x4C;
+	mydelegate -= PrintHi;
+	print("\nValue of Delegate : $");
+	tostring((uint)mydelegate);
+
+			print("\n$");
+	int* lp = new int[7];
+	uint adr = lp;
+	tostring(adr);
+int PL = 7;
+print((string)PL);
+	print(Hl);
+	float a = 3.14;
+	float b = 3.12;
+	float r = a @@+ b;
+  uint i = 4u;
+  uint j = i+8u;
+  tostring(j);
+string kl = "\nHello World $ ";
+string bl=			"\nMy name is"
+			"\nJohn Doe\n$";
+
+  print(bl @@>>>>>>>>>>>>kl );
+	switch(i)
+	{
+	case 4:
+		print("CASE 4$");
+		break;
+	case 16:
+		print("Case 16$");
+
+		goto default;
+		case 17:
+			goto case 16;
+		
+		case 5,6,7,8,9,10,11,12,13,14,15:
+		print("CASE 5$");
+		break;
+
+		default:
+		print("DEFAULT $");
+		
+	}
+//print(kl);
+
+	//AX+BX;
+	//AX-CX;
+	//DX/AX;
+	//DX%BX;
+	//AX := BX == CX ? 4: a;
+	//SI := "Hello world from SI$";
+	//+SI;
+	//asm{
+	//	"call std_print_string";}
+
+AH := 0x4C;
 interrupt 0x21;
 }
+
+
+
 
 }

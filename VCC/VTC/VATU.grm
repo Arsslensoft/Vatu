@@ -4,42 +4,47 @@
 "About"   = 'ANSI-C variant.'
 
 "Case Sensitive" = True
-"Start Symbol"   = <GLOBALS>
+"Start Symbol"   = <COMPILATION UNIT>
 
+                    
 {Hex Digit}      = {Digit} + [abcdefABCDEF]
 {Oct Digit}      = [01234567]
 {Binary Digit}   = [01]
-{Literal Suffix} = [iusbaIUSBA]
+{Literal Suffix} = [iusbafIUSBAF]
 {Literal Prefix} = [-]
-                                                  
+
+                                                              
 {Id Head}        = {Letter} + [_]
 {Id Tail}        = {Id Head} + {Digit}
 
 {String Ch}      = {Printable} - ["]
 {Char Ch}        = {Printable} - ['']
 
-DecLiteral       = ({Literal Prefix} [123456789]{digit}* | {Literal Prefix}[123456789]{digit}* {Literal Suffix} | [123456789]{digit}* |[123456789]{digit}* {Literal Suffix})
-OctLiteral       = 0{Oct Digit}*
-HexLiteral       = 0x{Hex Digit}+
-BinaryLiteral    = 0b{Binary Digit}+
-             
+                 
+
+DecLiteral       = ({Literal Prefix} [0123456789]{digit}* | {Literal Prefix}[0123456789]{digit}* {Literal Suffix} | [0123456789]{digit}* |[0123456789]{digit}* {Literal Suffix})
+OctLiteral       = 0[oO]{Oct Digit}+
+HexLiteral       = 0[xX]{Hex Digit}+
+BinaryLiteral    = 0[bB]{Binary Digit}+
+                 
+                            
 BooleanLiteral   = true | false
 NullLiteral      = null
 
-
-StringLiteral    = '"'( {String Ch} | '\'{Printable} )* '"'                 
+StringLiteral    = '"'( {String Ch} | '\'{Printable} )* '"'
+                 
 CharLiteral      = '' ( {Char Ch} | '\'{Printable} )''
+FloatLiteral     = {Digit}*'.'{Digit}+
+                 
 
+IncludeLiteral    = '<'( {String Ch} )* '>'
 Id               = {Id Head}{Id Tail}*    
 
-                               
-MacroLiteral     = '$' {Id Head}{Id Tail}*  
-OperatorLiteralUnary  =  '@' [_-+-/*%£µ%§~#,.=<&|?:>!]+
-OperatorLiteralBinary  =  '@@' [_-+-/*%£µ%§~#.,=<&|?:>!]+             
+OperatorLiteralUnary  =  '@' [!&#$%*+-,/<>=?\^_|~£¤µ.:]+
+OperatorLiteralBinary  =  '@@' [!&#$%*+-,/<>=?\^_|~£¤µ.:]+     
+
                  
-!AsmLiteral       = '$>'  ( {String Ch} | '\'{Printable} )* '<$'
-
-
+                 
 ! ===================================================================
 ! Comments
 ! ===================================================================
@@ -48,241 +53,129 @@ Comment Start = '/*'
 Comment End   = '*/'
 Comment Line  = '//'
 
+
+! ===================================================================
+! Named Identifier
+! ===================================================================     
 <Name> ::= ID
          |  <QualifiedName>
          | global
 <QualifiedName> ::= <Name> '::' ID
+                 
 ! ===================================================================
-! Import
+! Import & Namespace
 ! ===================================================================
 
-<Import>   ::= 'use' <Name> ';'
+<Import>   ::= use <Name> ';'
             
 <Imports>  ::= <Import>
             | <Import> <Imports>   
                    
-<Namespace> ::= 'namespace' <Name>
-                
+<Namespace> ::= namespace <Name>
+             
+
 ! ===================================================================
-!  Declaration
+!  Global Declaration 
 ! ===================================================================
+
+<COMPILATION UNIT> ::= <Includes Decl> <GLOBALS>
+                    
 <GLOBALS> ::= <GLOBAL>
            | <GLOBAL> <GLOBALS>
            
 <GLOBAL> ::= <Namespace> '{' <Imports> <Decls> '}'
           | <Namespace> '{' <Decls> '}'
           | <Decl>
+          
+<Include Decl> ::= include IncludeLiteral
+                
+<Includes Decl> ::=  <Include Decl> <Includes Decl>         
+                 |           
+                
 <Decls> ::= <Decl>
          | <Decl> <Decls>
 
-<Decl>  ::= <Func Decl>
-          | <ASM Decl>
-          | <Oper Decl>
-          | <Inter Decl>
-          | <Union Decl>
-          | <Func Proto>
+<Decl>  ::= <ASM Decl>
+         |  <Var Decl>  
+         | <Extension Decl>
+         |  <Types Decl>
+         | <Prototypes Decl>
+         | <Method Decl>
+                
+<Types Decl> ::= <Union Decl>
+                | <Struct Decl>
+                | <Enum Decl>
+                | <Typedef Decl> 
+                | <Delegate Decl>
+                
+<Prototypes Decl> ::=  <Func Proto>
           | <Oper Proto>
-          | <Struct Decl>
-          | <Enum Decl>
-          | <Var Decl>    
-          | <Typedef Decl>
-          | <Extension Decl>
-          | <Delegate Decl>
-          | <Preproc Decl>
-          | <Oper Def Decl>
           | <Var Prototype>
-! ===================================================================
-! Preprocessor  
-! ===================================================================      
-
-<Preproc Decl> ::= <PP Define> 
-                 | <PP Conditional>
-                 | <PP Diag>
-                 | <PP Region>
-                 | <PP Include>
-                 | <PP ERegion>
+          | <Operator Definition Decl>
+         
+<Method Decl> ::= <Inter Decl>
+                 | <Oper Decl>
+                 | <Func Decl>
                  
-<PP Define> ::= '#'define ID <PP Expr>
-               | '#'undef ID
-               
-<PP Include> ::= '#'include StringLiteral
-                            
-<PP Expr> ::= <PP Or Expr>
-           
-<PP Or Expr> ::= <PP Or Expr> '||' <PP And Expr>   
-               | <PP And Expr>   
-
-<PP And Expr>     ::= <PP And Expr>    '&&' <PP Compare Expr>
-               | <PP Compare Expr>                
-
-<PP Compare Expr> ::= <PP Compare Expr> '==' <PP Unary Expr>
-               | <PP Compare Expr> '!='  <PP Unary Expr>
-               | <PP Unary Expr>
-
-<PP Unary Expr> ::= '!'    <PP Unary Expr> 
-                 | <PP Primary Expr>
-                 
-<PP Primary Expr> ::= <CONSTANT> 
-                   | '(' <PP Expr> ')'
-                   | Id
-                   
-<PP Conditional> ::= <PP If>
-                    
-!if elif elif endif                    
-<PP If> ::= '#'if <PP Expr> '{' <Decls> '}' <PP Elif List> 
-            | '#'if <PP Expr> '{' <Decls> '}'
-            | '#'if <PP Expr> '{' <Decls> '}' <PP Elif List>  else '{' <Decls>  '}'   
-             | '#'if <PP Expr>  '{'  <Decls> '}' else  '{'  <Decls>  '}'
-             
-            
-<PP Elif List> ::=  <PP Elif>  
-               | <PP Elif> <PP Elif List> 
-
-              
-
-<PP Elif> ::= elif <PP Expr> '{' <Decls> '}'
-
-            
-<PP Diag> ::= '#'warn StringLiteral
-            | '#'error StringLiteral
- 
-<PP Region> ::= '#'region StringLiteral
-<PP ERegion> ::= '#'endregion         
-                           
 ! ===================================================================
 ! Extension  Declaration
 ! ===================================================================      
 
 <Extension Decl> ::= <Value> extends <Type> ';'
-                  
-! ===================================================================
-! Delegate  Declaration
-! ===================================================================
 
-<Delegate Decl> ::= <Mod> <CallCV> delegate <Type> ID '(' <Types>  ')' ';'
-                  | <Mod> typedef <CallCV> delegate <Type> '(' <Types>  ')' ID ';'
+  
 ! ===================================================================
-! Function  Declaration
-! ===================================================================
+! Prototypes  Declaration
+! ===================================================================  
 
-
-<Func Proto> ::= <Func ID> '(' <Types>  ')' ';'
-               | <Func ID> '(' <Params> ')' ';'
-               | <Func ID> '(' ')' ';'
-               ! Extension prototype
-               | <Func ID> '(' <Types>  ')' <Func Ext> ';'
-               | <Func ID> '(' <Params> ')' <Func Ext> ';'
-               | <Func ID> '(' ')' <Func Ext> ';'
-   
-<Oper Def Decl> ::= <Mod> 'define' Id 'operator' OperatorLiteralUnary ';'
-                 | <Mod> 'define' bool Id 'operator' OperatorLiteralUnary ';'
-<Oper Def Decl> ::= <Mod> 'define' Id 'operator' OperatorLiteralBinary ';' 
-                  |  <Mod> 'define' bool Id 'operator' OperatorLiteralBinary ';' 
-                                          
-<Oper Proto> ::= <Mod> 'override' <Type> 'operator' '=='  <Type>   ';'
-               | <Mod> 'override' <Type> 'operator' '!='  <Type>  ';'
-               | <Mod> 'override' <Type> 'operator' '<='  <Type>   ';'
-               | <Mod> 'override' <Type> 'operator' '>='  <Type> ';'
-               | <Mod> 'override' <Type> 'operator' '>'  <Type>   ';'
-               | <Mod> 'override' <Type> 'operator' '<'  <Type>  ';'
-               | <Mod> 'override' <Type> 'operator' '¤' <Type>  ';'
-               | <Mod> 'override' <Type> 'operator' '??' <Type>  ';'
+ <Func Proto> ::=<Func ID> '(' <Types>  ')' <Func Ext> ';'
+               | <Func ID> '(' <Params> ')' <Func Ext> ';'   
+               | <Func ID> '('  ')' <Func Ext> ';'   
+      
                
-               | <Mod> 'override' <Type> 'operator' '+' ';'
-               | <Mod> 'override' <Type> 'operator' '-' ';'
-               | <Mod> 'override' <Type> 'operator' '*' ';'
-               | <Mod> 'override' <Type> 'operator' '/' ';'
-               | <Mod> 'override' <Type> 'operator' '%' ';'
-               | <Mod> 'override' <Type> 'operator' '^' ';'
-               | <Mod> 'override' <Type> 'operator' '&' ';'
-               | <Mod> 'override' <Type> 'operator' '|' ';'
-                ! CAST Overload
-               | <Mod> 'override' <Type> 'operator' <Type> ';'
-               !Shift Rotate
-               | <Mod> 'override' <Type> 'operator' '~>' ';'
-               | <Mod> 'override' <Type> 'operator' '<~' ';'
-               | <Mod> 'override' <Type> 'operator' '>>' ';'
-               | <Mod> 'override' <Type> 'operator' '<<' ';'
-               !Unary
-               | <Mod> 'override' <Type> 'operator' '++' ';'
-               | <Mod> 'override' <Type> 'operator' '--' ';'
-               | <Mod> 'override' <Type> 'operator' '[]' ';'
+<Operator Definition Decl> ::= <Mod> define Id operator <Operator Def> ';'
+                 | <Mod> define bool Id operator <Operator Def> ';'
 
-               | <Mod>'override' <Type> 'operator' '~' ';'
-               ! Oper def
-               | <Mod>'override' <Type> 'operator' OperatorLiteralBinary ';'
-               | <Mod>'override' <Type> 'operator' OperatorLiteralUnary ';'
-               ! OperDef Logic
-               | <Mod>'override' <Type> 'operator' OperatorLiteralBinary <Type>  ';'
-               | <Mod>'override' <Type> 'operator' OperatorLiteralUnary  <Type>  ';'
+                 
+<Oper Proto> ::= <Mod> override <Type> operator <Operator>  <Type>   ';' ! binary & unary
+            | <Mod> override <Type> operator <Operator Def>  <Type> ';' ! operator def (binary & unary)  
+            | <Mod> override <Type> operator <Cast Kind> '(' <Type>  ')' ';' ! cast
+ 
+<Var Prototype> ::= global <Var Decl>
+
+! ===================================================================
+! Method  Declaration
+! ===================================================================  
 <Func Decl>  ::= <Func ID> <Func Body>
                | <Func Spec> <Func ID> <Func Body>
 
-
-
-!Operators Overloading         
-<Oper Decl>  ::= <Mod> 'override' <Type> 'operator' '==' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '!=' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '<=' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '>=' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '>' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '<' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '+' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '-' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '*' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '/' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '%' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '^' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '&' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '|' <Func Body>
-            
-                ! CAST Overload
-               |<Mod> 'override' <Type> 'operator' <Type> <Func Body>
-               !Shift Rotate
-               |<Mod> 'override' <Type> 'operator' '~>' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '<~' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '>>' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '<<' <Func Body>
-               !Unary
-               |<Mod> 'override' <Type> 'operator' '++' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '--' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '[]' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '¤' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '??' <Func Body>
-               |<Mod> 'override' <Type> 'operator' '~' <Func Body>
+<Oper Decl>  ::= <Mod> override <Type> operator <Operator> <Func Body>
+               | <Mod> override <Type> operator <Cast Kind> <Func Body> ! source type to dest type
+               |  <Mod> override <Type> operator <Operator Def> <Func Body>
                
-                !OperDef
-               |<Mod> 'override' <Type> 'operator' OperatorLiteralBinary <Func Body>
-               |<Mod> 'override' <Type> 'operator' OperatorLiteralUnary <Func Body>
-               
-!Interrupt decl               
-<Inter Decl>  ::= 'interrupt' <CONSTANT> <Block>
+<Inter Decl>  ::= interrupt <Integral Const> <Block>
+  
 
 
-<Func Body>  ::= '(' <Params>  ')' <Block>
-              | '(' ')' <Block>
-              |  '(' <Params>  ')' <Func Ext> <Block>
-              | '(' ')' <Func Ext>  <Block>      
-              
-        
+<Func Body>  ::= '(' <Params>  ')' <Func Ext> <Block>
+              | '(' ')' <Func Ext>  <Block>     
+             
 <Params>     ::= <Param> ',' <Params>
                | <Param>
                
-<Param>      ::= const <Type> ID
+<Param>      ::=  const <Type> ID
                | ref <Type> ID
-               |       <Type> ID
+               | <Type> ID     
                
 <Types>      ::= <Type>  ',' <Types>
                | <Type> 
-  
+    
+         
 <Func ID>    ::= <Mod> <CallCV> <Type> ID
-                | <Mod> <Type> ID
-                | <CallCV> <Type> ID
-                | <Type> ID
-
-<Func Ext>  ::= extends <Type>
-             | static extends <Type>
-             
+              | <CallCV> <Type> ID
+              | <Type> ID
+              | <Mod> <Type> ID
+              
 <Func Spec> ::= entry
              | isolated
              
@@ -292,11 +185,21 @@ Comment Line  = '//'
              | pascal
              | default
              | vfastcall
+             
+
+             
+
+<Func Ext>  ::= extends <Type>
+             | static extends <Type>
+             | 
+           
 ! ===================================================================
 ! Asm Declaration
 ! ===================================================================
-<ASM Decl> ::= extern asm '{' <INSTRUCTIONS>  '}'
-             | default asm '{' <INSTRUCTIONS>  '}'
+<ASM Decl> ::= extern <ASM Statement>
+             | default <ASM Statement>
+  
+
            
 ! ===================================================================
 ! Type Declaration
@@ -308,18 +211,40 @@ Comment Line  = '//'
                 | <Mod> typedef struct '{' <Struct Def> '}'  Id ';' 
 <Union Decl>   ::= <Mod> union Id '{' <Struct Def> '}'  ';' 
                 | <Mod> typedef union '{' <Struct Def> '}' Id ';' 
+                
+<Enum Decl>    ::= <Mod> enum Id '{' <Enum Def> '}'  ';'
+                 | <Mod> typedef enum '{' <Enum Def> '}'  Id ';'
+                 | <Mod> setof enum Id '{' <Enum Def> '}'  ';'
+                 | <Mod> typedef setof enum '{' <Enum Def> '}'  Id ';'
+
+<Delegate Decl> ::= <Mod> <CallCV> delegate <Type> ID '(' <Types>  ')' ';'
+                  | <Mod> typedef <CallCV> delegate <Type> '(' <Types>  ')' ID ';'                 
+                  | <Mod> <CallCV> delegate <Type> ID '(' ')' ';'
+                  | <Mod> typedef <CallCV> delegate <Type> '(' ')' ID ';'   
+
+! ===================================================================
+! Definitions
+! ===================================================================
+
 <Struct Def>   ::= <Var Decl> <Struct Def>
                  | <Var Decl>
+      
+! Enumerations & Flags definition               
+<Enum Def>     ::= <Enum Val> ',' <Enum Def>
+                 | <Enum Val>
 
+<Enum Val>     ::= Id
+                 | Id '=' <Integral Const>
+                 
 ! ===================================================================
 ! Variable Declaration
 ! ===================================================================
 
-<Var Prototype> ::= global <Var Decl>
+
 
 <Var Decl>     ::= <Mod> <Type> <Var> <Var List>  ';'
                  |       <Type> <Var> <Var List>  ';'
-                 | <Mod>        <Var> <Var List>  ';'
+               
              
 <Var>      ::= ID <Array>
              | ID
@@ -333,32 +258,6 @@ Comment Line  = '//'
              | 
 
 <Var Item> ::= <Pointers> <Var>
-
-  
-<Mod>       ::= <Modifier>
-             | <Modifier> <Mod> 
-<Modifier>      ::= extern 
-             | static
-             | const   
-             | private
-             | public
-
-! ===================================================================
-! Enumerations & Flags
-! ===================================================================
-
-<Enum Decl>    ::= <Mod> enum Id '{' <Enum Def> '}'  ';'
-                  | <Mod> typedef enum '{' <Enum Def> '}'  Id ';'
-                  | <Mod> setof enum Id '{' <Enum Def> '}'  ';'
-                  | <Mod> typedef setof enum '{' <Enum Def> '}'  Id ';'
-<Enum Def>     ::= <Enum Val> ',' <Enum Def>
-                 | <Enum Val>
-
-<Enum Val>     ::= Id
-                 | Id '=' OctLiteral
-                 | Id '=' HexLiteral
-                 | Id '=' DecLiteral  
-
 
 ! ===================================================================
 ! Types
@@ -380,39 +279,35 @@ Comment Line  = '//'
              | void           
              | string
              | pointer
+             | float
              
 <Pointers> ::= '*' <Pointers>
-             |
-
+              |         
+    
 ! ===================================================================
 ! Statements
 ! ===================================================================
 
-<Statement>        ::= <Var Decl>
+<Statement>  ::= <Var Decl>
                | Id ':'                            !Label
                | if '(' <Expression> ')' <Statement>          
-               | if '(' <Expression> ')' <Then Stm> else <Statement>      
-               ! Preprocess ifdef-ifndef
-               | '#'ifdef MacroLiteral <Statement> 
-               | '#'ifndef MacroLiteral <Statement> 
-               
+               | if '(' <Expression> ')'  <Then Stm> else <Statement>      
                | while '(' <Expression> ')' <Statement> 
                | for '(' <Arg> ';' <Arg> ';' <Arg> ')' <Statement>
-               | asm '{' <INSTRUCTIONS>  '}'
                | use <Name> <Statement>
                | loop <Statement>
                | <Normal Stm>
-              
-
-<Then Stm>   ::= if '(' <Expression> ')' <Then Stm> else <Then Stm> 
+     
+ <Then Stm>   ::= if '(' <Expression> ')' <Then Stm> else <Then Stm> 
                | while '(' <Expression> ')' <Then Stm> 
                | for '(' <Arg> ';' <Arg> ';' <Arg> ')' <Then Stm>
                | <Normal Stm>
-
-<Normal Stm> ::= do <Statement> while '(' <Expression> ')'
+                        
+ <Normal Stm> ::= do <Statement> while '(' <Expression> ')'
                | switch '(' <Expression> ')' '{' <Case Stms> '}'
                | <Block>
-               | <Expression> ';'               
+               | <Expression> ';'  
+               | <Register Expression> ';'             
                | goto Id ';'
                | break ';'
                | continue ';'
@@ -422,28 +317,32 @@ Comment Line  = '//'
                | exit ';'
                | exit DecLiteral ';'
                | pass ';'
-               | interrupt <CONSTANT> ';'
+               | interrupt <Integral Const> ';'
+               | interrupt <Integral Const> '(' <PARAM EXPR> ')' ';'
                | return <Expression> ';'
-                
-               | ';'              !Null statement
-
+               | return ';'
+               | delete <Value> ';'
+               | <ASM Statement>
+               | ';'              !Null statement          
+               
 
 
 <Arg>       ::= <Expression> 
               | 
 
-<Case Stms> ::= case <Value> ':' <Stm List> <Case Stms>
-              | default ':' <Stm List>                  
-              |
+<Case Stm> ::=  case <Integral Const List> ':' <Stm List>
+              | default ':' <Stm List>   
+<Case Stms> ::= <Case Stm> <Case Stms>
+              | <Case Stm>                
 
 <Block>     ::= '{' <Stm List> '}' 
 
 <Stm List>  ::=  <Statement> <Stm List> 
               | 
-
-
+   
+<ASM Statement> ::= asm '{' <INSTRUCTIONS> '}'
 ! ===================================================================
-! Here begins the C's 15 levels of operator precedence.
+! Vatu Operators Priorities
 ! ===================================================================
 
 <Expression>       ::= <Op Assign>
@@ -483,10 +382,8 @@ Comment Line  = '//'
 <Op BinAND>  ::= <Op BinAND> '&' <Op Equate>
                | <Op Equate>
 
-<Op Equate>  ::= <Op Equate> '==' <Op NEqual>
-               | <Op NEqual>
-
-<Op NEqual>  ::= <Op NEqual> '!=' <Op Compare>
+<Op Equate>  ::= <Op Equate> '==' <Op Compare>
+               | <Op Equate> '!=' <Op Compare>
                | <Op Compare>
 
 <Op Compare> ::= <Op Compare> '<'  <Op Shift>
@@ -510,7 +407,7 @@ Comment Line  = '//'
                | <Op Mult> '/' <Op Unary>
                | <Op Mult> '%' <Op Unary>
                | <Op Unary>
-
+ 
 <Op Unary>   ::= '!'    <Op Unary>
                | '~'    <Op Unary>   
                | '-'    <Op Unary>
@@ -528,46 +425,72 @@ Comment Line  = '//'
                | sizeof '(' ID <Pointers> ')'
                | addressof '(' ID ')'
                | nameof  '(' ID ')'
-    
-               | <Op Pointer>
+               | <Op Pointer>    
 
-<VALUE POS> ::= HIGH
-             | LOW
+ <VALUE POS> ::= HIGH
+             | LOW         
+             
 
-<Op Pointer> ::= <Op Pointer> '.' <Value>
+
+<Op Pointer> ::= <Op Pointer> '.' <Declared Expression> 
                | <Op Pointer> '.' <VALUE POS>
-               | <Op Pointer> '->' <Value>
+               | <Op Pointer> '->' <Declared Expression> 
                ! Naming
-               | <Name> '::' <Value>
-               | <Type> '::' <Value>
+               | <Name> '::' <Declared Expression>
+               | <Type> '::' <Declared Expression>
                                
                | <Op Pointer> '[' <Expression> ']'
-               | <Value>
+               | <Value>     
+               
 
-
+               
 <Value>      ::= <CONSTANT>
-               | <Method Expr>     
-               | <Var Expr>
                | '(' <Expression> ')'
-               | <REGISTER>
+               | <Declared Expression> 
+               | new <Type> '[' <Expression> ']'
+              ! | <Initializer>
+               
 
+<Declared Expression> ::=<Method Expr>     
+               | <Var Expr>
+               
 <Var Expr>     ::= Id
-<Method Expr>  ::= Id '(' <PARAM EXPR> ')'   
+<Method Expr>  ::= Id '(' <PARAM EXPR> ')' 
                 
-<CONSTANT>    ::= OctLiteral
-               | HexLiteral
-               | MacroLiteral
-               | DecLiteral  
-               | StringLiteral
-               | CharLiteral
-               | BinaryLiteral
+                
+<CONSTANT>    ::= <Integral Const> 
                | BooleanLiteral
-               | NullLiteral    
-                        
+               | NullLiteral   
+               | FloatLiteral
+               | <Multiline String Literals>
+               
+
+!<Initliazers>  ::= <Value>
+!               | <Value> ',' <Initliazers>      
+          
+!<Initializer> ::= '{' <Initliazers>  '}'   
+                                  
+<Integral Const> ::= OctLiteral   
+                   | HexLiteral
+                   | DecLiteral  
+                   | BinaryLiteral
+                   | CharLiteral
+                 
+                   
+<Integral Const List> ::= <Integral Const>
+                     | <Integral Const> ',' <Integral Const List> 
+ 
+                  
 <PARAM EXPR>  ::= <Expression> ',' <PARAM EXPR>
                |  <Expression>
-               |        
-<REGISTER>   ::= AX
+               |    
+               
+   
+! ===================================================================
+! Registers Operations
+! ===================================================================  
+ 
+<REGISTER ID>   ::= AX
               | BX
               | CX
               | DX
@@ -580,8 +503,7 @@ Comment Line  = '//'
               | ES
               | FS
               | GS
-              | SS
-             
+              | SS             
               | AH
               | AL
               | BH
@@ -590,9 +512,78 @@ Comment Line  = '//'
               | CL
               | DH
               | DL  
-                        
+
+<REGISTER> ::=   <REGISTER ID>            
+<Register Expression> ::= <REGISTER> ':=' <REGISTER Target Expression>  ! Register Assign
+                        | <Var Expr> ':=' <REGISTER> ! Var Assign
+                        | '+' <REGISTER> ! Push
+                        | '-' <REGISTER>  ! Pop
+                        | <REGISTER> ':='  <Register Operation> '?' <REGISTER Target Expression>  ':' <REGISTER Target Expression>  ! If Expr
+                        | <Register Operation> 
+<Register Operation> ::= <REGISTER> <Binary Operator> <REGISTER>
+                         | <Unary Operator> <REGISTER>
+                         
+<REGISTER Target Expression> ::= <CONSTANT>
+                              | <Var Expr>                      
+                              | <REGISTER>
+                             
+! ===================================================================
+! Operators & Bases
+! ===================================================================  
+      
+<Mod>       ::= <Modifier>
+             | <Modifier> <Mod> 
+<Modifier>      ::= extern 
+             | static
+             | const   
+             | private
+             | public
+      
+
+
 <INSTRUCTION> ::= StringLiteral ';'
-           
-<INSTRUCTIONS> ::= <INSTRUCTION> <INSTRUCTIONS> 
-                |             
+<INSTRUCTIONS> ::= <INSTRUCTION>  <INSTRUCTIONS> 
+                |  <INSTRUCTION>       
           
+                       
+<Operator Def> ::= OperatorLiteralUnary
+                 | OperatorLiteralBinary
+
+<Operator>       ::=  <Binary Operator>
+                  | <Unary Operator>   
+
+                                            
+<Binary Operator> ::= '=='
+                   | '!='
+                   | '<='
+                   | '>='
+                   | '>'
+                   | '<'
+                   | '+'
+                   | '-'
+                   | '*'
+                   | '/'
+                   | '%'
+                   | '^'
+                   | '&'
+                   | '|'
+                   | '<<'
+                   | '>>'
+                   | '<~'
+                   | '~>'
+                                      
+<Unary Operator> ::= '++'
+                  | '--'
+                  | '[]'
+                  | '~'
+                  | '¤'
+                  | '??'
+                  | new
+                  | delete           
+
+<Cast Kind> ::= implicit
+             | explicit
+                 
+<Multiline String Literals> ::= StringLiteral
+                    | StringLiteral <Multiline String Literals>
+

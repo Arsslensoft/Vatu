@@ -103,6 +103,11 @@ HelpText = "Interrupts definition")]
        [Option('o', "out", Required = false, DefaultValue = "",
 HelpText = "Output file")]
        public string OutputBinary { get; set; }
+
+
+       [Option("flow", Required = false, DefaultValue = false,
+HelpText = "Do flow analysis")]
+       public bool Flow { get; set; }
             [ParserState]
             public IParserState LastParserState { get; set; }
             [HelpOption]

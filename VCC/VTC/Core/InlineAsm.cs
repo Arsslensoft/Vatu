@@ -14,30 +14,30 @@ namespace VTC.Core
         public RegistersEnum Register { get; set; }
         public bool Is16Bits { get; set; }
 
-        [Rule(@"<REGISTER> ::= AX")]
-        [Rule(@"<REGISTER> ::= BX")]
-        [Rule(@"<REGISTER> ::= CX")]
-        [Rule(@"<REGISTER> ::= DX")]
-        [Rule(@"<REGISTER> ::= SP")]
-        [Rule(@"<REGISTER> ::= BP")]
-        [Rule(@"<REGISTER> ::= SI")]
-        [Rule(@"<REGISTER> ::= DI")]
+        [Rule(@"<REGISTER ID> ::= AX")]
+        [Rule(@"<REGISTER ID> ::= BX")]
+        [Rule(@"<REGISTER ID> ::= CX")]
+        [Rule(@"<REGISTER ID> ::= DX")]
+        [Rule(@"<REGISTER ID> ::= SP")]
+        [Rule(@"<REGISTER ID> ::= BP")]
+        [Rule(@"<REGISTER ID> ::= SI")]
+        [Rule(@"<REGISTER ID> ::= DI")]
 
-        [Rule(@"<REGISTER> ::= CS")]
-        [Rule(@"<REGISTER> ::= DS")]
-        [Rule(@"<REGISTER> ::= ES")]
-        [Rule(@"<REGISTER> ::= FS")]
-        [Rule(@"<REGISTER> ::= GS")]
-        [Rule(@"<REGISTER> ::= SS")]
+        [Rule(@"<REGISTER ID> ::= CS")]
+        [Rule(@"<REGISTER ID> ::= DS")]
+        [Rule(@"<REGISTER ID> ::= ES")]
+        [Rule(@"<REGISTER ID> ::= FS")]
+        [Rule(@"<REGISTER ID> ::= GS")]
+        [Rule(@"<REGISTER ID> ::= SS")]
 
-        [Rule(@"<REGISTER> ::= AH")]
-        [Rule(@"<REGISTER> ::= BH")]
-        [Rule(@"<REGISTER> ::= CH")]
-        [Rule(@"<REGISTER> ::= DH")]
-        [Rule(@"<REGISTER> ::= AL")]
-        [Rule(@"<REGISTER> ::= BL")]
-        [Rule(@"<REGISTER> ::= CL")]
-        [Rule(@"<REGISTER> ::= DL")]
+        [Rule(@"<REGISTER ID> ::= AH")]
+        [Rule(@"<REGISTER ID> ::= BH")]
+        [Rule(@"<REGISTER ID> ::= CH")]
+        [Rule(@"<REGISTER ID> ::= DH")]
+        [Rule(@"<REGISTER ID> ::= AL")]
+        [Rule(@"<REGISTER ID> ::= BL")]
+        [Rule(@"<REGISTER ID> ::= CL")]
+        [Rule(@"<REGISTER ID> ::= DL")]
         public RegisterIdentifier(RegisterToken id)
             : base(id.Name)
         {
@@ -91,11 +91,11 @@ namespace VTC.Core
             nxt = ains;
             ins = a;
         }
-        [Rule(@"<INSTRUCTIONS>   ::= ")]
-        public AsmInstructions()
+        [Rule(@"<INSTRUCTIONS>  ::=  <INSTRUCTION> ")]
+        public AsmInstructions(AsmInstruction a)
         {
             loc = CompilerContext.TranslateLocation(position);
-            ins = null;
+            ins = a;
             nxt = null;
          
         }

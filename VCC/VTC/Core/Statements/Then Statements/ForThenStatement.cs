@@ -1,0 +1,47 @@
+using bsn.GoldParser.Semantic;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Vasm;
+using Vasm.x86;
+
+namespace VTC.Core
+{
+	public class ForThenStatement : ThenStatement
+    {
+
+        public ForStatement For { get; set; }
+
+        [Rule("<Then Stm>   ::=  ~for ~'(' <Arg> ~';' <Arg> ~';' <Arg> ~')' <Then Stm>")]
+        public ForThenStatement(ArgumentExpression init, ArgumentExpression cond, ArgumentExpression inc, ThenStatement stmt)
+        {
+            For = new ForStatement(init, cond, inc, stmt);
+
+
+        }
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            return For.DoResolve(rc);
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+            return For.Resolve(rc);
+        }
+        public override bool Emit(EmitContext ec)
+        {
+            return For.Emit(ec);
+        }
+        public override Reachability MarkReachable(Reachability rc)
+        {
+            base.MarkReachable(rc);
+            return For.MarkReachable(rc);
+        }
+        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            return For.DoFlowAnalysis(fc);
+        }
+    }
+    
+	
+}

@@ -1,0 +1,26 @@
+﻿namespace std
+{
+public void print(string msg){
+DX := msg;
+AH := 9b;
+interrupt 0x21;
+}
+public void putc(byte c){
+DX:=c;
+AH:=2b;
+interrupt 0x21;
+}
+public byte getc(){
+byte c = 0;
+AH := 0;
+interrupt 0x16;
+c := AL;
+AH := 0x0E;
+
+interrupt 0x10;
+
+   return c;
+}
+
+}
+//END

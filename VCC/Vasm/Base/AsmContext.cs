@@ -231,6 +231,15 @@ namespace Vasm
             get { return mDefInstructions; }
             set { mDefInstructions = value; }
         }
+
+        protected internal List<Instruction> mInitInstructions = new List<Instruction>();
+        public List<Instruction> InitInstructions
+        {
+            get { return mInitInstructions; }
+            set { mInitInstructions = value; }
+        }
+
+
         public static AsmContext CurrentInstance
         {
             get { return mCurrentInstance; }
@@ -384,16 +393,51 @@ namespace Vasm
        {
            Externals.Add(func);
        }
+       void InitCode(AssemblyWriter writer)
+       {
+           // Write out code
+           for (int i = 0; i < mInitInstructions.Count; i++)
+           {
+
+               var xOp = mInitInstructions[i];
+               if (xOp == null)
+                   continue;
+               if (xOp.Emit)
+               {
+                   string prefix = "\t\t";
+                   if (xOp is Label)
+                   {
+                       var xLabel = (Label)xOp;
+                       writer.WriteLine();
+                       prefix = "\t\t";
+                       writer.Write(prefix);
+                       xLabel.WriteText(this, writer);
+                       writer.WriteLine();
+                   }
+                   else
+                   {
+                       writer.Write(prefix);
+                       xOp.WriteText(this, writer);
+                       writer.WriteLine();
+                   }
+               }
+           }
+       }
        void EmitInterruptInstallCode(AssemblyWriter writer)
        {
            
   
                if (IsInterruptOverload && Interrupts.Count > 0)
-                   writer.WriteLine("\tcall	INSTALL_INTERRUPTS");
+                   writer.WriteLine("\t\tcall	INSTALL_INTERRUPTS");
 
-               writer.Write("\tcall " + EntryPoint);
+           // init vars
+               writer.Write("\t;Initializing fields");
+               writer.WriteLine();
+               InitCode(writer);
+
+               writer.Write("\t\tcall " + EntryPoint);
                
-
+         
                writer.WriteLine();
            
        }
@@ -445,7 +489,7 @@ namespace Vasm
            EmitPrepare(writer);
            // Write out readonly
            if(!IsFlat)
-           writer.WriteLine(";section .rodata");
+                  writer.WriteLine(";section .rodata");
 
            foreach (DataMember xMember in mCDataMembers)
            {

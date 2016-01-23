@@ -1,0 +1,41 @@
+﻿
+namespace BitAccessTest
+{
+use std;
+public uint A = 0;
+
+public void BitSetTest(ref byte b){
+	A[0] = true; 
+	A[6] = true;  // A += 64
+
+	b = A.LOW;
+	b[5] = true;
+
+}
+public void BitGetTest(ref byte c,byte b){
+	c[0] = b[0];
+	c[1] = true;
+	c[5]= b[5];
+	c[6] = b[6];
+}
+bool ValidTest(byte a,byte c) {
+	return (A == 65 && a == 97 && c == 99);
+}
+public void StartBATest()
+{
+	byte a=0,c=0;
+	BitSetTest(a);
+	BitGetTest(c,a);
+	print("\nA= $");
+	putc(A.LOW);
+	print("\ta= $");
+	putc(a);
+	print("\tc= $");
+	putc(c);
+if(ValidTest(a,c))
+print("\nBitAccess Test Successfully completed $");
+else print("\nBitAccess Test Failed $");
+return;
+}
+
+}

@@ -1,0 +1,79 @@
+using bsn.GoldParser.Parser;
+using bsn.GoldParser.Semantic;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Vasm;
+using Vasm.x86;
+using VTC.Core;
+
+namespace VTC
+{
+	public class LoadEffectiveAddressOp : UnaryOp
+    {
+        MemberSpec ms;
+        public LoadEffectiveAddressOp()
+        {
+            Register = RegistersEnum.AX;
+            Operator = UnaryOperator.AddressOf;
+        }
+        TypeSpec MemberType;
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+       
+                // LEA
+            if (Right is AccessExpression)
+            {
+              ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non variable expressions");
+                ms = null;
+            }
+            else if (Right is VariableExpression)
+                ms = (Right as VariableExpression).variable;
+            else
+                ResolveContext.Report.Error(54, Location, "Address Of Operator does not support non variable expressions");
+                CommonType = Right.Type.MakePointer();
+                return this;
+         
+        }
+        public override bool Resolve(ResolveContext rc)
+        {
+           return Right.Resolve(rc) ;
+        }
+        public override bool Emit(EmitContext ec)
+        {
+            if (ms != null)
+            {
+                if (ms is VarSpec)
+                    ms.LoadEffectiveAddress(ec);
+                else if (ms is FieldSpec)
+                    ms.LoadEffectiveAddress(ec);
+                else if (ms is ParameterSpec)
+                    ms.LoadEffectiveAddress(ec);
+            }
+     
+
+            return true;
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            if (ms != null)
+            {
+                if (ms is VarSpec)
+                    ms.LoadEffectiveAddress(ec);
+                else if (ms is FieldSpec)
+                    ms.LoadEffectiveAddress(ec);
+                else if (ms is ParameterSpec)
+                    ms.LoadEffectiveAddress(ec);
+            }
+            else return Emit(ec);
+            return true;
+        }
+        public override string CommentString()
+        {
+            return  "&";
+        }
+    }
+    
+	
+}

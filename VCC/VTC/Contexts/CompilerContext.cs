@@ -3,6 +3,7 @@ using bsn.GoldParser.Parser;
 using bsn.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -63,6 +64,7 @@ namespace VTC
         CompiledGrammar grammar; SemanticTypeActions<SimpleToken> actions;
         public void InitGrammar()
         {
+          //  Stopwatch st = new Stopwatch(); st.Start();
             Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("VTC.VATU.egt");
           
 
@@ -71,7 +73,8 @@ namespace VTC
                  grammar = CompiledGrammar.Load(stream);
                  actions = new SemanticTypeActions<SimpleToken>(grammar);
 
-            
+            //     st.Stop();
+              //   Console.WriteLine("Init : " + st.Elapsed);
         }
         public AsmContext CreateAsmContext()
         {
@@ -102,46 +105,77 @@ namespace VTC
 
         }
         public DependencyParsing DefaultDependency { get; set; }
-        public bool Preprocess()
+
+        public void ReportParserMessage(ParseMessage pm, IToken token, ReadOnlyCollection<Symbol> expected)
         {
-            if(Options.Includes != null)
-                 Preprocessor.Paths.AddRange(Options.Includes);
-            // compiler symbols
-            if(Options.Symbols != null)
-            {
-                foreach (string sym in Options.Symbols)
-                    Preprocessor.Symbols.Add(sym, true);
-            }
-
-
-            // init default paths
-       
-     
-            foreach (string src in Options.Sources)
-            {
-                  
-                if(File.Exists(src))
-                {
-                    if(!Preprocessor.Paths.Contains(Path.GetDirectoryName(src)))
-                             Preprocessor.Paths.Add(Path.GetDirectoryName(src));
+            string err = "[P&Lex] ";
+            if (pm == ParseMessage.LexicalError)
+                err = "Lexical error ";
           
-                    DependencyParsing dep = new DependencyParsing();
-                    dep.File = src;
-                   
-                    if (!InputSources.Contains(dep))
-                    {
-                        dep.InputStream = new StreamReader(File.OpenRead(dep.File));
-                        InputSources.Add(dep);
-                        DefaultDependency = dep;
-                    }
-                    
-                }
-           
+           else if (pm == ParseMessage.InternalError)
+                err = "Internal error ";
+            else if (pm == ParseMessage.SyntaxError)
+                err = "Syntax error ";
+            else if (pm == ParseMessage.BlockError)
+                err = "Block error ";
+            else err = "Group error ";
+            string expects = "";
+            if (expected != null && expected.Count > 0)
+            {
+
+                foreach (Symbol e in expected)
+                    expects += ", " + e.Name;
+                if (expects.Length > 0)
+                    expects = expects.Remove(0, 2);
+
             }
-      
-     
-            return true;
+
+            ResolveContext.Report.Error(0, CompilerContext.TranslateLocation(token.Position), err + expects + " expected");
+        
         }
+
+        #region Includes
+        public string FixInclude(string file, string currentdir)
+        {
+            if (!Directory.Exists(currentdir))
+                currentdir = "";
+            string tryout = Path.GetFullPath(Path.Combine(currentdir, file));
+            if (File.Exists(tryout))
+                return tryout;
+            foreach (string path in Paths)
+            {
+                tryout = Path.Combine(path, file);
+                if (File.Exists(tryout))
+                    return tryout;
+            }
+            return file;
+        }
+        internal List<string> Paths = new List<string>();
+        public bool IncludeFile(string file)
+        {
+            DependencyParsing dep = new DependencyParsing();
+            dep.File = file;
+
+            dep.File =FixInclude(dep.File, Path.GetDirectoryName(ResolveContext.Report.FilePath));
+            string path = Path.GetDirectoryName(dep.File);
+            if (!Paths.Contains(path))
+                Paths.Add(path);
+            if (InputSources.Contains(dep))
+            {
+                dep = InputSources[InputSources.IndexOf(dep)];
+                return ResolveDependency(InputSources.IndexOf(dep));
+            }
+            else
+            {
+                dep.InputStream = new StreamReader(File.OpenRead(dep.File));
+                InputSources.Add(dep);
+                return ResolveDependency(InputSources.Count - 1);
+            }
+         
+        }
+        #endregion
+
+
         public bool ResolveDependency(int idx)
         {
             DependencyParsing dep = InputSources[idx];
@@ -153,14 +187,25 @@ namespace VTC
             bool ok = true;
             try
             {
-               
 
+               // Stopwatch st = new Stopwatch(); st.Start();
+          
                     var processor = new SemanticProcessor<SimpleToken>(dep.InputStream, actions);
-
+                 
                     ParseMessage parseMessage = processor.ParseAll();
+
+                //    st.Stop();
+                 //   Console.WriteLine("["+dep.File+"] Parse time : " + st.Elapsed);
                     if (parseMessage == ParseMessage.Accept)
                     {
-                        var globals = processor.CurrentToken as GlobalSequence<Global>;
+
+
+                        CompilationUnit cunit = processor.CurrentToken as CompilationUnit;
+                        // includes
+                        foreach (IncludeDeclaration incl in cunit.Includes)
+                            IncludeFile(incl.IncludeFile);
+                        // global decls
+                        var globals = cunit.Globals;
                         ResolveContext RootCtx = null;
                         List<Declaration> Resolved = new List<Declaration>();
                         List<ResolveContext> ResolveCtx = new List<ResolveContext>();
@@ -170,7 +215,7 @@ namespace VTC
                           
                         
 
-                        ok &= ResolveSemanticTree(globals, ref RootCtx, ref Resolved, ref ResolveCtx);
+                        ok &= ResolveSemanticTree(cunit, ref RootCtx, ref Resolved, ref ResolveCtx);
                         if (ok) // Emit
                         {
                             dep.Declarations = Resolved;
@@ -202,8 +247,7 @@ namespace VTC
                     {
                         ok = false;
                         IToken token = processor.CurrentToken;
-                        ResolveContext.Report.Error(0, CompilerContext.TranslateLocation(token.Position), "Syntax error '" + token.Symbol.Name + "' expected");
-
+                        ReportParserMessage(parseMessage, token, processor.GetExpectedTokens());
                     }
                 
             }
@@ -217,9 +261,10 @@ namespace VTC
             ResolveContext.Report.FilePath = oldf;
             return ok;
         }
-        public bool ResolveSemanticTree(GlobalSequence<Global> globals,ref ResolveContext RootCtx, ref List<Declaration> Resolved, ref List<ResolveContext> ResolveCtx,bool isdef=false)
+        public bool ResolveSemanticTree(CompilationUnit cunit,ref ResolveContext RootCtx, ref List<Declaration> Resolved, ref List<ResolveContext> ResolveCtx,bool isdef=false)
         {
-            foreach (Global gb in globals)
+
+            foreach (Global gb in cunit.Globals)
             {
              
                 
@@ -234,97 +279,104 @@ namespace VTC
                     DefaultDependency.RootCtx = RootCtx;
                 else RootCtx.FillKnownByKnown(DefaultDependency.RootCtx.Resolver);
 
+                // includes
+                foreach (IncludeDeclaration incl in cunit.Includes)
+                    IncludeFile(incl.IncludeFile);
+
                 if (old_ctx != null)
                     RootCtx.FillKnownByKnown(old_ctx.Resolver);
                 if (stmts != null)
                 { 
                     // PreProcess
-                    List<Declaration> Preprocessed = new List<Declaration>();
-                    foreach (Declaration stmt in stmts.Declarations)
+                    
+                    foreach (Declaration sstmt in stmts.Declarations)
                     {
-                        if (stmt.BaseDeclaration is PreprocessorDeclaration)
-                        {
-                            DeclarationSequence<Declaration> declsofpp = null;
-                           bool ok =  (stmt.BaseDeclaration as PreprocessorDeclaration).Preprocess(this,ref declsofpp);
-                           if (!ok)
-                               return false;
+                        Declaration vstmt = sstmt.BaseDeclaration;
+                        if (vstmt.BaseDeclaration != null)
+                            vstmt = vstmt.BaseDeclaration;
 
-                            if (declsofpp != null)
-                                foreach (Declaration d in declsofpp)
-                                    Preprocessed.Add(d);
-                        }
-                        else Preprocessed.Add(stmt);
-                    }
-                    //// fill default
-                    //if (isdef)
-                    //{
-                    //    foreach (DependencyParsing dep in DefaultDependency.DependsOn)
-                    //        RootCtx.FillKnownByKnown(dep.RootCtx.Resolver);
-                    //}
-                 
-                    foreach (Declaration stmt in Preprocessed)
-                    {
-                        
-                        if (stmt.BaseDeclaration is MethodDeclaration)
+                        if (vstmt is MethodDeclaration)
                         {
-                            MethodDeclaration md = (MethodDeclaration)stmt.BaseDeclaration;
+                            MethodDeclaration md = (MethodDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            stmt.Resolve(childctx);
+                            vstmt.Resolve(childctx);
                             MethodDeclaration d = (MethodDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
                             Resolved.Add(d);
                             ResolveCtx.Add(childctx);
+
+                            // Flow Analysis
+                            if (Options.Flow)
+                            {
+                                FlowAnalysisContext fc = new FlowAnalysisContext(childctx.Resolver.KnownLocalVars.Count, d);
+                                fc.DoFlowAnalysis(childctx);
+                            }
                         }
-                        else if (stmt.BaseDeclaration is OperatorDeclaration)
+                        else if (vstmt is OperatorDeclaration)
                         {
-                            OperatorDeclaration md = (OperatorDeclaration)stmt.BaseDeclaration;
+                            OperatorDeclaration md = (OperatorDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            stmt.Resolve(childctx);
+                            vstmt.Resolve(childctx);
                             OperatorDeclaration d = (OperatorDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
                             Resolved.Add(d);
                             ResolveCtx.Add(childctx);
+
+                            // Flow Analysis
+                            if (Options.Flow)
+                            {
+                                FlowAnalysisContext fc = new FlowAnalysisContext(childctx.Resolver.KnownLocalVars.Count, d);
+                                fc.DoFlowAnalysis(childctx);
+                            }
                         }
-                        else if (stmt.BaseDeclaration is InterruptDeclaration)
+                        else if (vstmt is InterruptDeclaration)
                         {
-                            InterruptDeclaration md = (InterruptDeclaration)stmt.BaseDeclaration;
+                            InterruptDeclaration md = (InterruptDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            stmt.Resolve(childctx);
+                            vstmt.Resolve(childctx);
                             InterruptDeclaration d = (InterruptDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
                             Resolved.Add(d);
                             ResolveCtx.Add(childctx);
+
+
+                            // Flow Analysis
+                            if (Options.Flow)
+                            {
+                                FlowAnalysisContext fc = new FlowAnalysisContext(childctx.Resolver.KnownLocalVars.Count, d);
+                                fc.DoFlowAnalysis(childctx);
+                            }
                         }
-                        else if (stmt.BaseDeclaration is StructDeclaration)
+                        else if (vstmt is StructDeclaration)
                         {
-                            StructDeclaration md = (StructDeclaration)stmt.BaseDeclaration;
+                            StructDeclaration md = (StructDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            stmt.Resolve(childctx);
+                            vstmt.Resolve(childctx);
                             StructDeclaration d = (StructDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
                             Resolved.Add(d);
                             ResolveCtx.Add(childctx);
                         }
-                        else if (stmt.BaseDeclaration is UnionDeclaration)
+                        else if (vstmt is UnionDeclaration)
                         {
-                            UnionDeclaration md = (UnionDeclaration)stmt.BaseDeclaration;
+                            UnionDeclaration md = (UnionDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            stmt.Resolve(childctx);
+                            vstmt.Resolve(childctx);
                             UnionDeclaration d = (UnionDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
                             Resolved.Add(d);
                             ResolveCtx.Add(childctx);
                         }
-                        else if (stmt.BaseDeclaration is EnumDeclaration)
+                        else if (vstmt is EnumDeclaration)
                         {
-                            EnumDeclaration md = (EnumDeclaration)stmt.BaseDeclaration;
+                            EnumDeclaration md = (EnumDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            stmt.Resolve(childctx);
+                            vstmt.Resolve(childctx);
                             EnumDeclaration d = (EnumDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
@@ -333,12 +385,12 @@ namespace VTC
                         }
                         else
                         {
-                            RootCtx.IsInTypeDef = stmt.IsTypeDef;
-                            RootCtx.IsInStruct = stmt.IsStruct;
-                            RootCtx.IsInUnion = stmt.IsUnion;
-                            stmt.Resolve(RootCtx);
+                            RootCtx.IsInTypeDef = vstmt.IsTypeDef;
+                            RootCtx.IsInStruct = vstmt.IsStruct;
+                            RootCtx.IsInUnion = vstmt.IsUnion;
+                            vstmt.Resolve(RootCtx);
                             ResolveCtx.Add(RootCtx);
-                            Declaration d = (Declaration)stmt.DoResolve(RootCtx);
+                            Declaration d = (Declaration)vstmt.DoResolve(RootCtx);
                             Resolved.Add(d);
                         }
                     }
@@ -348,27 +400,65 @@ namespace VTC
             }
             return (ResolveContext.Report.ErrorCount == 0);
         }
+        public bool Preprocess()
+        {
+
+            if (Options.Includes != null)
+                Paths.AddRange(Options.Includes);
+
+            // init default paths
+
+
+            foreach (string src in Options.Sources)
+            {
+
+                if (File.Exists(src))
+                {
+                    if (!Paths.Contains(Path.GetDirectoryName(src)))
+                        Paths.Add(Path.GetDirectoryName(src));
+
+                    DependencyParsing dep = new DependencyParsing();
+                    dep.File = src;
+
+                    if (!InputSources.Contains(dep))
+                    {
+                        dep.InputStream = new StreamReader(File.OpenRead(dep.File));
+                        InputSources.Add(dep);
+                        DefaultDependency = dep;
+                    }
+
+                }
+
+            }
+
+
+            return true;
+        }
         public bool ResolveAndEmit()
         {
-         
-            bool ok = Preprocess();
+          bool ok = Preprocess();
+           
             ResolveContext.Report.FilePath = DefaultDependency.File;
             try{
-           
 
+           //     Stopwatch st = new Stopwatch(); st.Start();
                 var processor = new SemanticProcessor<SimpleToken>(InputSources[0].InputStream, actions);
 
                 ParseMessage parseMessage = processor.ParseAll();
+           //     st.Stop();
+           //     Console.WriteLine("[" + DefaultDependency.File + "] Parse time : " + st.Elapsed);
                 if (parseMessage == ParseMessage.Accept)
                 {
-                    var globals = processor.CurrentToken as GlobalSequence<Global>;
+                    CompilationUnit cunit = processor.CurrentToken as CompilationUnit;
+                 
+                   
                     ResolveContext RootCtx = null;
                     List<Declaration> Resolved = new List<Declaration>();
                     List<ResolveContext> ResolveCtx = new List<ResolveContext>();
                     List<Declaration> RResolved = new List<Declaration>();
                     List<ResolveContext> RResolveCtx = new List<ResolveContext>();
 
-                    ok &= ResolveSemanticTree(globals,ref RootCtx,ref Resolved,ref ResolveCtx, true);
+                    ok &= ResolveSemanticTree(cunit, ref RootCtx, ref Resolved, ref ResolveCtx, true);
 
 
                     if (ok) // Emit & Fill Dependencies
@@ -405,7 +495,7 @@ namespace VTC
                 }
                 else{ ok = false;
                        IToken token = processor.CurrentToken;
-                       ResolveContext.Report.Error(0, CompilerContext.TranslateLocation(token.Position), "Syntax error at '" + token.Symbol.Name +"' ["+parseMessage.ToString()+"]");
+                       ReportParserMessage(parseMessage, token, processor.GetExpectedTokens());
 
                 }
             
@@ -422,21 +512,24 @@ namespace VTC
               bool ok = Preprocess();
             ResolveContext.Report.FilePath = DefaultDependency.File;
             try{
-           
-
+             
                 var processor = new SemanticProcessor<SimpleToken>(InputSources[0].InputStream, actions);
 
                 ParseMessage parseMessage = processor.ParseAll();
+        
                 if (parseMessage == ParseMessage.Accept)
                 {
-                    var globals = processor.CurrentToken as GlobalSequence<Global>;
+                    CompilationUnit cunit = processor.CurrentToken as CompilationUnit;
+                 
+                    // global decls
+                   
                     ResolveContext RootCtx = null;
                     List<Declaration> Resolved = new List<Declaration>();
                     List<ResolveContext> ResolveCtx = new List<ResolveContext>();
                     List<Declaration> RResolved = new List<Declaration>();
                     List<ResolveContext> RResolveCtx = new List<ResolveContext>();
 
-                    ok &= ResolveSemanticTree(globals,ref RootCtx,ref Resolved,ref ResolveCtx, true);
+                    ok &= ResolveSemanticTree(cunit, ref RootCtx, ref Resolved, ref ResolveCtx, true);
                   
                  
                     DefaultDependency.ResolveCtx = RResolveCtx;
@@ -446,8 +539,7 @@ namespace VTC
                 {
                     ok = false;
                     IToken token = processor.CurrentToken;
-                    ResolveContext.Report.Error(0, CompilerContext.TranslateLocation(token.Position), "Syntax error '" + token.Symbol.Name + "' expected");
-
+                    ReportParserMessage(parseMessage, token, processor.GetExpectedTokens());
                 }
 
             }

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>-s "D:\Projects\Vatu\Vatu\VCC\VTC\Samples\DOS.vt" -a "C:\Users\Arsslen Idadi\Desktop\OSTEST\DOS.asm" -o "C:\Users\Arsslen Idadi\Desktop\OSTEST\myprog.com" -z 0 --int -p 2 --sym Hel MONO</StartArguments>
+    <StartArguments>-s "D:\Projects\Vatu\Vatu\VCC\VTC\Samples\Tests\Main.vt" -a "C:\Users\Arsslen Idadi\Desktop\OSTEST\DOS.asm" -o "C:\Users\Arsslen Idadi\Desktop\OSTEST\myprog.com" -z 0 --int -p 2 --sym Hel MONO --flow</StartArguments>
     <StartWorkingDirectory>
     </StartWorkingDirectory>
   </PropertyGroup>

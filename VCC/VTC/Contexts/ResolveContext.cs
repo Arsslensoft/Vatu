@@ -54,7 +54,7 @@ namespace VTC
     }
     public class ResolveContext : IDisposable
     {
-
+      
         public IConditional EnclosingIf { get; set; }
         public ILoop EnclosingLoop { get; set; }
         public Switch EnclosingSwitch { get; set; }
@@ -124,6 +124,7 @@ namespace VTC
             Resolver.KnowType(BuiltinTypeSpec.String);
             Resolver.KnowType(BuiltinTypeSpec.Pointer);
             Resolver.KnowType(BuiltinTypeSpec.Void);
+            Resolver.KnowType(BuiltinTypeSpec.Float);
         }
         void Init()
         {
@@ -410,14 +411,16 @@ namespace VTC
                 Resolver.KnownMethods.Add(mtd);
             }
         }
-        public void KnowVar(VarSpec mtd)
+        public bool KnowVar(VarSpec mtd)
         {
             if (!Exist((MemberSpec)mtd, Resolver.KnownLocalVars.Cast<MemberSpec>().ToList<MemberSpec>()))
             {
-                LocalStackIndex -= mtd.memberType.IsArray?mtd.memberType.GetSize(mtd.memberType): mtd.MemberType.Size;
+                LocalStackIndex -= mtd.memberType.IsArray ? mtd.memberType.GetSize(mtd.memberType) : mtd.MemberType.Size;
                 mtd.StackIdx = LocalStackIndex;
-                Resolver.KnowVar(mtd) ;
+                Resolver.KnowVar(mtd);
+                return true;
             }
+            else return false;
         }
         public void UpdateType(TypeSpec old, TypeSpec ne)
         {
@@ -427,7 +430,20 @@ namespace VTC
             
             }
         }
-       
+        public void UpdatField(FieldSpec old, FieldSpec ne)
+        {
+            if (Exist((MemberSpec)old, Resolver.KnownGlobals.Cast<MemberSpec>().ToList<MemberSpec>()))
+                Resolver.KnownGlobals[Resolver.KnownGlobals.IndexOf(old)] = ne;
+
+         
+        }
+        public void UpdateMethod(MethodSpec old, MethodSpec ne)
+        {
+            if (Exist((MemberSpec)old, Resolver.KnownTypes.Cast<MemberSpec>().ToList<MemberSpec>()))
+                Resolver.KnownMethods[Resolver.KnownMethods.IndexOf(old)] = ne;
+        }
+
+
         public void KnowType(TypeSpec mtd)
         {
             if (!Exist((MemberSpec)mtd, Resolver.KnownTypes.Cast<MemberSpec>().ToList<MemberSpec>()))

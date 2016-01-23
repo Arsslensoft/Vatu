@@ -63,7 +63,7 @@ namespace Vasm
 
         public abstract void WriteText( AsmContext ec, AssemblyWriter aOutput );
 
-        public sealed override string ToString()
+        public override string ToString()
         {
             return base.ToString();
         }

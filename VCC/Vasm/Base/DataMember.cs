@@ -93,6 +93,13 @@ namespace Vasm {
       aData.Read(RawDefaultValue, 0, RawDefaultValue.Length);
     }
 
+    string ReferenceName = null;
+    public DataMember(string aName, string ValueName)
+    {
+        Name = aName;
+        ReferenceName = ValueName;
+    }
+
     public static string GetStaticFieldName(FieldInfo aField) {
       return FilterStringForIncorrectChars("static_field__" + LabelName.GetFullName(aField.DeclaringType) + "." + aField.Name);
     }
@@ -111,6 +118,14 @@ namespace Vasm {
       if (RawAsm != null) {
         aOutput.WriteLine(RawAsm);
         return;
+      }
+      if (ReferenceName != null)
+      {
+         
+          aOutput.Write(Name);
+          aOutput.Write(" dw " + ReferenceName);
+          aOutput.WriteLine();
+          return;
       }
       if (StrVal != null)
       {

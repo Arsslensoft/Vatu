@@ -1,0 +1,111 @@
+﻿
+namespace Operators
+{
+	use std;
+
+public define bool op_compare_string_vals operator @@==;
+public define op_concat_string_vals operator @@+;
+public define bool op_isempty operator @?;
+public define op_upper_case operator @|^;
+
+
+public override bool operator @@==(string a,string b){
+	
+	 for(;*a == *b;) {
+
+   if(*a == 0)
+      return true;
+
+	  a++;
+	  b++;
+
+	 } 
+return false;
+}
+public override string operator @@+(string a,string b){
+	int i = 0;
+ int j = 0;
+ while(a[i] != '$')
+   i++;
+
+while(b[j] != '$'){
+  a[i] = b[j];
+  j++;
+  i++;
+  }
+a[i] = '$';
+ return a;
+
+}
+public override bool operator @?(string a)
+{
+	return *a == '$';
+}
+public override string operator @|^(string a)
+{
+	string p = a;
+	for(;*p != '$'; p++){
+	if(*p >= 97b && *p <= 123)
+		*p = *p - 32b;
+
+	}
+	
+	return a;
+	
+}
+void tostring(bool v)
+{
+if(v == true)
+ print("TRUE $");
+else
+print("FALSE $");
+
+}
+void tostring(uint a){
+if(a < 10)
+  putc((byte)(a+48));
+  else{
+  	tostring(a / 10);
+  	putc(48+(byte)(a % 10));
+
+  }
+}
+
+// casts return a[0]
+private override uint operator explicit(string a)
+{
+	return (uint)(*a);
+}
+ string first = "HELLO WORLd!!$";
+public void StartOpTest(){
+const string second = ", My name is Operator test$";
+const string lfirst = "HELLO WORLd!!$";
+string emp = "$";
+// equal
+print("\n $");
+print(first);
+print(" == $");
+print(lfirst);
+print(" => $");
+tostring(first @@== lfirst);
+
+print("\n $");
+print(second);
+print(" == $");
+print(lfirst);
+print(" => $");
+tostring(second @@== lfirst);
+// concat
+print("\nConcat test : \n$");
+print(first @@+ second);
+print("\nEmpty test : \n$");
+tostring(@?first);
+tostring(@?emp);
+print("\nUpper case test : \n$");
+print(@|^first);
+
+print("\nLocal Cast test : $");
+tostring((uint)first);
+}
+
+}

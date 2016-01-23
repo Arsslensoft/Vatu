@@ -320,7 +320,11 @@ namespace VTC
         {
             ag.Emit(ag.AssemblerWriter);
         }
-
+        public void EmitDataWithConv(string name,MemberSpec v, string value)
+        {
+            DataMember dm = new DataMember(name, value.ToString());
+            EmitData(dm, v, false);
+        }
         public void EmitDataWithConv(string name, object value, MemberSpec v, bool constant = false)
         {
             DataMember dm;

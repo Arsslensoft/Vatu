@@ -235,29 +235,30 @@ namespace VTC
             }
             return null;
         }
-        public MethodSpec ResolveMethod(Namespace ns, string name, TypeSpec[] par=null)
+        public void ResolveMethod(Namespace ns, string name, ref MethodSpec mtd,TypeSpec[] par=null)
         {
             if (CurrentExtensionLookup == null)
             {
                 if (par != null)
                 {
                     MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
-                    foreach (MethodSpec kt in KnownMethods)
+                    for (int i = 0; i < KnownMethods.Count; i++)
                     {
-                        if (kt.NS.Name != ns.Name)
+                        if (KnownMethods[i].NS.Name != ns.Name)
                             continue;
-                        if (kt.Signature == msig && ((!kt.IsPrivate || CurrentNamespace == ns)))
-                            return kt;
+                        if (KnownMethods[i].Signature == msig && ((!KnownMethods[i].IsPrivate || CurrentNamespace == ns)))
+                            mtd = KnownMethods[i];
                     }
                 }
                 else
                 {
-                    foreach (MethodSpec kt in KnownMethods)
+                    MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
+                    for (int i = 0; i < KnownMethods.Count; i++)
                     {
-                        if (kt.NS.Name != ns.Name)
+                        if (KnownMethods[i].NS.Name != ns.Name)
                             continue;
-                        if (kt.Name == name && ((!kt.IsPrivate || CurrentNamespace == ns)))
-                            return kt;
+                        if (KnownMethods[i].Signature == msig && ((!KnownMethods[i].IsPrivate || CurrentNamespace == ns)))
+                            mtd = KnownMethods[i];
                     }
                 }
             }
@@ -279,23 +280,24 @@ namespace VTC
                 if (par != null)
                 {
                     MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
-                    foreach (MethodSpec kt in ml)
+                    for (int i = 0; i < ml.Count; i++)
                     {
-                        if (kt.Signature.ExtensionSignature == msig.ExtensionSignature && ((!kt.IsPrivate || CurrentNamespace == ns)))
-                            return kt;
+                        if (ml[i].Signature.ExtensionSignature == msig.ExtensionSignature && ((!ml[i].IsPrivate || CurrentNamespace == ns)))
+                            mtd = ml[i];
                     }
                 }
                 else
                 {
-                    foreach (MethodSpec kt in ml)
+                    MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
+                    for (int i = 0; i < ml.Count; i++)
                     {
 
-                        if (kt.Name == name && ((!kt.IsPrivate || CurrentNamespace == ns)))
-                            return kt;
+                        if (ml[i].Signature == msig && ((!ml[i].IsPrivate || CurrentNamespace == ns)))
+                            mtd = ml[i];
                     }
                 }
             }
-            return null;
+         
         }
         public VarSpec ResolveVar(Namespace ns, string name)
         {
@@ -361,25 +363,25 @@ namespace VTC
         }
 
 
-        public MethodSpec TryResolveMethod(string name, TypeSpec[] param = null)
+        public void TryResolveMethod(string name,ref MethodSpec ms, TypeSpec[] param = null)
         {
-            MethodSpec ms = ResolveMethod(CurrentNamespace, name, param);
+            ResolveMethod(CurrentNamespace, name, ref ms,param);
             if (ms == null)
             {
-                ms = ResolveMethod(Namespace.Default, name, param);
+            ResolveMethod(Namespace.Default, name, ref ms, param);
 
 
                 if (ms == null)
                 {
                     foreach (Namespace ns in Imports)
                     {
-                        ms = ResolveMethod(ns, name, param);
+                        ResolveMethod(ns, name, ref ms, param);
                         if (ms != null)
-                            return ms;
+                            return;
                     }
                 }
             }
-            return ms;
+            return;
         }
         public VarSpec TryResolveVar(string name)
         {
