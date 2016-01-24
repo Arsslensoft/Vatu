@@ -423,18 +423,29 @@ namespace Vasm
                }
            }
        }
+       string interrupt_name;
        void EmitInterruptInstallCode(AssemblyWriter writer)
        {
-           
-  
-               if (IsInterruptOverload && Interrupts.Count > 0)
-                   writer.WriteLine("\t\tcall	INSTALL_INTERRUPTS");
 
-           // init vars
-               writer.Write("\t;Initializing fields");
-               writer.WriteLine();
-               InitCode(writer);
 
+           if (!string.IsNullOrEmpty(EntryPoint))
+           {
+               writer.WriteLine("global ___vatu_entry");
+               writer.WriteLine("___vatu_entry:");
+
+           }
+
+           if (!IsLibrary)
+               interrupt_name = "______INSTALL_INTERRUPTS";
+           else if (IsLibrary)
+               interrupt_name = "______INSTALL_INTERRUPTS_" + DateTime.Now.ToFileTimeUtc().ToString();
+          
+           if(IsLibrary && IsInterruptOverload && Interrupts.Count > 0)
+                   writer.WriteLine("\t\tglobal	"+interrupt_name);
+           else if (!IsLibrary && IsInterruptOverload && Interrupts.Count > 0)
+               writer.WriteLine("\t\tcall "+interrupt_name);
+
+           if(!string.IsNullOrEmpty(EntryPoint))
                writer.Write("\t\tcall " + EntryPoint);
                
          
@@ -446,7 +457,9 @@ namespace Vasm
            // Emit
         
             writer.WriteLine("bits 16");
+           if(!IsLibrary)
             writer.WriteLine("PROGRAM_ORG:");
+
             if (!IsLibrary)
             {
                 foreach (Instruction inst in mDefInstructions)
@@ -478,6 +491,7 @@ namespace Vasm
        }
        public virtual void EmitFinalize(AssemblyWriter writer)
        {
+           if (!IsLibrary)
            writer.WriteLine("PROGRAM_END:");
        }
        public virtual void Emit(AssemblyWriter writer)
@@ -551,7 +565,7 @@ namespace Vasm
 
            if (IsInterruptOverload && Interrupts.Count > 0)
            {
-               InstallINTInstruction iit = new InstallINTInstruction(Interrupts);
+               InstallINTInstruction iit = new InstallINTInstruction(Interrupts, interrupt_name);
                writer.WriteLine();
                writer.Write("\t\t");
                iit.WriteText(this, writer);

@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{4298326C-BB5C-44E9-93B7-7699183A93AD}</ProjectGuid>
+    <ProjectGuid>{CA895475-1D42-4686-8E19-3A0FC05C08E2}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VTL</RootNamespace>
@@ -41,9 +41,132 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComandLine\Attributes\AssemblyLicenseAttribute.cs" />
+    <Compile Include="ComandLine\Attributes\AssemblyUsageAttribute.cs" />
+    <Compile Include="ComandLine\Attributes\BaseOptionAttribute.cs" />
+    <Compile Include="ComandLine\Attributes\HelpOptionAttribute.cs" />
+    <Compile Include="ComandLine\Attributes\HelpVerbOptionAttribute.cs" />
+    <Compile Include="ComandLine\Attributes\MultiLineTextAttribute.cs" />
+    <Compile Include="ComandLine\Attributes\OptionArrayAttribute.cs" />
+    <Compile Include="ComandLine\Attributes\OptionAttribute.cs" />
+    <Compile Include="ComandLine\Attributes\OptionListAttribute.cs" />
+    <Compile Include="ComandLine\Attributes\ParserStateAttribute.cs" />
+    <Compile Include="ComandLine\Attributes\ValueListAttribute.cs" />
+    <Compile Include="ComandLine\Attributes\ValueOptionAttribute.cs" />
+    <Compile Include="ComandLine\Attributes\VerbOptionAttribute.cs" />
+    <Compile Include="ComandLine\BadOptionInfo.cs" />
+    <Compile Include="ELF\Class.cs" />
+    <Compile Include="ELF\Consts.cs" />
+    <Compile Include="ELF\ELF.cs" />
+    <Compile Include="ELF\ELFReader.cs" />
+    <Compile Include="ELF\Endianess.cs" />
+    <Compile Include="ELF\FileType.cs" />
+    <Compile Include="ELF\IELF.cs" />
+    <Compile Include="ELF\Machine.cs" />
+    <Compile Include="ELF\Sections\INoteSection.cs" />
+    <Compile Include="ELF\Sections\IProgBitsSection.cs" />
+    <Compile Include="ELF\Sections\IRelocationEntry.cs" />
+    <Compile Include="ELF\Sections\IRelocationSection.cs" />
+    <Compile Include="ELF\Sections\ISection.cs" />
+    <Compile Include="ELF\Sections\IStringTable.cs" />
+    <Compile Include="ELF\Sections\ISymbolEntry.cs" />
+    <Compile Include="ELF\Sections\ISymbolTable.cs" />
+    <Compile Include="ELF\Sections\NoteData.cs" />
+    <Compile Include="ELF\Sections\NoteSection.cs" />
+    <Compile Include="ELF\Sections\ProgBitsSection.cs" />
+    <Compile Include="ELF\Sections\RelocationEntry.cs" />
+    <Compile Include="ELF\Sections\RelocationSection.cs" />
+    <Compile Include="ELF\Sections\RelocationType.cs" />
+    <Compile Include="ELF\Sections\Section.cs" />
+    <Compile Include="ELF\Sections\SectionFlags.cs" />
+    <Compile Include="ELF\Sections\SectionHeader.cs" />
+    <Compile Include="ELF\Sections\SectionType.cs" />
+    <Compile Include="ELF\Sections\SpecialSectionIndex.cs" />
+    <Compile Include="ELF\Sections\SpecialSectionType.cs" />
+    <Compile Include="ELF\Sections\StringTable.cs" />
+    <Compile Include="ELF\Sections\SymbolBinding.cs" />
+    <Compile Include="ELF\Sections\SymbolEntry.cs" />
+    <Compile Include="ELF\Sections\SymbolTable.cs" />
+    <Compile Include="ELF\Sections\SymbolType.cs" />
+    <Compile Include="ELF\Segments\ISegment.cs" />
+    <Compile Include="ELF\Segments\Segment.cs" />
+    <Compile Include="ELF\Segments\SegmentFlags.cs" />
+    <Compile Include="ELF\Segments\SegmentType.cs" />
+    <Compile Include="ELF\Utilities.cs" />
+    <Compile Include="ComandLine\Extensions\CharExtensions.cs" />
+    <Compile Include="ComandLine\Extensions\StringExtensions.cs" />
+    <Compile Include="ComandLine\GlobalSuppressions.cs" />
+    <Compile Include="IExecutableHeader.cs" />
+    <Compile Include="ComandLine\Infrastructure\Assumes.cs" />
+    <Compile Include="ComandLine\Infrastructure\Pair.cs" />
+    <Compile Include="ComandLine\Infrastructure\PopsicleSetter.cs" />
+    <Compile Include="ComandLine\Infrastructure\ReflectionCache.cs" />
+    <Compile Include="ComandLine\Infrastructure\ReflectionHelper.cs" />
+    <Compile Include="ComandLine\Infrastructure\SR.strings.cs">
+      <DependentUpon>SR.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="ComandLine\IParserState.cs" />
+    <Compile Include="Link.cs" />
     <Compile Include="Linker.cs" />
+    <Compile Include="LinkerSymbol.cs" />
+    <Compile Include="MiscUtil\BigEndianBitConverter.cs" />
+    <Compile Include="MiscUtil\EndianBinaryReader.cs" />
+    <Compile Include="MiscUtil\EndianBinaryWriter.cs" />
+    <Compile Include="MiscUtil\EndianBitConverter.cs" />
+    <Compile Include="MiscUtil\Endianness.cs" />
+    <Compile Include="MiscUtil\LittleEndianBitConverter.cs" />
+    <Compile Include="MiscUtil\NonClosingStreamWrapper.cs" />
+    <Compile Include="ObjectFile.cs" />
+    <Compile Include="ComandLine\Parser.cs" />
+    <Compile Include="ComandLine\ParserException.cs" />
+    <Compile Include="ComandLine\ParserSettings.cs" />
+    <Compile Include="ComandLine\ParserState.cs" />
+    <Compile Include="ComandLine\ParsingError.cs" />
+    <Compile Include="ComandLine\Parsing\ArgumentParser.cs" />
+    <Compile Include="ComandLine\Parsing\IArgumentEnumerator.cs" />
+    <Compile Include="ComandLine\Parsing\LongOptionParser.cs" />
+    <Compile Include="ComandLine\Parsing\OneCharStringEnumerator.cs" />
+    <Compile Include="ComandLine\Parsing\OptionGroupParser.cs" />
+    <Compile Include="ComandLine\Parsing\OptionInfo.cs" />
+    <Compile Include="ComandLine\Parsing\OptionMap.cs" />
+    <Compile Include="ComandLine\Parsing\PresentParserState.cs" />
+    <Compile Include="ComandLine\Parsing\PropertyWriter.cs" />
+    <Compile Include="ComandLine\Parsing\StringArrayEnumerator.cs" />
+    <Compile Include="ComandLine\Parsing\TargetCapabilitiesExtensions.cs" />
+    <Compile Include="ComandLine\Parsing\ValueMapper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Relocation.cs" />
+    <Compile Include="ComandLine\Text\BaseSentenceBuilder.cs" />
+    <Compile Include="ComandLine\Text\CopyrightInfo.cs" />
+    <Compile Include="ComandLine\Text\EnglishSentenceBuilder.cs" />
+    <Compile Include="ComandLine\Text\FormatOptionHelpTextEventArgs.cs" />
+    <Compile Include="ComandLine\Text\HeadingInfo.cs" />
+    <Compile Include="ComandLine\Text\HelpText.cs" />
+    <Compile Include="ComandLine\UImage\Architecture.cs" />
+    <Compile Include="ComandLine\UImage\CompressionType.cs" />
+    <Compile Include="ComandLine\UImage\ImageDataResult.cs" />
+    <Compile Include="ComandLine\UImage\ImageType.cs" />
+    <Compile Include="ComandLine\UImage\OS.cs" />
+    <Compile Include="ComandLine\UImage\UImage.cs" />
+    <Compile Include="ComandLine\UImage\UImageReader.cs" />
+    <Compile Include="ComandLine\UImage\UImageResult.cs" />
+    <Compile Include="Settings.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ComandLine\Infrastructure\SR.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SR.strings.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CodeAnalysisDictionary Include="ComandLine\CustomDictionary.xml" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

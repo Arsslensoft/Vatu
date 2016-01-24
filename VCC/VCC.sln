@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vasm", "Vasm\Vasm.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bsn.GoldParser", "bsn.GoldParser\bsn.GoldParser.csproj", "{1A1A5AE9-7981-471C-9CC7-F7465E675A32}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VTL", "VTL\VTL.csproj", "{4298326C-BB5C-44E9-93B7-7699183A93AD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VTL", "VTL\VTL.csproj", "{CA895475-1D42-4686-8E19-3A0FC05C08E2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,12 +35,12 @@ Global
 		{1A1A5AE9-7981-471C-9CC7-F7465E675A32}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A1A5AE9-7981-471C-9CC7-F7465E675A32}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1A1A5AE9-7981-471C-9CC7-F7465E675A32}.Release|x86.ActiveCfg = Release|Any CPU
-		{4298326C-BB5C-44E9-93B7-7699183A93AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4298326C-BB5C-44E9-93B7-7699183A93AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4298326C-BB5C-44E9-93B7-7699183A93AD}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{4298326C-BB5C-44E9-93B7-7699183A93AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4298326C-BB5C-44E9-93B7-7699183A93AD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4298326C-BB5C-44E9-93B7-7699183A93AD}.Release|x86.ActiveCfg = Release|Any CPU
+		{CA895475-1D42-4686-8E19-3A0FC05C08E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA895475-1D42-4686-8E19-3A0FC05C08E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA895475-1D42-4686-8E19-3A0FC05C08E2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CA895475-1D42-4686-8E19-3A0FC05C08E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA895475-1D42-4686-8E19-3A0FC05C08E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA895475-1D42-4686-8E19-3A0FC05C08E2}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

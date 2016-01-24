@@ -67,6 +67,11 @@ namespace VTC.Core
                 }
                 else                ModifierList |= Modifiers.Private;
             }
+            else if (_mod.Name == "Modifier")
+            {
+                nmod = (Modifier)_mod.DoResolve(rc);
+                ModifierList |= nmod.ModifierList;
+            }
             else if (_mod.Name == "extern")
                 ModifierList |= Modifiers.Extern;
             else if (_mod.Name == "static")

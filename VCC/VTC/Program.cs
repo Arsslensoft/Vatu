@@ -30,12 +30,13 @@ namespace VTC
             {
                 // Values are available here
                 CompilerContext ctx = new CompilerContext(options);
-                Compile(ctx);
+                if (Compile(ctx))
+                    return 0;
               
              
             }
 
-            Console.Read();
+       
             return 1;
         }
         static void Compile(string outsrc, string outbin,string target)

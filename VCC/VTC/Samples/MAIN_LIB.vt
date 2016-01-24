@@ -1,0 +1,17 @@
+﻿namespace std
+{
+	extern public void print(string);
+	extern public byte getc();
+}
+namespace MAIN_LIB
+{
+	use std;
+	
+ entry public void main(){
+	 uint a=7u;
+	 print("Hello World!!$");
+	// a = a/0u;
+	 interrupt 0x21(0x004C);
+ }
+}
+//END

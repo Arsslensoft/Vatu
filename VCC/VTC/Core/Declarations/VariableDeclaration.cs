@@ -202,7 +202,7 @@ namespace VTC.Core
 
                 val = val._nextvars;
             }
-           if(_vadef.expr != null && !(_vadef.expr is ConstantExpression) && !TypeChecker.CompatibleTypes(_vadef.expr.Type, Type))
+           if(_vadef.expr != null && !(_vadef.expr is ConstantExpression) && !TypeChecker.CompatibleTypes(Type,_vadef.expr.Type))
                ResolveContext.Report.Error(35, Location, "Source and target must have same types");
             rc.IsInVarDeclaration = false;
             return this;

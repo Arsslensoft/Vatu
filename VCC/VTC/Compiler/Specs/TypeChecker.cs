@@ -42,7 +42,8 @@ namespace VTC
             else if (a.IsArray || b.IsArray)
                 return b.Equals(a);
 
-
+            else if (a.Size > b.Size)
+                return true;
             else
                 return a.Size == b.Size;
 

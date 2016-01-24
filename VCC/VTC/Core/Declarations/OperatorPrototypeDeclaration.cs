@@ -100,7 +100,7 @@ namespace VTC.Core
                 if (method != null && (method.Modifiers & Modifiers.Prototype) == Modifiers.Prototype)
                     ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
 
-                if (_mtype.Type != BuiltinTypeSpec.Bool && _comptype != null)
+                if (oper.IsLogic && _mtype.Type != BuiltinTypeSpec.Bool && _comptype != null)
                     ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
 
                 // operator checks
@@ -137,7 +137,7 @@ namespace VTC.Core
                 else if (method == null)
                     hasproto = true;
 
-                if (_mtype.Type != BuiltinTypeSpec.Bool && _comptype != null)
+                if (oper.IsLogic && _mtype.Type != BuiltinTypeSpec.Bool && _comptype != null)
                     ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
 
 

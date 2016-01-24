@@ -295,6 +295,8 @@
     <None Include="packages.config" />
     <EmbeddedResource Include="Samples\Tests\BitAccessTest.vt" />
     <EmbeddedResource Include="Samples\Tests\OperatorsTest.vt" />
+    <None Include="Samples\MAIN_LIB.vt" />
+    <None Include="Samples\STD.vt" />
     <None Include="Samples\Tests\STD.vt" />
     <EmbeddedResource Include="VATU.egt" />
     <EmbeddedResource Include="Samples\Tests\Main.vt" />

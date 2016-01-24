@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <StartArguments>-l "C:\Users\Arsslen Idadi\Desktop\OSTEST\STD.o" "C:\Users\Arsslen Idadi\Desktop\OSTEST\MAIN_LIB.o" -a 4 -o "C:\Users\Arsslen Idadi\Desktop\OSTEST\hello.com" --origin 256 -t fbin --int</StartArguments>
+  </PropertyGroup>
+</Project>

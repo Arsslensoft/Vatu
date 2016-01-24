@@ -25,10 +25,10 @@ namespace Vasm
   public class InstallINTInstruction : Instruction
   {
       public string Value { get; set; }
-      public InstallINTInstruction(List<InterruptDef> interrupts)
+      public InstallINTInstruction(List<InterruptDef> interrupts, string name)
       {
           StringBuilder sb = new StringBuilder();
-          sb.AppendLine("INSTALL_INTERRUPTS:");
+          sb.AppendLine(name+":");
           sb.AppendLine("\t\tcli");
           sb.AppendLine("\t\tpush es");
           sb.AppendLine("\t\txor     ax, ax");

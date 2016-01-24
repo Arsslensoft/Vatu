@@ -1,5 +1,8 @@
+D:\Research\elfsharp\VTL\bin\Debug\VTL.exe
+D:\Research\elfsharp\VTL\bin\Debug\VTL.pdb
+D:\Research\elfsharp\VTL\obj\Debug\VTL.exe
+D:\Research\elfsharp\VTL\obj\Debug\VTL.pdb
 D:\Projects\Vatu\Vatu\VCC\VTL\bin\Debug\VTL.exe
 D:\Projects\Vatu\Vatu\VCC\VTL\bin\Debug\VTL.pdb
-D:\Projects\Vatu\Vatu\VCC\VTL\obj\Debug\VTL.csprojResolveAssemblyReference.cache
 D:\Projects\Vatu\Vatu\VCC\VTL\obj\Debug\VTL.exe
 D:\Projects\Vatu\Vatu\VCC\VTL\obj\Debug\VTL.pdb
