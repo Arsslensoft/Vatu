@@ -56,7 +56,7 @@ namespace VTC.Core
             _casttype = tidl;
             ckind = ck;
             _mod = mod;
-            _type = t;
+            _mtype = t;
         }
 
 
@@ -72,7 +72,8 @@ namespace VTC.Core
         {
             _mod = (Modifier)_mod.DoResolve(rc);
             mods = _mod.ModifierList | Modifiers.Prototype;
-            _mtype = (TypeToken)_mtype.DoResolve(rc);
+            if(_mtype != null)
+                 _mtype = (TypeToken)_mtype.DoResolve(rc);
             List<TypeSpec> tp = new List<TypeSpec>();
             Parameters = new List<ParameterSpec>();
 

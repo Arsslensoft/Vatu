@@ -8,13 +8,21 @@ namespace VTL
     class Program
     {
         static int Main(string[] args)
-        {
+        {Linker lnk=null;
              var options = new Settings();
              if (CommandLine.Parser.Default.ParseArguments(args, options))
              {
                  try
                  {
-                     Linker lnk = new Linker(options.OutputBinary, options.Libraries, options.Origin, options);
+                     if (options.Target == Target.flat)
+                         lnk = new FlatLinker(options);
+                     else if (options.Target == Target.tiny)
+                         lnk = new TinyDosLinker(options);
+                     else
+                         lnk = new VatuExecutableLinker(options);
+
+
+                 
                      List<Link<uint>> links = lnk.DoMatchSymbols();
                      lnk.RelocateAll(links);
                      lnk.Link();
@@ -22,7 +30,10 @@ namespace VTL
                  }
                  catch (Exception ex)
                  {
-                     Console.WriteLine(ex.Message);
+                     if(ex.Message.StartsWith("VL00"))
+                              Console.WriteLine(ex.Message);
+                     else Console.WriteLine("VL0000:global:"+ex.Message);
+                     return 1;
                  }
                  return 0;
              }

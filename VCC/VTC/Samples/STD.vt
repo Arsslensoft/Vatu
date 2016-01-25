@@ -5,14 +5,7 @@ DX := msg;
 AH := 9b;
 interrupt 0x21;
 }
-interrupt 0
-	{
-		print("Interrupt 0 $");
-	}
-interrupt 3
-	{
-		print("Interrupt 3 $");
-	}
+
 extern public void putc(byte c){
 DX:=c;
 AH:=2b;

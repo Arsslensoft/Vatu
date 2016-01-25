@@ -90,10 +90,10 @@ namespace VTC
         }
         public void PrepareEmit(EmitContext ec)
         {
-            ec.ag.IsFlat = Options.Target == Target.fbin || Options.Target == Target.bin;
+            ec.ag.IsFlat = Options.Target == Target.flat || Options.Target == Target.tiny;
             ec.ag.IsInterruptOverload = Options.IsInterrupt;
             ec.ag.OLevel = Options.OptimizeLevel;
-            ec.ag.IsVTExec = Options.Target == Target.vtexec;
+            ec.ag.IsVTExec = Options.Target == Target.vexe;
             ec.ag.IsLibrary = Options.Target == Target.obj;
         }
      

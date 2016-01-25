@@ -24,9 +24,9 @@ namespace VTC
     }
     public enum Target
     {
-        fbin,
-        bin,
-        vtexec,
+        flat,
+        tiny,
+        vexe,
         obj
     }
    public class Settings
@@ -43,7 +43,7 @@ namespace VTC
 HelpText = "Platform")]
        public Platform Platform { get; set; }
 
-       [Option('t', "target", Required = false, DefaultValue = Target.bin,
+       [Option('t', "target", Required = false, DefaultValue = Target.flat,
 HelpText = "Target output")]
        public Target Target { get; set; }
 

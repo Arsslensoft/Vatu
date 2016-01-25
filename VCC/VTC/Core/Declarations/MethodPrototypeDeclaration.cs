@@ -71,6 +71,7 @@ namespace VTC.Core
                     if (par._id != null)
                     {
                         Params.Push(par._id.ParameterName);
+                        Parameters.Add(par._id.ParameterName);
                         tp.Add(par._id.ParameterName.MemberType);
                     }
                     par = par._nextid;

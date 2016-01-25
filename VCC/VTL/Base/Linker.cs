@@ -9,45 +9,45 @@ namespace VTL
 {
     public class Linker
     {
-        public IExecutableHeader ExecutableHeader { get; set; }
+     
         public List<ObjectFile<uint>> ObjectFiles { get; set; }
         public List<LinkerSymbol<uint>> LinkerSymbols { get; set; }
         public BinaryWriter Writer { get; set; }
         public List<SymbolEntry<uint>> AllSymbols { get; set; }
-        public uint Origin { get; private set; }
+        public uint Origin { get; protected set; }
         public string EntryPoint { get; set; }
         public uint Size { get; private set; }
         public uint Align { get; set; }
         public List<Relocation<uint>> Relocations { get; private set; }
         public List<SymbolEntry<uint>> Interrupts { get; private set; }
 
-        SymbolEntry<uint> _entrysymbol;
-        uint _entry_displacement = 0;
-        bool isentry_infirst_sec = false;
-        bool interrupt_enabled = false;
-        List<string> reserved = new List<string>()
+       protected SymbolEntry<uint> _entrysymbol;
+       protected uint _entry_displacement = 0;
+       protected bool isentry_infirst_sec = false;
+       protected bool interrupt_enabled = false;
+       protected List<string> reserved = new List<string>()
        {
            "PROGRAM_ORG",
            "PROGRAM_END"
        };
-        public Linker(string outfile, string[] inobj, uint org,Settings opt)
+        public Linker(Settings opt)
         {
-            if (File.Exists(outfile))
-                File.Delete(outfile);
+            if (File.Exists(opt.OutputBinary))
+                File.Delete(opt.OutputBinary);
             interrupt_enabled = opt.IsInterrupt;
             ObjectFiles = new List<ObjectFile<uint>>();
 
-            Writer = new BinaryWriter(File.Create(outfile), Encoding.BigEndianUnicode);
+            Writer = new BinaryWriter(File.Create(opt.OutputBinary), Encoding.BigEndianUnicode);
             LinkerSymbols = new List<LinkerSymbol<uint>>();
             AllSymbols = new List<SymbolEntry<uint>>();
             Relocations = new List<Relocation<uint>>();
             Interrupts = new List<SymbolEntry<uint>>();
             EntryPoint = opt.EntryPoint;
-            Origin = org;
-            ExecutableHeader = null;
+            Origin = opt.Origin;
+          
             Align = opt.Align;
             // Map Object Files
-            LoadObjectsAndMap(inobj);
+            LoadObjectsAndMap(opt.Libraries);
 
             // Load Predefined symbols
             HandleDefaultLinkerSymbols();
@@ -59,7 +59,7 @@ namespace VTL
         /// Loads all object files and sets their bounds with align & origins
         /// </summary>
         /// <param name="inobj">Input object files</param>
-        void LoadObjectsAndMap(string[] inobj)
+      protected virtual  void LoadObjectsAndMap(string[] inobj)
         {
             ReserveHeader();
             uint org = Origin;
@@ -82,16 +82,18 @@ namespace VTL
         /// <summary>
         /// Reserve first bytes for header size
         /// </summary>
-        void ReserveHeader()
+       protected virtual void ReserveHeader()
         {
-            if (ExecutableHeader != null)
-                Origin += ExecutableHeader.GetSize();
+            //if (ExecutableHeader != null)
+            //    Origin += ExecutableHeader.GetSize();
+
+            return;
         }
 
         /// <summary>
         /// Used for predefined symbol lookup
         /// </summary>
-        void HandleDefaultLinkerSymbols()
+       protected virtual void HandleDefaultLinkerSymbols()
         {
             LinkerSymbols.Add(new LinkerSymbol<uint>("PROGRAM_ORG", Origin));
             LinkerSymbols.Add(new LinkerSymbol<uint>("PROGRAM_END", Size));
@@ -120,10 +122,10 @@ namespace VTL
 
 
                     if (reserved.Contains(f.Name))
-                        throw new ArgumentException("Error:VL0004:" + f.Name + " is a reserved name");
+                        throw new ArgumentException("VL0004:"+obj.FileName+":" + f.Name + " is a reserved name");
                     if (!AllSymbols.Contains(f))
                         AllSymbols.Add(f);
-                    else throw new ArgumentException("Error:VL0001:Duplicate symbol definition of " + f.Name);
+                    else throw new ArgumentException("VL0001:" + obj.FileName + ":Duplicate symbol definition of " + f.Name);
 
                 } i++;
             }
@@ -158,7 +160,7 @@ namespace VTL
         /// <param name="src"></param>
         /// <param name="sloc"></param>
         /// <returns></returns>
-        bool LookForUndefinedSymbols(ref List<Link<uint>> links, SymbolEntry<uint> trg, ObjectFile<uint> tloc)
+     protected virtual   bool LookForUndefinedSymbols(ref List<Link<uint>> links, SymbolEntry<uint> trg, ObjectFile<uint> tloc)
         {
 
             foreach (ObjectFile<uint> obj in ObjectFiles)
@@ -180,7 +182,7 @@ namespace VTL
                 }
             return false;
         }
-        Link<uint> FindLink(List<Link<uint>> links, SymbolEntry<uint> target, ObjectFile<uint> obj)
+     protected virtual Link<uint> FindLink(List<Link<uint>> links, SymbolEntry<uint> target, ObjectFile<uint> obj)
         {
             foreach (Link<uint> l in links)
             {
@@ -205,7 +207,7 @@ namespace VTL
                 // look for undefined symbol and link them with globals
                 foreach (SymbolEntry<uint> s in obj.Undefined)
                     if (s.Type != SymbolType.File && s.Type != SymbolType.Section && !LookForUndefinedSymbols(ref links, s, obj))
-                        throw new ArgumentException("Error:VL0002:Undefined symbol " + s.Name);
+                        throw new ArgumentException("VL0002:"+obj.FileName+":Undefined symbol " + s.Name);
 
 
 
@@ -267,7 +269,7 @@ namespace VTL
 
                         Link<uint> lnk = FindLink(links, symval, obj);
                         if (lnk == null)
-                            throw new ArgumentException("Error:VL0003:Link not found " + symval.Name);
+                            throw new ArgumentException("VL0003:" + obj.FileName + ":Link not found " + symval.Name);
                         else
                         {
                             Relocation<uint> rel = new Relocation<uint>(lnk, r);
@@ -286,30 +288,23 @@ namespace VTL
             }
         }
 
-        public void Link()
+        public virtual void Link()
         {
-
+            WriteHeader();
 
             SymbolEntry<uint> entry = FindEntryPoint();
-            // Install interrupts
-            
+            // Install interrupts 
             foreach (SymbolEntry<uint> inter in Interrupts)
             {
-               
-              
                     Writer.Write((byte)0xE8);
                     Writer.Write((ushort)(inter.Value - Origin - 4));
-                    Writer.Write((byte)0);
-                   
-                
+                    Writer.Write((byte)0);             
             }
-            // Check Entry
-            if (!isentry_infirst_sec)
-            {
+            // Jump to Entry Point
                 Writer.Write((byte)0xE9);
                 Writer.Write((ushort)(entry.Value + _entry_displacement - Origin - 3));
                 Writer.Write((byte)0);
-            }
+       
 
             // Relocate all
             foreach (Relocation<uint> rel in Relocations)
@@ -320,19 +315,16 @@ namespace VTL
             // Emit All
             foreach (ObjectFile<uint> obj in ObjectFiles)
                 obj.WriteCode(Writer);
-         
 
+            WriteFooter();
         }
-
-        public void WriteBinary()
+        public virtual void WriteHeader()
         {
-            // write executable header
-            if (ExecutableHeader != null)
-                ExecutableHeader.WriteHeader(Writer);
-
-
-            // write sections
-
+            return;
+        }
+        public virtual void WriteFooter()
+        {
+            return;
         }
         public void FillWithByte(int off, byte b, int size)
         {

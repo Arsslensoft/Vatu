@@ -20,9 +20,9 @@ namespace VTL
   
     public enum Target
     {
-        fbin,
-        bin,
-        vtexec
+        flat,
+        tiny,
+        vexe
     }
    public class Settings
     {
@@ -32,7 +32,7 @@ namespace VTL
 
 
 
-       [Option('t', "target", Required = true, DefaultValue = Target.bin,
+       [Option('t', "target", Required = true, DefaultValue = Target.flat,
 HelpText = "Target output")]
        public Target Target { get; set; }
 

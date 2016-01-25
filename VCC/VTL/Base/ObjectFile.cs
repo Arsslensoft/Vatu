@@ -50,7 +50,7 @@ namespace VTL
             if (InterruptSymbol != null)
                 al += Align;
 
-            if (!HasEntryPoint && isfirst)// check only first
+            if (isfirst)// check only first
             {
                 al += Align;
                 SetOrigin(org + al); // reserved for entry jump
