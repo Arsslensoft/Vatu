@@ -126,6 +126,14 @@ namespace VTC
             }
 
         }
+        public bool IsMultiDimensionArray
+        {
+            get
+            {
+                return ((_flags & TypeFlags.Array) == TypeFlags.Array && _base is ArrayTypeSpec);
+            }
+
+        }
         public bool IsPointer
         {
             get
@@ -205,7 +213,7 @@ namespace VTC
         internal int GetSize(TypeSpec type)
         {   
             if (type.IsArray)
-                return (type as ArrayTypeSpec).ArrayCount * type.BaseType.Size;
+                return (type as ArrayTypeSpec).ArrayCount * GetSize( type.BaseType);
             else if (type.IsBuiltinType)
             {
                 switch (type.BuiltinType)

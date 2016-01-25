@@ -69,7 +69,8 @@ namespace VTC.Core
         void ResolveField(ResolveContext rc, VariableDefinition vadef)
         {
             if (ArraySize > 0)
-                Type = new ArrayTypeSpec(Type.NS, Type, ArraySize);
+                //Type = new ArrayTypeSpec(Type.NS, Type, ArraySize);
+                Type = vadef._avd.CreateArrayType(Type);
             else if (ArraySize == 0)
                 Type = new PointerTypeSpec(Type.NS, Type);
             vadef.FieldOrLocal = new FieldSpec(rc.CurrentNamespace, vadef._id.Name, mods, Type, loc);
@@ -121,7 +122,8 @@ namespace VTC.Core
         void ResolveLocalVariable(ResolveContext rc, VariableDefinition vadef)
         {
             if (ArraySize > 0)
-                Type = new ArrayTypeSpec(Type.NS, Type, ArraySize);
+                //  Type = new ArrayTypeSpec(Type.NS, Type, ArraySize);
+                Type = vadef._avd.CreateArrayType(Type);
             else if (ArraySize == 0)
                 Type = new PointerTypeSpec(Type.NS, Type);
 
@@ -143,7 +145,7 @@ namespace VTC.Core
         void ResolveStructMember(ResolveContext rc, VariableDefinition vadef)
         {
             if (ArraySize > 0)
-                Type = new ArrayTypeSpec(Type.NS, Type, ArraySize);
+                Type = vadef._avd.CreateArrayType(Type);
             else if (ArraySize == 0)
                 Type = new PointerTypeSpec(Type.NS, Type);
 
@@ -294,7 +296,7 @@ namespace VTC.Core
                 }
             }
 
-            else ec.EmitData(new DataMember(f.Signature.ToString(), new byte[ArraySize * f.MemberType.Size]), f);
+            else ec.EmitData(new DataMember(f.Signature.ToString(), new byte[f.MemberType.GetSize(f.MemberType)]), f);
             return true;
         }
         public override bool Emit(EmitContext ec)

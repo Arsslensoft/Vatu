@@ -1,16 +1,32 @@
-﻿namespace std
-{
-	extern public void print(string);
-	extern public byte getc();
-extern public void putc(byte c);
+﻿include <STD.vt>
+default asm {
+"[org 100h]";
 }
 namespace MAIN_LIB
 {
 	use std;
 	
+string MAT[2][3][4][3];
+/*
+string A[3];
+string* B[2];
+*/
+
  entry public void main(){
 	 uint a=7u;
-	 print("Hello World!!$");
+MAT[1][0][1][0]="1,$";
+MAT[1][0][1][1]="2,$";
+MAT[1][0][1][2]="3 $";
+	/*B[0] = A;
+A[0] = "1,$";
+A[1] = "2,$";
+A[2] = "3 $";
+
+   for(a = 0; a < 3; a++)
+		print(B[0][a]);*/
+  for(a = 0; a < 3; a++)
+	print(MAT[1][0][1][a]);
+	 print("\nHello World!!$");
 	// a = a/0u;
 	 interrupt 0x21(0x4C);
  }

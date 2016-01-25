@@ -12,8 +12,14 @@ namespace VTC.Core
 	public class ArrayVariableDefinition : Definition
     {
         public int Size { get; set; }
-
-
+        public int Dimension { get; set; }
+        ArrayVariableDefinition _nextdef;
+        [Rule(@"<Array>    ::= ~'[' <Expression> ~']' <Array>")]
+        public ArrayVariableDefinition(Expr expr, ArrayVariableDefinition avd)
+        {
+            _nextdef = avd;
+            _expr = expr;
+        }
         Expr _expr;
         [Rule(@"<Array>    ::= ~'[' <Expression> ~']'")]
         public ArrayVariableDefinition(Expr expr)
@@ -28,9 +34,19 @@ namespace VTC.Core
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+            Dimension = 1;
             bool conv = false;
             if (_expr != null)
             _expr = (Expr)_expr.DoResolve(rc);
+
+
+            if (_nextdef != null)
+            {
+              
+                _nextdef = (ArrayVariableDefinition)_nextdef.DoResolve(rc);
+                Dimension += _nextdef.Dimension;
+            }
+
 
             if (_expr != null && _expr is ConstantExpression)
                 Size = int.Parse((((ConstantExpression)_expr).ConvertImplicitly(rc, BuiltinTypeSpec.Int, ref conv)).GetValue().ToString());
@@ -49,6 +65,15 @@ namespace VTC.Core
         public override bool Emit(EmitContext ec)
         {
             return true;
+        }
+
+        public ArrayTypeSpec CreateArrayType(TypeSpec root)
+        {
+            if (_nextdef == null)
+                return new ArrayTypeSpec(root.NS, root, Size);
+            else
+                return new ArrayTypeSpec(root.NS, _nextdef.CreateArrayType(root), Size);
+          
         }
     }
    

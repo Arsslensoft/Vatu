@@ -37,7 +37,7 @@ CharLiteral      = '' ( {Char Ch} | '\'{Printable} )''
 FloatLiteral     = {Digit}*'.'{Digit}+
                  
 
-IncludeLiteral    = '<'( {String Ch} )* '>'
+IncludeLiteral    = '<'( {Printable} )+ '>'
 Id               = {Id Head}{Id Tail}*    
 
 OperatorLiteralUnary  =  '@' [!&#$%*+-,/<>=?\^_|~£¤µ.:]+
@@ -253,6 +253,7 @@ Comment Line  = '//'
 
 <Array>    ::= '[' <Expression> ']'
              | '[]'
+             | '[' <Expression> ']' <Array>
              
 <Var List> ::=  ',' <Var Item> <Var List>
              | 

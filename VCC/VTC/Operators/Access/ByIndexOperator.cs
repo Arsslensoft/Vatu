@@ -57,6 +57,8 @@ namespace VTC
             }
             else if (OvlrdOp != null)
                 return new AccessExpression(Left as VariableExpression, Right, this);
+
+
             else if (Left.Type.IsArray)
             {
                 IsByte = Left.Type.BaseType.Size != 2;
@@ -94,6 +96,7 @@ namespace VTC
                 else return new AccessExpression(Left as VariableExpression, Right, this);
 
             }
+       
             else
             {
 
