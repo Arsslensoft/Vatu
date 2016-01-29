@@ -66,7 +66,52 @@ namespace VTC
             _type = id;
 
         }
+        AccessExpression GetInheritanceAccessExpr()
+        {
+            MemberSpec struct_var = null;
 
+            if (_target is VariableExpression)
+                struct_var = (_target as VariableExpression).variable;
+            else return null;
+
+            if (struct_var is VarSpec)
+            {
+                VarSpec v = (VarSpec)struct_var;
+
+                VarSpec dst = new VarSpec(v.NS, v.Name, v.MethodHost, Type, Location, v.FlowIndex, v.Modifiers, true);
+                dst.StackIdx = v.StackIdx + CastOffset;
+                return new AccessExpression(dst, (_target is AccessExpression) ? (_target as AccessExpression) : null, _target.position);
+
+            }
+            else if (struct_var is RegisterSpec)
+            {
+                RegisterSpec v = (RegisterSpec)struct_var;
+
+                RegisterSpec dst = new RegisterSpec(Type, v.Register, Location, 0, true);
+                dst.RegisterIndex = v.RegisterIndex + CastOffset;
+                return new AccessExpression(dst, (_target is AccessExpression) ? (_target as AccessExpression) : null, _target.position);
+
+            }
+            else if (struct_var is FieldSpec)
+            {
+                FieldSpec v = (FieldSpec)struct_var;
+
+                FieldSpec dst = new FieldSpec(v.NS, v.Name, v.Modifiers, Type, Location, true);
+                dst.FieldOffset = v.FieldOffset + CastOffset;
+                return new AccessExpression(dst, (_target is AccessExpression) ? (_target as AccessExpression) : null, _target.position);
+            }
+            else if (struct_var is ParameterSpec)
+            {
+                ParameterSpec v = (ParameterSpec)struct_var;
+
+                ParameterSpec dst = new ParameterSpec(v.Name, v.MethodHost, Type, Location, v.InitialStackIndex, v.Modifiers, true);
+
+                dst.StackIdx = v.StackIdx + CastOffset;
+
+                return new AccessExpression(dst, (_target is AccessExpression) ? (_target as AccessExpression) : null, _target.position);
+            }
+            return null;
+        }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             _type = (TypeIdentifier)_type.DoResolve(rc);
@@ -86,6 +131,15 @@ namespace VTC
                 {
                     _target.Type = Type;
                     return Target;
+                }
+                else if (InheritanceFix())
+                {
+                    AccessExpression ae = GetInheritanceAccessExpr();
+                    if (ae == null)
+                        ResolveContext.Report.Error(0, Location, "Can't cast to inherited struct");
+                    else return ae;
+
+                    return this;
                 }
                 else if (Type.Equals(_target.Type))
                     return _target;
@@ -301,38 +355,38 @@ namespace VTC
             return false;
         }
         bool PointerFix()
-        {   
-            if (Type.IsPointer && (_target.Type == BuiltinTypeSpec.UInt || Type == BuiltinTypeSpec.Pointer))
+        {
+            if (Type.IsPointer && (_target.Type.Equals(BuiltinTypeSpec.UInt) || _target.Type.Equals(BuiltinTypeSpec.Pointer)))
                 {
                     _target.Type = Type;
                     nofix = true;
                     return true;
                 }
-                else if (_target.Type.IsPointer && (Type == BuiltinTypeSpec.UInt || Type == BuiltinTypeSpec.Pointer))
+            else if (_target.Type.IsPointer && (Type.Equals(BuiltinTypeSpec.UInt) || Type.Equals(BuiltinTypeSpec.Pointer)))
                 {
                     _target.Type = Type;
                     nofix = true;
                     return true;
                 }
-            else if (Type.IsDelegate && (_target.Type == BuiltinTypeSpec.UInt || Type == BuiltinTypeSpec.Pointer))
+            else if (Type.IsDelegate && (_target.Type.Equals(BuiltinTypeSpec.UInt) || _target.Type.Equals(BuiltinTypeSpec.Pointer)))
             {
                 _target.Type = Type;
                 nofix = true;
                 return true;
             }
-            else if (_target.Type.IsDelegate && (Type == BuiltinTypeSpec.UInt || Type == BuiltinTypeSpec.Pointer))
+            else if (_target.Type.IsDelegate && (Type.Equals(BuiltinTypeSpec.UInt) || Type.Equals(BuiltinTypeSpec.Pointer)))
             {
                 _target.Type = Type;
                 nofix = true;
                 return true;
             }
-                else if (_target.Type == BuiltinTypeSpec.Pointer && Type == BuiltinTypeSpec.UInt)
+                else if (_target.Type.Equals(BuiltinTypeSpec.Pointer) && Type.Equals(BuiltinTypeSpec.UInt))
                 {
                     _target.Type = BuiltinTypeSpec.UInt;
                     nofix = true;
                     return true;
                 }
-                else if (_target.Type == BuiltinTypeSpec.UInt && Type == BuiltinTypeSpec.Pointer)
+                else if (_target.Type.Equals(BuiltinTypeSpec.UInt) && Type.Equals(BuiltinTypeSpec.Pointer))
                 {
                     _target.Type = BuiltinTypeSpec.Pointer;
                     
@@ -348,6 +402,41 @@ namespace VTC
             if (a .Equals(b))
                 return true;
             else return false;
+        }
+
+        bool ispointer = false;
+        int CastOffset = 0;
+        bool GetInheritedStructIndex(StructTypeSpec st,StructTypeSpec cmp,ref int off)
+        {
+           
+            foreach (StructTypeSpec s in st.Inherited)
+            {
+                if (s.Equals(cmp))
+                    return true;
+                else
+                {
+                    // check child inheritance
+                    int rel = 0; // relative offset for child struct
+                    if (GetInheritedStructIndex(s, cmp, ref rel))
+                    {
+                        off += rel;
+                        return true;
+                    }
+                    else off += s.Size;
+                    
+                }
+            }
+            return false;
+        }
+        bool InheritanceFix()
+        {
+            CastOffset = 0;
+            if ( _target is VariableExpression && _target.Type.IsStruct && Type.IsStruct && GetInheritedStructIndex(_target.Type as StructTypeSpec, Type as StructTypeSpec, ref CastOffset))
+            {
+                ispointer = _target.Type.IsPointer;
+                return true;
+            }
+            return false;
         }
     }
   

@@ -9,6 +9,7 @@ namespace VTC.Core
 {
     public class BinaryOp : Operator
     {
+        public TypeToken RightType;
         public MethodSpec OvlrdOp;
         public RegistersEnum? RightRegister { get; set; }
         public RegistersEnum? LeftRegister { get; set; }

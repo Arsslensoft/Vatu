@@ -130,7 +130,7 @@ namespace VTC
         {
             get
             {
-                return ((_flags & TypeFlags.Array) == TypeFlags.Array && _base is ArrayTypeSpec);
+                return ((_flags & TypeFlags.Array) == TypeFlags.Array && this is ArrayTypeSpec && _base is ArrayTypeSpec);
             }
 
         }

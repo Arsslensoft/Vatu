@@ -34,8 +34,10 @@ namespace VTC
             if (_id != null )
             {
                 MemberSpec ms = rc.Resolver.TryResolveName(_id.Name);
+
                 if (ms != null)
                     return new StringConstant(ms.Name, Location);
+                    
                 else
                     ResolveContext.Report.Error(0,Location,"Unresolved name " + _id.Name);
             }

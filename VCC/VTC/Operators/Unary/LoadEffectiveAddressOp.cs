@@ -23,15 +23,16 @@ namespace VTC
         {
        
                 // LEA
-            if (Right is AccessExpression)
-            {
-              ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non variable expressions");
-                ms = null;
-            }
-            else if (Right is VariableExpression)
-                ms = (Right as VariableExpression).variable;
-            else
-                ResolveContext.Report.Error(54, Location, "Address Of Operator does not support non variable expressions");
+            //if (Right is AccessExpression)
+            //{
+            //    ResolveContext.Report.Error(53, Right.Location, "Address of operator cannot be used with non variable expressions");
+            //    ms = null;
+            //}
+            //else
+         if (!(Right is VariableExpression))
+              //  ms = (Right as VariableExpression).variable;
+              //else
+                ResolveContext.Report.Error(54, Location, "Address Of Operator does not support non variable nor access expressions");
                 CommonType = Right.Type.MakePointer();
                 return this;
          
@@ -42,32 +43,25 @@ namespace VTC
         }
         public override bool Emit(EmitContext ec)
         {
-            if (ms != null)
-            {
-                if (ms is VarSpec)
-                    ms.LoadEffectiveAddress(ec);
-                else if (ms is FieldSpec)
-                    ms.LoadEffectiveAddress(ec);
-                else if (ms is ParameterSpec)
-                    ms.LoadEffectiveAddress(ec);
-            }
-     
-
-            return true;
+            //if (ms != null)
+            //{
+            //    if (ms is VarSpec)
+            //        ms.LoadEffectiveAddress(ec);
+            //    else if (ms is FieldSpec)
+            //        ms.LoadEffectiveAddress(ec);
+            //    else if (ms is ParameterSpec)
+            //        ms.LoadEffectiveAddress(ec);
+            //}
+            if(Right is AccessExpression)
+                return (Right as AccessExpression).LoadEffectiveAddress(ec);
+            else
+                return (Right as VariableExpression).LoadEffectiveAddress(ec);
+        
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            if (ms != null)
-            {
-                if (ms is VarSpec)
-                    ms.LoadEffectiveAddress(ec);
-                else if (ms is FieldSpec)
-                    ms.LoadEffectiveAddress(ec);
-                else if (ms is ParameterSpec)
-                    ms.LoadEffectiveAddress(ec);
-            }
-            else return Emit(ec);
-            return true;
+          return Emit(ec);
+ 
         }
         public override string CommentString()
         {

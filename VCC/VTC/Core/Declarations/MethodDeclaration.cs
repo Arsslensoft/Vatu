@@ -63,9 +63,17 @@ namespace VTC.Core
                 CompilerContext.EntryPointFound = true;
 
 
+            if (_fbd._ext != null && !_fbd._ext.Static)
+                _fbd.ParamTypes.Insert(0, _fbd._ext.ExtendedType);
 
             method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods, _id.TType.Type, ccv, _fbd.ParamTypes.ToArray(), this.loc);
 
+            // reserve first param for extension
+            if (_fbd._ext != null && !_fbd._ext.Static)
+            {
+                ParameterSpec thisps = new ParameterSpec("this", method, _fbd._ext.ExtendedType, loc, 4, Modifiers.Ref);
+                Parameters.Insert(0, thisps);
+            }
             // Calling Convention
             ccvh.SetParametersIndex(ref Parameters, ccv);
             if (ccv == CallingConventions.FastCall)
@@ -84,20 +92,21 @@ namespace VTC.Core
                 ResolveContext.Report.Error(9, Location, "Cannot use very fast call with struct or union parameter at index 1 , 2 or 3");
             else if (ccv == CallingConventions.VeryFastCall && Parameters.Count >= 4 && (Parameters[0].MemberType.Size > 2 || Parameters[1].MemberType.Size > 2 || Parameters[2].MemberType.Size > 2 || Parameters[3].MemberType.Size > 2))
                 ResolveContext.Report.Error(9, Location, "Cannot use very fast call with struct or union parameter at index 1, 2, 3 or 4");
-
-            MethodSpec m = null;
-          rc.Resolver.TryResolveMethod(method.Signature.ToString(),ref m);
-            if (m != null && (m.Modifiers & Modifiers.Prototype) == 0)
-                ResolveContext.Report.Error(9, Location, "Duplicate method signature");
-            else if (m == null)
-                rc.KnowMethod(method);
-            // extension
-            if (_fbd._ext != null)
+          
+            if (_fbd._ext == null)
             {
-                if (_fbd._ext.Static && _fbd.ParamTypes.Count > 0 && _fbd.ParamTypes[0] != _fbd._ext.ExtendedType)
-                    ResolveContext.Report.Error(45, Location, "non static method extensions must have first parameter with same extended type.");
-                else if (!rc.Extend(_fbd._ext.ExtendedType, method, _fbd._ext.Static))
+                MethodSpec m = null;
+                rc.Resolver.TryResolveMethod(method.Signature.ToString(), ref m);
+                if (m != null && (m.Modifiers & Modifiers.Prototype) == 0)
+                    ResolveContext.Report.Error(9, Location, "Duplicate method signature");
+                else if (m == null)
+                    rc.KnowMethod(method);
+            }else {
+            // extension
+            
+              if (!rc.Extend(_fbd._ext.ExtendedType, method, _fbd._ext.Static))
                     ResolveContext.Report.Error(45, Location, "Another method with same signature has already extended this type.");
+           
             }
             rc.CurrentMethod = method;
             if (specs == Specifiers.Isolated && method.MemberType != BuiltinTypeSpec.Void)

@@ -13,7 +13,7 @@ namespace VTC
     {
         public static bool ArtihmeticsAllowed(TypeSpec a, TypeSpec b)
         {
-            return !(a.IsForeignType || b.IsForeignType);
+            return  !((a.IsForeignType && !a.IsPointer) || (b.IsForeignType && !b.IsPointer));
         }
         public static bool Equals(TypeSpec a, TypeSpec b)
         {

@@ -12,13 +12,26 @@ namespace VTC
     {
         static bool Compile(CompilerContext ctx)
         {
+            if (ctx.Options.OutputFiles.Length != ctx.Options.AssemblyOutput.Length || (ctx.Options.AssemblyOutput.Length != ctx.Options.Sources.Length))
+            {
+                ResolveContext.Report.Error("Sources, Assemblies and outputs must have the same count");
+                return false;
+            }
             if (ctx.ResolveAndEmit())
             {
                 
                 Console.WriteLine("Compilation succeeded - {0} Optimizations performed", Optimizer.Optimizations);
-                if(ctx.Options.Target == Target.flat || ctx.Options.Target == Target.tiny || ctx.Options.Target == Target.vexe)
-                    Compile(ctx.Options.Output, ctx.Options.OutputBinary, "-f bin");
-                else Compile(ctx.Options.Output, ctx.Options.OutputBinary, "-f elf");
+                if (ctx.Options.Target == Target.flat || ctx.Options.Target == Target.tiny || ctx.Options.Target == Target.vexe)
+                {
+                    for(int i = 0; i < ctx.Options.OutputFiles.Length; i++)
+                        Compile(ctx.Options.AssemblyOutput[i], ctx.Options.OutputFiles[i], "-f bin");
+
+                }
+                else
+                {
+                    for (int i = 0; i < ctx.Options.OutputFiles.Length; i++)
+                        Compile(ctx.Options.AssemblyOutput[i], ctx.Options.OutputFiles[i], "-f elf");
+                }
                 return true;
             }
             return false;

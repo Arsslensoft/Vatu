@@ -12,7 +12,7 @@ namespace Vasm.Optimizer
        {
            Optimizers = new Dictionary<int, List<IOptimizer>>();
            // in order 1 -> 5
-           IOptimizer[] opt = {  new PushPopO1(), new PushPopO2(), new CommentOptimizer() , new JumpOptimizer(),new LabelOptimizer() };
+           IOptimizer[] opt = { new ComparisonOptimizer(), new PushPopO1()};
 
            foreach (IOptimizer o in opt)
            {
@@ -38,13 +38,14 @@ namespace Vasm.Optimizer
            {
                if (o.Key > lvl)
                    continue;
-
-               foreach (IOptimizer vopt in o.Value)
-               {
-                   opt &= vopt.CheckForOptimization(ins,ext);
-                   if(opt)
-                       opt &= vopt.Optimize(ref ins);
-               }
+           
+                   foreach (IOptimizer vopt in o.Value)
+                   {
+                       opt &= vopt.CheckForOptimization(ins, ext);
+                       if (opt)
+                           opt &= vopt.Optimize(ref ins);
+                   }
+               
            }
            return opt;
        }

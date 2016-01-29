@@ -58,9 +58,9 @@ namespace VTC.Core
             Parameters = new List<ParameterSpec>();
             List<TypeSpec> tp = new List<TypeSpec>();
 
-            if (ext != null)
+            if (ext != null && ext.IsExtended)
                 ext = (FunctionExtensionDefinition)ext.DoResolve(rc);
-
+            else ext = null;
             if (_pal != null)
             {
                 _pal.Resolve(rc);
@@ -108,18 +108,28 @@ namespace VTC.Core
 
             if (!method.MemberType.IsBuiltinType)
                 ResolveContext.Report.Error(45, Location, "return type must be builtin type " + method.MemberType.ToString() + " is user-defined type.");
-
+            if (ext != null && !ext.Static)
+                tp.Insert(0, ext.ExtendedType);
             method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, tp.ToArray(), this.loc);
             method.Parameters = Parameters;
+           
             // extension
             if (ext != null)
             {
-                if (ext.Static && tp.Count > 0 && tp[0] != ext.ExtendedType)
-                    ResolveContext.Report.Error(45, Location, "non static method extensions must have first parameter with same extended type.");
-                else if (!rc.Extend(ext.ExtendedType, method, ext.Static))
+                // insert this
+                if (!ext.Static)
+                {
+                   
+                    ParameterSpec thisps = new ParameterSpec("this", method, ext.ExtendedType, loc, 4);
+                    Parameters.Insert(0, thisps);
+                    method.Parameters = Parameters;
+                }
+
+            if (!rc.Extend(ext.ExtendedType, method, ext.Static))
                     ResolveContext.Report.Error(45, Location, "Another method with same signature has already extended this type.");
+            
             }
-            rc.KnowMethod(method);
+            else rc.KnowMethod(method);
 
 
             return this;

@@ -26,6 +26,7 @@ namespace VTC.Core
         [Rule(@"<Op BinAND>  ::= <Op BinAND> '&' <Op Equate>")]
         [Rule(@"<Op Equate>  ::= <Op Equate> '==' <Op Compare>")]
         [Rule(@"<Op Equate>  ::= <Op Equate> '!=' <Op Compare>")]
+
         [Rule(@"<Op Compare> ::= <Op Compare> '<'  <Op Shift>")]
         [Rule(@"<Op Compare> ::= <Op Compare> '>'  <Op Shift>")]
         [Rule(@"<Op Compare> ::= <Op Compare> '<=' <Op Shift>")]
@@ -46,7 +47,15 @@ namespace VTC.Core
             IsConstant = false;
             _op.Right = right;
         }
-
+        [Rule(@"<Op Equate>  ::= <Op Equate> is <Type>")]
+        public BinaryOperation(Expr left, BinaryOp op, TypeToken right)
+        {
+            _op = op;
+            _op.Left = left;
+            _op.RightType = right;
+            IsConstant = false;
+   
+        }
         [Rule(@"<Op BinaryOpDef>     ::= <Op BinaryOpDef> OperatorLiteralBinary <Op Or>")]
         public BinaryOperation(Expr left, OperatorLiteralBinary op, Expr right)
         {
@@ -348,20 +357,26 @@ namespace VTC.Core
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             Expr tmp;
-            _op.Right = (Expr)_op.Right.DoResolve(rc);
+            if (_op.Right != null)
+                _op.Right = (Expr)_op.Right.DoResolve(rc);
+            else _op.RightType = (TypeToken)_op.RightType.DoResolve(rc);
+
+
             _op.Left = (Expr)_op.Left.DoResolve(rc);
-
-            if (!TypeChecker.ArtihmeticsAllowed(_op.Right.Type, _op.Left.Type))
-                requireoverload = true;
-
-            // check for const
-            if (_op.Right is ConstantExpression && _op.Left is ConstantExpression)
+            if (_op.Right != null)
             {
-                IsConstant = true;
-                // try calculate
-                tmp = TryEvaluate();
-                if (tmp != this)
-                    return tmp;
+                if (!TypeChecker.ArtihmeticsAllowed(_op.Right.Type, _op.Left.Type))
+                    requireoverload = true;
+
+                // check for const
+                if (_op.Right is ConstantExpression && _op.Left is ConstantExpression)
+                {
+                    IsConstant = true;
+                    // try calculate
+                    tmp = TryEvaluate();
+                    if (tmp != this)
+                        return tmp;
+                }
             }
 
             // end check const
@@ -374,6 +389,7 @@ namespace VTC.Core
         public override bool Resolve(ResolveContext rc)
         {
             bool ok = _op.Left.Resolve(rc);
+            if(_op.Right != null)
             ok &= _op.Right.Resolve(rc);
 
             return ok;
@@ -390,7 +406,9 @@ namespace VTC.Core
 
         public override string CommentString()
         {
+            if(_op.Right != null)
             return _op.Left.CommentString() + _op.CommentString() + _op.Right.CommentString();
+            else return _op.Left.CommentString() + "is" + _op.RightType.Name ;
         }
 
         public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)

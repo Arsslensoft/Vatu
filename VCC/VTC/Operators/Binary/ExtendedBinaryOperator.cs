@@ -23,7 +23,7 @@ namespace VTC
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-          
+           
 
             CommonType = Left.Type;
             if (Right is RegisterExpression && Left is RegisterExpression)
@@ -38,7 +38,7 @@ namespace VTC
             {
                 if (oper.IsLogic)
                     CommonType = BuiltinTypeSpec.Bool;
-
+                
                  rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + oper.Name, ref OvlrdOp, new TypeSpec[2] { Left.Type, Right.Type });
                 if (rc.CurrentMethod == OvlrdOp)
                     OvlrdOp = null;

@@ -58,6 +58,9 @@
     <Compile Include="Compiler\CallingConventions.cs" />
     <Compile Include="Compiler\Emitter\ArrayEmitter.cs" />
     <Compile Include="Compiler\Emitter\ByteEmitter.cs" />
+    <Compile Include="Compiler\Emitter\HostedMatrixEmitter.cs" />
+    <Compile Include="Compiler\Emitter\MatrixEmitter.cs" />
+    <Compile Include="Compiler\Emitter\HostedArrayEmitter.cs" />
     <Compile Include="Compiler\Emitter\ReferenceEmitter.cs" />
     <Compile Include="Compiler\Emitter\StructEmitter.cs" />
     <Compile Include="Compiler\Emitter\IEmitter.cs" />
@@ -89,12 +92,17 @@
     <Compile Include="Compiler\Specs\TypeSpec.cs" />
     <Compile Include="Compiler\Specs\UnionTypeSpec.cs" />
     <Compile Include="Compiler\Specs\VarSpec.cs" />
+    <Compile Include="Contexts\CompiledSource.cs" />
+    <Compile Include="Contexts\DefaultDependency.cs" />
+    <Compile Include="Contexts\FIFOSemaphore.cs" />
+    <Compile Include="Contexts\ParallelCompiledSource.cs" />
     <Compile Include="Core\CompilationUnit.cs" />
     <Compile Include="Core\Constants\ArrayConstant.cs" />
     <Compile Include="Core\Constants\BoolConstant.cs" />
     <Compile Include="Core\Constants\ByteConstant.cs" />
     <Compile Include="Core\Constants\FloatConstant.cs" />
     <Compile Include="Core\Constants\IntConstant.cs" />
+    <Compile Include="Core\Definitions\InheritanceDefinition.cs" />
     <Compile Include="Core\Expressions\DeclaredExpression.cs" />
     <Compile Include="Core\Expressions\InstanceExpression.cs" />
     <Compile Include="Core\Expressions\Register\RegisterBinaryOperation.cs" />
@@ -107,7 +115,6 @@
     <Compile Include="Core\Constants\UIntConstant.cs" />
     <Compile Include="Core\Declarations\AsmDeclaration.cs" />
     <Compile Include="Core\Declarations\EnumDeclaration.cs" />
-    <Compile Include="Core\Declarations\ExtendDeclaration.cs" />
     <Compile Include="Core\Declarations\Imports.cs" />
     <Compile Include="Core\Declarations\ImportDeclaration.cs" />
     <Compile Include="Core\Declarations\IncludeDeclaration.cs" />
@@ -139,7 +146,6 @@
     <Compile Include="Core\Definitions\VariableListDefinition.cs" />
     <Compile Include="Core\Expressions\AccessExpression.cs" />
     <Compile Include="Core\Expressions\AccessOperation.cs" />
-    <Compile Include="Core\Expressions\ArgumentExpression.cs" />
     <Compile Include="Core\Expressions\AssignExpression.cs" />
     <Compile Include="Core\Expressions\BinaryOperation.cs" />
     <Compile Include="Core\Expressions\BitAccessExpression.cs" />
@@ -256,6 +262,7 @@
     <Compile Include="Operators\Binary\BitwiseAndOperator.cs" />
     <Compile Include="Operators\Binary\BitwiseOrOperator.cs" />
     <Compile Include="Operators\Binary\BitwiseXorOperator.cs" />
+    <Compile Include="Operators\Binary\IsOperator.cs" />
     <Compile Include="Operators\Binary\DivisionOperator.cs" />
     <Compile Include="Operators\Binary\EqualOperator.cs" />
     <Compile Include="Operators\Binary\ExtendedBinaryOperator.cs" />

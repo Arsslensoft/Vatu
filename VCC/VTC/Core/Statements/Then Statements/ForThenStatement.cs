@@ -13,8 +13,8 @@ namespace VTC.Core
 
         public ForStatement For { get; set; }
 
-        [Rule("<Then Stm>   ::=  ~for ~'(' <Arg> ~';' <Arg> ~';' <Arg> ~')' <Then Stm>")]
-        public ForThenStatement(ArgumentExpression init, ArgumentExpression cond, ArgumentExpression inc, ThenStatement stmt)
+        [Rule("<Then Stm>   ::=  ~for ~'('  <PARAM EXPR> ~';' <Expression> ~';'  <PARAM EXPR> ~')' <Then Stm>")]
+        public ForThenStatement(ParameterSequence<Expr> init, Expr cond, ParameterSequence<Expr> inc, ThenStatement stmt)
         {
             For = new ForStatement(init, cond, inc, stmt);
 

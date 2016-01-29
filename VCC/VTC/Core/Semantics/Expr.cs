@@ -10,7 +10,7 @@ namespace VTC.Core
 {
     public class Expr : SimpleToken, IEmit, IEmitExpr, IFlowAnalysis
     {
-
+        public bool AcceptStatement = false;
         public Expr current;
         [Rule("<Expression> ::= <Op Assign>")]
         public Expr(Expr expr)
@@ -111,6 +111,8 @@ namespace VTC.Core
         }
         public virtual bool DoFlowAnalysis(FlowAnalysisContext fc)
         {
+            if (current != null)
+                return current.DoFlowAnalysis(fc);
             return true;
         }
     }

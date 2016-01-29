@@ -73,6 +73,14 @@ namespace Vasm.Optimizer
           return m;
       }
 
+     public static bool IsDestinationMemory(InstructionWithDestinationAndSize ins)
+     {
+         return ins.DestinationIsIndirect;
+     }
+     public static bool IsSourceMemory(InstructionWithDestinationAndSource ins)
+     {
+         return ins.SourceIsIndirect;
+     }
 
     }
 }

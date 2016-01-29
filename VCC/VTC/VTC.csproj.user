@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>-s "D:\Projects\Vatu\Vatu\VCC\VTC\Samples\MAIN_LIB.vt" -a "C:\Users\Arsslen Idadi\Desktop\OSTEST\MAIN.asm" -o "C:\Users\Arsslen Idadi\Desktop\OSTEST\a.com" -z 0 --int -p 2 --sym Hel MONO --flow -t flat</StartArguments>
+    <StartArguments>-g -t obj -z 0 -v --pc 1 --flow --sym DEBUG MONODEVELOP  -s "C:\Users\Arsslen Idadi\Documents\Projects\LINKERTEST\LINKERTEST\TESTS\AccessTest.vt" -a "C:\Users\Arsslen Idadi\Desktop\OSTEST\AccessTest.asm"  -o "C:\Users\Arsslen Idadi\Desktop\OSTEST\AccessTest.o"</StartArguments>
     <StartWorkingDirectory>
     </StartWorkingDirectory>
   </PropertyGroup>

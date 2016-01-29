@@ -121,6 +121,7 @@ namespace VTC
            else if (ReferenceType == ReferenceKind.Register)
            {
                ec.EmitComment("ValueOf @" + Register.ToString() + Offset);
+               ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = !memberType.IsArray, Size = 16, SourceReg = Register, SourceDisplacement = Offset });
                ec.EmitPush(EmitContext.SI, MemberType.BaseType.SizeInBits, true);
            }
            else

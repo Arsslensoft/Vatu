@@ -18,7 +18,11 @@ namespace VTC
         bool EmitBranchable(EmitContext ec, Label truecase, bool val);
     }
 
-
+    public interface IEmitAddress
+    {
+        bool LoadEffectiveAddress(EmitContext ec);
+      
+    }
     /// <summary>
     /// Basic Emit for CodeGen
     /// </summary>
@@ -65,9 +69,9 @@ namespace VTC
 
 
 
-       internal Vasm.AsmContext ag;
+        internal Vasm.AsmContext ag;
         List<string> _names;
-  
+
         Dictionary<string, VarSpec> Variables = new Dictionary<string, VarSpec>();
         public RegistersEnum GetLow(RegistersEnum reg)
         {
@@ -144,21 +148,21 @@ namespace VTC
         {
             ag.Emit(ins);
         }
-        public void EmitPop(RegistersEnum rg, byte size = 80, bool adr = false,int off=0)
+        public void EmitPop(RegistersEnum rg, byte size = 80, bool adr = false, int off = 0)
         {
             if (Registers.Is8Bit(rg))
                 rg = ag.GetHolder(rg);
-            if (size == 8 )
+            if (size == 8)
             {
                 ag.SetAsUsed(rg);
                 RegistersEnum drg = ag.GetNextRegister();
                 ag.FreeRegister();
                 ag.FreeRegister();
 
-             EmitInstruction(new Pop() { DestinationReg = drg, Size = 16});
-             if (off != 0)
-                 EmitInstruction(new Mov() { DestinationReg = rg, Size = 8, DestinationIsIndirect = adr, DestinationDisplacement = off,SourceReg = GetLow(drg) });
-             else EmitInstruction(new Mov() { DestinationReg = rg, Size = 8, DestinationIsIndirect = adr, SourceReg = GetLow(drg) });
+                EmitInstruction(new Pop() { DestinationReg = drg, Size = 16 });
+                if (off != 0)
+                    EmitInstruction(new Mov() { DestinationReg = rg, Size = 8, DestinationIsIndirect = adr, DestinationDisplacement = off, SourceReg = GetLow(drg) });
+                else EmitInstruction(new Mov() { DestinationReg = rg, Size = 8, DestinationIsIndirect = adr, SourceReg = GetLow(drg) });
             }
             else
             {
@@ -179,7 +183,7 @@ namespace VTC
         {
             EmitInstruction(new Push() { DestinationValue = v, Size = 16 });
         }
-        public void EmitPush(RegistersEnum rg, byte size = 80, bool adr = false,int off = 0)
+        public void EmitPush(RegistersEnum rg, byte size = 80, bool adr = false, int off = 0)
         {
             if (Registers.Is8Bit(rg))
                 rg = ag.GetHolder(rg);
@@ -194,7 +198,7 @@ namespace VTC
                 EmitInstruction(new Push() { DestinationReg = drg, Size = 16 });
             }
             else
-             EmitInstruction(new Push() { DestinationReg = rg, Size = 16, DestinationIsIndirect = adr, DestinationDisplacement = off });
+                EmitInstruction(new Push() { DestinationReg = rg, Size = 16, DestinationIsIndirect = adr, DestinationDisplacement = off });
         }
 
 
@@ -204,21 +208,21 @@ namespace VTC
 
         public void EmitBooleanBranch(bool v, Label truecase, ConditionalTestEnum tr, ConditionalTestEnum fls)
         {
-        if(v)
-            EmitInstruction(new ConditionalJump() { Condition = tr, DestinationLabel = truecase.Name });
-        else EmitInstruction(new ConditionalJump() { Condition = fls, DestinationLabel = truecase.Name });
+            if (v)
+                EmitInstruction(new ConditionalJump() { Condition = tr, DestinationLabel = truecase.Name });
+            else EmitInstruction(new ConditionalJump() { Condition = fls, DestinationLabel = truecase.Name });
 
         }
         public void EmitBoolean(RegistersEnum rg, ConditionalTestEnum tr, ConditionalTestEnum fls)
         {
-          //  EmitInstruction(new Xor() { SourceReg = ag.GetHolder(rg), DestinationReg =  ag.GetHolder(rg), Size = 80 });
-            EmitInstruction(new ConditionalSet() { Condition = tr, DestinationReg = GetLow( rg), Size = 80 });
+            //  EmitInstruction(new Xor() { SourceReg = ag.GetHolder(rg), DestinationReg =  ag.GetHolder(rg), Size = 80 });
+            EmitInstruction(new ConditionalSet() { Condition = tr, DestinationReg = GetLow(rg), Size = 80 });
             EmitInstruction(new MoveZeroExtend() { SourceReg = GetLow(rg), DestinationReg = ag.GetHolder(rg), Size = 80 });
-          /*
-            EmitInstruction(new ConditionalMove() { Condition = tr, DestinationReg = rg, Size = 80, SourceValue = TRUE });
-            EmitInstruction(new ConditionalMove() { Condition = fls, DestinationReg = rg, Size = 80, SourceValue = 0 });
-           * 
-           * */
+            /*
+              EmitInstruction(new ConditionalMove() { Condition = tr, DestinationReg = rg, Size = 80, SourceValue = TRUE });
+              EmitInstruction(new ConditionalMove() { Condition = fls, DestinationReg = rg, Size = 80, SourceValue = 0 });
+             * 
+             * */
         }
         public void EmitBooleanWithJump(RegistersEnum rg, ConditionalTestEnum TR)
         {
@@ -242,7 +246,7 @@ namespace VTC
         }
         public void EmitBoolean(RegistersEnum rg, bool v)
         {
-            EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = (v ? (ushort)EmitContext.TRUE :(ushort) 0), Size = 80 });
+            EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = (v ? (ushort)EmitContext.TRUE : (ushort)0), Size = 80 });
         }
         public void EmitCall(MethodSpec m)
         {
@@ -262,8 +266,8 @@ namespace VTC
                 StructVar sv = new StructVar();
                 sv.Name = mem.Name;
                 sv.IsByte = mem.MemberType.Size == 1;
-              
-                sv.Size = mem.MemberType.IsPointer?2:mem.MemberType.Size;
+
+                sv.Size = mem.MemberType.IsPointer ? 2 : mem.MemberType.Size;
                 if (!mem.MemberType.IsPointer)
                 {
                     sv.IsStruct = mem.MemberType.IsStruct;
@@ -276,12 +280,12 @@ namespace VTC
             EmitStruct(st);
 
         }
-      
+
 
 
         public void EmitData(DataMember dm, MemberSpec v, bool constant = false)
         {
-            
+
             if (!Variables.ContainsKey(v.Signature.ToString()))
             {
                 v.Reference = ElementReference.New(v.Signature.ToString());
@@ -320,7 +324,7 @@ namespace VTC
         {
             ag.Emit(ag.AssemblerWriter);
         }
-        public void EmitDataWithConv(string name,MemberSpec v, string value)
+        public void EmitDataWithConv(string name, MemberSpec v, string value)
         {
             DataMember dm = new DataMember(name, value.ToString());
             EmitData(dm, v, false);
@@ -330,9 +334,9 @@ namespace VTC
             DataMember dm;
             if (value is string)
             {
-                if(constant)
+                if (constant)
                     dm = new DataMember(name, value.ToString(), true);
-                else dm = new DataMember(name, value.ToString(),false);
+                else dm = new DataMember(name, value.ToString(), false);
             }
             else if (value is byte[])
                 dm = new DataMember(name, (byte[])value);
@@ -371,7 +375,7 @@ namespace VTC
         {
             ag.Globals.Add(method.Signature.ToString());
         }
-     
+
     }
 
 

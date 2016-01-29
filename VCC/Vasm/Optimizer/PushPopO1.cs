@@ -20,7 +20,8 @@ namespace Vasm.Optimizer
        {
            for (int i = start; i >= 0; i--)
            {
-               if (ins[i] is Comment)
+            
+               if (!ins[i].Emit || ins[i] is Comment)
                    continue;
                else if (ins[i] is Push)
                {
@@ -34,7 +35,7 @@ namespace Vasm.Optimizer
        }
        public bool CheckForOptimization(List<Instruction> mInstructions, List<Instruction> externals = null)
        {
-           return true;
+     
            int pushidx;
            int popidx;
            for (int i = 0; i < mInstructions.Count; i++)
@@ -53,6 +54,8 @@ namespace Vasm.Optimizer
                         Push OldPush = GetLastPush(mInstructions, i-1 , ref pushidx) ;
 
                         if (OldPush == null)
+                            continue;
+                        else if(OldPop.DestinationIsIndirect && OldPush.DestinationIsIndirect)
                             continue;
                          
                         // check for same operands
@@ -83,7 +86,7 @@ namespace Vasm.Optimizer
        }
        public bool Optimize(ref List<Instruction> src)
        {
-           return true;
+       
        
            for (int i = 0; i < src.Count; i++)
            {

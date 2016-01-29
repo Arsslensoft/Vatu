@@ -14,15 +14,15 @@ namespace VTC.Core
         public int Size { get; set; }
         public int Dimension { get; set; }
         ArrayVariableDefinition _nextdef;
-        [Rule(@"<Array>    ::= ~'[' <Expression> ~']' <Array>")]
-        public ArrayVariableDefinition(Expr expr, ArrayVariableDefinition avd)
+        [Rule(@"<Array>    ::= ~'[' <Integral Const>  ~']' <Array>")]
+        public ArrayVariableDefinition(Literal expr, ArrayVariableDefinition avd)
         {
             _nextdef = avd;
             _expr = expr;
         }
         Expr _expr;
-        [Rule(@"<Array>    ::= ~'[' <Expression> ~']'")]
-        public ArrayVariableDefinition(Expr expr)
+        [Rule(@"<Array>    ::= ~'[' <Integral Const> ~']'")]
+        public ArrayVariableDefinition(Literal expr)
         {
             _expr = expr;
         }
@@ -37,7 +37,7 @@ namespace VTC.Core
             Dimension = 1;
             bool conv = false;
             if (_expr != null)
-            _expr = (Expr)_expr.DoResolve(rc);
+                _expr = (ConstantExpression)_expr.DoResolve(rc);
 
 
             if (_nextdef != null)

@@ -30,6 +30,9 @@ namespace VTC.Core
         {
          
             _expr = (Expr)_expr.DoResolve(rc);
+            if (!_expr.AcceptStatement)
+                ResolveContext.Report.Error(0,Location,"This kind of expressions cannot be used as an expression statement");
+
             return this;
         }
         public override bool Emit(EmitContext ec)

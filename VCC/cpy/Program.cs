@@ -3,14 +3,18 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace cpy
 {
     class Program
     {
+        [DllImport("msvcrt.dll")]
+        public static extern void puts(string msg);
         static void Main(string[] args)
         {
+            puts("Hello \0");
             int i,size,k=2,ftab,sect=3;
             byte[] buf = new byte[512];
             byte vbuf;
@@ -69,11 +73,11 @@ namespace cpy
 	        ftr.Close();
 
 
-            // Floppy
-            for (i = (int)devw.BaseStream.Position; i < (2880) * 512; i++)
-            {
-                devw.Write((byte)0);
-            }
+            //// Floppy
+            //for (i = (int)devw.BaseStream.Position; i < (2880) * 512; i++)
+            //{
+            //    devw.Write((byte)0);
+            //}
             devw.Close();
 
           //  Process.Start(@"C:\Program Files\Oracle\VirtualBox\VBoxManage.exe", "internalcommands createrawvmdk -filename vm10.vmdk -rawdisk a.bin");

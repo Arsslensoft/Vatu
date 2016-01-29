@@ -34,7 +34,7 @@ using bsn.GoldParser.Parser;
 
 namespace bsn.GoldParser.Semantic {
 	public abstract class SemanticToken: IToken {
-        protected LineInfo position;
+        public LineInfo position;
         protected Symbol symbol;
 
 		protected internal virtual void Initialize(Symbol symbol, LineInfo position) {

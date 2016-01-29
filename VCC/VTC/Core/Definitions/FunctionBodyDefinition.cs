@@ -35,9 +35,10 @@ namespace VTC.Core
 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-            if(_ext != null)
-            _ext = (FunctionExtensionDefinition)_ext.DoResolve(rc);
-           
+            if (_ext != null && _ext.IsExtended)
+                _ext = (FunctionExtensionDefinition)_ext.DoResolve(rc);
+            else _ext = null;
+       
             ParamTypes = new List<TypeSpec>();
 
             Params = new Stack<ParameterSpec>();

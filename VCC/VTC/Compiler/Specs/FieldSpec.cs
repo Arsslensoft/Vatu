@@ -28,16 +28,25 @@ namespace VTC
             }
         }
         public Namespace NS { get; set; }
-        public FieldSpec(Namespace ns,string name, Modifiers mods, TypeSpec type, Location loc)
+        public FieldSpec(Namespace ns,string name, Modifiers mods, TypeSpec type, Location loc,bool access =false)
             : base(name, new MemberSignature(ns,name, loc), mods,ReferenceKind.Field)
         {
          
             NS = ns;
             IsIndexed = false;
             memberType = type;
-
-            if (memberType.IsArray)
-                Emitter = new ArrayEmitter(this, 0, ReferenceKind.Field);
+            if (memberType.IsMultiDimensionArray)
+            {
+                if (!access)
+                    Emitter = new MatrixEmitter(this, 0, ReferenceKind.Field);
+                else Emitter = new HostedMatrixEmitter(this, 0, ReferenceKind.Field);
+            }
+            else if (memberType.IsArray)
+            {
+                if(!access)
+                       Emitter = new ArrayEmitter(this, 0, ReferenceKind.Field);
+                else Emitter = new HostedArrayEmitter(this, 0, ReferenceKind.Field);
+            }
             else if (memberType.IsBuiltinType || memberType.IsDelegate)
             {
                 if (memberType.Size == 2)

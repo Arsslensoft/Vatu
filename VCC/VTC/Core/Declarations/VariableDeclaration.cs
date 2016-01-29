@@ -20,17 +20,18 @@ namespace VTC.Core
         TypeIdentifier _stype;
         VariableDefinition _vadef;
         VariableListDefinition _valist;
-        [Rule(@"<Var Decl>     ::= <Mod> <Type> <Var> <Var List>  ~';'")]
-        public VariableDeclaration(Modifier mod, TypeIdentifier type, VariableDefinition var, VariableListDefinition valist)
+        FunctionExtensionDefinition _ext;
+        [Rule(@"<Var Decl>     ::= <Mod> <Type> <Var> <Var List> <Func Ext> ~';'")]
+        public VariableDeclaration(Modifier mod, TypeIdentifier type, VariableDefinition var, VariableListDefinition valist,FunctionExtensionDefinition ext )
         {
             _mod = mod;
             _stype = type;
             _vadef = var;
             _valist = valist;
-
+            _ext = ext;
 
         }
-        [Rule(@"<Var Decl>     ::=  <Type> <Var> <Var List>  ~';'")]
+        [Rule(@"<Struct Var Decl>     ::=  <Type> <Var> <Var List>  ~';'")]
         public VariableDeclaration(TypeIdentifier type, VariableDefinition var, VariableListDefinition valist)
         {
             _mod = null;
@@ -78,6 +79,13 @@ namespace VTC.Core
 
 
             rc.KnowField((FieldSpec)vadef.FieldOrLocal);
+
+            // extend
+            if (_ext != null)
+            {
+                if (!rc.Extend(_ext.ExtendedType, (FieldSpec)vadef.FieldOrLocal))
+                    ResolveContext.Report.Error(0, Location, "Another field with same signature has already extended this type.");
+            }
 
             // initial value
             if (!Type.IsBuiltinType && !Type.IsPointer && vadef.expr != null && vadef.expr is ConstantExpression)
@@ -164,6 +172,10 @@ namespace VTC.Core
         {
             rc.IsInVarDeclaration = true;
             Members = new List<TypeMemberSpec>();
+
+            if (_ext != null)
+                _ext = (FunctionExtensionDefinition)_ext.DoResolve(rc);
+
 
             _vadef = (VariableDefinition)_vadef.DoResolve(rc);
             ArraySize = _vadef.ArraySize;

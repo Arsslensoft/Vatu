@@ -11,7 +11,7 @@ namespace VTC.Core
     /// <summary>
     /// Variable Expr
     /// </summary>
-    public class VariableExpression : Identifier
+    public class VariableExpression : Identifier, IEmitAddress
     {
 
         public MemberSpec variable;
@@ -76,16 +76,30 @@ namespace VTC.Core
             //TODO:Non builtin
             return true;
         }
+        public virtual bool LoadEffectiveAddress(EmitContext ec)
+        {
+            if (variable is VarSpec)
+                return variable.LoadEffectiveAddress(ec);
+            else if (variable is FieldSpec)
+                return variable.LoadEffectiveAddress(ec);
+            else if (variable is ParameterSpec)
+                return variable.LoadEffectiveAddress(ec);
+            else if (variable is RegisterSpec)
+                return variable.LoadEffectiveAddress(ec);
+            return true;
+        }
+
+
         public override bool EmitFromStack(EmitContext ec)
         {
             if (variable is VarSpec)
-                variable.EmitFromStack(ec);
+             return   variable.EmitFromStack(ec);
             else if (variable is FieldSpec)
-                variable.EmitFromStack(ec);
+                return variable.EmitFromStack(ec);
             else if (variable is ParameterSpec)
-                variable.EmitFromStack(ec);
+                return variable.EmitFromStack(ec);
             else if (variable is RegisterSpec)
-                variable.EmitFromStack(ec);
+                return variable.EmitFromStack(ec);
             return true;
         }
         public override bool EmitToStack(EmitContext ec)
@@ -93,15 +107,15 @@ namespace VTC.Core
 
 
             if (variable is VarSpec)
-                variable.EmitToStack(ec);
+                return variable.EmitToStack(ec);
             else if (variable is FieldSpec)
-                variable.EmitToStack(ec);
+                return variable.EmitToStack(ec);
             else if (variable is EnumMemberSpec)
-                variable.EmitToStack(ec);
+                return variable.EmitToStack(ec);
             else if (variable is ParameterSpec)
-                variable.EmitToStack(ec);
+                return variable.EmitToStack(ec);
             else if (variable is RegisterSpec)
-                variable.EmitToStack(ec);
+                return variable.EmitToStack(ec);
             return true;
         }
 

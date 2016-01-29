@@ -24,13 +24,17 @@ namespace VTC
             if (!Right.Type.IsPointer)
                 ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non pointer types");
             // VOF
-            if (Right is AccessExpression)
-            {
-                //ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non variable expressions");
-                ms = null;
-            }
-            else if (Right is VariableExpression)
-                ms = (Right as VariableExpression).variable;
+            //if (Right is AccessExpression)
+            //{
+            //    //ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non variable expressions");
+            //    ms = null;
+            //}
+            //else 
+           
+            if (!(Right is VariableExpression))
+                   ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non variable nor access expressions");
+
+
             MemberType = Right.Type;
             Right.Type = Right.Type.BaseType;
             if (Right.Type != null)
@@ -56,12 +60,12 @@ namespace VTC
             }
             else
             {
-             
-              
+
+
                 ec.EmitComment("ValueOf @Var");
                 Right.EmitToStack(ec);
                 ec.EmitPop(EmitContext.SI);
-                if  (MemberType.BaseType.Size <= 2)
+                if (MemberType.BaseType.Size <= 2)
                     ec.EmitPush(EmitContext.SI, MemberType.BaseType.SizeInBits, true);
                 else
                 {
@@ -72,6 +76,7 @@ namespace VTC
                 }
             }
             return true;
+
         }
         public override bool EmitToStack(EmitContext ec)
         {

@@ -18,7 +18,7 @@ namespace VTC.Core
         public List<TypeMemberSpec> Members { get; set; }
 
 
-        [Rule(@"<Struct Def>   ::= <Var Decl> <Struct Def>")]
+        [Rule(@"<Struct Def>   ::= <Struct Var Decl> <Struct Def>")]
         public StructDefinition(VariableDeclaration var, StructDefinition sdef)
         {
             _var = var;
@@ -26,7 +26,7 @@ namespace VTC.Core
             Size = 0;
 
         }
-        [Rule(@"<Struct Def>   ::= <Var Decl>")]
+        [Rule(@"<Struct Def>   ::= <Struct Var Decl>")]
         public StructDefinition(VariableDeclaration var)
         {
 
@@ -39,6 +39,7 @@ namespace VTC.Core
         {
             Members = new List<TypeMemberSpec>();
             _var = (VariableDeclaration)_var.DoResolve(rc);
+           
             if (_var != null)
             {
 
@@ -47,16 +48,23 @@ namespace VTC.Core
                 else
                   Size += _var.Type.Size;
             }
-            foreach (TypeMemberSpec sv in _var.Members)
-                Members.Add(sv);
 
+            foreach (TypeMemberSpec sv in _var.Members)
+            {   if(!Members.Contains(sv))
+                      Members.Add(sv);
+            else ResolveContext.Report.Error(0, Location, "Duplicate member declaration");
+            }
             if (_next_sdef != null)
             {
 
 
                 _next_sdef = (StructDefinition)_next_sdef.DoResolve(rc);
                 foreach (TypeMemberSpec sv in _next_sdef.Members)
-                    Members.Add(sv);
+                {
+                    if(!Members.Contains(sv))
+                       Members.Add(sv);
+                    else ResolveContext.Report.Error(0, Location, "Duplicate member declaration");
+                }
             }
             return this;
         }

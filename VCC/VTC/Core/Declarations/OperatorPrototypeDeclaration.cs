@@ -23,7 +23,7 @@ namespace VTC.Core
 
         public TypeIdentifierListDefinition _tidl;
         CastKind ckind;
-        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator <Operator>  <Type> ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator <Operator> ~'(' <Type> ~')' ~';' ")]
         public OperatorPrototypeDeclaration(Modifier mod, TypeToken type, DefinedOperator oper, TypeToken cmp)
         {
             _mtype = type;
@@ -36,7 +36,7 @@ namespace VTC.Core
       
 
         // Operator Userdef
-        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator <Operator Def>  <Type> ~';'  ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator <Operator Def>  ~'(' <Type> ~')' ~';'  ")]
         public OperatorPrototypeDeclaration(Modifier mod, TypeToken type, OperatorDefinition oper, TypeToken cmp)
         {
             _mtype = type;

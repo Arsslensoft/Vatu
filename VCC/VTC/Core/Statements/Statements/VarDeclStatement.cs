@@ -13,7 +13,7 @@ namespace VTC.Core
         public VariableDeclaration Declaration { get { return _vadecl; } }
 
         VariableDeclaration _vadecl;
-        [Rule(@"<Statement>        ::= <Var Decl>")]
+        [Rule(@"<Statement>        ::= <Struct Var Decl> ")]
         public VarDeclStatement(VariableDeclaration vardecl)
         {
             _vadecl = vardecl;

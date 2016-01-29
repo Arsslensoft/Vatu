@@ -11,7 +11,7 @@ namespace VTC
 	 /// <summary>
     /// TypeMemberSpec Specs
     /// </summary>
-    public class TypeMemberSpec : MemberSpec
+    public class TypeMemberSpec : MemberSpec, IEquatable<TypeMemberSpec>
     {
 
         TypeSpec th;
@@ -42,6 +42,10 @@ namespace VTC
         {
             
             return base.EmitToStack(ec);
+        }
+        public bool Equals(TypeMemberSpec m)
+        {
+            return m.Name == Name;
         }
 
     }

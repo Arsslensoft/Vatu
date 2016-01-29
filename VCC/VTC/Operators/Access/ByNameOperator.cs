@@ -19,7 +19,7 @@ namespace VTC
 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-
+            
             if (LeftType != null)
             {
                 LeftType = (TypeToken)LeftType.DoResolve(rc);
@@ -27,6 +27,9 @@ namespace VTC
                     ResolveContext.Report.Error("Failed to resolve type");
                 else
                 {
+                    // back up 
+                    TypeSpec oldext = rc.CurrentExtensionLookup;
+                    bool staticext = rc.StaticExtensionLookup;
 
                     rc.CurrentExtensionLookup = LeftType.Type;
                     rc.StaticExtensionLookup = true;
@@ -35,8 +38,9 @@ namespace VTC
                         ResolveContext.Report.Error(0, Location, "Unresolved extended field");
                     else if (Right is MethodExpression && (Right as MethodExpression).Method == null)
                         ResolveContext.Report.Error(0, Location, "Unresolved extended method");
-                    rc.CurrentExtensionLookup = null;
-                    rc.StaticExtensionLookup = false;
+                    // restore
+                    rc.CurrentExtensionLookup = oldext;
+                    rc.StaticExtensionLookup = staticext;
                     rc.CurrentScope &= ~ResolveScopes.AccessOperation;
                     return Right;
                 }

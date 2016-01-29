@@ -46,7 +46,6 @@ namespace VTC.Core
        
     
         [Rule(@" <Decl>  ::= <ASM Decl>")]
-        [Rule(@"<Decl>  ::= <Extension Decl>")]
         [Rule(@"<Decl>  ::= <Var Decl>  ")]
         [Rule(@"<Decl>  ::= <Types Decl>")]
         [Rule(@"<Decl>  ::= <Method Decl>")]
