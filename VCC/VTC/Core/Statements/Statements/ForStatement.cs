@@ -14,6 +14,7 @@ namespace VTC.Core
         public Label ExitLoop { get; set; }
         public Label LoopCondition { get; set; }
         public ILoop ParentLoop { get; set; }
+        public bool HasBreak { get; set; }
 
         List<Expr> Init = new List<Expr>();
         List<Expr> Inc = new List<Expr>();
@@ -78,31 +79,71 @@ namespace VTC.Core
         }
     
         public override bool Emit(EmitContext ec)
-        {
-            ec.EmitComment("For init");
-            foreach (Expr e in Init)
-                e.Emit(ec);
+ {
+     if (_cond is ConstantExpression || _cond.current is ConstantExpression )
+         EmitConstantLoop(ec);
+     else
+     {
+         ec.EmitComment("For init");
+         foreach (Expr e in Init)
+             e.Emit(ec);
 
-            ec.EmitInstruction(new Jump() { DestinationLabel = LoopCondition.Name });
-            ec.MarkLabel(EnterLoop);
-            ec.EmitComment("For block");
-            _stmt.Emit(ec);
+         ec.EmitInstruction(new Jump() { DestinationLabel = LoopCondition.Name });
+         ec.MarkLabel(EnterLoop);
+         ec.EmitComment("For block");
+         _stmt.Emit(ec);
 
-            ec.EmitComment("For increment");
+         ec.EmitComment("For increment");
 
-            foreach (Expr e in Inc)
-                e.Emit(ec);
+         foreach (Expr e in Inc)
+             e.Emit(ec);
 
-            ec.MarkLabel(LoopCondition);
-            if (_cond != null)
-                _cond.EmitBranchable(ec, EnterLoop, true);
-            else ec.EmitInstruction(new Jump() { DestinationLabel = EnterLoop.Name });
-            ec.EmitComment("Exit for");
-            ec.MarkLabel(ExitLoop);
+         ec.MarkLabel(LoopCondition);
+         if (_cond != null)
+             _cond.EmitBranchable(ec, EnterLoop, true);
+         else ec.EmitInstruction(new Jump() { DestinationLabel = EnterLoop.Name });
+         ec.EmitComment("Exit for");
+         ec.MarkLabel(ExitLoop);
+     }
             return true;
         }
+        bool infinite = false;
+        void EmitConstantLoop(EmitContext ec)
+        {
 
+            ConstantExpression ce = null;
 
+            if (_cond is ConstantExpression)
+                ce = (ConstantExpression)_cond;
+            else
+                ce = (ConstantExpression)_cond.current;
+
+            bool val = (bool)ce.GetValue();
+            if (val)
+            { // if true
+                infinite = true;
+                ec.EmitComment("For init");
+                foreach (Expr e in Init)
+                    e.Emit(ec);
+
+                ec.EmitInstruction(new Jump() { DestinationLabel = LoopCondition.Name });
+                ec.MarkLabel(EnterLoop);
+                ec.EmitComment("For block");
+                _stmt.Emit(ec);
+
+                ec.EmitComment("For increment");
+
+                foreach (Expr e in Inc)
+                    e.Emit(ec);
+
+                ec.MarkLabel(LoopCondition);
+                ec.EmitInstruction(new Jump() { DestinationLabel = EnterLoop.Name });
+                ec.EmitComment("Exit for");
+                ec.MarkLabel(ExitLoop);
+            }
+           
+        }
+     
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             CodePath cur = new CodePath(loc); // sub code path
@@ -123,6 +164,10 @@ namespace VTC.Core
             _stmt.DoFlowAnalysis(fc);
             back.AddPath(cur);
             fc.CodePathReturn = back; // restore code path
+
+            if (infinite && !HasBreak)
+                return FlowState.Unreachable;
+
             return ok;
         }
     }

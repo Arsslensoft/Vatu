@@ -55,7 +55,7 @@ namespace VTC
             else
             {
                 ec.EmitComment("Push Multi-Dim Array Parameter @BP " + Offset);
-                ec.EmitInstruction(new Push() { DestinationReg = EmitContext.BP, Size = memberType.SizeInBits, DestinationDisplacement = Offset, DestinationIsIndirect = true });
+                ec.EmitInstruction(new Push() { DestinationReg = EmitContext.BP, Size =16, DestinationDisplacement = Offset, DestinationIsIndirect = true });
             }
             return true;
         }

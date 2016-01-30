@@ -15,7 +15,7 @@ namespace VTC.Core
             Namespace = new Namespace(id.Name, id.loc);
 
         }
-
+      
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (Namespace.Default == Namespace)

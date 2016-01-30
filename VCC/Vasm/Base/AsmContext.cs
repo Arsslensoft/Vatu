@@ -488,6 +488,12 @@ namespace Vasm
                writer.WriteLine();
            }
            writer.WriteLine();
+
+
+           // define globals
+           foreach (string ex in Globals)
+               writer.WriteLine("global\t" + ex);
+           writer.WriteLine();
        }
        public virtual void EmitFinalize(AssemblyWriter writer)
        {
@@ -555,10 +561,7 @@ namespace Vasm
                    writer.WriteLine("extern\t" + ex);
                writer.WriteLine();
            }
-           // define globals
-           foreach (string ex in Globals)
-               writer.WriteLine("global\t" + ex);
-           writer.WriteLine();
+          
 
            if(!IsFlat)
                  EmitInterruptInstallCode(writer);

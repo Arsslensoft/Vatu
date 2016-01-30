@@ -18,7 +18,12 @@ namespace VTC
            Globals = gbls;
            Includes = incl;
        }
-      
+       [Rule("<COMPILATION UNIT> ::= <Includes Decl>")]
+       public CompilationUnit(IncludeSequence<IncludeDeclaration> incl)
+       {
+           Globals = null;
+           Includes = incl;
+       }
        public override SimpleToken DoResolve(ResolveContext rc)
        {
            return base.DoResolve(rc);

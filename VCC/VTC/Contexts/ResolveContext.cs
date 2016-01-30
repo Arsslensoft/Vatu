@@ -14,7 +14,7 @@ namespace VTC
         Label EnterLoop { get; set; }
         Label ExitLoop { get; set; }
         Label LoopCondition { get; set; }
-       // bool HasInterrupt { get; set; }
+        bool HasBreak { get; set; }
 
     }
     public interface IConditional
@@ -158,6 +158,17 @@ namespace VTC
             CurrentNamespace = ns;
             FillKnown();
             Init();
+        }
+        public ResolveContext()
+        {
+
+
+            Init();
+            Resolver = new Resolver(Namespace.Default, new List<Namespace>(), new MethodSpec(Namespace.Default, "<root-decl-list>", Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
+
+            FillKnown();
+            ChildContexts = new List<ResolveContext>();
+
         }
         public ResolveContext(List<Namespace> imp, Namespace ns, DeclarationSequence<Declaration> decl)
         {
@@ -384,7 +395,10 @@ namespace VTC
         {
             return new ResolveContext(imp, ns, dcl);
         }
-
+        public static ResolveContext CreateRootContext()
+        {
+            return new ResolveContext();
+        }
 
        
 

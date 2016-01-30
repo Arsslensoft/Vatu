@@ -94,7 +94,7 @@ namespace VTC.Core
         {
 
             Right = right;
-            ispush =(( binop.Operator & BinaryOperator.Addition) != 0);
+            ispush = ((binop.Operator & BinaryOperator.Addition) == BinaryOperator.Addition);
         }
 
         byte size = 16;

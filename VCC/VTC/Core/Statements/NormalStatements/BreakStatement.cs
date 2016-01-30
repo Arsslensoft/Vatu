@@ -24,9 +24,13 @@ namespace VTC.Core
                     ResolveContext.Report.Error(37, Location, "Break must be used inside a case statement");
                 else Exit = rc.EnclosingIf.ExitIf.Name;
             }
-            else  if (rc.EnclosingLoop == null)
+            else if (rc.EnclosingLoop == null)
                 ResolveContext.Report.Error(37, Location, "Break must be used inside a loop statement");
-            else Exit = rc.EnclosingLoop.ExitLoop.Name ;
+            else
+            {
+                Exit = rc.EnclosingLoop.ExitLoop.Name;
+                rc.EnclosingLoop.HasBreak = true;
+            }
             return this;
         }
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)

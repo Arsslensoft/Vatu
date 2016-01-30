@@ -67,18 +67,20 @@ Comment Line  = '//'
 ! ===================================================================
 
 <Import>   ::= use <Name> ';'
+    
             
 <Imports>  ::= <Import>
             | <Import> <Imports>   
                    
 <Namespace> ::= namespace <Name>
-             
+             | default namespace
 
 ! ===================================================================
 !  Global Declaration 
 ! ===================================================================
 
 <COMPILATION UNIT> ::= <Includes Decl> <GLOBALS>
+                    | <Includes Decl>
                     
 <GLOBALS> ::= <GLOBAL>
            | <GLOBAL> <GLOBALS>

@@ -59,7 +59,7 @@ HelpText = "Target output")]
 HelpText = "Parallel Compilation threads")]
         public int ParallelThreads { get; set; }
 
-               [Option('z', "optimizelevel", Required = false, DefaultValue = 2,
+               [Option('z', "optimizelevel", Required = false, DefaultValue = 0,
    HelpText = "Optimizations Level")]
         public int OptimizeLevel { get; set; }
 

@@ -39,12 +39,23 @@ namespace VTC.Core
                 _expr = (Expr)_expr.DoResolve(rc);
                 if (!_expr.Type.Equals(rc.CurrentMethod.MemberType))
                     ResolveContext.Report.Error(0, Location, "Return expression type must be " + rc.CurrentMethod.MemberType.Name);
-
+            
+             
             }
             else if(!rc.CurrentMethod.MemberType.Equals(BuiltinTypeSpec.Void))
                 ResolveContext.Report.Error(0, Location, "Empty returns are only used with void methods");
 
             ReturnLabel = new Label(rc.CurrentMethod.Signature + "_ret");
+
+            // set exit loops
+            ILoop enc = rc.EnclosingLoop;
+            while (enc != null)
+            {
+
+                enc.HasBreak = true;
+                enc = enc.ParentLoop;
+
+            }
             return this;
         }
         public override bool Emit(EmitContext ec)

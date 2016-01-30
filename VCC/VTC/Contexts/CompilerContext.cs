@@ -198,21 +198,21 @@ namespace VTC
 
 
                         CompilationUnit cunit = processor.CurrentToken as CompilationUnit;
-                        // includes
-                        foreach (IncludeDeclaration incl in cunit.Includes)
-                            IncludeFile(incl.IncludeFile, src);
-                        // global decls
-                        var globals = cunit.Globals;
+                        //// includes
+                        //foreach (IncludeDeclaration incl in cunit.Includes)
+                        //    IncludeFile(incl.IncludeFile, src);
                         ResolveContext RootCtx = null;
                         List<Declaration> Resolved = new List<Declaration>();
                         List<ResolveContext> ResolveCtx = new List<ResolveContext>();
-                        // transfer
+                    
+                            // global decls
+                            var globals = cunit.Globals;
+                  
+                            // transfer
 
+                            ok &= ResolveSemanticTree(src, cunit, ref RootCtx, ref Resolved, ref ResolveCtx);
+                        
 
-
-
-
-                        ok &= ResolveSemanticTree(src, cunit, ref RootCtx, ref Resolved, ref ResolveCtx);
                         if (ok) // Emit
                         {
                             dep.Declarations = Resolved;
@@ -246,7 +246,26 @@ namespace VTC
         }
         public bool ResolveSemanticTree(CompiledSource src,CompilationUnit cunit,ref ResolveContext RootCtx, ref List<Declaration> Resolved, ref List<ResolveContext> ResolveCtx,bool isdef=false)
         {
+            if (cunit.Globals == null)
+            {
+          
+                ResolveContext old_ctx = RootCtx;
 
+                RootCtx = new ResolveContext();
+
+                if (isdef)
+                    src.DefaultDependency.RootCtx = RootCtx;
+                else RootCtx.FillKnownByKnown(src.DefaultDependency.RootCtx.Resolver);
+                // includes
+                foreach (IncludeDeclaration incl in cunit.Includes)
+                    IncludeFile(incl.IncludeFile, src);
+
+                if (old_ctx != null)
+                    RootCtx.FillKnownByKnown(old_ctx.Resolver);
+
+
+                return (ResolveContext.Report.ErrorCount == 0);
+            }
             foreach (Global gb in cunit.Globals)
             {
              

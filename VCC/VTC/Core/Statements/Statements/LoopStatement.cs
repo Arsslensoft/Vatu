@@ -14,7 +14,7 @@ namespace VTC.Core
         public Label ExitLoop { get; set; }
         public Label LoopCondition { get; set; }
         public ILoop ParentLoop { get; set; }
-
+        public bool HasBreak { get; set; }
 
 
         Statement _stmt;
@@ -73,6 +73,10 @@ namespace VTC.Core
            _stmt.DoFlowAnalysis(fc);
             back.AddPath(cur);
             fc.CodePathReturn = back; // restore code path
+
+
+            if (!HasBreak)
+                return FlowState.Unreachable;
             return ok;
         }
     }

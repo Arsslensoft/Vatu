@@ -14,7 +14,7 @@ namespace VTC.Core
         public Label ExitLoop { get; set; }
         public Label LoopCondition { get; set; }
         public ILoop ParentLoop { get; set; }
-
+        public bool HasBreak { get; set; }
 
         private Statement _stmt;
         private Expr _expr;
@@ -77,7 +77,7 @@ namespace VTC.Core
             }
             return true;
         }
-
+        bool infinite = false;
         void EmitConstantLoop(EmitContext ec)
         {
 
@@ -92,7 +92,7 @@ namespace VTC.Core
             if (val)
             { // if true
 
-
+                infinite = true;
                 ec.MarkLabel(EnterLoop);
 
                 _stmt.Emit(ec);
@@ -123,6 +123,9 @@ namespace VTC.Core
             _stmt.DoFlowAnalysis(fc);
             back.AddPath(cur);
             fc.CodePathReturn = back; // restore code path
+
+            if (infinite && !HasBreak)
+                return FlowState.Unreachable;
             return ok;
         }
     }

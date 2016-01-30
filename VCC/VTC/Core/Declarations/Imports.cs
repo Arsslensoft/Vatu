@@ -21,8 +21,10 @@ namespace VTC.Core
         [Rule("<Imports>  ::= <Import>")]
         public Imports(ImportDeclaration im)
         {
+           
             Used = new List<Namespace>();
             Used.Add(im.Import);
+
 
 
         }

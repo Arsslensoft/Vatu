@@ -53,7 +53,12 @@ namespace VTC.Core
             ec.EmitInstruction(new Push() { DestinationValue = _value ? (ushort)EmitContext.TRUE : (ushort)0, Size = 16 });
             return true;
         }
-
+        public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
+        {
+            if (_value == v)
+                ec.EmitInstruction(new Jump() { DestinationLabel = truecase.Name });
+            return true;
+        }
         public override bool EmitToRegister(EmitContext ec, RegistersEnum rg)
         {
             ec.EmitInstruction(new Mov() { DestinationReg = ec.GetLow(rg), SourceValue = _value ? (ushort)EmitContext.TRUE : (ushort)0, Size = 16 });

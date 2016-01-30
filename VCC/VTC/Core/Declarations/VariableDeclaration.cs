@@ -12,7 +12,7 @@ namespace VTC.Core
     {
         public int ArraySize { get; set; }
         public Modifiers mods;
-        public bool IsAbstract = false;
+        public bool IsAbstract ;
       
         public List<TypeMemberSpec> Members { get; set; }
 
@@ -92,8 +92,8 @@ namespace VTC.Core
             else if ((mods & Modifiers.Const) == Modifiers.Const && vadef.expr == null)
                 ResolveContext.Report.Error(4, Location, "Constant fields must be initialized");
 
-            if ((vadef.expr is ArrayConstant) && ArraySize != 0)
-                ResolveContext.Report.Error(49, Location, "Array value cannot be used without the array specifier,  ex : (type k[] = 65a;)");
+            if ((vadef.expr is ArrayConstant) && !(Type is PointerTypeSpec))
+                ResolveContext.Report.Error(49, Location, "Array value cannot be used without the array specifier,  ex : (type[] k = 65a;)");
             // emit init priority to string
             if (Type.Equals(BuiltinTypeSpec.String) && vadef.expr != null && vadef.expr is ConstantExpression) // conert string to const
                 vadef.expr = ConstantExpression.CreateConstantFromValue(BuiltinTypeSpec.String, ((ConstantExpression)(vadef.expr)).GetValue(), vadef.expr.Location);
@@ -169,7 +169,8 @@ namespace VTC.Core
             return ok;
         }
          public override SimpleToken DoResolve(ResolveContext rc)
-        {
+       {
+           ArraySize = -1;
             rc.IsInVarDeclaration = true;
             Members = new List<TypeMemberSpec>();
 
@@ -201,6 +202,10 @@ namespace VTC.Core
             // type
             _stype = (TypeIdentifier)_stype.DoResolve(rc);
             this.Type = _stype.Type;
+            if (Type is ArrayTypeSpec)
+                ArraySize = (Type as ArrayTypeSpec).ArrayCount;
+          
+         
 
             if (ArraySize > -1 && Type.IsForeignType && !Type.IsPointer)
                 ResolveContext.Report.Error(52, Location, "Only builtin type arrays are allowed");
@@ -218,6 +223,9 @@ namespace VTC.Core
             }
            if(_vadef.expr != null && !(_vadef.expr is ConstantExpression) && !TypeChecker.CompatibleTypes(Type,_vadef.expr.Type))
                ResolveContext.Report.Error(35, Location, "Source and target must have same types");
+
+           if ((mods & Modifiers.Extern) == Modifiers.Extern && IsAbstract)
+               ResolveContext.Report.Error(35, Location, "A variable can't be global & extern at the same time");
             rc.IsInVarDeclaration = false;
             return this;
         }

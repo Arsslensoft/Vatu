@@ -35,7 +35,9 @@ namespace VTC.Core
                     while (enc != null)
                     {
                         Exit = enc.ExitLoop.Name;
+                        enc.HasBreak = true;
                         enc = enc.ParentLoop;
+                 
                     }
                 }
                 else
@@ -44,6 +46,7 @@ namespace VTC.Core
                     while (enc != null && lvl > 0)
                     {
                         Exit = enc.ExitLoop.Name;
+                        enc.HasBreak = true;
                         enc = enc.ParentLoop;
                         lvl--;
                     }
