@@ -71,12 +71,22 @@ namespace VTC.Core
             return true;
         }
 
-        public ArrayTypeSpec CreateArrayType(TypeSpec root)
+        public TypeSpec CreateArrayType(TypeSpec root)
         {
             if (_nextdef == null)
+            {
+                if (Size == 0)
+                    return new PointerTypeSpec(root.NS, root);
+
                 return new ArrayTypeSpec(root.NS, root, Size);
+            }
             else
+            {
+                if (Size == 0)
+                    return new PointerTypeSpec(root.NS, _nextdef.CreateArrayType(root));
+
                 return new ArrayTypeSpec(root.NS, _nextdef.CreateArrayType(root), Size);
+            }
           
         }
     }

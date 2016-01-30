@@ -69,11 +69,7 @@ namespace VTC.Core
         }
         void ResolveField(ResolveContext rc, VariableDefinition vadef)
         {
-            if (ArraySize > 0)
-                //Type = new ArrayTypeSpec(Type.NS, Type, ArraySize);
-                Type = vadef._avd.CreateArrayType(Type);
-            else if (ArraySize == 0)
-                Type = new PointerTypeSpec(Type.NS, Type);
+            
             vadef.FieldOrLocal = new FieldSpec(rc.CurrentNamespace, vadef._id.Name, mods, Type, loc);
             // Childs
 
@@ -129,11 +125,7 @@ namespace VTC.Core
         }
         void ResolveLocalVariable(ResolveContext rc, VariableDefinition vadef)
         {
-            if (ArraySize > 0)
-                //  Type = new ArrayTypeSpec(Type.NS, Type, ArraySize);
-                Type = vadef._avd.CreateArrayType(Type);
-            else if (ArraySize == 0)
-                Type = new PointerTypeSpec(Type.NS, Type);
+         
 
             vadef.FieldOrLocal = new VarSpec(rc.CurrentNamespace, vadef._id.Name, rc.CurrentMethod, Type, loc, rc.Resolver.KnownLocalVars.Count, mods);
             ((VarSpec)vadef.FieldOrLocal).Initialized = (vadef.expr != null);
@@ -152,10 +144,7 @@ namespace VTC.Core
 
         void ResolveStructMember(ResolveContext rc, VariableDefinition vadef)
         {
-            if (ArraySize > 0)
-                Type = vadef._avd.CreateArrayType(Type);
-            else if (ArraySize == 0)
-                Type = new PointerTypeSpec(Type.NS, Type);
+       
 
 
             vadef.Member = new TypeMemberSpec(rc.CurrentNamespace, vadef._id.Name, rc.CurrentType, Type, loc, 0);
@@ -179,7 +168,7 @@ namespace VTC.Core
             ok &= _stype.Resolve(rc);
             return ok;
         }
- public override SimpleToken DoResolve(ResolveContext rc)
+         public override SimpleToken DoResolve(ResolveContext rc)
         {
             rc.IsInVarDeclaration = true;
             Members = new List<TypeMemberSpec>();
@@ -189,7 +178,7 @@ namespace VTC.Core
 
 
             _vadef = (VariableDefinition)_vadef.DoResolve(rc);
-            ArraySize = _vadef.ArraySize;
+          
             if (ArraySize > 0 && _vadef.expr != null)
                 ResolveContext.Report.Error(48, Location, "Fixed size arrays cannot have initial values");
 

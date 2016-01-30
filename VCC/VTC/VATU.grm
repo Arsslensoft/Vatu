@@ -246,9 +246,7 @@ Comment Line  = '//'
                  
 <Struct Var Decl>  ::=  <Type> <Var> <Var List>  ';'          
              
-<Var>      ::= ID <Array>
-             | ID
-             | ID <Array> '=' <Op If> 
+<Var>      ::= ID
              | ID '=' <Op If> 
 
 <Array>    ::= '[' <Integral Const>  ']'
@@ -264,9 +262,11 @@ Comment Line  = '//'
 ! Types
 ! ===================================================================
 
-<Type>     ::= <Base> <Pointers> 
+<Type>     ::= <Base> <Pointers>
              | <Name> '::' <Base> <Pointers>
-             
+             | <Base> <Pointers> <Array>
+             | <Name> '::' <Base> <Pointers> <Array>     
+                  
 <Base>     ::= <Scalar>
              | '@'Id  
              | typeof Id
@@ -449,7 +449,7 @@ Comment Line  = '//'
 <Value>      ::= <CONSTANT>
                | '(' <Expression> ')'
                | <Declared Expression> 
-               | new <Type> '[' <Expression> ']'
+               | new <Type> '(' <Expression> ')'
               ! | <Initializer>
                
 

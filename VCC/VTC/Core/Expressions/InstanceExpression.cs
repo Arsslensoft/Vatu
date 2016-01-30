@@ -12,7 +12,7 @@ namespace VTC.Core.Expressions
        Expr _sizeexpr;
        TypeToken _type;
        MethodSpec method;
-       [Rule("<Value>      ::= ~new <Type> ~'[' <Expression> ~']'")]
+       [Rule("<Value>      ::= ~new <Type> ~'(' <Expression> ~')'")]
        public InstanceExpression(TypeToken type, Expr size)
        {
            _sizeexpr = size;
