@@ -14,7 +14,7 @@ namespace VTC
     {
         public bool IsLogic { get; set; }
         public bool IsBinary { get; set; }
-        public Namespace NS { get; set; }
+   
         public string Symbol { get; set; }
         public OperatorSpec(Namespace ns, string name,string sym, Modifiers mods, Location loc)
             : base(name, new MemberSignature(ns, name,  loc), mods, ReferenceKind.Operator)

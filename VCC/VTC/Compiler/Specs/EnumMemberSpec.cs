@@ -25,7 +25,7 @@ namespace VTC
             }
             set { th = value; }
         }
-        public Namespace NS { get; set; }
+  
         public EnumMemberSpec(Namespace ns, string name, TypeSpec host, TypeSpec type, Location loc)
             : base(name, new MemberSignature(ns,host.Name + "_" + name, loc), Modifiers.NoModifier,ReferenceKind.EnumValue)
         {

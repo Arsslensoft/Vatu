@@ -14,6 +14,7 @@ namespace VTC
         Label EnterLoop { get; set; }
         Label ExitLoop { get; set; }
         Label LoopCondition { get; set; }
+       // bool HasInterrupt { get; set; }
 
     }
     public interface IConditional
@@ -24,8 +25,9 @@ namespace VTC
     }
     public interface IResolve
     {
-        bool Resolve(ResolveContext rc);
+        FlowState DoFlowAnalysis(FlowAnalysisContext fc); 
         SimpleToken DoResolve(ResolveContext rc);
+        bool Resolve(ResolveContext rc);
     }
     public enum LabelType
     {

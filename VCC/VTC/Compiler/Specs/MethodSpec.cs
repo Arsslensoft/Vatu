@@ -43,6 +43,7 @@ namespace VTC
        {
            get { return _name; }
        }
+       public Namespace NS { get; set; }
        /// <summary>
        /// Member Signature for struct_node_
        /// </summary>
@@ -102,6 +103,7 @@ namespace VTC
        }
        public virtual bool EmitToStack(EmitContext ec) { return true; }
        public virtual bool EmitFromStack(EmitContext ec) { return true; }
+    
     }
 
    

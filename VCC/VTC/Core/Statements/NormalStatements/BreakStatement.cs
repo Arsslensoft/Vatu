@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,10 +29,10 @@ namespace VTC.Core
             else Exit = rc.EnclosingLoop.ExitLoop.Name ;
             return this;
         }
-        public override Reachability MarkReachable(Reachability rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            base.MarkReachable(rc);
-            return Reachability.CreateUnreachable();
+         
+            return FlowState.Unreachable;
         }
         public override bool Emit(EmitContext ec)
         {

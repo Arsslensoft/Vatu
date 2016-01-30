@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +11,7 @@ namespace VTC.Core
 	public class FunctionExtensionDefinition : Definition
 		{
 			public TypeSpec ExtendedType { get; set; }
+            public bool IsExtended = true;
 			public bool Static = false;
 			TypeToken tt;
 			[Rule(@"<Func Ext>  ::= ~extends <Type>")]
@@ -27,6 +28,7 @@ namespace VTC.Core
             public FunctionExtensionDefinition()
             {
                 tt = null;
+                IsExtended = false;
             }
 			public override SimpleToken DoResolve(ResolveContext rc)
 			{

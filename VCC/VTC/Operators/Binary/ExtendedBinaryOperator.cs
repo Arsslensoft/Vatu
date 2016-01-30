@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace VTC
     {
         public string SymbolName { get; set; }
  
-        public ExtendedBinaryOperator(bsn.GoldParser.Grammar.Symbol l,string name)
+        public ExtendedBinaryOperator(VTC.Base.GoldParser.Grammar.Symbol l,string name)
         {
             SymbolName = name;
             symbol = l;
@@ -23,7 +23,7 @@ namespace VTC
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-          
+           
 
             CommonType = Left.Type;
             if (Right is RegisterExpression && Left is RegisterExpression)
@@ -38,7 +38,7 @@ namespace VTC
             {
                 if (oper.IsLogic)
                     CommonType = BuiltinTypeSpec.Bool;
-
+                
                  rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + oper.Name, ref OvlrdOp, new TypeSpec[2] { Left.Type, Right.Type });
                 if (rc.CurrentMethod == OvlrdOp)
                     OvlrdOp = null;

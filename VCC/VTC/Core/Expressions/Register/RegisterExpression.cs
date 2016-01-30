@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +21,12 @@ namespace VTC.Core
         {
             rid = id;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+
+            return rid.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
 
             rid = (RegisterIdentifier)rid.DoResolve(rc);
@@ -29,11 +34,7 @@ namespace VTC.Core
             Type = rid.Is16Bits ? RegisterTypeSpec.RegisterWord : RegisterTypeSpec.RegisterByte;
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-
-            return rid.Resolve(rc);
-        }
+      
 
         public override bool Emit(EmitContext ec)
         {

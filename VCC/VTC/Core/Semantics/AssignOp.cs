@@ -11,7 +11,13 @@ namespace VTC.Core
     {
         protected MethodSpec OvlrdOp;
         public BinaryOp _op;
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            if (OvlrdOp != null)
+                fc.MarkAsUsed(OvlrdOp);
 
+            return base.DoFlowAnalysis(fc);
+        }
         public bool FixConstant(ResolveContext rc)
         {
             bool conv = false;

@@ -120,18 +120,21 @@ namespace VTC
            {
 
                ec.EmitComment("Push ValueOf Var [TypeOf " + Member.MemberType.Name + "] @BP" + Offset);
+               ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = !memberType.IsArray, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement = Offset });
                PushAllFromRegister(ec, EmitContext.SI, Member.MemberType.BaseType.Size, 0);
            }
            else if (ReferenceType == ReferenceKind.Register)
            {
                ec.EmitComment("Push ValueOf Var [TypeOf " + Member.MemberType.Name + "] @" + Register.ToString() + Offset);
-
+               ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = !memberType.IsArray, Size = 16, SourceReg = Register, SourceDisplacement = Offset });
                PushAllFromRegister(ec, EmitContext.SI, Member.MemberType.BaseType.Size, 0);
            }
            else
-
+           {
+               ec.EmitComment("ValueOf @BP+" +  Offset);
+               ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement =  Offset });
                PushAllFromRegister(ec, EmitContext.SI, Member.MemberType.BaseType.Size, 0);
-            
+           }
             return true;
         }
         public override bool ValueOfStack(EmitContext ec)
@@ -146,17 +149,25 @@ namespace VTC
             else if (ReferenceType == ReferenceKind.LocalVariable)
             {
                 ec.EmitComment("ValueOf Stack @BP" + Offset);
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = !memberType.IsArray, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement =  Offset });
                 return PopAllToRegister(ec, EmitContext.SI, Member.MemberType.BaseType.Size, 0);
 
             }
             else if (ReferenceType == ReferenceKind.Register)
             {
                 ec.EmitComment("ValueOf Stack @" + Register.ToString() + Offset);
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = !memberType.IsArray, Size = 16, SourceReg = Register, SourceDisplacement = Offset });
                 PopAllToRegister(ec, EmitContext.SI, Member.MemberType.BaseType.Size, 0);
-                 
+
             }
             else
+            {
+                ec.EmitComment("ValueOf  Stack @BP+" +  Offset);
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement =  Offset });
+     
                 PopAllToRegister(ec, EmitContext.SI, Member.MemberType.BaseType.Size, 0);
+
+            }
          
             return true;
         }
@@ -175,6 +186,7 @@ namespace VTC
             {
 
                 ec.EmitComment("Push ValueOf Access Var [TypeOf " + mem.Name + "] @BP" + Offset);
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = !memberType.IsArray, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement =  Offset });
                 return  PushAllFromRegister(ec, EmitContext.SI, mem.Size, off);
             }
             else if (ReferenceType == ReferenceKind.Register)
@@ -182,13 +194,16 @@ namespace VTC
 
 
                 ec.EmitComment("Push ValueOf Access Var [TypeOf " + mem.Name + "] @" + Register.ToString() + Offset);
-
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = !memberType.IsArray, Size = 16, SourceReg = Register, SourceDisplacement = Offset });
                 PushAllFromRegister(ec, EmitContext.SI, mem.Size, off);
-            
+
             }
             else
+            {
+                ec.EmitComment("ValueOf Access @BP+" +  Offset);
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement =  Offset });
                 PushAllFromRegister(ec, EmitContext.SI, mem.Size, off);
-
+            }
             return true;
         }
         public override bool ValueOfStackAccess(EmitContext ec, int off, TypeSpec mem)
@@ -203,16 +218,21 @@ namespace VTC
             else if (ReferenceType == ReferenceKind.LocalVariable)
             {
                 ec.EmitComment("ValueOf Stack Access @BP" + Offset);
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = !memberType.IsArray, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement =  Offset });
                 return PopAllToRegister(ec, EmitContext.SI, mem.Size, off);
             }
             else if (ReferenceType == ReferenceKind.Register)
             {
                 ec.EmitComment("ValueOf Stack Access @" + Register.ToString() + Offset);
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = !memberType.IsArray, Size = 16, SourceReg = Register, SourceDisplacement = Offset });
                 PopAllToRegister(ec, EmitContext.SI, mem.Size, off);
             }
             else
+            {
+                ec.EmitComment("ValueOf Access Stack @BP+" +  Offset);
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.BP, SourceDisplacement =  Offset });      
                 PopAllToRegister(ec, EmitContext.SI, mem.Size, off);
-
+            }
             return true;
         }
     }

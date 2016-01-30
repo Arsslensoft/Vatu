@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +42,11 @@ namespace VTC.Core
             _id = null;
 
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             if(_id != null)
                DestinationLabel = new Label(_id.Name);
@@ -54,10 +58,7 @@ namespace VTC.Core
             }
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            return true;
-        }
+      
         public override bool Emit(EmitContext ec)
         {
             ec.EmitInstruction(new Vasm.x86.Jump() { DestinationLabel = this.DestinationLabel.Name });
@@ -65,10 +66,9 @@ namespace VTC.Core
             return true;
         }
 
-        public override Reachability MarkReachable(Reachability rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            base.MarkReachable(rc);
-            return Reachability.CreateUnreachable();
+            return base.DoFlowAnalysis(fc);
         }
     }
     

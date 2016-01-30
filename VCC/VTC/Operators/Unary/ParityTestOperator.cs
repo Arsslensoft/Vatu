@@ -1,5 +1,5 @@
-using bsn.GoldParser.Parser;
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Parser;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +19,11 @@ namespace VTC
             Operator = UnaryOperator.ParityTest;
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (Right.Type.Equals(BuiltinTypeSpec.Bool) && Right.Type.IsBuiltinType && !Right.Type.IsPointer)
                 ResolveContext.Report.Error(33, Location, "Parity Operators must be used with non boolean, pointer types");
@@ -33,10 +37,7 @@ namespace VTC
                 OvlrdOp = null;
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            return true;
-        }
+   
         public override bool Emit(EmitContext ec)
         {
             if (OvlrdOp != null)

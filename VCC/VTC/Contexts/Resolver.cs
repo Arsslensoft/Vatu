@@ -247,7 +247,11 @@ namespace VTC
                         if (KnownMethods[i].NS.Name != ns.Name)
                             continue;
                         if (KnownMethods[i].Signature == msig && ((!KnownMethods[i].IsPrivate || CurrentNamespace == ns)))
+                        {
                             mtd = KnownMethods[i];
+                               return;
+                        
+                        }
                     }
                 }
                 else
@@ -258,7 +262,10 @@ namespace VTC
                         if (KnownMethods[i].NS.Name != ns.Name)
                             continue;
                         if (KnownMethods[i].Signature == msig && ((!KnownMethods[i].IsPrivate || CurrentNamespace == ns)))
+                        {
                             mtd = KnownMethods[i];
+                            return;
+                        }
                     }
                 }
             }
@@ -282,8 +289,11 @@ namespace VTC
                     MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
                     for (int i = 0; i < ml.Count; i++)
                     {
-                        if (ml[i].Signature.ExtensionSignature == msig.ExtensionSignature && ((!ml[i].IsPrivate || CurrentNamespace == ns)))
+                        if (ml[i].Signature.ExtensionSignature == msig.ExtensionSignature && ((!ml[i].IsPrivate || CurrentNamespace == ns))){
                             mtd = ml[i];
+                                 return;
+                        
+                        }
                     }
                 }
                 else
@@ -292,8 +302,11 @@ namespace VTC
                     for (int i = 0; i < ml.Count; i++)
                     {
 
-                        if (ml[i].Signature == msig && ((!ml[i].IsPrivate || CurrentNamespace == ns)))
+                        if (ml[i].Signature == msig && ((!ml[i].IsPrivate || CurrentNamespace == ns))){
                             mtd = ml[i];
+                                 return;
+                        
+                        }
                     }
                 }
             }

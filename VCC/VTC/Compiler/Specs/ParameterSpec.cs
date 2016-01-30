@@ -69,7 +69,8 @@ namespace VTC
                 return true;
             }
         }
-        public ParameterSpec(string name, MethodSpec host, TypeSpec type, Location loc,int initstackidx, Modifiers mods = VTC.Modifiers.NoModifier)
+    
+        public ParameterSpec(string name, MethodSpec host, TypeSpec type, Location loc,int initstackidx, Modifiers mods = VTC.Modifiers.NoModifier, bool access = false)
             : base(name, new MemberSignature(Namespace.Default, host.Name + "_param_" + name, loc), mods,ReferenceKind.Parameter)
         {
             method = host;
@@ -79,11 +80,27 @@ namespace VTC
 
             if (IsReference)
             {
+
                 Emitter = new ReferenceEmitter(this, 4, ReferenceKind.Parameter);
-                ReferenceParameter = new ParameterSpec(name, host, type.MakePointer(), loc, initstackidx);
+                if (!type.IsMultiDimensionArray)
+                    ReferenceParameter = new ParameterSpec(name, host, type.MakePointer(), loc, initstackidx, VTC.Modifiers.NoModifier, access);
+                else
+                      ReferenceParameter = new ParameterSpec(name, host, type, loc, initstackidx, VTC.Modifiers.NoModifier, access);
+            }
+            else if (memberType.IsMultiDimensionArray)
+            {
+                if (!access)
+                    Emitter = new MatrixEmitter(this, 4, ReferenceKind.Parameter);
+                else
+                    Emitter = new HostedMatrixEmitter(this, 4, ReferenceKind.Parameter);
             }
             else if (memberType.IsArray)
-                Emitter = new ArrayEmitter(this, 4, ReferenceKind.Parameter);
+            {
+                if (!access)
+                    Emitter = new ArrayEmitter(this, 4, ReferenceKind.Parameter);
+                else
+                    Emitter = new HostedArrayEmitter(this, 4, ReferenceKind.Parameter);
+            }
             else if (memberType.IsBuiltinType || memberType.IsDelegate)
             {
                 if (memberType.Size == 2)
@@ -93,7 +110,6 @@ namespace VTC
             }
             else if (memberType.IsForeignType)
                 Emitter = new StructEmitter(this, 4, ReferenceKind.Parameter);
-
           
             InitialStackIndex = initstackidx;
         }

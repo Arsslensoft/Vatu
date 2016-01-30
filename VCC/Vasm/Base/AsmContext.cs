@@ -117,12 +117,12 @@ namespace Vasm
       
         public bool Optimize()
         {
-            InlineInstruction entry = new InlineInstruction(EntryPoint);
-            if(!string.IsNullOrEmpty(EntryPoint))
-                mDefInstructions.Add(entry);
+            //InlineInstruction entry = new InlineInstruction(EntryPoint);
+            //if(!string.IsNullOrEmpty(EntryPoint))
+            //    mDefInstructions.Add(entry);
             bool ok = Optimizer.Optimizer.Optimize(OLevel,ref mInstructions,mDefInstructions);
-            if (!string.IsNullOrEmpty(EntryPoint))
-                mDefInstructions.Remove(entry);
+            //if (!string.IsNullOrEmpty(EntryPoint))
+            //    mDefInstructions.Remove(entry);
 
             return ok;
    /*
@@ -445,6 +445,12 @@ namespace Vasm
            else if (!IsLibrary && IsInterruptOverload && Interrupts.Count > 0)
                writer.WriteLine("\t\tcall "+interrupt_name);
 
+           foreach (Instruction inst in mDefInstructions)
+           {
+               writer.Write("\t");
+               inst.WriteText(this, writer);
+               writer.WriteLine();
+           }
            if(!string.IsNullOrEmpty(EntryPoint))
                writer.Write("\t\tcall " + EntryPoint);
                
@@ -460,15 +466,9 @@ namespace Vasm
            if(!IsLibrary)
             writer.WriteLine("PROGRAM_ORG:");
 
-            if (!IsLibrary)
-            {
-                foreach (Instruction inst in mDefInstructions)
-                {
-                    writer.Write("\t");
-                    inst.WriteText(this, writer);
-                    writer.WriteLine();
-                }
-            }
+          
+             
+            
            // INT Install         
            if (IsFlat)           
             EmitInterruptInstallCode(writer);

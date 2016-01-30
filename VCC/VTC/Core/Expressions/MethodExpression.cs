@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,7 +48,25 @@ namespace VTC.Core
             }
             return false;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            if (Method != null)
+                fc.MarkAsUsed(Method);
+       
+            if(Parameters != null)
+            {        FlowState ok = FlowState.Valid;
+                foreach(Expr p in Parameters)
+                     ok &= p.DoFlowAnalysis(fc);
+
+                return ok & base.DoFlowAnalysis(fc);
+            }
+
+            if (DelegateVar != null)
+                fc.MarkAsUsed(DelegateVar);
+            return base.DoFlowAnalysis(fc);
+        }
+       
+       public override bool Resolve(ResolveContext rc)
         {
 
             bool ok = true;
@@ -56,11 +74,12 @@ namespace VTC.Core
                 ok &= _param.Resolve(rc);
             return true;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             ccvh = new CallingConventionsHandler();
             List<TypeSpec> tp = new List<TypeSpec>();
             Parameters = new List<Expr>();
+            AcceptStatement = true;
             if (_param != null)
             {
                 foreach (Expr p in _param)
@@ -105,17 +124,18 @@ namespace VTC.Core
                 if (Method == null)
                     ResolveContext.Report.Error(46, Location, "Unresolved extension method");
                 else if (rc.ExtensionVar != null && Parameters.Count < Method.Parameters.Count)
-                    Parameters.Add(rc.ExtensionVar);
+                    Parameters.Insert(0,rc.ExtensionVar);
                 else if (!rc.StaticExtensionLookup)
                     ResolveContext.Report.Error(46, Location, "Extension methods must be called with less parameters by 1, the first is reserved for the extended type");
             }
-            if (Method == null)
-                ResolveContext.Report.Error(46, Location, "Unknown method " + msig.NormalSignature + " ");
-            else if (Method.Parameters.Count != Parameters.Count)
-                ResolveContext.Report.Error(46, Location, "the method " + Method.Name + " has different parameters");
-            else if (!MatchParameterTypes(rc))
-                ResolveContext.Report.Error(46, Location, "the method " + Method.Name + " has different parameters types. try casting");
-
+      
+                if (Method == null)
+                    ResolveContext.Report.Error(46, Location, "Unknown method " + msig.NormalSignature + " ");
+                else if (Method.Parameters.Count != Parameters.Count)
+                    ResolveContext.Report.Error(46, Location, "the method " + Method.Name + " has different parameters");
+                else if (!MatchParameterTypes(rc))
+                    ResolveContext.Report.Error(46, Location, "the method " + Method.Name + " has different parameters types. try casting");
+            
             if (Method != null)
                 Type = Method.MemberType;
             return this;

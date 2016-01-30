@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -48,18 +48,19 @@ namespace VTC.Core
 
 
 
-        public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            Register = Registers.GetRegister(Name).Value;
-            Is16Bits = Registers.Is16Bit(Register);
-            return this;
-        }
-        public override bool Resolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
         {
 
 
             return true;
         }
+ public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            Register = Registers.GetRegister(Name).Value;
+            Is16Bits = Registers.Is16Bit(Register);
+            return this;
+        }
+   
     }
 
     public class AsmInstruction : SimpleToken

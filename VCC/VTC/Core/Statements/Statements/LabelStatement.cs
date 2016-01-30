@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +18,11 @@ namespace VTC.Core
         {
             _label = id;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             return this;
         }
@@ -28,15 +32,7 @@ namespace VTC.Core
             ec.MarkLabel(Label);
             return true;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            return true;
-        }
-        public override Reachability MarkReachable(Reachability rc)
-        {
-          return  base.MarkReachable(rc);
-         
-        }
+       
     }
     
 	

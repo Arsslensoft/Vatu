@@ -97,7 +97,6 @@ Comment Line  = '//'
 
 <Decl>  ::= <ASM Decl>
          |  <Var Decl>  
-         | <Extension Decl>
          |  <Types Decl>
          | <Prototypes Decl>
          | <Method Decl>
@@ -117,11 +116,7 @@ Comment Line  = '//'
                  | <Oper Decl>
                  | <Func Decl>
                  
-! ===================================================================
-! Extension  Declaration
-! ===================================================================      
 
-<Extension Decl> ::= <Value> extends <Type> ';'
 
   
 ! ===================================================================
@@ -137,8 +132,8 @@ Comment Line  = '//'
                  | <Mod> define bool Id operator <Operator Def> ';'
 
                  
-<Oper Proto> ::= <Mod> override <Type> operator <Operator>  <Type>   ';' ! binary & unary
-            | <Mod> override <Type> operator <Operator Def>  <Type> ';' ! operator def (binary & unary)  
+<Oper Proto> ::= <Mod> override <Type> operator <Operator> '(' <Type> ')' ';' ! binary & unary
+            | <Mod> override <Type> operator <Operator Def> '(' <Type>  ')' ';'   ! operator def (binary & unary)  
             | <Mod> override <Type> operator <Cast Kind> '(' <Type>  ')' ';' ! cast
  
 <Var Prototype> ::= global <Var Decl>
@@ -207,8 +202,10 @@ Comment Line  = '//'
 
 <Typedef Decl> ::= <Mod> typedef <Type> ID ';'
 
-<Struct Decl>  ::= <Mod> struct Id '{' <Struct Def> '}'  ';' 
-                | <Mod> typedef struct '{' <Struct Def> '}'  Id ';' 
+<Struct Decl>  ::= <Mod> struct Id <Inheritance>  '{' <Struct Def> '}'  ';' 
+                | <Mod> typedef struct <Inheritance>  '{' <Struct Def> '}'  Id ';' 
+                
+
 <Union Decl>   ::= <Mod> union Id '{' <Struct Def> '}'  ';' 
                 | <Mod> typedef union '{' <Struct Def> '}' Id ';' 
                 
@@ -222,12 +219,14 @@ Comment Line  = '//'
                   | <Mod> <CallCV> delegate <Type> ID '(' ')' ';'
                   | <Mod> typedef <CallCV> delegate <Type> '(' ')' ID ';'   
 
+<Inheritance> ::= extends <Types>
+              | 
 ! ===================================================================
 ! Definitions
 ! ===================================================================
 
-<Struct Def>   ::= <Var Decl> <Struct Def>
-                 | <Var Decl>
+<Struct Def>   ::= <Struct Var Decl> <Struct Def>
+                 | <Struct Var Decl>  
       
 ! Enumerations & Flags definition               
 <Enum Def>     ::= <Enum Val> ',' <Enum Def>
@@ -242,18 +241,17 @@ Comment Line  = '//'
 
 
 
-<Var Decl>     ::= <Mod> <Type> <Var> <Var List>  ';'
-                 |       <Type> <Var> <Var List>  ';'
-               
+<Var Decl>     ::= <Mod> <Type> <Var> <Var List> <Func Ext> ';'
+                 | <Struct Var Decl> 
+                 
+<Struct Var Decl>  ::=  <Type> <Var> <Var List>  ';'          
              
-<Var>      ::= ID <Array>
-             | ID
-             | ID <Array> '=' <Op If> 
+<Var>      ::= ID
              | ID '=' <Op If> 
 
-<Array>    ::= '[' <Expression> ']'
+<Array>    ::= '[' <Integral Const>  ']'
              | '[]'
-             | '[' <Expression> ']' <Array>
+             | '[' <Integral Const> ']' <Array>
              
 <Var List> ::=  ',' <Var Item> <Var List>
              | 
@@ -264,9 +262,11 @@ Comment Line  = '//'
 ! Types
 ! ===================================================================
 
-<Type>     ::= <Base> <Pointers> 
+<Type>     ::= <Base> <Pointers>
              | <Name> '::' <Base> <Pointers>
-             
+             | <Base> <Pointers> <Array>
+             | <Name> '::' <Base> <Pointers> <Array>     
+                  
 <Base>     ::= <Scalar>
              | '@'Id  
              | typeof Id
@@ -289,19 +289,19 @@ Comment Line  = '//'
 ! Statements
 ! ===================================================================
 
-<Statement>  ::= <Var Decl>
+<Statement>  ::= <Struct Var Decl> 
                | Id ':'                            !Label
                | if '(' <Expression> ')' <Statement>          
                | if '(' <Expression> ')'  <Then Stm> else <Statement>      
                | while '(' <Expression> ')' <Statement> 
-               | for '(' <Arg> ';' <Arg> ';' <Arg> ')' <Statement>
+               | for '(' <PARAM EXPR> ';' <Expression>  ';' <PARAM EXPR> ')' <Statement>
                | use <Name> <Statement>
                | loop <Statement>
                | <Normal Stm>
      
  <Then Stm>   ::= if '(' <Expression> ')' <Then Stm> else <Then Stm> 
                | while '(' <Expression> ')' <Then Stm> 
-               | for '(' <Arg> ';' <Arg> ';' <Arg> ')' <Then Stm>
+               | for '(' <PARAM EXPR> ';' <Expression>  ';' <PARAM EXPR> ')' <Then Stm>
                | <Normal Stm>
                         
  <Normal Stm> ::= do <Statement> while '(' <Expression> ')'
@@ -328,8 +328,7 @@ Comment Line  = '//'
                
 
 
-<Arg>       ::= <Expression> 
-              | 
+
 
 <Case Stm> ::=  case <Integral Const List> ':' <Stm List>
               | default ':' <Stm List>   
@@ -361,6 +360,7 @@ Comment Line  = '//'
                | <Op If> '<<=' <Op Assign>
                | <Op If>
 
+
 <Op If>      ::= <Op BinaryOpDef>  '?' <Op If> ':' <Op If>
                | <Op BinaryOpDef> 
 
@@ -385,6 +385,7 @@ Comment Line  = '//'
 
 <Op Equate>  ::= <Op Equate> '==' <Op Compare>
                | <Op Equate> '!=' <Op Compare>
+               | <Op Equate> is <Type>
                | <Op Compare>
 
 <Op Compare> ::= <Op Compare> '<'  <Op Shift>
@@ -426,7 +427,7 @@ Comment Line  = '//'
                | sizeof '(' ID <Pointers> ')'
                | addressof '(' ID ')'
                | nameof  '(' ID ')'
-               | <Op Pointer>    
+               | <Op Pointer>     
 
  <VALUE POS> ::= HIGH
              | LOW         
@@ -442,13 +443,13 @@ Comment Line  = '//'
                                
                | <Op Pointer> '[' <Expression> ']'
                | <Value>     
-               
+  
 
                
 <Value>      ::= <CONSTANT>
                | '(' <Expression> ')'
                | <Declared Expression> 
-               | new <Type> '[' <Expression> ']'
+               | new <Type> '(' <Expression> ')'
               ! | <Initializer>
                
 

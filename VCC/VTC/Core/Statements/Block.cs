@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +21,14 @@ namespace VTC.Core
             Statements = new List<NormalStatment>();
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            if (_statements != null)
+
+                return _statements.Resolve(rc);
+            else return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             _statements = (NormalStatment)_statements.DoResolve(rc);
        
@@ -35,13 +42,7 @@ namespace VTC.Core
            
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            if (_statements != null)
-
-                return _statements.Resolve(rc);
-            else return true;
-        }
+     
         public override bool Emit(EmitContext ec)
         {
             bool ok = true;
@@ -50,46 +51,36 @@ namespace VTC.Core
             
             return ok;
         }
-        public override Reachability MarkReachable(Reachability rc)
-        {
-            if (rc.IsUnreachable)
-                return rc;
 
-            base.MarkReachable(rc);
-            int i = 0;
-            foreach (var s in Statements)
-            {
-                i++;
-                rc = s.MarkReachable(rc);
-
-                if (rc.IsUnreachable && i < Statements.Count && Statements[i].current != null)
-                {
-                    rc.Loc = Statements[i].current.Location;
-                    return rc;
-                }
-                else rc = new Reachability();
-                
-            }
-
-    
-
-            return rc;
-         
-        }
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             CodePath cur = new CodePath(loc); // sub code path
-        
+
             CodePath back = fc.CodePathReturn;
             fc.CodePathReturn = cur; // set current code path
-            bool ok = true;
-           
-            foreach(var st in Statements)
-             ok &= st.DoFlowAnalysis(fc);
-            back.AddPath(cur);
-            fc.CodePathReturn = back; // restore code path
-            return ok;
-        }
+            FlowState ok = FlowState.Valid;
+            int i = 0;
+            bool markedunreachable = false;
+      
+                foreach (var st in Statements)
+                {
+                    FlowState p = st.DoFlowAnalysis(fc);
+
+                    if (markedunreachable && i < Statements.Count && Statements[i].current != null)
+                    {
+                        fc.ReportUnreachable(Statements[i].current.Location);
+                        break;
+                    }
+                    else ok.Reachable = new Reachability();
+                    markedunreachable = p.Reachable.IsUnreachable;
+                    i++;
+                }
+            
+                back.AddPath(cur);
+                fc.CodePathReturn = back; // restore code path
+                return ok;
+            }
+       
     }
     
 	

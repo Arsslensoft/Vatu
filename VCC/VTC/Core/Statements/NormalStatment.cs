@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,7 +32,15 @@ namespace VTC.Core
 
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            if (current != null)
+                current.Resolve(rc);
+            if (_next != null)
+                _next.Resolve(rc);
+            return base.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (current != null)
                 current = (Statement)current.DoResolve(rc);
@@ -41,14 +49,8 @@ namespace VTC.Core
            
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            if (current != null)
-                current.Resolve(rc);
-            if (_next != null)
-                _next.Resolve(rc);
-            return base.Resolve(rc);
-        }
+     
+       
         public override bool Emit(EmitContext ec)
         {
             if (current != null)
@@ -57,14 +59,8 @@ namespace VTC.Core
          
             return base.Emit(ec);
         }
-        public override Reachability MarkReachable(Reachability rc)
-        {
-            if(current != null)
-                return current.MarkReachable(rc);
-
-            return base.MarkReachable(rc);
-        }
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+     
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             if (current != null)
                 return current.DoFlowAnalysis(fc);

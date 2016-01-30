@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+﻿using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,6 +47,11 @@ namespace VTC
         }
         public bool ResolveExtension(ResolveContext rc)
         {
+            // back up 
+            TypeSpec oldext = rc.CurrentExtensionLookup;
+            Expr extvar = rc.ExtensionVar;
+
+
             rc.CurrentExtensionLookup = Left.Type;
             rc.StaticExtensionLookup = false;
             rc.ExtensionVar = Left;
@@ -56,20 +61,20 @@ namespace VTC
             {
 
                 ResolveContext.Report.Error(0, Location, "Unresolved extended field");
-                rc.ExtensionVar = null;
-                rc.CurrentExtensionLookup = null;
+                rc.ExtensionVar = extvar;
+                rc.CurrentExtensionLookup = oldext;
                 return false;
             }
             else if (Right is MethodExpression && (Right as MethodExpression).Method == null)
             {
 
-                rc.ExtensionVar = null;
-                rc.CurrentExtensionLookup = null;
+                rc.ExtensionVar = extvar;
+                rc.CurrentExtensionLookup = oldext;
                 return false;
             }
 
-            rc.ExtensionVar = null;
-            rc.CurrentExtensionLookup = null;
+            rc.ExtensionVar = extvar;
+            rc.CurrentExtensionLookup = oldext;
 
 
             return true;
@@ -115,7 +120,6 @@ namespace VTC
             else return false;
 
 
-            return false;
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -144,7 +148,7 @@ namespace VTC
                 // enum
                 bool ok = ResolveEnumValue(rc, lv, rv);
                 if (ok)
-                    return new AccessExpression(enumval, null);
+                    return new AccessExpression(enumval, null, Left.position);
 
                 // struct member
                 if (!ok)
@@ -170,37 +174,37 @@ namespace VTC
                         {
                             VarSpec v = (VarSpec)struct_var;
 
-                            VarSpec dst = new VarSpec(v.NS, v.Name, v.MethodHost, tmp.MemberType, Location,v.FlowIndex, v.Modifiers);
+                            VarSpec dst = new VarSpec(v.NS, v.Name, v.MethodHost, tmp.MemberType, Location,v.FlowIndex, v.Modifiers,true);
                             dst.StackIdx = v.StackIdx + index;
-                            return new AccessExpression(dst, Left as AccessExpression);
+                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, Left.position);
 
                         }
                         else if (struct_var is RegisterSpec)
                         {
                             RegisterSpec v = (RegisterSpec)struct_var;
 
-                            RegisterSpec dst = new RegisterSpec(tmp.MemberType, v.Register, Location, 0);
+                            RegisterSpec dst = new RegisterSpec(tmp.MemberType, v.Register, Location, 0,true);
                             dst.RegisterIndex = v.RegisterIndex + index;
-                            return new AccessExpression(dst, Left as AccessExpression);
+                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, Left.position);
 
                         }
                         else if (struct_var is FieldSpec)
                         {
                             FieldSpec v = (FieldSpec)struct_var;
 
-                            FieldSpec dst = new FieldSpec(v.NS, v.Name, v.Modifiers, tmp.MemberType, Location);
+                            FieldSpec dst = new FieldSpec(v.NS, v.Name, v.Modifiers, tmp.MemberType, Location,true);
                             dst.FieldOffset = v.FieldOffset + index;
-                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null);
+                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, Left.position);
                         }
                         else if (struct_var is ParameterSpec)
                         {
                             ParameterSpec v = (ParameterSpec)struct_var;
 
-                            ParameterSpec dst = new ParameterSpec(v.Name, v.MethodHost, tmp.MemberType, Location, v.InitialStackIndex, v.Modifiers);
+                            ParameterSpec dst = new ParameterSpec(v.Name, v.MethodHost, tmp.MemberType, Location, v.InitialStackIndex, v.Modifiers,true);
 
                             dst.StackIdx = v.StackIdx + index;
 
-                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null);
+                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, Left.position);
                         }
                         this.CommonType = tmp.MemberType;
                     }

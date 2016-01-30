@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +26,14 @@ namespace VTC.Core
 
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+         bool ok =   _id.Resolve(rc);
+            if(_nextid != null)
+          ok &=  _nextid.Resolve(rc);
+            return ok;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
           
             _id = (ParameterDefinition)_id.DoResolve(rc);
@@ -34,13 +41,7 @@ namespace VTC.Core
             _nextid = (ParameterListDefinition)_nextid.DoResolve(rc);
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-         bool ok =   _id.Resolve(rc);
-            if(_nextid != null)
-          ok &=  _nextid.Resolve(rc);
-            return ok;
-        }
+
         public override bool Emit(EmitContext ec)
         {
             return true;

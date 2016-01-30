@@ -4,7 +4,7 @@ D:\Research\elfsharp\VTL\obj\Debug\VTL.exe
 D:\Research\elfsharp\VTL\obj\Debug\VTL.pdb
 D:\Projects\Vatu\Vatu\VCC\VTL\bin\Debug\VTL.exe
 D:\Projects\Vatu\Vatu\VCC\VTL\bin\Debug\VTL.pdb
-D:\Projects\Vatu\Vatu\VCC\VTL\obj\Debug\VTL.exe
-D:\Projects\Vatu\Vatu\VCC\VTL\obj\Debug\VTL.pdb
 D:\Projects\Rava\monodevelop\main\build\bin\VTL.exe
 D:\Projects\Rava\monodevelop\main\build\bin\VTL.pdb
+D:\Projects\Vatu\Vatu\VCC\VTL\obj\Debug\VTL.exe
+D:\Projects\Vatu\Vatu\VCC\VTL\obj\Debug\VTL.pdb

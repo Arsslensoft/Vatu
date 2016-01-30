@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,23 +53,28 @@ namespace VTC.Core
 
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            bool ok = _op.Right.Resolve(rc);
+
+            return ok;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             bool adrop = _op is LoadEffectiveAddressOp || _op is ValueOfOp;
             bool idecop = _op is IncrementOperator || _op is DecrementOperator;
             _op.Right = (Expr)_op.Right.DoResolve(rc);
             _op = (Operator)_op.DoResolve(rc);
-
+           AcceptStatement =  (_op is IncrementOperator || _op is DecrementOperator) ;
             if ((idecop && !_op.Right.Type.IsPointer && !_op.Right.Type.IsNumeric) && !adrop && !TypeChecker.ArtihmeticsAllowed(_op.Right.Type, _op.Right.Type))
                 ResolveContext.Report.Error(46, Location, "Unary operations are not allowed for this type");
             Type = _op.CommonType;
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            bool ok = _op.Right.Resolve(rc);
-
-            return ok;
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+ {
+     _op.DoFlowAnalysis(fc);
+            return _op.Right.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {

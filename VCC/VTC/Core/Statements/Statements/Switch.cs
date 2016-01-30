@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,29 +49,7 @@ namespace VTC.Core
             _cases = cases;
             _expr = sw;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            rc.EnclosingSwitch = this;
-
-            _expr = (Expr)_expr.DoResolve(rc);
-
-            for (int i = 0; i < ResolvedCases.Count; i++)
-            {
-                ResolvedCases[i] = (Case)ResolvedCases[i].DoResolve(rc);
-                ResolvedCases[i].SetCompare(rc, _expr);
-
-            }
-
-
-            if (!_expr.Type.IsNumeric)
-                ResolveContext.Report.Error(39, Location, "Could not use switch with non numeric types");
-            else if(_expr is ConstantExpression)
-                ResolveContext.Report.Error(41, Location, "Could not use switch with non constant values");
-
-            rc.EnclosingSwitch = null;
-            return this;
-        }
-        public override bool Resolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
         {      // define switch
             SWITCH = rc.DefineLabel(LabelType.SW);
             SWITCH_EXIT = rc.DefineLabel(SWITCH.Name +"_EXIT");
@@ -92,6 +70,48 @@ namespace VTC.Core
             _expr.Resolve(rc);
             return true;
         }
+ public override SimpleToken DoResolve(ResolveContext rc)
+        {
+
+
+            // define switch
+            SWITCH = rc.DefineLabel(LabelType.SW);
+            SWITCH_EXIT = rc.DefineLabel(SWITCH.Name + "_EXIT");
+            foreach (Case c in _cases)
+                if (c != null) 
+                    ResolvedCases.Add(c);
+                
+            HasDefault = false;
+            int index = 0;
+            if (ResolvedCases.Count > 0)
+            {
+                for (int i = 0; i < ResolvedCases.Count; i++)
+                    HasDefault = HasDefault || ResolvedCases[i].SetSwitch(this, SWITCH, SWITCH_EXIT, ref index);
+            }
+
+    
+
+            rc.EnclosingSwitch = this;
+
+            _expr = (Expr)_expr.DoResolve(rc);
+
+            for (int i = 0; i < ResolvedCases.Count; i++)
+            {
+                ResolvedCases[i] = (Case)ResolvedCases[i].DoResolve(rc);
+                ResolvedCases[i].SetCompare(rc, _expr);
+
+            }
+
+
+            if (!_expr.Type.IsNumeric)
+                ResolveContext.Report.Error(39, Location, "Could not use switch with non numeric types");
+            else if(_expr is ConstantExpression)
+                ResolveContext.Report.Error(41, Location, "Could not use switch with non constant values");
+
+            rc.EnclosingSwitch = null;
+            return this;
+        }
+       
         public override bool Emit(EmitContext ec)
         {
             ec.EmitComment("Switch ");
@@ -102,22 +122,14 @@ namespace VTC.Core
             return true;
         }
 
-        public override Reachability MarkReachable(Reachability rc)
-        {
-          base.MarkReachable(rc);
-             
-            foreach (Case c in ResolvedCases)
-              rc &=  c.MarkReachable(rc);
-
-            return rc;
-        }
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+   
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             CodePath cur = new CodePath(loc); // sub code path
         
             CodePath back = fc.CodePathReturn;
             fc.CodePathReturn = cur; // set current code path
-            bool ok = true;
+            FlowState ok = FlowState.Valid;
             foreach (Case c in ResolvedCases)
              ok &= c.DoFlowAnalysis(fc);
             back.AddPath(cur);

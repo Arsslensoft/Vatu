@@ -39,7 +39,9 @@ namespace VTC
            }
            else if (ReferenceType == ReferenceKind.Register)
            {
-
+               ec.EmitComment("Pop Var @" + Register.ToString() +  Offset);
+               ec.EmitInstruction(new Pop() { DestinationReg = EmitContext.D, Size = 16 });
+               ec.EmitInstruction(new Mov() { DestinationReg = Register, Size = 8, DestinationDisplacement =  Offset, DestinationIsIndirect = true, SourceReg = ec.GetLow(EmitContext.D) });
            }
            else
            {
@@ -70,7 +72,9 @@ namespace VTC
            }
            else if (ReferenceType == ReferenceKind.Register)
            {
-
+               ec.EmitComment("Push Var @" + Register.ToString() + Offset);
+               ec.EmitInstruction(new MoveZeroExtend() { DestinationReg = EmitContext.D, SourceReg = Register, SourceDisplacement = Offset, SourceIsIndirect = true, Size = 8 });
+               ec.EmitInstruction(new Push() { DestinationReg = EmitContext.D, Size = 16 });
            }
            else
            {
@@ -98,6 +102,9 @@ namespace VTC
            else if (ReferenceType == ReferenceKind.Register)
            {
 
+               ec.EmitComment("AddressOf @" + Register.ToString() +  Offset);
+               ec.EmitInstruction(new Lea() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = Register, SourceDisplacement =  Offset });
+               ec.EmitPush(EmitContext.SI);
            }
            else
            {
@@ -125,7 +132,9 @@ namespace VTC
            }
            else if (ReferenceType == ReferenceKind.Register)
            {
-
+               ec.EmitComment("ValueOf @"+Register.ToString() + Offset);
+               ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.D, SourceIsIndirect = !memberType.IsArray, Size = 16, SourceReg = Register, SourceDisplacement =  Offset });
+               ec.EmitPush(EmitContext.D, MemberType.BaseType.SizeInBits, true);
            }
            else
            {
@@ -153,7 +162,9 @@ namespace VTC
            }
            else if (ReferenceType == ReferenceKind.Register)
            {
-
+               ec.EmitComment("ValueOf Stack @" + Register.ToString() +  Offset);
+               ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.D, SourceIsIndirect = !memberType.IsArray, Size = 16, SourceReg = Register, SourceDisplacement =  Offset });
+                   ec.EmitPop(EmitContext.D, MemberType.BaseType.SizeInBits, true);
            }
            else
            {
@@ -183,7 +194,9 @@ namespace VTC
            }
            else if (ReferenceType == ReferenceKind.Register)
            {
-
+               ec.EmitComment("ValueOf Access @" + Register.ToString() +  Offset);
+               ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.D, SourceIsIndirect = !memberType.IsArray, Size = 16, SourceReg = Register, SourceDisplacement =  Offset });
+               ec.EmitPush(EmitContext.D, mem.SizeInBits, true, off);
            }
            else
            {
@@ -197,7 +210,7 @@ namespace VTC
        {
            if (ReferenceType == ReferenceKind.Field)
            {
-               ec.EmitComment("ValueOf Access Field ");
+               ec.EmitComment("ValueOf Access sTACK Field ");
                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceIsIndirect = !memberType.IsArray, Size = 16, SourceRef = ElementReference.New(Signature.ToString()) });
                ec.EmitPop(EmitContext.SI, mem.SizeInBits, true, off);
 
@@ -211,7 +224,9 @@ namespace VTC
            }
            else if (ReferenceType == ReferenceKind.Register)
            {
-
+               ec.EmitComment("ValueOf Stack Access @" + Register.ToString() +  Offset);
+               ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.D, SourceIsIndirect = !memberType.IsArray, Size = 16, SourceReg = Register, SourceDisplacement =  Offset });
+                   ec.EmitPop(EmitContext.D, mem.SizeInBits, true, off);
            }
            else
            {

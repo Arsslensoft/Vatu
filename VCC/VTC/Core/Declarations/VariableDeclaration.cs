@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,17 +20,18 @@ namespace VTC.Core
         TypeIdentifier _stype;
         VariableDefinition _vadef;
         VariableListDefinition _valist;
-        [Rule(@"<Var Decl>     ::= <Mod> <Type> <Var> <Var List>  ~';'")]
-        public VariableDeclaration(Modifier mod, TypeIdentifier type, VariableDefinition var, VariableListDefinition valist)
+        FunctionExtensionDefinition _ext;
+        [Rule(@"<Var Decl>     ::= <Mod> <Type> <Var> <Var List> <Func Ext> ~';'")]
+        public VariableDeclaration(Modifier mod, TypeIdentifier type, VariableDefinition var, VariableListDefinition valist,FunctionExtensionDefinition ext )
         {
             _mod = mod;
             _stype = type;
             _vadef = var;
             _valist = valist;
-
+            _ext = ext;
 
         }
-        [Rule(@"<Var Decl>     ::=  <Type> <Var> <Var List>  ~';'")]
+        [Rule(@"<Struct Var Decl>     ::=  <Type> <Var> <Var List>  ~';'")]
         public VariableDeclaration(TypeIdentifier type, VariableDefinition var, VariableListDefinition valist)
         {
             _mod = null;
@@ -68,16 +69,19 @@ namespace VTC.Core
         }
         void ResolveField(ResolveContext rc, VariableDefinition vadef)
         {
-            if (ArraySize > 0)
-                //Type = new ArrayTypeSpec(Type.NS, Type, ArraySize);
-                Type = vadef._avd.CreateArrayType(Type);
-            else if (ArraySize == 0)
-                Type = new PointerTypeSpec(Type.NS, Type);
+            
             vadef.FieldOrLocal = new FieldSpec(rc.CurrentNamespace, vadef._id.Name, mods, Type, loc);
             // Childs
 
 
             rc.KnowField((FieldSpec)vadef.FieldOrLocal);
+
+            // extend
+            if (_ext != null)
+            {
+                if (!rc.Extend(_ext.ExtendedType, (FieldSpec)vadef.FieldOrLocal))
+                    ResolveContext.Report.Error(0, Location, "Another field with same signature has already extended this type.");
+            }
 
             // initial value
             if (!Type.IsBuiltinType && !Type.IsPointer && vadef.expr != null && vadef.expr is ConstantExpression)
@@ -121,11 +125,7 @@ namespace VTC.Core
         }
         void ResolveLocalVariable(ResolveContext rc, VariableDefinition vadef)
         {
-            if (ArraySize > 0)
-                //  Type = new ArrayTypeSpec(Type.NS, Type, ArraySize);
-                Type = vadef._avd.CreateArrayType(Type);
-            else if (ArraySize == 0)
-                Type = new PointerTypeSpec(Type.NS, Type);
+         
 
             vadef.FieldOrLocal = new VarSpec(rc.CurrentNamespace, vadef._id.Name, rc.CurrentMethod, Type, loc, rc.Resolver.KnownLocalVars.Count, mods);
             ((VarSpec)vadef.FieldOrLocal).Initialized = (vadef.expr != null);
@@ -144,10 +144,7 @@ namespace VTC.Core
 
         void ResolveStructMember(ResolveContext rc, VariableDefinition vadef)
         {
-            if (ArraySize > 0)
-                Type = vadef._avd.CreateArrayType(Type);
-            else if (ArraySize == 0)
-                Type = new PointerTypeSpec(Type.NS, Type);
+       
 
 
             vadef.Member = new TypeMemberSpec(rc.CurrentNamespace, vadef._id.Name, rc.CurrentType, Type, loc, 0);
@@ -160,13 +157,28 @@ namespace VTC.Core
                 ResolveContext.Report.Error(7, Location, "Struct and Union members cannot have modifiers");
 
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            bool ok = _vadef.Resolve(rc);
+            if (_valist != null)
+                ok &= _valist.Resolve(rc);
+            if (_mod != null)
+                ok &= _mod.Resolve(rc);
+
+            ok &= _stype.Resolve(rc);
+            return ok;
+        }
+         public override SimpleToken DoResolve(ResolveContext rc)
         {
             rc.IsInVarDeclaration = true;
             Members = new List<TypeMemberSpec>();
 
+            if (_ext != null)
+                _ext = (FunctionExtensionDefinition)_ext.DoResolve(rc);
+
+
             _vadef = (VariableDefinition)_vadef.DoResolve(rc);
-            ArraySize = _vadef.ArraySize;
+          
             if (ArraySize > 0 && _vadef.expr != null)
                 ResolveContext.Report.Error(48, Location, "Fixed size arrays cannot have initial values");
 
@@ -209,16 +221,24 @@ namespace VTC.Core
             rc.IsInVarDeclaration = false;
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+      
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            bool ok = _vadef.Resolve(rc);
-            if (_valist != null)
-                ok &= _valist.Resolve(rc);
-            if (_mod != null)
-                ok &= _mod.Resolve(rc);
+            fc.AddNew(_vadef.FieldOrLocal);
+            if (_vadef.IsAssigned)
+                fc.MarkAsAssigned(_vadef.FieldOrLocal);
 
-            ok &= _stype.Resolve(rc);
-            return ok;
+
+            VariableListDefinition val = _valist;
+            while (val != null)
+            {
+                fc.AddNew(val._vardef._vardef.FieldOrLocal);
+                if (val._vardef._vardef != null && val._vardef._vardef.IsAssigned)
+                    fc.MarkAsAssigned(val._vardef._vardef.FieldOrLocal);
+
+                val = val._nextvars;
+            }
+            return base.DoFlowAnalysis(fc);
         }
 
         public bool EmitLocalVariable(EmitContext ec, VariableDefinition vadef)
@@ -342,23 +362,6 @@ namespace VTC.Core
             return true;
         }
 
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
-        {
-            if(_vadef.IsAssigned)
-                 fc.AssignmentBitSet.Set(_vadef.FlowVarIndex);
-
-          
-            VariableListDefinition val = _valist;
-            while (val != null)
-            {
-                if (val._vardef._vardef != null && val._vardef._vardef.IsAssigned)
-                    fc.AssignmentBitSet.Set(val._vardef._vardef.FlowVarIndex);
-
-
-
-                val = val._nextvars;
-            }
-            return base.DoFlowAnalysis(fc);
-        }
+      
     }
 }

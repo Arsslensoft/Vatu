@@ -1,5 +1,5 @@
-using bsn.GoldParser.Parser;
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Parser;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,8 +36,14 @@ namespace VTC
 
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
         {
+            Size = 0;
+            return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            Size = 0;
             if (_type != null)
             {
                 _type = (TypeIdentifier)_type.DoResolve(rc);
@@ -58,11 +64,7 @@ namespace VTC
 
             return new UIntConstant(Size,Location) ;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            Size = 0;
-            return true;
-        }
+   
      /*   public override bool Emit(EmitContext ec)
         {
             RegistersEnum acc = ec.GetNextRegister();

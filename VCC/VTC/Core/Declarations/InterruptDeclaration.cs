@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +29,15 @@ namespace VTC.Core
             ItName = "INTERRUPT_" + interrupt.ToString("X2") + "H";
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            bool ok = true;
+
+            if (_b != null)
+                ok &= _b.Resolve(rc);
+            return ok;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
 
             ItName = "INTERRUPT_" + interrupt.ToString("X2") + "H";
@@ -50,14 +58,7 @@ namespace VTC.Core
                 _b = (Block)_b.DoResolve(rc);
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            bool ok = true;
-
-            if (_b != null)
-                ok &= _b.Resolve(rc);
-            return ok;
-        }
+   
         public override bool Emit(EmitContext ec)
         {
 
@@ -106,14 +107,10 @@ namespace VTC.Core
             ec.EmitINT(interrupt, mlb);
             return true;
         }
-        public override Reachability MarkReachable(Reachability rc)
+   
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            if (_b != null)
-                return _b.MarkReachable(rc);
-            return base.MarkReachable(rc);
-        }
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
-        {
+            fc.AddNew(method);
             fc.CodePathReturn.PathLocation = Location;
 
             fc.NoReturnCheck = true;
@@ -122,5 +119,6 @@ namespace VTC.Core
 
             return base.DoFlowAnalysis(fc);
         }
+      
     }
 }

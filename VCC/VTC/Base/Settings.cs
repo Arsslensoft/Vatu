@@ -55,6 +55,9 @@ HelpText = "Target output")]
  HelpText = "Preprocessing Level")]
         public int PreprocessLevel { get; set; }
 
+        [Option( "pc", Required = false, DefaultValue = 1,
+HelpText = "Parallel Compilation threads")]
+        public int ParallelThreads { get; set; }
 
                [Option('z', "optimizelevel", Required = false, DefaultValue = 2,
    HelpText = "Optimizations Level")]
@@ -87,9 +90,10 @@ HelpText = "Target output")]
        [OptionArray('s', "source", Required = true, HelpText = "Source files.")]
        public string[] Sources { get; set; }
 
-       [Option('a', "asm", Required = false, DefaultValue = "",
-HelpText = "Output assembly file")]
-       public string Output { get; set; }
+  
+    
+       [OptionArray('a', "asm", Required = true,HelpText = "Output assembly file")]
+       public string[] AssemblyOutput { get; set; }
        
        [Option("boot", Required = false,  DefaultValue = false,
 HelpText = "Bootloader")]
@@ -99,10 +103,12 @@ HelpText = "Bootloader")]
 HelpText = "Interrupts definition")]
        public bool IsInterrupt { get; set; }
 
-   
-       [Option('o', "out", Required = false, DefaultValue = "",
-HelpText = "Output file")]
-       public string OutputBinary { get; set; }
+
+
+       [OptionArray('o',"out", HelpText = "Output files list.", Required = true)]
+       public string[] OutputFiles { get; set; }
+
+
 
 
        [Option("flow", Required = false, DefaultValue = false,

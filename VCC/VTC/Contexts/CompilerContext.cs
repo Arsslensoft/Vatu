@@ -1,6 +1,6 @@
-﻿using bsn.GoldParser.Grammar;
-using bsn.GoldParser.Parser;
-using bsn.GoldParser.Semantic;
+﻿using VTC.Base.GoldParser.Grammar;
+using VTC.Base.GoldParser.Parser;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,45 +9,39 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using Vasm;
 using VTC.Core;
 
 namespace VTC
 {
-    public class DependencyParsing : IEquatable<DependencyParsing>
-    {
-        
-        public ResolveContext RootCtx { get; set; }
-        public List<ResolveContext> ResolveCtx { get; set; }
-        public List<Declaration> Declarations { get; set; }
-        public bool Parsed { get; set; }
-        public string File { get; set; }
-        public List<DependencyParsing> DependsOn = new List<DependencyParsing>();
-        public StreamReader InputStream { get; set; }
-
-        public bool Equals(DependencyParsing dep)
-        {
-            return dep.File == File;
-        }
-    }
-    public class CompilerContext
+  
+    public sealed class CompilerContext
     {
         internal static bool EntryPointFound = false;
         internal static Settings CompilerOptions { get; set; }
-        public AssemblyWriter Asmw { get; set; }
+    
         public Settings Options { get; set; }
         public string TempSrcFile { get; set; }
-        public List<DependencyParsing> InputSources;
-       
+        public List<DependencyParsing> DependencyCache;
+        public List<CompiledSource> CompiledSources { get; set; }
+        public FIFOSemaphore ParallelSupervisor { get; set; }
+   
+        int compilers = 0;
+        List<ParallelCompiledSource> _compiled =new List<ParallelCompiledSource>();
+  
         public CompilerContext(Settings opt)
         {
+            compilers= opt.Sources.Length;
             CompilerOptions = opt;
             EntryPointFound = false;
             Options = opt;
             TempSrcFile = Path.GetTempFileName();
-            InputSources = new List<DependencyParsing>();
-            Asmw = new AssemblyWriter(opt.Output);
+            DependencyCache = new List<DependencyParsing>();
+            CompiledSources = new List<CompiledSource>();
+            ParallelSupervisor = new FIFOSemaphore(opt.ParallelThreads);
             InitGrammar();
+         
         }
         public CompilerContext(string file)
         {
@@ -57,7 +51,8 @@ namespace VTC
             Options.Sources = new string[1] { file };
             CompilerOptions = Options;
             EntryPointFound = false;
-            InputSources = new List<DependencyParsing>();
+            DependencyCache = new List<DependencyParsing>();
+            CompiledSources = new List<CompiledSource>();
             BuiltinTypeSpec.ResetBuiltins();
             InitGrammar();
         }
@@ -76,17 +71,17 @@ namespace VTC
             //     st.Stop();
               //   Console.WriteLine("Init : " + st.Elapsed);
         }
-        public AsmContext CreateAsmContext()
+        public AsmContext CreateAsmContext(CompiledSource src)
         {
-            return new AsmContext(Asmw);
+            return new AsmContext(src.Asmw);
         }
         public EmitContext CreateEmit(AsmContext actx)
         {
             return new EmitContext(actx);
         }
-        public EmitContext CreateEmit()
+        public EmitContext CreateEmit(CompiledSource src)
         {
-            return new EmitContext(Asmw);
+            return new EmitContext(src.Asmw);
         }
         public void PrepareEmit(EmitContext ec)
         {
@@ -97,14 +92,8 @@ namespace VTC
             ec.ag.IsLibrary = Options.Target == Target.obj;
         }
      
-        public bool Build()
-        {
-         Process p =   Process.Start("nasm", string.Format("{0} -f bin -o {1}", Options.Output, Options.Output.Replace(".asm",".bin")));
-         p.WaitForExit();
-            return true;
-
-        }
-        public DependencyParsing DefaultDependency { get; set; }
+      
+      
 
         public void ReportParserMessage(ParseMessage pm, IToken token, ReadOnlyCollection<Symbol> expected)
         {
@@ -151,7 +140,7 @@ namespace VTC
             return file;
         }
         internal List<string> Paths = new List<string>();
-        public bool IncludeFile(string file)
+        public bool IncludeFile(string file,CompiledSource csrc)
         {
             DependencyParsing dep = new DependencyParsing();
             dep.File = file;
@@ -160,42 +149,50 @@ namespace VTC
             string path = Path.GetDirectoryName(dep.File);
             if (!Paths.Contains(path))
                 Paths.Add(path);
-            if (InputSources.Contains(dep))
+            if (DependencyCache.Contains(dep))
             {
-                dep = InputSources[InputSources.IndexOf(dep)];
-                return ResolveDependency(InputSources.IndexOf(dep));
+                dep = DependencyCache[DependencyCache.IndexOf(dep)];
+                return ResolveDependency(csrc, DependencyCache.IndexOf(dep));
             }
             else
             {
                 dep.InputStream = new StreamReader(File.OpenRead(dep.File));
-                InputSources.Add(dep);
-                return ResolveDependency(InputSources.Count - 1);
+                DependencyCache.Add(dep);
+                return ResolveDependency(csrc, DependencyCache.Count - 1);
             }
          
         }
         #endregion
 
 
-        public bool ResolveDependency(int idx)
+        public bool ResolveDependency(CompiledSource src,int idx)
         {
-            DependencyParsing dep = InputSources[idx];
+            DependencyParsing dep = DependencyCache[idx];
             if (dep.Parsed)
+            {
+                // transfer
+                src.DefaultDependency.RootCtx.FillKnownByKnown(dep.RootCtx.Resolver);
+                src.DefaultDependency.DependsOn.Add(dep);
                 return true;
-            DefaultDependency.DependsOn.Add(dep);
-            string oldf = ResolveContext.Report.FilePath;
-            ResolveContext.Report.FilePath = dep.File;
-            bool ok = true;
-            try
+
+            }
+            lock (DependencyCache[idx])
             {
 
-               // Stopwatch st = new Stopwatch(); st.Start();
-          
+                src.DefaultDependency.DependsOn.Add(dep);
+                string oldf = ResolveContext.Report.FilePath;
+                ResolveContext.Report.FilePath = dep.File;
+                bool ok = true;
+                try
+                {
+
+
+
                     var processor = new SemanticProcessor<SimpleToken>(dep.InputStream, actions);
-                 
+
                     ParseMessage parseMessage = processor.ParseAll();
 
-                //    st.Stop();
-                 //   Console.WriteLine("["+dep.File+"] Parse time : " + st.Elapsed);
+
                     if (parseMessage == ParseMessage.Accept)
                     {
 
@@ -203,45 +200,29 @@ namespace VTC
                         CompilationUnit cunit = processor.CurrentToken as CompilationUnit;
                         // includes
                         foreach (IncludeDeclaration incl in cunit.Includes)
-                            IncludeFile(incl.IncludeFile);
+                            IncludeFile(incl.IncludeFile, src);
                         // global decls
                         var globals = cunit.Globals;
                         ResolveContext RootCtx = null;
                         List<Declaration> Resolved = new List<Declaration>();
                         List<ResolveContext> ResolveCtx = new List<ResolveContext>();
-                          // transfer
-                        
-                       
-                          
-                        
+                        // transfer
 
-                        ok &= ResolveSemanticTree(cunit, ref RootCtx, ref Resolved, ref ResolveCtx);
+
+
+
+
+                        ok &= ResolveSemanticTree(src, cunit, ref RootCtx, ref Resolved, ref ResolveCtx);
                         if (ok) // Emit
                         {
                             dep.Declarations = Resolved;
                             dep.ResolveCtx = ResolveCtx;
                             dep.RootCtx = RootCtx;
                             // transfer
-                            DefaultDependency.RootCtx.FillKnownByKnown(RootCtx.Resolver);
-                          
+                            src.DefaultDependency.RootCtx.FillKnownByKnown(RootCtx.Resolver);
+
                         }
-                        //{
-                        //    EmitContext ec = CreateEmit();
-                        //    int i = 0;
-                        //    foreach (Declaration stmt in Resolved)
-                        //    {
-                        //        ec.SetCurrentResolve(ResolveCtx[i]);
-                        //        stmt.Emit(ec);
-                        //        i++;
-                        //    }
-                        //    PrepareEmit(ec);
 
-                        //    ec.Emit();
-
-                        //    Asmw.Flush();
-                        //    Asmw.Close();
-                        //    Build();
-                        //}
                     }
                     else
                     {
@@ -249,19 +230,21 @@ namespace VTC
                         IToken token = processor.CurrentToken;
                         ReportParserMessage(parseMessage, token, processor.GetExpectedTokens());
                     }
-                
+
+                }
+                catch (Exception ex)
+                {
+                    ok = false;
+                    Console.WriteLine("Error: " + ex.Message);
+                    Console.WriteLine(ex.StackTrace);
+                }
+                dep.Parsed = ok;
+                ResolveContext.Report.FilePath = oldf;
+
+                return ok;
             }
-            catch (Exception ex)
-            {
-                ok = false;
-                Console.WriteLine("Error: " + ex.Message);
-                Console.WriteLine(ex.StackTrace);
-            }
-            dep.Parsed = ok;
-            ResolveContext.Report.FilePath = oldf;
-            return ok;
         }
-        public bool ResolveSemanticTree(CompilationUnit cunit,ref ResolveContext RootCtx, ref List<Declaration> Resolved, ref List<ResolveContext> ResolveCtx,bool isdef=false)
+        public bool ResolveSemanticTree(CompiledSource src,CompilationUnit cunit,ref ResolveContext RootCtx, ref List<Declaration> Resolved, ref List<ResolveContext> ResolveCtx,bool isdef=false)
         {
 
             foreach (Global gb in cunit.Globals)
@@ -276,12 +259,12 @@ namespace VTC
             
 
                 if (isdef)
-                    DefaultDependency.RootCtx = RootCtx;
-                else RootCtx.FillKnownByKnown(DefaultDependency.RootCtx.Resolver);
+                    src.DefaultDependency.RootCtx = RootCtx;
+                else RootCtx.FillKnownByKnown(src.DefaultDependency.RootCtx.Resolver);
 
                 // includes
                 foreach (IncludeDeclaration incl in cunit.Includes)
-                    IncludeFile(incl.IncludeFile);
+                    IncludeFile(incl.IncludeFile, src);
 
                 if (old_ctx != null)
                     RootCtx.FillKnownByKnown(old_ctx.Resolver);
@@ -299,7 +282,7 @@ namespace VTC
                         {
                             MethodDeclaration md = (MethodDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            vstmt.Resolve(childctx);
+                            md.Resolve(childctx);
                             MethodDeclaration d = (MethodDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
@@ -309,7 +292,7 @@ namespace VTC
                             // Flow Analysis
                             if (Options.Flow)
                             {
-                                FlowAnalysisContext fc = new FlowAnalysisContext(childctx.Resolver.KnownLocalVars.Count, d);
+                                FlowAnalysisContext fc = new FlowAnalysisContext(md);
                                 fc.DoFlowAnalysis(childctx);
                             }
                         }
@@ -317,17 +300,18 @@ namespace VTC
                         {
                             OperatorDeclaration md = (OperatorDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            vstmt.Resolve(childctx);
+                            md.Resolve(childctx);
                             OperatorDeclaration d = (OperatorDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
                             Resolved.Add(d);
                             ResolveCtx.Add(childctx);
 
+                    
                             // Flow Analysis
                             if (Options.Flow)
                             {
-                                FlowAnalysisContext fc = new FlowAnalysisContext(childctx.Resolver.KnownLocalVars.Count, d);
+                                FlowAnalysisContext fc = new FlowAnalysisContext(md);
                                 fc.DoFlowAnalysis(childctx);
                             }
                         }
@@ -335,7 +319,7 @@ namespace VTC
                         {
                             InterruptDeclaration md = (InterruptDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            vstmt.Resolve(childctx);
+                            md.Resolve(childctx);
                             InterruptDeclaration d = (InterruptDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
@@ -343,10 +327,11 @@ namespace VTC
                             ResolveCtx.Add(childctx);
 
 
+
                             // Flow Analysis
                             if (Options.Flow)
                             {
-                                FlowAnalysisContext fc = new FlowAnalysisContext(childctx.Resolver.KnownLocalVars.Count, d);
+                                FlowAnalysisContext fc = new FlowAnalysisContext(md);
                                 fc.DoFlowAnalysis(childctx);
                             }
                         }
@@ -354,7 +339,7 @@ namespace VTC
                         {
                             StructDeclaration md = (StructDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            vstmt.Resolve(childctx);
+                            md.Resolve(childctx);
                             StructDeclaration d = (StructDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
@@ -365,7 +350,7 @@ namespace VTC
                         {
                             UnionDeclaration md = (UnionDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            vstmt.Resolve(childctx);
+                            md.Resolve(childctx);
                             UnionDeclaration d = (UnionDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
@@ -376,7 +361,7 @@ namespace VTC
                         {
                             EnumDeclaration md = (EnumDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            vstmt.Resolve(childctx);
+                            md.Resolve(childctx);
                             EnumDeclaration d = (EnumDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
@@ -391,6 +376,8 @@ namespace VTC
                             vstmt.Resolve(RootCtx);
                             ResolveCtx.Add(RootCtx);
                             Declaration d = (Declaration)vstmt.DoResolve(RootCtx);
+
+                           
                             Resolved.Add(d);
                         }
                     }
@@ -400,14 +387,15 @@ namespace VTC
             }
             return (ResolveContext.Report.ErrorCount == 0);
         }
-        public bool Preprocess()
+        public bool PreprocessSources()
         {
-
+         FlowAnalysisContext.ProgramFlowState = new SignatureBitSet();
             if (Options.Includes != null)
                 Paths.AddRange(Options.Includes);
 
             // init default paths
 
+            int i = 0;
 
             foreach (string src in Options.Sources)
             {
@@ -419,16 +407,25 @@ namespace VTC
 
                     DependencyParsing dep = new DependencyParsing();
                     dep.File = src;
+                     CompiledSource csrc = new CompiledSource();
+                     csrc.DefaultDependency = dep;
+                     if (!DependencyCache.Contains(dep))
+                         DependencyCache.Add(dep);
 
-                    if (!InputSources.Contains(dep))
+
+                    if (!CompiledSources.Contains(csrc))
                     {
-                        dep.InputStream = new StreamReader(File.OpenRead(dep.File));
-                        InputSources.Add(dep);
-                        DefaultDependency = dep;
+                        csrc.DefaultDependency.InputStream = new StreamReader(File.OpenRead(dep.File));
+                        if (Options.AssemblyOutput != null && Options.AssemblyOutput.Length > 0)
+                           csrc.Asmw = new AssemblyWriter(Options.AssemblyOutput[i]);
+
+                        CompiledSources.Add(csrc);
+
+
                     }
 
                 }
-
+                i++;
             }
 
 
@@ -436,69 +433,39 @@ namespace VTC
         }
         public bool ResolveAndEmit()
         {
-          bool ok = Preprocess();
+            bool ok = PreprocessSources();
            
-            ResolveContext.Report.FilePath = DefaultDependency.File;
+
             try{
 
-           //     Stopwatch st = new Stopwatch(); st.Start();
-                var processor = new SemanticProcessor<SimpleToken>(InputSources[0].InputStream, actions);
 
-                ParseMessage parseMessage = processor.ParseAll();
-           //     st.Stop();
-           //     Console.WriteLine("[" + DefaultDependency.File + "] Parse time : " + st.Elapsed);
-                if (parseMessage == ParseMessage.Accept)
+                foreach (CompiledSource csrc in CompiledSources) // compile all sources
                 {
-                    CompilationUnit cunit = processor.CurrentToken as CompilationUnit;
+                    Thread thr = new Thread(new ParameterizedThreadStart(ParallelCompile));
+                    ParallelCompiledSource pc=     new ParallelCompiledSource(csrc);
+                    thr.Start(pc);
                  
-                   
-                    ResolveContext RootCtx = null;
-                    List<Declaration> Resolved = new List<Declaration>();
-                    List<ResolveContext> ResolveCtx = new List<ResolveContext>();
-                    List<Declaration> RResolved = new List<Declaration>();
-                    List<ResolveContext> RResolveCtx = new List<ResolveContext>();
+                }
 
-                    ok &= ResolveSemanticTree(cunit, ref RootCtx, ref Resolved, ref ResolveCtx, true);
-
-
-                    if (ok) // Emit & Fill Dependencies
-                    { 
-                        // Fill Dependencies
-                        foreach (DependencyParsing dep in DefaultDependency.DependsOn)
+                while (compilers > 0)
+                    Thread.Sleep(100);
+                    foreach (ParallelCompiledSource pc in _compiled)
+                        ok &= pc.Result;
+     
+                // flow
+                    if (Options.Flow)
+                    {
+                        foreach (MemberSpec m in FlowAnalysisContext.ProgramFlowState.GetUnUsed())
                         {
-                         foreach (ResolveContext rctx in dep.ResolveCtx)
-                             RResolveCtx.Add(rctx);
-                         
-                            // decls
-                            foreach (Declaration decl in dep.Declarations)
-                                RResolved.Add( decl);
-                        }
-                        Resolved.InsertRange(0, RResolved.ToArray());
-                        ResolveCtx.InsertRange(0, RResolveCtx.ToArray());
+                            if (m is MethodSpec)
+                                ResolveContext.Report.Warning(m.Signature.Location, "Unused method declaration " + m.Signature.NormalSignature );
+                            else if(m is VarSpec)
+                                ResolveContext.Report.Warning(m.Signature.Location, "Unused local variable declaration " + m.Signature.NormalSignature);
+                            else if (m is FieldSpec)
+                                ResolveContext.Report.Warning(m.Signature.Location, "Unused global variable declaration " + m.Signature.NormalSignature);
 
-                        EmitContext ec = CreateEmit();
-                        int i = 0;
-                        foreach (Declaration stmt in Resolved)
-                        {
-                            ec.SetCurrentResolve(ResolveCtx[i]);
-                            stmt.Emit(ec);
-                            i++;
                         }
-                        PrepareEmit(ec);
-                        
-                        ec.Emit();
-
-                        Asmw.Flush();
-                        Asmw.Close();
-                     //   Build();
                     }
-                }
-                else{ ok = false;
-                       IToken token = processor.CurrentToken;
-                       ReportParserMessage(parseMessage, token, processor.GetExpectedTokens());
-
-                }
-            
             }
             catch(Exception ex){
                 ok = false;
@@ -507,39 +474,157 @@ namespace VTC
             }
             return ok;
         }
+        bool lock_taken = false;
+        public void ParallelCompile(object pco)
+        {
+
+
+
+            int idx = 0;
+            ParallelCompiledSource pc = (ParallelCompiledSource)pco;
+            lock (_compiled)
+            {
+                idx = _compiled.Count;
+                _compiled.Add(pc);
+
+            }
+         
+
+       
+            ParallelSupervisor.Acquire();
+            try
+            {
+
+                _compiled[idx].Result = Compile(pc);
+                
+            }
+            catch (Exception ex)
+            {
+                _compiled[idx].Result = false;
+                Console.WriteLine("Error: " + ex.Message);
+                Console.WriteLine(ex.StackTrace);
+            }
+
+
+            compilers--;
+            ParallelSupervisor.Release();
+     
+        }
+        public bool Compile(ParallelCompiledSource pc)
+        {
+        
+            bool ok = true;
+              pc.Time.Reset();
+              pc.Time.Start();
+                    ResolveContext.Report.FilePath = pc.Source.DefaultDependency.File;
+
+                    var processor = new SemanticProcessor<SimpleToken>(pc.Source.DefaultDependency.InputStream, actions);
+
+                    ParseMessage parseMessage = processor.ParseAll();
+                
+               
+                    if (parseMessage == ParseMessage.Accept)
+                    {
+                        CompilationUnit cunit = processor.CurrentToken as CompilationUnit;
+
+
+                        ResolveContext RootCtx = null;
+                        List<Declaration> Resolved = new List<Declaration>();
+                        List<ResolveContext> ResolveCtx = new List<ResolveContext>();
+                        List<Declaration> RResolved = new List<Declaration>();
+                        List<ResolveContext> RResolveCtx = new List<ResolveContext>();
+
+                        ok &= ResolveSemanticTree(pc.Source, cunit, ref RootCtx, ref Resolved, ref ResolveCtx, true);
+
+
+                        if (ok) // Emit & Fill Dependencies
+                        {
+                            // Fill Dependencies
+                            foreach (DependencyParsing dep in pc.Source.DefaultDependency.DependsOn)
+                            {
+                                foreach (ResolveContext rctx in dep.ResolveCtx)
+                                    RResolveCtx.Add(rctx);
+
+                                // decls
+                                foreach (Declaration decl in dep.Declarations)
+                                    RResolved.Add(decl);
+                            }
+                            Resolved.InsertRange(0, RResolved.ToArray());
+                            ResolveCtx.InsertRange(0, RResolveCtx.ToArray());
+
+                            EmitContext ec = CreateEmit(pc.Source);
+                            int i = 0;
+                            foreach (Declaration stmt in Resolved)
+                            {
+                                ec.SetCurrentResolve(ResolveCtx[i]);
+                                stmt.Emit(ec);
+                                i++;
+                            }
+                            PrepareEmit(ec);
+
+                            ec.Emit();
+
+                            pc.Source.Asmw.Flush();
+                            pc.Source.Asmw.Close();
+                            //   Build();
+                        }
+                    }
+                    else
+                    {
+                        ok = false;
+                        IToken token = processor.CurrentToken;
+                        ReportParserMessage(parseMessage, token, processor.GetExpectedTokens());
+
+                    }
+                    pc.Time.Stop();
+                    pc.Source.CompileTime = pc.Time.Elapsed;
+                    if (Options.Verbose)
+                        Console.WriteLine(Path.GetFileName(pc.Source.DefaultDependency.File) + " compiled in " + pc.Source.CompileTime);
+                  
+  
+                    return ok;
+        }
         public bool Resolve()
         {
-              bool ok = Preprocess();
-            ResolveContext.Report.FilePath = DefaultDependency.File;
+              bool ok = PreprocessSources();
+    
             try{
-             
-                var processor = new SemanticProcessor<SimpleToken>(InputSources[0].InputStream, actions);
-
-                ParseMessage parseMessage = processor.ParseAll();
-        
-                if (parseMessage == ParseMessage.Accept)
+                Stopwatch st = new Stopwatch();
+                foreach (CompiledSource csrc in CompiledSources) // compile all sources
                 {
-                    CompilationUnit cunit = processor.CurrentToken as CompilationUnit;
-                 
-                    // global decls
-                   
-                    ResolveContext RootCtx = null;
-                    List<Declaration> Resolved = new List<Declaration>();
-                    List<ResolveContext> ResolveCtx = new List<ResolveContext>();
-                    List<Declaration> RResolved = new List<Declaration>();
-                    List<ResolveContext> RResolveCtx = new List<ResolveContext>();
+                    st.Reset();
+                    st.Start();
+                    ResolveContext.Report.FilePath = csrc.DefaultDependency.File;
+                    var processor = new SemanticProcessor<SimpleToken>(csrc.DefaultDependency.InputStream, actions);
 
-                    ok &= ResolveSemanticTree(cunit, ref RootCtx, ref Resolved, ref ResolveCtx, true);
-                  
-                 
-                    DefaultDependency.ResolveCtx = RResolveCtx;
-                    DefaultDependency.Declarations = RResolved;
-                }
-                else
-                {
-                    ok = false;
-                    IToken token = processor.CurrentToken;
-                    ReportParserMessage(parseMessage, token, processor.GetExpectedTokens());
+                    ParseMessage parseMessage = processor.ParseAll();
+
+                    if (parseMessage == ParseMessage.Accept)
+                    {
+                        CompilationUnit cunit = processor.CurrentToken as CompilationUnit;
+
+                        // global decls
+
+                        ResolveContext RootCtx = null;
+                        List<Declaration> Resolved = new List<Declaration>();
+                        List<ResolveContext> ResolveCtx = new List<ResolveContext>();
+                        List<Declaration> RResolved = new List<Declaration>();
+                        List<ResolveContext> RResolveCtx = new List<ResolveContext>();
+
+                        ok &= ResolveSemanticTree(csrc,cunit, ref RootCtx, ref Resolved, ref ResolveCtx, true);
+
+
+                        csrc.DefaultDependency.ResolveCtx = RResolveCtx;
+                        csrc.DefaultDependency.Declarations = RResolved;
+                    }
+                    else
+                    {
+                        ok = false;
+                        IToken token = processor.CurrentToken;
+                        ReportParserMessage(parseMessage, token, processor.GetExpectedTokens());
+                    }
+                    st.Stop();
+                    csrc.CompileTime = st.Elapsed;
                 }
 
             }
@@ -549,6 +634,7 @@ namespace VTC
                 Console.WriteLine("Error: " + ex.Message);
                 Console.WriteLine(ex.StackTrace);
             }
+       
             return ok;
         }
         void CloseDep(DependencyParsing d)
@@ -563,13 +649,14 @@ namespace VTC
       
         public void Close()
         {
-            CloseDep(DefaultDependency);
+            foreach (CompiledSource s in CompiledSources)
+                CloseDep(s.DefaultDependency);
 
        
             
         }
 
-        public static Location TranslateLocation(bsn.GoldParser.Parser.LineInfo li)
+        public static Location TranslateLocation(VTC.Base.GoldParser.Parser.LineInfo li)
         {
             return new Location(li.Line, li.Column, li.Index);
         }

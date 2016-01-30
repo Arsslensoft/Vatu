@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,13 +15,18 @@ namespace VTC.Core
            IncludeFile = il.IncludeFile;
        }
       
-       public override SimpleToken DoResolve(ResolveContext rc)
+      public override bool Resolve(ResolveContext rc)
+       {
+           return base.Resolve(rc);
+       }
+ public override SimpleToken DoResolve(ResolveContext rc)
        {
            return base.DoResolve(rc);
        }
-       public override bool Resolve(ResolveContext rc)
+       public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
        {
-           return base.Resolve(rc);
+
+           return base.DoFlowAnalysis(fc);
        }
     }
 }

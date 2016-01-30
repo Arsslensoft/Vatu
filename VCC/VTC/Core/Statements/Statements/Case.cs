@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -141,7 +141,11 @@ namespace VTC.Core
         }
 
    
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            return _statements.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (b == null)
                 return null;
@@ -181,10 +185,7 @@ namespace VTC.Core
             rc.EnclosingIf = ParentIf;
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            return _statements.Resolve(rc);
-        }
+      
         public override bool Emit(EmitContext ec)
         {
             if (_statements == null)
@@ -237,23 +238,21 @@ namespace VTC.Core
           
             return true;
         }
-        public override Reachability MarkReachable(Reachability rc)
-        {
-            base.MarkReachable(rc);
-            return b.MarkReachable(rc);
-        }
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+    
+
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             CodePath cur = new CodePath(loc); // sub code path
          
             CodePath back = fc.CodePathReturn;
             fc.CodePathReturn = cur; // set current code path
 
-            bool ok =b.DoFlowAnalysis(fc);
+            FlowState ok = b.DoFlowAnalysis(fc);
             back.AddPath(cur);
             fc.CodePathReturn = back; // restore code path
             return ok;
-        }
+        }
+
     }
 
 }

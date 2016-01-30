@@ -1,5 +1,5 @@
-using bsn.GoldParser.Parser;
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Parser;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,18 +19,26 @@ namespace VTC
             Operator = UnaryOperator.ValueOf;
         }
         TypeSpec MemberType;
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            return Right.Resolve(rc) ;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (!Right.Type.IsPointer)
                 ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non pointer types");
             // VOF
-            if (Right is AccessExpression)
-            {
-                //ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non variable expressions");
-                ms = null;
-            }
-            else if (Right is VariableExpression)
-                ms = (Right as VariableExpression).variable;
+            //if (Right is AccessExpression)
+            //{
+            //    //ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non variable expressions");
+            //    ms = null;
+            //}
+            //else 
+           
+            if (!(Right is VariableExpression))
+                   ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non variable nor access expressions");
+
+
             MemberType = Right.Type;
             Right.Type = Right.Type.BaseType;
             if (Right.Type != null)
@@ -39,9 +47,9 @@ namespace VTC
             
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            return Right.Resolve(rc) ;
+            return Right.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {
@@ -56,12 +64,12 @@ namespace VTC
             }
             else
             {
-             
-              
+
+
                 ec.EmitComment("ValueOf @Var");
                 Right.EmitToStack(ec);
                 ec.EmitPop(EmitContext.SI);
-                if  (MemberType.BaseType.Size <= 2)
+                if (MemberType.BaseType.Size <= 2)
                     ec.EmitPush(EmitContext.SI, MemberType.BaseType.SizeInBits, true);
                 else
                 {
@@ -72,6 +80,7 @@ namespace VTC
                 }
             }
             return true;
+
         }
         public override bool EmitToStack(EmitContext ec)
         {

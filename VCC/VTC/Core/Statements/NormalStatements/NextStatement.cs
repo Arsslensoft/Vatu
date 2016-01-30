@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,10 +30,9 @@ namespace VTC.Core
                 ec.EmitInstruction(new Jump() { DestinationLabel = Exit });
             return true;
         }
-        public override Reachability MarkReachable(Reachability rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-
-            return base.MarkReachable(rc);
+            return base.DoFlowAnalysis(fc);
         }
     }
     

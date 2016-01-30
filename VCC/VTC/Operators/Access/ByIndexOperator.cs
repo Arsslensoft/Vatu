@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +7,7 @@ using VTC.Core;
 
 namespace VTC
 {
-    public class ByIndexOperator : AccessOp
+    public class ByIndexOperator : AccessOp, IEmitAddress
     {
 
         public ByIndexOperator()
@@ -24,10 +24,14 @@ namespace VTC
             if (!((expr is ArrayConstant) || (expr is StringConstant)))
                 Index = int.Parse(expr.GetValue().ToString());
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            return Left.Resolve(rc) && Right.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
 
-           rc.Resolver.TryResolveMethod(Left.Type.NormalizedName + "_IndexedAccess",ref OvlrdOp, new TypeSpec[2] { Left.Type, BuiltinTypeSpec.UInt });
+            rc.Resolver.TryResolveMethod(Left.Type.NormalizedName + "_IndexedAccess", ref OvlrdOp, new TypeSpec[2] { Left.Type, BuiltinTypeSpec.UInt });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
 
@@ -61,6 +65,8 @@ namespace VTC
 
             else if (Left.Type.IsArray)
             {
+                //if(Left.Type.IsMultiDimensionArray)
+                //    ((Left as AccessExpression).Operator as ByIndexOperator) 
                 IsByte = Left.Type.BaseType.Size != 2;
 
                 if (Left is VariableExpression && Right is ConstantExpression)
@@ -73,13 +79,13 @@ namespace VTC
                     if (ve.variable is VarSpec)
                     {
                         VarSpec v = (VarSpec)ve.variable;
-                        VarSpec vr = new VarSpec(v.NS, v.Name, v.MethodHost, v.MemberType.BaseType, Location,v.FlowIndex, v.Modifiers);
+                        VarSpec vr = new VarSpec(v.NS, v.Name, v.MethodHost, v.MemberType.BaseType, Location, v.FlowIndex, v.Modifiers);
                         vr.StackIdx = v.StackIdx;
 
-                        vr.StackIdx += Left.Type.BaseType.Size * Index;
+                        vr.StackIdx += Left.Type.BaseType.GetSize(Left.Type.BaseType) * Index;
 
 
-                        return new AccessExpression(vr, (Left is AccessExpression) ? (Left as AccessExpression) : null);
+                        return new AccessExpression(vr, (Left is AccessExpression) ? (Left as AccessExpression) : null,Left.position);
                     }
                     else if (ve.variable is FieldSpec)
                     {
@@ -87,16 +93,16 @@ namespace VTC
                         FieldSpec vr = new FieldSpec(v.NS, v.Name, v.Modifiers, v.MemberType.BaseType, Location);
                         vr.FieldOffset = v.FieldOffset;
                         vr.IsIndexed = true;
-                        vr.FieldOffset += Left.Type.BaseType.Size * Index;
+                        vr.FieldOffset += Left.Type.BaseType.GetSize(Left.Type.BaseType) * Index;
 
-                        return new AccessExpression(vr, (Left is AccessExpression) ? (Left as AccessExpression) : null);
+                        return new AccessExpression(vr, (Left is AccessExpression) ? (Left as AccessExpression) : null, Left.position);
                     }
 
                 }
                 else return new AccessExpression(Left as VariableExpression, Right, this);
 
             }
-       
+
             else
             {
 
@@ -112,10 +118,7 @@ namespace VTC
             }
             return new AccessExpression(Left as VariableExpression, Right, this);
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            return Left.Resolve(rc) && Right.Resolve(rc);
-        }
+      
         public override bool Emit(EmitContext ec)
         {
             if (OvlrdOp != null)
@@ -130,7 +133,7 @@ namespace VTC
                     ec.EmitPop(RegistersEnum.SI, 16);
                     ec.EmitPop(RegistersEnum.DI, 16);
                     ec.EmitInstruction(new Add() { SourceReg = RegistersEnum.DI, DestinationReg = RegistersEnum.SI });
-                    ec.EmitPush(RegistersEnum.SI, 16, true);
+                    ec.EmitPush(RegistersEnum.SI, 16, !Left.Type.IsMultiDimensionArray);
                 }
                 else
                 {
@@ -139,10 +142,10 @@ namespace VTC
                     ec.EmitPop(EmitContext.A, 16);
                     ec.EmitPop(RegistersEnum.SI, 16);
 
-                    ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.C, Size = 16, SourceValue = (ushort)Left.Type.BaseType.Size });
+                    ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.C, Size = 16, SourceValue = (ushort)Left.Type.BaseType.GetSize(Left.Type.BaseType) });
                     ec.EmitInstruction(new Multiply() { DestinationReg = EmitContext.C, Size = 80 });
                     ec.EmitInstruction(new Add() { SourceReg = EmitContext.A, DestinationReg = RegistersEnum.SI });
-                    ec.EmitPush(RegistersEnum.SI, 16, true);
+                    ec.EmitPush(RegistersEnum.SI, 16, !Left.Type.IsMultiDimensionArray);
                 }
             }
             else
@@ -150,8 +153,8 @@ namespace VTC
 
                 Left.EmitToStack(ec);
                 ec.EmitPop(RegistersEnum.SI, 16);
-                ec.EmitInstruction(new Add() { SourceValue = (ushort)((ushort)Index * (uint)Left.Type.BaseType.Size), DestinationReg = RegistersEnum.SI });
-                ec.EmitPush(RegistersEnum.SI, 16, true);
+                ec.EmitInstruction(new Add() { SourceValue = (ushort)((ushort)Index * (uint)Left.Type.BaseType.GetSize(Left.Type.BaseType)), DestinationReg = RegistersEnum.SI });
+                ec.EmitPush(RegistersEnum.SI, 16, !Left.Type.IsMultiDimensionArray);
 
             }
             return true;
@@ -177,7 +180,7 @@ namespace VTC
                     ec.EmitInstruction(new Add() { SourceReg = RegistersEnum.DI, DestinationReg = RegistersEnum.SI });
 
                     ec.EmitPop(Register.Value);
-                    ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 8, DestinationIsIndirect = true, SourceReg = ec.GetLow(Register.Value) });
+                    ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 8, DestinationIsIndirect = !Left.Type.IsMultiDimensionArray, SourceReg = ec.GetLow(Register.Value) });
                 }
                 else
                 {
@@ -188,12 +191,12 @@ namespace VTC
                     ec.EmitPop(EmitContext.A, 16);
                     ec.EmitPop(RegistersEnum.SI, 16);
 
-                    ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.C, Size = 16, SourceValue = (ushort)Left.Type.BaseType.Size });
+                    ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.C, Size = 16, SourceValue = (ushort)Left.Type.BaseType.GetSize(Left.Type.BaseType) });
                     ec.EmitInstruction(new Multiply() { DestinationReg = EmitContext.C, Size = 80 });
                     ec.EmitInstruction(new Add() { SourceReg = EmitContext.A, DestinationReg = RegistersEnum.SI });
 
                     ec.EmitPop(RegistersEnum.DI);
-                    ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 16, DestinationIsIndirect = true, SourceReg = RegistersEnum.DI });
+                    ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 16, DestinationIsIndirect = !Left.Type.IsMultiDimensionArray, SourceReg = RegistersEnum.DI });
                 }
             }
             else
@@ -202,16 +205,16 @@ namespace VTC
 
                 Left.EmitToStack(ec);
                 ec.EmitPop(RegistersEnum.SI, 16);
-                ec.EmitInstruction(new Add() { SourceValue = (ushort)((ushort)Index * (ushort)Left.Type.BaseType.Size), DestinationReg = RegistersEnum.SI });
+                ec.EmitInstruction(new Add() { SourceValue = (ushort)((ushort)Index * (ushort)Left.Type.BaseType.GetSize(Left.Type.BaseType)), DestinationReg = RegistersEnum.SI });
                 if (IsByte)
                 {
                     ec.EmitPop(Register.Value);
-                    ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 8, DestinationIsIndirect = true, SourceReg = ec.GetLow(Register.Value) });
+                    ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 8, DestinationIsIndirect = !Left.Type.IsMultiDimensionArray, SourceReg = ec.GetLow(Register.Value) });
                 }
                 else
                 {
                     ec.EmitPop(RegistersEnum.DI);
-                    ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 16, DestinationIsIndirect = true, SourceReg = RegistersEnum.DI });
+                    ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, Size = 16, DestinationIsIndirect = !Left.Type.IsMultiDimensionArray, SourceReg = RegistersEnum.DI });
                 }
             }
             return true;
@@ -220,5 +223,43 @@ namespace VTC
         {
             return Emit(ec);
         }
+        public bool LoadEffectiveAddress(EmitContext ec)
+        {
+            if (Index == -1)
+            {
+                if (IsByte)
+                {
+                    Left.EmitToStack(ec);
+                    Right.EmitToStack(ec);
+                    ec.EmitPop(RegistersEnum.SI, 16);
+                    ec.EmitPop(RegistersEnum.DI, 16);
+                    ec.EmitInstruction(new Add() { SourceReg = RegistersEnum.DI, DestinationReg = RegistersEnum.SI });
+                    ec.EmitPush(RegistersEnum.SI,16);
+                }
+                else
+                {
+                    Left.EmitToStack(ec);
+                    Right.EmitToStack(ec);
+                    ec.EmitPop(EmitContext.A, 16);
+                    ec.EmitPop(RegistersEnum.SI, 16);
+
+                    ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.C, Size = 16, SourceValue = (ushort)Left.Type.BaseType.GetSize(Left.Type.BaseType) });
+                    ec.EmitInstruction(new Multiply() { DestinationReg = EmitContext.C, Size = 80 });
+                    ec.EmitInstruction(new Add() { SourceReg = EmitContext.A, DestinationReg = RegistersEnum.SI });
+                    ec.EmitPush(RegistersEnum.SI, 16);
+                }
+            }
+            else
+            {
+
+                Left.EmitToStack(ec);
+                ec.EmitPop(RegistersEnum.SI, 16);
+                ec.EmitInstruction(new Add() { SourceValue = (ushort)((ushort)Index * (uint)Left.Type.BaseType.GetSize(Left.Type.BaseType)), DestinationReg = RegistersEnum.SI });
+                ec.EmitPush(RegistersEnum.SI, 16);
+
+            }
+            return true;
+        }
+       
     }
 }

@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,11 +21,13 @@ namespace VTC.Core
 
         }
 
-        public override Reachability MarkReachable(Reachability rc)
+       
+       public override bool Resolve(ResolveContext rc)
         {
-            return base.MarkReachable(rc);
+            SizeExpr.Resolve(rc);
+            return true;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             rc.Resolver.TryResolveMethod("op_alloc_delete",ref DeleteOperator, new TypeSpec[1] { BuiltinTypeSpec.UInt});
             //if (rc.CurrentMethod == DeleteOperator)
@@ -37,10 +39,10 @@ namespace VTC.Core
                 ResolveContext.Report.Error(0, Location, "Unresolved delete operator overload");
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            SizeExpr.Resolve(rc);
-            return true;
+            fc.MarkAsUsed(DeleteOperator);
+            return SizeExpr.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {

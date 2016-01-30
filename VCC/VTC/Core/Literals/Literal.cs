@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -119,14 +119,15 @@ namespace VTC.Core
             else return TypeCode.Empty;
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            return _value;
-        }
-        public override bool Resolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
         {
             return true;
         }
+ public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            return _value;
+        }
+       
    
     }
 

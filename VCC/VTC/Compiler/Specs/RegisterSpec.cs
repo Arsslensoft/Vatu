@@ -18,14 +18,24 @@ namespace VTC
         public RegistersEnum Register { get { return Emitter.Register; } set { Emitter.Register = value; } }
 
 
-        public RegisterSpec(TypeSpec type, RegistersEnum rg, Location loc,int index)
+        public RegisterSpec(TypeSpec type, RegistersEnum rg, Location loc,int index,bool access =false)
             : base(rg.ToString(), new MemberSignature(Namespace.Default, rg.ToString(), loc), Modifiers.NoModifier, ReferenceKind.LocalVariable)
         {
           
             memberType = type;
-         
-            if (memberType.IsArray)
+
+            if (memberType.IsMultiDimensionArray)
+            {
+                if (!access)
+                    Emitter = new MatrixEmitter(this, index, ReferenceKind.Register);
+                else Emitter = new HostedMatrixEmitter(this, index, ReferenceKind.Register);
+            }
+          else  if (memberType.IsArray)
+            {
+                if(!access)
                 Emitter = new ArrayEmitter(this, index, ReferenceKind.Register);
+                else Emitter = new HostedArrayEmitter(this, index, ReferenceKind.Register);
+            }
             else if (memberType.IsBuiltinType || memberType.IsDelegate)
             {
                 if (memberType.Size == 2)

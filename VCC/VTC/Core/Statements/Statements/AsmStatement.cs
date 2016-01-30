@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,10 +37,7 @@ namespace VTC.Core
                 ec.EmitInstruction(new InlineInstruction(ins));
             return true;
         }
-        public override Reachability MarkReachable(Reachability rc)
-        {
-            return base.MarkReachable(rc);
-        }
+    
     }
     
 	

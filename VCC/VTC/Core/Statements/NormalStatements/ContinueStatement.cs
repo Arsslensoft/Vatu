@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,10 +29,7 @@ namespace VTC.Core
             else Condition = rc.EnclosingLoop.LoopCondition.Name;
             return this;
         }
-        public override Reachability MarkReachable(Reachability rc)
-        {
-            return base.MarkReachable(rc);
-        }
+    
         public override bool Emit(EmitContext ec)
         {
             if (Condition != null)

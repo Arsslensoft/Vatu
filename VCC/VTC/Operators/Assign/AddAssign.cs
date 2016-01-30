@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+﻿using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,6 +33,12 @@ namespace VTC
                     ResolveContext.Report.Error(0, Location, "Unresolved delegate method");
             }
             return this;
+        }
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            if (IsDelegateMethodAssign)
+                fc.MarkAsUsed(DelegateMethod);
+            return base.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {

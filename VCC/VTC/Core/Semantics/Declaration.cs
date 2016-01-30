@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Text;
 
 namespace VTC.Core
 {
-    public class Declaration : DeclarationToken, IFlow
+    public class Declaration : DeclarationToken
     {
         public Declaration BaseDeclaration { get; set; }
         TypeSpec _ts;
@@ -46,7 +46,6 @@ namespace VTC.Core
        
     
         [Rule(@" <Decl>  ::= <ASM Decl>")]
-        [Rule(@"<Decl>  ::= <Extension Decl>")]
         [Rule(@"<Decl>  ::= <Var Decl>  ")]
         [Rule(@"<Decl>  ::= <Types Decl>")]
         [Rule(@"<Decl>  ::= <Method Decl>")]
@@ -62,28 +61,26 @@ namespace VTC.Core
             BaseDeclaration = decl;
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            if (BaseDeclaration != null)
-                return BaseDeclaration.DoResolve(rc);
-            else return base.DoResolve(rc);
-        }
-        public override bool Resolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
         {
             if (BaseDeclaration != null)
                 return BaseDeclaration.Resolve(rc);
             return base.Resolve(rc);
         }
-        public virtual Reachability MarkReachable(Reachability rc)
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (BaseDeclaration != null)
-                return BaseDeclaration.MarkReachable(rc);
-            else return new Reachability();
-         
+                return BaseDeclaration.DoResolve(rc);
+            else return base.DoResolve(rc);
         }
-        public virtual bool DoFlowAnalysis(FlowAnalysisContext fc)
+   
+      
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            return true;
+            if (BaseDeclaration != null)
+                return BaseDeclaration.DoFlowAnalysis(fc);
+
+            return base.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {

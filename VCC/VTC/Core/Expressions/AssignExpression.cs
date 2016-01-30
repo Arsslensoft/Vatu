@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,7 +38,14 @@ namespace VTC.Core
         }
 
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            bool ok = _op.Left.Resolve(rc);
+            ok &= _op.Right.Resolve(rc);
+
+            return ok;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             if(!(_op is AddAssignOperator || _op is SubAssignOperator))
                     _op.Right = (Expr)_op.Right.DoResolve(rc);
@@ -49,15 +56,11 @@ namespace VTC.Core
             else if ((!(_op.Left is AccessOperation)) & !(_op.Left is RegisterExpression) && (!(_op.Left is UnaryOperation)) && (_op.Left as VariableExpression).variable.IsConstant)
                 ResolveContext.Report.Error(43, Location, "Cannot assign a constant variable only in it's declaration");
             Type = _op.Left.Type;
+            AcceptStatement = true;
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            bool ok = _op.Left.Resolve(rc);
-            ok &= _op.Right.Resolve(rc);
 
-            return ok;
-        }
+     
         public override bool Emit(EmitContext ec)
         {
 
@@ -68,12 +71,14 @@ namespace VTC.Core
         {
             return _op.EmitFromStack(ec);
         }
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            if (_op.Left is VariableExpression && (_op.Left as VariableExpression).variable is VarSpec)
-                fc.AssignmentBitSet.Set(((_op.Left as VariableExpression).variable as VarSpec).FlowIndex);
-            
-            return base.DoFlowAnalysis(fc);
+            if (_op.Left is VariableExpression && (_op.Left as VariableExpression).variable != null)
+                fc.MarkAsAssigned((_op.Left as VariableExpression).variable);
+            FlowState fs = _op.Left.DoFlowAnalysis(fc) & _op.Right.DoFlowAnalysis(fc);
+            fs &= _op.DoFlowAnalysis(fc);
+                
+            return fs & base.DoFlowAnalysis(fc);
         }
 
     }

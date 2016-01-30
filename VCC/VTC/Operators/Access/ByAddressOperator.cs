@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+﻿using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -116,13 +116,13 @@ namespace VTC
                         if (struct_var is VarSpec)
                         {
                             VarSpec dst = (VarSpec)struct_var;
-                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, true, index, tmp.MemberType);
+                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null,lv.position, true,  index, tmp.MemberType);
 
                         }
                         else if (struct_var is RegisterSpec)
                         {
                             RegisterSpec dst = (RegisterSpec)struct_var;
-                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, true, index, tmp.MemberType);
+                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null,lv.position, true,  index, tmp.MemberType);
 
                         }
                         else if (struct_var is FieldSpec)
@@ -130,14 +130,14 @@ namespace VTC
                             FieldSpec dst = (FieldSpec)struct_var;
 
 
-                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, true, index, tmp.MemberType);
+                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, lv.position, true, index, tmp.MemberType);
                         }
                         else if (struct_var is ParameterSpec)
                         {
                             ParameterSpec dst = (ParameterSpec)struct_var;
 
 
-                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, true, index, tmp.MemberType);
+                            return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, lv.position, true, index, tmp.MemberType);
                         }
                         this.CommonType = tmp.MemberType;
                     }

@@ -1,5 +1,5 @@
-using bsn.GoldParser.Parser;
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Parser;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,55 +19,54 @@ namespace VTC
             Operator = UnaryOperator.AddressOf;
         }
         TypeSpec MemberType;
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+           return Right.Resolve(rc) ;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
        
                 // LEA
-            if (Right is AccessExpression)
-            {
-              ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non variable expressions");
-                ms = null;
-            }
-            else if (Right is VariableExpression)
-                ms = (Right as VariableExpression).variable;
-            else
-                ResolveContext.Report.Error(54, Location, "Address Of Operator does not support non variable expressions");
+            //if (Right is AccessExpression)
+            //{
+            //    ResolveContext.Report.Error(53, Right.Location, "Address of operator cannot be used with non variable expressions");
+            //    ms = null;
+            //}
+            //else
+         if (!(Right is VariableExpression))
+              //  ms = (Right as VariableExpression).variable;
+              //else
+                ResolveContext.Report.Error(54, Location, "Address Of Operator does not support non variable nor access expressions");
                 CommonType = Right.Type.MakePointer();
                 return this;
          
         }
-        public override bool Resolve(ResolveContext rc)
+  
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-           return Right.Resolve(rc) ;
+            return Right.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {
-            if (ms != null)
-            {
-                if (ms is VarSpec)
-                    ms.LoadEffectiveAddress(ec);
-                else if (ms is FieldSpec)
-                    ms.LoadEffectiveAddress(ec);
-                else if (ms is ParameterSpec)
-                    ms.LoadEffectiveAddress(ec);
-            }
-     
-
-            return true;
+            //if (ms != null)
+            //{
+            //    if (ms is VarSpec)
+            //        ms.LoadEffectiveAddress(ec);
+            //    else if (ms is FieldSpec)
+            //        ms.LoadEffectiveAddress(ec);
+            //    else if (ms is ParameterSpec)
+            //        ms.LoadEffectiveAddress(ec);
+            //}
+            if(Right is AccessExpression)
+                return (Right as AccessExpression).LoadEffectiveAddress(ec);
+            else
+                return (Right as VariableExpression).LoadEffectiveAddress(ec);
+        
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            if (ms != null)
-            {
-                if (ms is VarSpec)
-                    ms.LoadEffectiveAddress(ec);
-                else if (ms is FieldSpec)
-                    ms.LoadEffectiveAddress(ec);
-                else if (ms is ParameterSpec)
-                    ms.LoadEffectiveAddress(ec);
-            }
-            else return Emit(ec);
-            return true;
+          return Emit(ec);
+ 
         }
         public override string CommentString()
         {

@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +42,15 @@ namespace VTC.Core
             }
             else return new EnumMemberSpec(rc.CurrentNamespace, v._id.Name, host, BuiltinTypeSpec.UInt, v.Location);
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            bool ok = _value.Resolve(rc);
+            if (next_def != null)
+                ok &= next_def.Resolve(rc);
+
+            return ok;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             Size = 1;
             Members = new List<EnumMemberSpec>();
@@ -61,14 +69,7 @@ namespace VTC.Core
             }
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            bool ok = _value.Resolve(rc);
-            if (next_def != null)
-                ok &= next_def.Resolve(rc);
-
-            return ok;
-        }
+      
         public override bool Emit(EmitContext ec)
         {
             return true;

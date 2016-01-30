@@ -10,7 +10,7 @@ namespace VTC
 	 /// <summary>
     /// Member Signature [Types, member, variable]
     /// </summary>
-    public struct MemberSignature
+    public struct MemberSignature : IEquatable<MemberSignature>
     {
      
         string _signature;
@@ -89,6 +89,7 @@ namespace VTC
             return Signature;
         }
 
+  
     }
 
 	

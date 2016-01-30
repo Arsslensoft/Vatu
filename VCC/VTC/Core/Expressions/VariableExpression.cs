@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +11,7 @@ namespace VTC.Core
     /// <summary>
     /// Variable Expr
     /// </summary>
-    public class VariableExpression : Identifier
+    public class VariableExpression : Identifier, IEmitAddress
     {
 
         public MemberSpec variable;
@@ -32,8 +32,14 @@ namespace VTC.Core
         {
 
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
         {
+            variable = rc.Resolver.TryResolveVar(_idName);
+            return base.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
+        {
+     
             if (variable == null)
             {
 
@@ -48,27 +54,25 @@ namespace VTC.Core
                     variable = rc.Resolver.TryResolveField(Name);
 
                 if (variable != null)
-                {
-                    if (variable is VarSpec)
-                        Type = ((VarSpec)variable).MemberType;
-                    else if (variable is FieldSpec)
-                        Type = ((FieldSpec)variable).MemberType;
-                    else if (variable is EnumMemberSpec)
-                        Type = ((EnumMemberSpec)variable).MemberType;
-                    else if (variable is ParameterSpec)
-                        Type = ((ParameterSpec)variable).MemberType;
-                }
+                    Type = variable.memberType;
 
+            
                 if (variable == null && (rc.CurrentScope & ResolveScopes.AccessOperation) != ResolveScopes.AccessOperation)
                     ResolveContext.Report.Error(14, Location, "Unresolved variable '" + Name + "'");
             }
+            else Type = variable.memberType;
             base.DoResolve(rc);
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            variable = rc.Resolver.TryResolveVar(_idName);
-            return base.Resolve(rc);
+            if (variable != null)
+            {
+                if (!fc.IsAssigned(variable))
+                    fc.ReportUseOfUnassigned(Location, variable.Name);
+                fc.MarkAsUsed(variable);
+            }
+            return base.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {
@@ -76,16 +80,30 @@ namespace VTC.Core
             //TODO:Non builtin
             return true;
         }
+        public virtual bool LoadEffectiveAddress(EmitContext ec)
+        {
+            if (variable is VarSpec)
+                return variable.LoadEffectiveAddress(ec);
+            else if (variable is FieldSpec)
+                return variable.LoadEffectiveAddress(ec);
+            else if (variable is ParameterSpec)
+                return variable.LoadEffectiveAddress(ec);
+            else if (variable is RegisterSpec)
+                return variable.LoadEffectiveAddress(ec);
+            return true;
+        }
+
+
         public override bool EmitFromStack(EmitContext ec)
         {
             if (variable is VarSpec)
-                variable.EmitFromStack(ec);
+             return   variable.EmitFromStack(ec);
             else if (variable is FieldSpec)
-                variable.EmitFromStack(ec);
+                return variable.EmitFromStack(ec);
             else if (variable is ParameterSpec)
-                variable.EmitFromStack(ec);
+                return variable.EmitFromStack(ec);
             else if (variable is RegisterSpec)
-                variable.EmitFromStack(ec);
+                return variable.EmitFromStack(ec);
             return true;
         }
         public override bool EmitToStack(EmitContext ec)
@@ -93,15 +111,15 @@ namespace VTC.Core
 
 
             if (variable is VarSpec)
-                variable.EmitToStack(ec);
+                return variable.EmitToStack(ec);
             else if (variable is FieldSpec)
-                variable.EmitToStack(ec);
+                return variable.EmitToStack(ec);
             else if (variable is EnumMemberSpec)
-                variable.EmitToStack(ec);
+                return variable.EmitToStack(ec);
             else if (variable is ParameterSpec)
-                variable.EmitToStack(ec);
+                return variable.EmitToStack(ec);
             else if (variable is RegisterSpec)
-                variable.EmitToStack(ec);
+                return variable.EmitToStack(ec);
             return true;
         }
 

@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,15 +14,15 @@ namespace VTC.Core
         public int Size { get; set; }
         public int Dimension { get; set; }
         ArrayVariableDefinition _nextdef;
-        [Rule(@"<Array>    ::= ~'[' <Expression> ~']' <Array>")]
-        public ArrayVariableDefinition(Expr expr, ArrayVariableDefinition avd)
+        [Rule(@"<Array>    ::= ~'[' <Integral Const>  ~']' <Array>")]
+        public ArrayVariableDefinition(Literal expr, ArrayVariableDefinition avd)
         {
             _nextdef = avd;
             _expr = expr;
         }
         Expr _expr;
-        [Rule(@"<Array>    ::= ~'[' <Expression> ~']'")]
-        public ArrayVariableDefinition(Expr expr)
+        [Rule(@"<Array>    ::= ~'[' <Integral Const> ~']'")]
+        public ArrayVariableDefinition(Literal expr)
         {
             _expr = expr;
         }
@@ -32,12 +32,18 @@ namespace VTC.Core
         {
             _expr = null;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+      if (_expr != null)
+            return _expr.Resolve(rc);
+      return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             Dimension = 1;
             bool conv = false;
             if (_expr != null)
-            _expr = (Expr)_expr.DoResolve(rc);
+                _expr = (ConstantExpression)_expr.DoResolve(rc);
 
 
             if (_nextdef != null)
@@ -56,23 +62,31 @@ namespace VTC.Core
                 ResolveContext.Report.Error(47, Location, "Invalid array size");
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-      if (_expr != null)
-            return _expr.Resolve(rc);
-      return true;
+            return base.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {
             return true;
         }
 
-        public ArrayTypeSpec CreateArrayType(TypeSpec root)
+        public TypeSpec CreateArrayType(TypeSpec root)
         {
             if (_nextdef == null)
+            {
+                if (Size == 0)
+                    return new PointerTypeSpec(root.NS, root);
+
                 return new ArrayTypeSpec(root.NS, root, Size);
+            }
             else
+            {
+                if (Size == 0)
+                    return new PointerTypeSpec(root.NS, _nextdef.CreateArrayType(root));
+
                 return new ArrayTypeSpec(root.NS, _nextdef.CreateArrayType(root), Size);
+            }
           
         }
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +7,7 @@ using Vasm.x86;
 
 namespace VTC.Core
 {
-    public abstract class Operator : SimpleToken, IEmit, IEmitExpr, IResolve
+    public abstract class Operator : SimpleToken, IEmit, IEmitExpr
     {
         public Namespace Namespace { get; set; }
         public Expr Left { get; set; }
@@ -51,15 +51,16 @@ namespace VTC.Core
         {
             loc = CompilerContext.TranslateLocation(position);
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            return true;
-        }
+       
         public virtual bool Emit(EmitContext ec)
         {
             return true;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             return this;
         }

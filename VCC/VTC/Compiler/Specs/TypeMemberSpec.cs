@@ -11,7 +11,7 @@ namespace VTC
 	 /// <summary>
     /// TypeMemberSpec Specs
     /// </summary>
-    public class TypeMemberSpec : MemberSpec
+    public class TypeMemberSpec : MemberSpec, IEquatable<TypeMemberSpec>
     {
 
         TypeSpec th;
@@ -24,7 +24,7 @@ namespace VTC
                 return th;
             }
         }
-        public Namespace NS { get; set; }
+       
         public TypeMemberSpec(Namespace ns, string name, TypeSpec host, TypeSpec type, Location loc, int idx)
             : base(name, new MemberSignature(ns,host.Name + "_" + name, loc), Modifiers.NoModifier,ReferenceKind.Member)
         {
@@ -42,6 +42,10 @@ namespace VTC
         {
             
             return base.EmitToStack(ec);
+        }
+        public bool Equals(TypeMemberSpec m)
+        {
+            return m.Name == Name;
         }
 
     }

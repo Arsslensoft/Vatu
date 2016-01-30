@@ -5,7 +5,7 @@ using System.Text;
 
 namespace VTC.Core
 {
-    public abstract class DeclarationToken : SimpleToken, IEmit, IResolve
+    public abstract class DeclarationToken : SimpleToken, IEmit
     {
 
 

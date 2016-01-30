@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,16 +21,20 @@ namespace VTC.Core
             _vardef = var;
             _ptr = ptr;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+           return _vardef.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             _vardef.IsAbstract = IsAbstract;
             _vardef = (VariableDefinition)_vardef.DoResolve(rc);
             _ptr = (TypePointer)_ptr.DoResolve(rc);
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-           return _vardef.Resolve(rc);
+            return _vardef.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {

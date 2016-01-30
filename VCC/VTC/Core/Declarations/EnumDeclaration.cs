@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+﻿using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -150,6 +150,11 @@ namespace VTC.Core
                 ResolveContext.Report.Error(11, Location, "Max enum values exceeded, only 65536 values are allowed");
             rc.KnowType(TypeName);
             return this;
+        }
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+           
+            return base.DoFlowAnalysis(fc);
         }
     }
 

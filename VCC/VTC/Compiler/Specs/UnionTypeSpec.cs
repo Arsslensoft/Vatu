@@ -14,6 +14,7 @@ namespace VTC
     public class UnionTypeSpec : TypeSpec
     {
         public List<TypeMemberSpec> Members { get; set; }
+   
 
         public UnionTypeSpec(Namespace ns, string name, List<TypeMemberSpec> mem, Location loc)
             : base(ns, name, BuiltinTypes.Unknown, TypeFlags.Union, Modifiers.NoModifier, loc)

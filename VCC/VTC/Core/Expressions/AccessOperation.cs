@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -76,43 +76,7 @@ namespace VTC.Core
         }
 
 
-        public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            rc.CurrentScope |= ResolveScopes.AccessOperation;
-
-            if (_op._op != AccessOperator.ByName)
-            {
-
-                if (_op.Right is MethodExpression)
-                {
-                    _op.Left = (Expr)_op.Left.DoResolve(rc);
-
-                    rc.CurrentExtensionLookup = _op.Left.Type;
-                    rc.StaticExtensionLookup = false;
-                    rc.ExtensionVar = _op.Left;
-                    _op.Right = (Expr)_op.Right.DoResolve(rc);
-                    rc.StaticExtensionLookup = false;
-                    rc.ExtensionVar = null;
-
-
-                    rc.CurrentScope &= ~ResolveScopes.AccessOperation;
-                    return _op.Right;
-                }
-                else
-                {
-                    _op.Right = (Expr)_op.Right.DoResolve(rc);
-                    _op.Left = (Expr)_op.Left.DoResolve(rc);
-
-                    rc.CurrentScope &= ~ResolveScopes.AccessOperation;
-                    return _op.DoResolve(rc);
-                }
-            }
-            else
-                return _op.DoResolve(rc);
-
-
-        }
-        public override bool Resolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
         {
             if (_op._op != AccessOperator.ByName)
             {
@@ -123,6 +87,70 @@ namespace VTC.Core
             else return _op.Right.Resolve(rc);
 
         }
+ public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            rc.CurrentScope |= ResolveScopes.AccessOperation;
+            AcceptStatement = (_op._op == AccessOperator.ByName);
+            if (_op._op != AccessOperator.ByName)
+            {
+
+                if ((_op.Right is DeclaredExpression) && (_op.Right  as DeclaredExpression).Expression is MethodExpression)
+                {
+                    _op.Left = (Expr)_op.Left.DoResolve(rc);
+                    rc.CurrentScope |= ResolveScopes.AccessOperation;
+                    // back up 
+                    TypeSpec oldext = rc.CurrentExtensionLookup;
+                    Expr extvar = rc.ExtensionVar;
+                    bool staticext = rc.StaticExtensionLookup;
+
+
+                    rc.CurrentExtensionLookup = _op.Left.Type;
+                    rc.StaticExtensionLookup = false;
+                    rc.ExtensionVar = _op.Left;
+
+                    _op.Right = (Expr)_op.Right.DoResolve(rc);
+
+                    // restore
+                    rc.StaticExtensionLookup = staticext;
+                    rc.ExtensionVar = extvar;
+                    rc.CurrentExtensionLookup = oldext;
+
+
+                    rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+                    return _op.Right;
+                }
+                else
+                {
+                    _op.Right = (Expr)_op.Right.DoResolve(rc);
+                    _op.Left = (Expr)_op.Left.DoResolve(rc);
+
+
+                    SimpleToken s = _op.DoResolve(rc);
+                    rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+                    return s;
+                }
+            }
+            else
+            {
+                SimpleToken s = _op.DoResolve(rc);
+                rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+                return s;
+            }
+
+
+        }
+
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            if (_op._op != AccessOperator.ByName)
+            {
+                FlowState ok = _op.Left.DoFlowAnalysis(fc);
+                ok &= _op.Right.DoFlowAnalysis(fc);
+                return _op.DoFlowAnalysis(fc);
+            }
+            else return _op.Right.DoFlowAnalysis(fc) & _op.DoFlowAnalysis(fc);
+        }
+       
         public override bool Emit(EmitContext ec)
         {
             return _op.Emit(ec);

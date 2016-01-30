@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,7 @@ namespace VTC.Core
 	 [Terminal("OperatorLiteralUnary")]
     public class OperatorLiteralUnary : Literal
     {
-        public bsn.GoldParser.Grammar.Symbol Sym
+        public VTC.Base.GoldParser.Grammar.Symbol Sym
         {
             get { return symbol; }
         }

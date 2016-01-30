@@ -15,7 +15,6 @@ namespace VTC
     {
 
         public CallingConventions CallingConvention { get; set; }
-        public Namespace NS { get; set; }
         public List<ParameterSpec> Parameters { get; set; }
         public bool IsOperator { get; set; }
       
@@ -40,6 +39,7 @@ namespace VTC
         {
             return Signature.ToString();
         }
+
         public bool Equals(MethodSpec tp)
         {
             return tp.Signature == Signature;

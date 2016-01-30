@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +26,14 @@ namespace VTC.Core
             _stmt = stmt;
             _elsestmt = elsestmt;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            _expr.Resolve(rc);
+            _stmt.Resolve(rc);
+            _elsestmt.Resolve(rc);
+            return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
         
             Label lb = rc.DefineLabel(LabelType.IF);
@@ -52,13 +59,7 @@ namespace VTC.Core
 
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            _expr.Resolve(rc);
-            _stmt.Resolve(rc);
-            _elsestmt.Resolve(rc);
-            return true;
-        }
+     
         public override bool Emit(EmitContext ec)
         {
             if (_expr.current is ConstantExpression || _expr is ConstantExpression)
@@ -93,32 +94,27 @@ namespace VTC.Core
             else _stmt.Emit(ec);
         }
 
-        public override Reachability MarkReachable(Reachability rc)
-        {
-            base.MarkReachable(rc);
-            Reachability r = rc;
-            if (_stmt is Block || _stmt is BlockStatement)
-                r  &= _stmt.MarkReachable(rc);
-
-            if (_elsestmt is Block || _elsestmt is BlockStatement)
-                r &= _elsestmt.MarkReachable(rc);
-         
-            return  r;
-        }
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+  
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             CodePath cur = new CodePath(_stmt.loc); // sub code path
           
             CodePath back = fc.CodePathReturn;
             fc.CodePathReturn = cur; // set current code path
 
-            bool ok = _expr.DoFlowAnalysis(fc) && _stmt.DoFlowAnalysis(fc);
+            FlowState ok = _expr.DoFlowAnalysis(fc);
+     
+            
+            _stmt.DoFlowAnalysis(fc);
+            
             back.AddPath(cur);
 
             cur = new CodePath(_elsestmt.loc); // sub code path
        
             fc.CodePathReturn = cur; // set current code path
-            ok &= _elsestmt.DoFlowAnalysis(fc);
+       
+            _elsestmt.DoFlowAnalysis(fc);
+          
             back.AddPath(cur);
             fc.CodePathReturn = back; // restore code path
             return ok;

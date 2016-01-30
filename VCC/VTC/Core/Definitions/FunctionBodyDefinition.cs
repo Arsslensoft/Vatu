@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,18 +33,24 @@ namespace VTC.Core
           _ext = ext;
       }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
         {
-            if(_ext != null)
-            _ext = (FunctionExtensionDefinition)_ext.DoResolve(rc);
-           
+        
+            return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            if (_ext != null && _ext.IsExtended)
+                _ext = (FunctionExtensionDefinition)_ext.DoResolve(rc);
+            else _ext = null;
+       
             ParamTypes = new List<TypeSpec>();
 
             Params = new Stack<ParameterSpec>();
             Parameters = new List<ParameterSpec>();
             if (_pdef != null)
             {
-                _pdef.Resolve(rc);
+             
                 _pdef = (ParameterListDefinition)_pdef.DoResolve(rc);
                 ParameterListDefinition par = _pdef;
                 while (par != null)
@@ -61,10 +67,9 @@ namespace VTC.Core
             return this;
         }
 
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-        
-            return true;
+            return base.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {

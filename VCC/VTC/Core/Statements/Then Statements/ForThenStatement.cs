@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,31 +13,28 @@ namespace VTC.Core
 
         public ForStatement For { get; set; }
 
-        [Rule("<Then Stm>   ::=  ~for ~'(' <Arg> ~';' <Arg> ~';' <Arg> ~')' <Then Stm>")]
-        public ForThenStatement(ArgumentExpression init, ArgumentExpression cond, ArgumentExpression inc, ThenStatement stmt)
+        [Rule("<Then Stm>   ::=  ~for ~'('  <PARAM EXPR> ~';' <Expression> ~';'  <PARAM EXPR> ~')' <Then Stm>")]
+        public ForThenStatement(ParameterSequence<Expr> init, Expr cond, ParameterSequence<Expr> inc, ThenStatement stmt)
         {
             For = new ForStatement(init, cond, inc, stmt);
 
 
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            return For.DoResolve(rc);
-        }
-        public override bool Resolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
         {
             return For.Resolve(rc);
         }
+ public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            return For.DoResolve(rc);
+        }
+    
         public override bool Emit(EmitContext ec)
         {
             return For.Emit(ec);
         }
-        public override Reachability MarkReachable(Reachability rc)
-        {
-            base.MarkReachable(rc);
-            return For.MarkReachable(rc);
-        }
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+   
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             return For.DoFlowAnalysis(fc);
         }

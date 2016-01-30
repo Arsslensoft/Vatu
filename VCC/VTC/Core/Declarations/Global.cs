@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+﻿using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,7 +43,11 @@ namespace VTC.Core
             Used = new List<Namespace>();
 
         }
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
 
+            return base.DoFlowAnalysis(fc);
+        }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (ncd != null)

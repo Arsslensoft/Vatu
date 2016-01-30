@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +18,7 @@ namespace VTC.Core
     [Terminal("bool")]
     [Terminal("pointer")]
     [Terminal("float")]
-    public class TypeToken : SimpleToken, IResolve
+    public class TypeToken : SimpleToken
     {
        protected TypeSpec _ts;
         public TypeSpec Type
@@ -40,12 +40,17 @@ namespace VTC.Core
 
         }
 
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+
+            return FlowState.Valid;
+        }
+       public override bool Resolve(ResolveContext rc)
         {
 
             return true;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
              rc.Resolver.TryResolveType(this.symbol.Name,ref _ts);
              if (_ts == null)

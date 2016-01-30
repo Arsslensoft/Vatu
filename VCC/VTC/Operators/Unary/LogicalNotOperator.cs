@@ -1,5 +1,5 @@
-using bsn.GoldParser.Parser;
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Parser;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +19,11 @@ namespace VTC
             Operator = UnaryOperator.LogicalNot;
         }
         AssignExpression ae;
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (Right.Type != BuiltinTypeSpec.Bool)
                 ResolveContext.Report.Error(26, Location, "Logical not must be used with boolean type, use ~ instead");
@@ -31,10 +35,7 @@ namespace VTC
 
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            return true;
-        }
+      
         public override bool Emit(EmitContext ec)
         {
             if (RegisterOperation)

@@ -1,5 +1,5 @@
-using bsn.GoldParser.Parser;
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Parser;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,26 +27,29 @@ namespace VTC
         }
       
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+         
+            return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
 
             Type = BuiltinTypeSpec.String;
             if (_id != null )
             {
                 MemberSpec ms = rc.Resolver.TryResolveName(_id.Name);
+
                 if (ms != null)
                     return new StringConstant(ms.Name, Location);
+                    
                 else
                     ResolveContext.Report.Error(0,Location,"Unresolved name " + _id.Name);
             }
 
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-         
-            return true;
-        }
+  
         /*   public override bool Emit(EmitContext ec)
            {
                RegistersEnum acc = ec.GetNextRegister();

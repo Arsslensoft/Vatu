@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+﻿using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ namespace VTC.Core.Expressions
        Expr _sizeexpr;
        TypeToken _type;
        MethodSpec method;
-       [Rule("<Value>      ::= ~new <Type> ~'[' <Expression> ~']'")]
+       [Rule("<Value>      ::= ~new <Type> ~'(' <Expression> ~')'")]
        public InstanceExpression(TypeToken type, Expr size)
        {
            _sizeexpr = size;
@@ -39,6 +39,12 @@ namespace VTC.Core.Expressions
            ec.EmitInstruction(new Call() { DestinationLabel = method.Signature.ToString() });
            ec.EmitPush(EmitContext.A);
            return true;
+       }
+       public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+       {
+           if (method != null)
+               fc.MarkAsUsed(method);
+           return _sizeexpr.DoFlowAnalysis(fc);
        }
        public override bool Emit(EmitContext ec)
        {

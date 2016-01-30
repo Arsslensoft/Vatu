@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +23,7 @@ namespace VTC.Core
 
         public TypeIdentifierListDefinition _tidl;
         CastKind ckind;
-        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator <Operator>  <Type> ~';' ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator <Operator> ~'(' <Type> ~')' ~';' ")]
         public OperatorPrototypeDeclaration(Modifier mod, TypeToken type, DefinedOperator oper, TypeToken cmp)
         {
             _mtype = type;
@@ -36,7 +36,7 @@ namespace VTC.Core
       
 
         // Operator Userdef
-        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator <Operator Def>  <Type> ~';'  ")]
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator <Operator Def>  ~'(' <Type> ~')' ~';'  ")]
         public OperatorPrototypeDeclaration(Modifier mod, TypeToken type, OperatorDefinition oper, TypeToken cmp)
         {
             _mtype = type;
@@ -68,7 +68,14 @@ namespace VTC.Core
 
 
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            bool ok = true;
+
+
+            return ok;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             _mod = (Modifier)_mod.DoResolve(rc);
             mods = _mod.ModifierList | Modifiers.Prototype;
@@ -264,12 +271,10 @@ namespace VTC.Core
 
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            bool ok = true;
-
-
-            return ok;
+            fc.AddNew(method);
+            return base.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {

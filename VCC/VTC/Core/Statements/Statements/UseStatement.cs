@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +20,11 @@ namespace VTC.Core
             ns = new Namespace(ni.Name);
             _stmt = stmt;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            return _stmt.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             int index = -1;
             // Set priority
@@ -47,33 +51,22 @@ namespace VTC.Core
           
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            return _stmt.Resolve(rc);
-        }
+   
         public override bool Emit(EmitContext ec)
         {
             _stmt.Emit(ec);
             return true;
         }
-        public override Reachability MarkReachable(Reachability rc)
-        {
-            base.MarkReachable(rc);
-            if (_stmt is Block || _stmt is BlockStatement)
-                return _stmt.MarkReachable(rc);
-            else
-                return rc;
-        }
+      
 
-
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             CodePath cur = new CodePath(_stmt.loc); // sub code path
    
             CodePath back = fc.CodePathReturn;
             fc.CodePathReturn = cur; // set current code path
-
-            bool ok = _stmt.DoFlowAnalysis(fc);
+            FlowState ok = FlowState.Valid;
+            _stmt.DoFlowAnalysis(fc);
             back.AddPath(cur);
             fc.CodePathReturn = back; // restore code path
             return ok;
