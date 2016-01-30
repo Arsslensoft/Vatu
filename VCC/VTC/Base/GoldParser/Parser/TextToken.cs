@@ -29,9 +29,9 @@
 // 
 using System;
 
-using bsn.GoldParser.Grammar;
+using VTC.Base.GoldParser.Grammar;
 
-namespace bsn.GoldParser.Parser {
+namespace VTC.Base.GoldParser.Parser {
 	/// <summary>
 	/// Represents data about current token.
 	/// </summary>

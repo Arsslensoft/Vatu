@@ -31,7 +31,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 
-namespace bsn.GoldParser.Parser {
+namespace VTC.Base.GoldParser.Parser {
 	public class TextBuffer {
 		private const int BufferSize = 2048;
 

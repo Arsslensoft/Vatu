@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -144,7 +144,8 @@ namespace VTC.Core
        public override bool Resolve(ResolveContext rc)
         {
             return _statements.Resolve(rc);
-        } public override SimpleToken DoResolve(ResolveContext rc)
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (b == null)
                 return null;
@@ -250,7 +251,8 @@ namespace VTC.Core
             back.AddPath(cur);
             fc.CodePathReturn = back; // restore code path
             return ok;
-        }
+        }
+
     }
 
 }

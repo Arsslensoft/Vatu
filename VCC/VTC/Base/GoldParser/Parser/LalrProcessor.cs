@@ -32,9 +32,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 
-using bsn.GoldParser.Grammar;
+using VTC.Base.GoldParser.Grammar;
 
-namespace bsn.GoldParser.Parser {
+namespace VTC.Base.GoldParser.Parser {
 	/// <summary>
 	/// Pull parser which uses Grammar table to parse input stream.
 	/// </summary>

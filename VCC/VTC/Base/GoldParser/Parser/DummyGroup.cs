@@ -27,9 +27,9 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using bsn.GoldParser.Grammar;
+using VTC.Base.GoldParser.Grammar;
 
-namespace bsn.GoldParser.Parser {
+namespace VTC.Base.GoldParser.Parser {
 	internal class DummyGroup: IGroup {
 		public static readonly DummyGroup Default = new DummyGroup();
 

@@ -33,9 +33,9 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Reflection;
 
-using bsn.GoldParser.Grammar;
+using VTC.Base.GoldParser.Grammar;
 
-namespace bsn.GoldParser.Semantic {
+namespace VTC.Base.GoldParser.Semantic {
 	public class SemanticNonterminalTypeFactory<TBase, TOutput>: SemanticNonterminalFactory<TBase, TOutput> where TBase: SemanticToken where TOutput: TBase {
 		private readonly SemanticNonterminalTypeFactoryHelper<TBase>.Activator<TOutput> activator;
 		private readonly ReadOnlyCollection<Type> inputTypes;

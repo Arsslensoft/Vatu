@@ -30,9 +30,9 @@
 using System;
 using System.Text.RegularExpressions;
 
-using bsn.GoldParser.Grammar;
+using VTC.Base.GoldParser.Grammar;
 
-namespace bsn.GoldParser.Semantic {
+namespace VTC.Base.GoldParser.Semantic {
 	/// <summary>
 	/// This class is used to decorate constructors which accept exactly one string for the terminal value
 	/// </summary>

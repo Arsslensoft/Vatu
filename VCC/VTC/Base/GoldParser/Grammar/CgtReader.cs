@@ -31,7 +31,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace bsn.GoldParser.Grammar {
+namespace VTC.Base.GoldParser.Grammar {
 	internal class CgtReader {
 		private readonly BinaryReader reader;
 		private int entryCount; // Number of entries left

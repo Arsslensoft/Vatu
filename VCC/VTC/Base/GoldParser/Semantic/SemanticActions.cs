@@ -35,10 +35,10 @@ using System.IO;
 using System.Text;
 using System.Threading;
 
-using bsn.GoldParser.Grammar;
-using bsn.GoldParser.Parser;
+using VTC.Base.GoldParser.Grammar;
+using VTC.Base.GoldParser.Parser;
 
-namespace bsn.GoldParser.Semantic {
+namespace VTC.Base.GoldParser.Semantic {
 	public abstract class SemanticActions<T> where T: SemanticToken {
 		private class SemanticTokenizer: Tokenizer<T> {
 			private readonly SemanticActions<T> actions;

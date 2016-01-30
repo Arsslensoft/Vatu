@@ -32,10 +32,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
-using bsn.GoldParser.Grammar;
-using bsn.GoldParser.Parser;
+using VTC.Base.GoldParser.Grammar;
+using VTC.Base.GoldParser.Parser;
 
-namespace bsn.GoldParser.Semantic {
+namespace VTC.Base.GoldParser.Semantic {
 	public class SemanticProcessor<T>: LalrProcessor<T> where T: SemanticToken {
 		private readonly SemanticActions<T> actions;
 

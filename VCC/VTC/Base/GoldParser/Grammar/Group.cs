@@ -30,7 +30,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace bsn.GoldParser.Grammar {
+namespace VTC.Base.GoldParser.Grammar {
 	/// <summary>
 	/// A group in the grammar, such as a comment block or a block of another programming language.
 	/// </summary>

@@ -31,9 +31,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 
-using bsn.GoldParser.Grammar;
+using VTC.Base.GoldParser.Grammar;
 
-namespace bsn.GoldParser.Parser {
+namespace VTC.Base.GoldParser.Parser {
 	///<summary>
 	/// The tokenizer reads an input character stream and outputs the tokens read.
 	///</summary>

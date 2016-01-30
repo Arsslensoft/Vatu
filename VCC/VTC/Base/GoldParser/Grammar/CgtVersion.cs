@@ -29,7 +29,7 @@
 //  
 using System;
 
-namespace bsn.GoldParser.Grammar {
+namespace VTC.Base.GoldParser.Grammar {
 	public enum CgtVersion {
 		None = 0,
 		V1_0 = 1,

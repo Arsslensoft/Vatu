@@ -34,10 +34,10 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 
-using bsn.GoldParser.Grammar;
-using bsn.GoldParser.Parser;
+using VTC.Base.GoldParser.Grammar;
+using VTC.Base.GoldParser.Parser;
 
-namespace bsn.GoldParser.Semantic {
+namespace VTC.Base.GoldParser.Semantic {
 	public class RuleDeclarationParser {
 		private static readonly CompiledGrammar ruleGrammar = CompiledGrammar.Load(typeof(RuleDeclarationParser), "GoldRuleDeclaration.egt");
 

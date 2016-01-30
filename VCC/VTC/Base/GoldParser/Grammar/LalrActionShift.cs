@@ -29,9 +29,9 @@
 // 
 using System;
 
-using bsn.GoldParser.Parser;
+using VTC.Base.GoldParser.Parser;
 
-namespace bsn.GoldParser.Grammar {
+namespace VTC.Base.GoldParser.Grammar {
 	internal sealed class LalrActionShift: LalrActionWithLalrState {
 		public LalrActionShift(int index, Symbol symbol, LalrState state): base(index, symbol, state) {}
 

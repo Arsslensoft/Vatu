@@ -30,7 +30,7 @@
 using System;
 using System.Diagnostics;
 
-namespace bsn.GoldParser.Grammar {
+namespace VTC.Base.GoldParser.Grammar {
 	/// <summary>
 	/// A grammar charset representation
 	/// </summary>

@@ -29,10 +29,10 @@
 // 
 using System;
 
-using bsn.GoldParser.Grammar;
-using bsn.GoldParser.Parser;
+using VTC.Base.GoldParser.Grammar;
+using VTC.Base.GoldParser.Parser;
 
-namespace bsn.GoldParser.Semantic {
+namespace VTC.Base.GoldParser.Semantic {
 	public abstract class RuleAttributeBase: Attribute {
 		private readonly Reduction parsedRule;
 

@@ -32,10 +32,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 
-using bsn.GoldParser.Grammar;
-using bsn.GoldParser.Parser;
+using VTC.Base.GoldParser.Grammar;
+using VTC.Base.GoldParser.Parser;
 
-namespace bsn.GoldParser.Semantic {
+namespace VTC.Base.GoldParser.Semantic {
 	/// <summary>
 	/// The abstract nongeneric case class for semantic nonterminal tokens. This class is for internal use only.
 	/// </summary>

@@ -30,9 +30,9 @@
 using System;
 using System.Diagnostics;
 
-using bsn.GoldParser.Parser;
+using VTC.Base.GoldParser.Parser;
 
-namespace bsn.GoldParser.Grammar {
+namespace VTC.Base.GoldParser.Grammar {
 	internal sealed class LalrActionReduce: LalrAction {
 		private readonly Rule reduceRule;
 

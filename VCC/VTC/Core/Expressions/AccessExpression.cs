@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Parser;
+﻿using VTC.Base.GoldParser.Parser;
 using System;
 using System.Collections.Generic;
 using System.Linq;

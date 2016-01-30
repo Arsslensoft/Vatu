@@ -1,4 +1,4 @@
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace VTC
     {
         public string SymbolName { get; set; }
  
-        public ExtendedBinaryOperator(bsn.GoldParser.Grammar.Symbol l,string name)
+        public ExtendedBinaryOperator(VTC.Base.GoldParser.Grammar.Symbol l,string name)
         {
             SymbolName = name;
             symbol = l;

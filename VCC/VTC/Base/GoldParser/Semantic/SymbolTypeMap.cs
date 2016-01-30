@@ -32,9 +32,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 
-using bsn.GoldParser.Grammar;
+using VTC.Base.GoldParser.Grammar;
 
-namespace bsn.GoldParser.Semantic {
+namespace VTC.Base.GoldParser.Semantic {
 	internal class SymbolTypeMap<T> where T: SemanticToken {
 		private readonly Dictionary<Type, ReadOnlyCollection<Type>> baseTypeCache;
 		private readonly SymbolTypeMap<T> parent;

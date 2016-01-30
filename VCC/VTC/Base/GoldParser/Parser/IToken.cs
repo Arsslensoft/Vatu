@@ -29,9 +29,9 @@
 // 
 using System;
 
-using bsn.GoldParser.Grammar;
+using VTC.Base.GoldParser.Grammar;
 
-namespace bsn.GoldParser.Parser {
+namespace VTC.Base.GoldParser.Parser {
 	/// <summary>
 	/// The common interface for all tokens, which carries the (grammar) symbol as well as their position in the input text.
 	/// </summary>

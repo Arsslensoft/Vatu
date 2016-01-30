@@ -29,9 +29,9 @@
 // 
 using System;
 
-using bsn.GoldParser.Parser;
+using VTC.Base.GoldParser.Parser;
 
-namespace bsn.GoldParser.Xml {
+namespace VTC.Base.GoldParser.Xml {
 	/// <summary>
 	/// A structure to return the parsing result of a <see cref="GrammarXmlProcessor"/>
 	/// </summary>

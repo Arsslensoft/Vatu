@@ -31,7 +31,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace bsn.GoldParser.Grammar {
+namespace VTC.Base.GoldParser.Grammar {
 	/// <summary>
 	/// State in the Deterministic Finite Automata 
 	/// which is used by the tokenizer.

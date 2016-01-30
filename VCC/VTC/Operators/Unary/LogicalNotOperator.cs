@@ -1,5 +1,5 @@
-using bsn.GoldParser.Parser;
-using bsn.GoldParser.Semantic;
+using VTC.Base.GoldParser.Parser;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;

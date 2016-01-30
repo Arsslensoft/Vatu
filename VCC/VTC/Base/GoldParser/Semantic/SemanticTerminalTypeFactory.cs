@@ -31,7 +31,7 @@ using System;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace bsn.GoldParser.Semantic {
+namespace VTC.Base.GoldParser.Semantic {
 	/// <summary>
 	/// The factory for terminals of the semantic token type implementation.
 	/// </summary>

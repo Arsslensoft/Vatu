@@ -31,7 +31,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace bsn.GoldParser.Grammar {
+namespace VTC.Base.GoldParser.Grammar {
 	internal class CgtWriter {
 		private readonly BinaryWriter writer;
 		private int entryCount;

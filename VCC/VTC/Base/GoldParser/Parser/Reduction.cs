@@ -33,9 +33,9 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 
-using bsn.GoldParser.Grammar;
+using VTC.Base.GoldParser.Grammar;
 
-namespace bsn.GoldParser.Parser {
+namespace VTC.Base.GoldParser.Parser {
 	/// <summary>
 	/// A reduction token, which contains the child tokens reduced with the <see cref="ParentRule"/>.
 	/// </summary>

@@ -29,9 +29,9 @@
 // 
 using System;
 
-using bsn.GoldParser.Grammar;
+using VTC.Base.GoldParser.Grammar;
 
-namespace bsn.GoldParser.Parser {
+namespace VTC.Base.GoldParser.Parser {
 	/// <summary>
 	/// The <c>Token</c> class is the non-generic base class for tokens in the AST (abstract syntax tree).
 	/// </summary>

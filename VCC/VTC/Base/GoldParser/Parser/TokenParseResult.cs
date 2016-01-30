@@ -29,7 +29,7 @@
 // 
 using System;
 
-namespace bsn.GoldParser.Parser {
+namespace VTC.Base.GoldParser.Parser {
 	/// <summary>
 	/// Result of parsing token.
 	/// </summary>

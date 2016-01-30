@@ -32,9 +32,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-using bsn.GoldParser.Grammar;
+using VTC.Base.GoldParser.Grammar;
 
-namespace bsn.GoldParser.Parser {
+namespace VTC.Base.GoldParser.Parser {
 	internal class LalrStack<T> where T: class, IToken {
 		private class RangePop: IList<T> {
 			private readonly int bottomIndex;

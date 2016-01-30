@@ -32,9 +32,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 
-using bsn.GoldParser.Grammar;
+using VTC.Base.GoldParser.Grammar;
 
-namespace bsn.GoldParser.Semantic {
+namespace VTC.Base.GoldParser.Semantic {
 	public class SemanticTypeActions<T>: SemanticActions<T> where T: SemanticToken {
 		private delegate void GetFactoryType<TU>(TU methodBase, RuleAttribute ruleAttribute, Type type, out Type factoryType, out TU factoryConstructor) where TU: MethodBase;
 

@@ -29,9 +29,9 @@
 // 
 using System;
 
-using bsn.GoldParser.Parser;
+using VTC.Base.GoldParser.Parser;
 
-namespace bsn.GoldParser.Grammar {
+namespace VTC.Base.GoldParser.Grammar {
 	public interface IParser<T> where T: IToken {
 		LalrState TopState {
 			get;

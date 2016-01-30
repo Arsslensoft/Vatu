@@ -30,7 +30,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace bsn.GoldParser.Grammar {
+namespace VTC.Base.GoldParser.Grammar {
 	/// <summary>
 	/// Represents a terminal or nonterminal symbol used by the Deterministic
 	/// Finite Automata (DFA) and LR Parser. 

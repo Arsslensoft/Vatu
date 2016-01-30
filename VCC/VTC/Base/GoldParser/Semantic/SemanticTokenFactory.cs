@@ -29,9 +29,9 @@
 // 
 using System;
 
-using bsn.GoldParser.Grammar;
+using VTC.Base.GoldParser.Grammar;
 
-namespace bsn.GoldParser.Semantic {
+namespace VTC.Base.GoldParser.Semantic {
 	/// <summary>
 	/// The abstract base class for all seamntic token factories.
 	/// </summary>

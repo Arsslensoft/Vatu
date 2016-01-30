@@ -32,7 +32,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace bsn.GoldParser.Grammar {
+namespace VTC.Base.GoldParser.Grammar {
 	/// <summary>
 	/// Rule is the logical structures of the grammar.
 	/// </summary>

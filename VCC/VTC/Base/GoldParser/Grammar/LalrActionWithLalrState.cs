@@ -31,7 +31,7 @@
 using System;
 using System.Diagnostics;
 
-namespace bsn.GoldParser.Grammar {
+namespace VTC.Base.GoldParser.Grammar {
 	internal abstract class LalrActionWithLalrState: LalrAction {
 		private readonly LalrState state;
 

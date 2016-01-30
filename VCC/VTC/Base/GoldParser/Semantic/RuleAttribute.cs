@@ -29,7 +29,7 @@
 
 using System;
 
-namespace bsn.GoldParser.Semantic {
+namespace VTC.Base.GoldParser.Semantic {
 	/// <summary>
 	/// <para>Specifies the binding of a specific rule to a constructor (therefore implying the type to be constructed).</para>
 	/// </summary>

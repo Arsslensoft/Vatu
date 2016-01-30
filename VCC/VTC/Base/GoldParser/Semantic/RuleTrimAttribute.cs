@@ -30,7 +30,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace bsn.GoldParser.Semantic {
+namespace VTC.Base.GoldParser.Semantic {
 	/// <summary>
 	/// This attribute is used to define specific trim rules.
 	/// </summary>

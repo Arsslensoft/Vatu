@@ -33,10 +33,10 @@ using System.Text;
 using System.Xml;
 using System.Xml.Xsl;
 
-using bsn.GoldParser.Grammar;
-using bsn.GoldParser.Parser;
+using VTC.Base.GoldParser.Grammar;
+using VTC.Base.GoldParser.Parser;
 
-namespace bsn.GoldParser.Xml {
+namespace VTC.Base.GoldParser.Xml {
 	public class GrammarXmlProcessor {
 		public static GrammarXmlProcessor Create(Type type, string grammarName, string transformName) {
 			if (type == null) {

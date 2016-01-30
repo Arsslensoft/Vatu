@@ -29,7 +29,7 @@
 // 
 using System;
 
-namespace bsn.GoldParser.Grammar {
+namespace VTC.Base.GoldParser.Grammar {
 	/// <summary>
 	/// The base class for the grammar objects <see cref="DfaState"/>, <see cref="LalrAction"/>, <see cref="LalrState"/>, <see cref="Rule"/> and <see cref="Symbol"/>.
 	/// </summary>

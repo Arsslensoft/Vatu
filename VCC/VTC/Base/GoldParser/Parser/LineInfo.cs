@@ -30,7 +30,7 @@
 using System;
 using System.Globalization;
 
-namespace bsn.GoldParser.Parser {
+namespace VTC.Base.GoldParser.Parser {
 	/// <summary>
 	/// A structure holding information about the text position of a specific token.
 	/// </summary>

@@ -34,7 +34,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace bsn.GoldParser.Semantic {
+namespace VTC.Base.GoldParser.Semantic {
 	internal static class SemanticNonterminalTypeFactoryHelper<TBase> where TBase: SemanticToken {
 		public delegate T Activator<T>(IList<TBase> tokens);
 

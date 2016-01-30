@@ -1,6 +1,6 @@
-﻿using bsn.GoldParser.Grammar;
-using bsn.GoldParser.Parser;
-using bsn.GoldParser.Semantic;
+﻿using VTC.Base.GoldParser.Grammar;
+using VTC.Base.GoldParser.Parser;
+using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -639,7 +639,7 @@ namespace VTC
             
         }
 
-        public static Location TranslateLocation(bsn.GoldParser.Parser.LineInfo li)
+        public static Location TranslateLocation(VTC.Base.GoldParser.Parser.LineInfo li)
         {
             return new Location(li.Line, li.Column, li.Index);
         }

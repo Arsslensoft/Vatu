@@ -31,9 +31,9 @@ using System;
 using System.Collections.Generic;
 using System.Xml;
 
-using bsn.GoldParser.Parser;
+using VTC.Base.GoldParser.Parser;
 
-namespace bsn.GoldParser.Xml {
+namespace VTC.Base.GoldParser.Xml {
 	/// <summary>
 	/// Exposes the grammar tree previously parsed into a <see cref="Token"/> as XML tree, using
 	/// elements with the same name as their symbol in the grammar and namespaces 

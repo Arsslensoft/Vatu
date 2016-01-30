@@ -29,7 +29,7 @@
 // 
 using System;
 
-namespace bsn.GoldParser.Grammar {
+namespace VTC.Base.GoldParser.Grammar {
 	/// <summary>
 	/// LR parser action type.
 	/// </summary>
