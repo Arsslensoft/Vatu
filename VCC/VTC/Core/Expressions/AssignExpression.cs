@@ -73,9 +73,10 @@ namespace VTC.Core
         }
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            FlowState fs = _op.Left.DoFlowAnalysis(fc) & _op.Right.DoFlowAnalysis(fc);
             if (_op.Left is VariableExpression && (_op.Left as VariableExpression).variable != null)
-                fc.MarkAsAssigned((_op.Left as VariableExpression).variable.Signature);
+                fc.MarkAsAssigned((_op.Left as VariableExpression).variable);
+            FlowState fs = _op.Left.DoFlowAnalysis(fc) & _op.Right.DoFlowAnalysis(fc);
+            fs &= _op.DoFlowAnalysis(fc);
                 
             return fs & base.DoFlowAnalysis(fc);
         }

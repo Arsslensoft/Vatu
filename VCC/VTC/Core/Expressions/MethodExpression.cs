@@ -51,7 +51,8 @@ namespace VTC.Core
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             if (Method != null)
-                fc.MarkAsUsed(Method.Signature);
+                fc.MarkAsUsed(Method);
+       
             if(Parameters != null)
             {        FlowState ok = FlowState.Valid;
                 foreach(Expr p in Parameters)
@@ -61,7 +62,7 @@ namespace VTC.Core
             }
 
             if (DelegateVar != null)
-                fc.MarkAsUsed(DelegateVar.Signature);
+                fc.MarkAsUsed(DelegateVar);
             return base.DoFlowAnalysis(fc);
         }
        

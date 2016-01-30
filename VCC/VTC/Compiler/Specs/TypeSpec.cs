@@ -24,7 +24,7 @@ namespace VTC
                 return GetTypeName(this);
             }
         }
-        public Namespace NS { get; set; }
+      
         public byte SizeInBits
         {
             get

@@ -14,6 +14,7 @@ namespace VTC
         Label EnterLoop { get; set; }
         Label ExitLoop { get; set; }
         Label LoopCondition { get; set; }
+       // bool HasInterrupt { get; set; }
 
     }
     public interface IConditional

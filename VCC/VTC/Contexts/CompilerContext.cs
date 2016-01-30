@@ -292,7 +292,7 @@ namespace VTC
                             // Flow Analysis
                             if (Options.Flow)
                             {
-                                FlowAnalysisContext fc = new FlowAnalysisContext( d);
+                                FlowAnalysisContext fc = new FlowAnalysisContext(md);
                                 fc.DoFlowAnalysis(childctx);
                             }
                         }
@@ -307,10 +307,11 @@ namespace VTC
                             Resolved.Add(d);
                             ResolveCtx.Add(childctx);
 
+                    
                             // Flow Analysis
                             if (Options.Flow)
                             {
-                                FlowAnalysisContext fc = new FlowAnalysisContext( d);
+                                FlowAnalysisContext fc = new FlowAnalysisContext(md);
                                 fc.DoFlowAnalysis(childctx);
                             }
                         }
@@ -326,10 +327,11 @@ namespace VTC
                             ResolveCtx.Add(childctx);
 
 
+
                             // Flow Analysis
                             if (Options.Flow)
                             {
-                                FlowAnalysisContext fc = new FlowAnalysisContext( d);
+                                FlowAnalysisContext fc = new FlowAnalysisContext(md);
                                 fc.DoFlowAnalysis(childctx);
                             }
                         }
@@ -374,6 +376,8 @@ namespace VTC
                             vstmt.Resolve(RootCtx);
                             ResolveCtx.Add(RootCtx);
                             Declaration d = (Declaration)vstmt.DoResolve(RootCtx);
+
+                           
                             Resolved.Add(d);
                         }
                     }
@@ -385,7 +389,7 @@ namespace VTC
         }
         public bool PreprocessSources()
         {
-
+         FlowAnalysisContext.ProgramFlowState = new SignatureBitSet();
             if (Options.Includes != null)
                 Paths.AddRange(Options.Includes);
 
@@ -448,7 +452,20 @@ namespace VTC
                     foreach (ParallelCompiledSource pc in _compiled)
                         ok &= pc.Result;
      
-                
+                // flow
+                    if (Options.Flow)
+                    {
+                        foreach (MemberSpec m in FlowAnalysisContext.ProgramFlowState.GetUnUsed())
+                        {
+                            if (m is MethodSpec)
+                                ResolveContext.Report.Warning(m.Signature.Location, "Unused method declaration " + m.Signature.NormalSignature );
+                            else if(m is VarSpec)
+                                ResolveContext.Report.Warning(m.Signature.Location, "Unused local variable declaration " + m.Signature.NormalSignature);
+                            else if (m is FieldSpec)
+                                ResolveContext.Report.Warning(m.Signature.Location, "Unused global variable declaration " + m.Signature.NormalSignature);
+
+                        }
+                    }
             }
             catch(Exception ex){
                 ok = false;

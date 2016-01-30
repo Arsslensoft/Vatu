@@ -17,7 +17,13 @@ namespace VTC.Core
         protected bool RegisterOperation = false;
         public RegistersEnum? Register { get; set; }
         public UnaryOperator Operator { get; set; }
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            if (OvlrdOp != null)
+                fc.MarkAsUsed(OvlrdOp);
 
+            return base.DoFlowAnalysis(fc);
+        }
         public virtual bool EmitOverrideOperator(EmitContext ec)
         {
 

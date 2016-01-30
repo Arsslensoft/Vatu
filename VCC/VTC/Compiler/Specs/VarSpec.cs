@@ -36,7 +36,7 @@ namespace VTC
             }
         }
         public int FlowIndex { get; set; }
-        public Namespace NS { get; set; }
+
         public VarSpec(Namespace ns, string name, MethodSpec host, TypeSpec type, Location loc, int flow_idx, Modifiers mods = VTC.Modifiers.NoModifier, bool access = false)
             : base(name, new MemberSignature(ns, host.Name + "_" + name, loc), mods, ReferenceKind.LocalVariable)
         {

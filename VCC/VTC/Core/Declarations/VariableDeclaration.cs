@@ -235,15 +235,17 @@ namespace VTC.Core
       
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
+            fc.AddNew(_vadef.FieldOrLocal);
             if (_vadef.IsAssigned)
-                fc.MarkAsAssigned(_vadef.FieldOrLocal.Signature);
+                fc.MarkAsAssigned(_vadef.FieldOrLocal);
 
 
             VariableListDefinition val = _valist;
             while (val != null)
             {
+                fc.AddNew(val._vardef._vardef.FieldOrLocal);
                 if (val._vardef._vardef != null && val._vardef._vardef.IsAssigned)
-                    fc.MarkAsAssigned(val._vardef._vardef.FieldOrLocal.Signature);
+                    fc.MarkAsAssigned(val._vardef._vardef.FieldOrLocal);
 
                 val = val._nextvars;
             }

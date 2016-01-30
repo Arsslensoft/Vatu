@@ -16,7 +16,13 @@ namespace VTC.Core
         protected bool ConstantOperation = false;
         protected bool RegisterOperation = false;
         public BinaryOperator Operator { get; set; }
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            if (OvlrdOp != null)
+                fc.MarkAsUsed(OvlrdOp);
 
+            return base.DoFlowAnalysis(fc);
+        }
         protected bool unsigned = true;
 
         public virtual bool EmitOverrideOperator(EmitContext ec)

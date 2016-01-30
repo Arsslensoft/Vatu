@@ -146,9 +146,9 @@ namespace VTC.Core
             {
                 FlowState ok = _op.Left.DoFlowAnalysis(fc);
                 ok &= _op.Right.DoFlowAnalysis(fc);
-                return ok;
+                return _op.DoFlowAnalysis(fc);
             }
-            else return _op.Right.DoFlowAnalysis(fc);
+            else return _op.Right.DoFlowAnalysis(fc) & _op.DoFlowAnalysis(fc);
         }
        
         public override bool Emit(EmitContext ec)

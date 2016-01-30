@@ -394,7 +394,8 @@ namespace VTC.Core
             return this;
         }
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
-        {
+ {
+     _op.DoFlowAnalysis(fc);
             FlowState ok = _op.Left.DoFlowAnalysis(fc);
             if (_op.Right != null)
                 ok &= _op.Right.DoFlowAnalysis(fc);

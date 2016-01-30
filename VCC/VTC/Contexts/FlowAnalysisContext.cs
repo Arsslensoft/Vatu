@@ -24,7 +24,7 @@ namespace VTC
 
         public static FlowState operator &(FlowState a, FlowState b)
         {
-            return new FlowState(a._success & b._success, a._reach & b._reach);
+            return new FlowState(a._success & b._success, a._reach | b._reach);
         }
         public static FlowState operator |(FlowState a, FlowState b)
         {
@@ -71,54 +71,80 @@ namespace VTC
         USED = 1,
         ASSIGNED = 1 << 1
     }
+   public class SignatureEntry
+    {
+       public MemberSpec Spec;
+       public MemberState State;
+       public SignatureEntry(MemberSpec ms, MemberState s)
+       {
+           Spec = ms;
+           State = s;
+       }
+    }
     public class SignatureBitSet
     {
-        Dictionary<MemberSignature, MemberState> _vals;
+        Dictionary<string, SignatureEntry> _vals;
 
         public SignatureBitSet()
         {
-            _vals = new Dictionary<MemberSignature, MemberState>();
+            _vals = new Dictionary<string, SignatureEntry>();
         }
 
-        public void MarkUsed(MemberSignature ms)
+        public void MarkUsed(MemberSpec ms)
         {
             lock(_vals)
             {
-                if (!_vals.ContainsKey(ms))
-                    _vals.Add(ms, MemberState.USED);
-                else
-                    _vals[ms] |= MemberState.USED;
+                  if (_vals.ContainsKey(ms.Signature.Signature))
+                    _vals[ms.Signature.Signature].State |= MemberState.USED;
+                else if (ms is MethodSpec)
+                    _vals.Add(ms.Signature.Signature,new SignatureEntry(ms, MemberState.USED));
             }
         }
-        public void MarkUnused(MemberSignature ms)
+        public bool IsAssigned(MemberSpec ms)
         {
             lock (_vals)
             {
-                if (!_vals.ContainsKey(ms))
-                    _vals.Add(ms, MemberState.NONE);
-                else _vals[ms] = MemberState.NONE;
+                if (!_vals.ContainsKey(ms.Signature.Signature))
+                    return true;
+                else return (_vals[ms.Signature.Signature].State & MemberState.ASSIGNED )== MemberState.ASSIGNED;
             }
         }
-        public void MarkAssigned(MemberSignature ms)
+      
+        public void MarkUnused(MemberSpec ms)
         {
             lock (_vals)
             {
-                if (!_vals.ContainsKey(ms))
-                    _vals.Add(ms, MemberState.ASSIGNED);
-                else
-                    _vals[ms] |= MemberState.ASSIGNED;
+                if (!_vals.ContainsKey(ms.Signature.Signature))
+                        _vals.Add(ms.Signature.Signature,new SignatureEntry(ms, MemberState.NONE));
             }
         }
+        public void MarkAssigned(MemberSpec ms)
+        {
+            lock (_vals)
+            {
+                if (_vals.ContainsKey(ms.Signature.Signature))
+                    _vals[ms.Signature.Signature].State |= MemberState.ASSIGNED;
+            }
+        }
+        public List<MemberSpec> GetUnUsed()
+        {
+            List<MemberSpec> ms = new List<MemberSpec>();
+            foreach (KeyValuePair<string, SignatureEntry> p in _vals)
+                      if (p.Value.State == MemberState.NONE)
+                          ms.Add(p.Value.Spec);
 
-        public MemberState this[MemberSignature ms]
+
+                  return ms;
+        }
+        public SignatureEntry this[MemberSpec ms]
         {
             get
             {
-              return  _vals[ms];
+              return  _vals[ms.Signature.Signature];
             }
             set
             {
-                _vals[ms] = value;
+                _vals[ms.Signature.Signature] = value;
             }
         }
     }
@@ -162,55 +188,54 @@ namespace VTC
         public bool NoReturnCheck=false;
         public CodePath CodePathReturn { get; set; }
 
-        public SignatureBitSet  ProgramFlowState { get; set; }
+        public static SignatureBitSet  ProgramFlowState { get; set; }
 
-        public void MarkAsUsed(MemberSignature msig)
+        public void MarkAsUsed(MemberSpec msig)
         {
             ProgramFlowState.MarkUsed(msig);
         }
-        public void MarkAsAssigned(MemberSignature msig)
+        public void MarkAsAssigned(MemberSpec msig)
         {
             ProgramFlowState.MarkAssigned(msig);
         }
-        public void AddNew(MemberSignature msig)
+        public void AddNew(MemberSpec msig)
         {
             ProgramFlowState.MarkUnused(msig);
         }
-
+        public bool IsAssigned(MemberSpec msig)
+        {
+            return ProgramFlowState.IsAssigned(msig);
+        }
 
         public bool UnreachableReported { get; set; }
         public Declaration Decl { get; set; }
+    
         public FlowAnalysisContext(Declaration decl)
         {
             CodePathReturn = new CodePath(decl.loc);
             Decl = decl;
-            ProgramFlowState = new SignatureBitSet();
+         
         }
-        public bool FindUnreachableCode(ref Location loc)
-        {
-            Reachability rc = new Reachability();
-            //rc = Decl.MarkReachable(rc);
-            //loc = rc.Loc;
-            return rc.IsUnreachable;
-        }
+     
         public bool FindNoReturn()
         {
          return   CodePathReturn.CheckReturn();
         }
-        public FlowState DoFlowAnalysis(ResolveContext rc)
+
+        public FlowState DoFlowAnalysis(ResolveContext rc, bool noretcheck = false)
         {
      
             
           FlowState fl =  Decl.DoFlowAnalysis(this);
-          //if (!NoReturnCheck && !FindNoReturn())
-          //    ResolveContext.Report.Warning(CodePathReturn.PathLocation, "Not all code paths returns a value ");
-          //Location loc = CodePathReturn.PathLocation;
+          if (!NoReturnCheck && !noretcheck && !FindNoReturn())
+              ResolveContext.Report.Warning(CodePathReturn.PathLocation, "Not all code paths returns a value ");
+          Location loc = CodePathReturn.PathLocation;
           //if (FindUnreachableCode(ref loc))
           //    ResolveContext.Report.Warning(loc, "Unreachable code detected");
 
-          //for (int i = 0; i < rc.Resolver.KnownLocalVars.Count; i++)
-          //  if(!AssignmentBitSet.GetBit(i))
-          //      ResolveContext.Report.Warning(CodePathReturn.PathLocation, "Use of unassigned local variable " + rc.Resolver.KnownLocalVars[i].Name);
+
+      
+                
           return fl;
         }
 
@@ -218,9 +243,9 @@ namespace VTC
         {
             ResolveContext.Report.Warning( loc, "Unreachable code detected");
         }
-        public void ReportUseOfUnassigned(Location loc)
+        public void ReportUseOfUnassigned(Location loc,string name)
         {
-            ResolveContext.Report.Warning(loc, "Use of an unassigned variable");
+            ResolveContext.Report.Warning(loc, "Use of an unassigned variable " + name);
         }
         public void ReportUnusedVariableDeclaration(Location loc,string name)
         {

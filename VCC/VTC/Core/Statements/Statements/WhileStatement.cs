@@ -112,7 +112,8 @@ namespace VTC.Core
             CodePath back = fc.CodePathReturn;
             fc.CodePathReturn = cur; // set current code path
 
-            FlowState ok = _stmt.DoFlowAnalysis(fc) & _expr.DoFlowAnalysis(fc);
+            FlowState ok =  _expr.DoFlowAnalysis(fc);
+            _stmt.DoFlowAnalysis(fc);
             back.AddPath(cur);
             fc.CodePathReturn = back; // restore code path
             return ok;

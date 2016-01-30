@@ -238,7 +238,10 @@ namespace VTC.Core
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             fc.CodePathReturn.PathLocation = _id.Location;
-            fc.AddNew(method.Signature);
+            if (specs == Specifiers.Entry)
+                fc.MarkAsUsed(method);
+            else
+                 fc.AddNew(method);
            
             
             

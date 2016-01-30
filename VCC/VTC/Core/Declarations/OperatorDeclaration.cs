@@ -350,7 +350,7 @@ namespace VTC.Core
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             fc.CodePathReturn.PathLocation = Location;
-            fc.AddNew(method.Signature);
+            fc.AddNew(method);
 
           
             fc.NoReturnCheck =false;

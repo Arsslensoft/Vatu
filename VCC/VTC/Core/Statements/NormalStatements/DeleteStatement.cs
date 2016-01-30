@@ -41,7 +41,7 @@ namespace VTC.Core
         }
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            fc.MarkAsUsed(DeleteOperator.Signature);
+            fc.MarkAsUsed(DeleteOperator);
             return SizeExpr.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)

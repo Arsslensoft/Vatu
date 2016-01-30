@@ -102,18 +102,18 @@ namespace VTC.Core
             CodePath back = fc.CodePathReturn;
             fc.CodePathReturn = cur; // set current code path
 
-            FlowState ok = _expr.DoFlowAnalysis(fc) ;
-      //      if (_stmt is Block || _stmt is BlockStatement)
-                ok &= _stmt.DoFlowAnalysis(fc);
+            FlowState ok = _expr.DoFlowAnalysis(fc);
+     
+            
+            _stmt.DoFlowAnalysis(fc);
+            
             back.AddPath(cur);
 
             cur = new CodePath(_elsestmt.loc); // sub code path
        
             fc.CodePathReturn = cur; // set current code path
        
-
-       //     if (_elsestmt is Block || _elsestmt is BlockStatement)
-                ok &= _elsestmt.DoFlowAnalysis(fc);
+            _elsestmt.DoFlowAnalysis(fc);
           
             back.AddPath(cur);
             fc.CodePathReturn = back; // restore code path

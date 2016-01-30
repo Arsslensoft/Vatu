@@ -67,7 +67,11 @@ namespace VTC.Core
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             if (variable != null)
-                fc.MarkAsUsed(variable.Signature);
+            {
+                if (!fc.IsAssigned(variable))
+                    fc.ReportUseOfUnassigned(Location, variable.Name);
+                fc.MarkAsUsed(variable);
+            }
             return base.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)

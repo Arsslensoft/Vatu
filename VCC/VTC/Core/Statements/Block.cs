@@ -55,27 +55,32 @@ namespace VTC.Core
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             CodePath cur = new CodePath(loc); // sub code path
-        
+
             CodePath back = fc.CodePathReturn;
             fc.CodePathReturn = cur; // set current code path
             FlowState ok = FlowState.Valid;
             int i = 0;
-            foreach (var st in Statements)
-            {
-           
-                ok &= st.DoFlowAnalysis(fc);
-                if (ok.Reachable.IsUnreachable && i < Statements.Count && Statements[i].current != null)
+            bool markedunreachable = false;
+      
+                foreach (var st in Statements)
                 {
-                    ok._reach.Loc = Statements[i].current.Location;
-                    return ok;
+                    FlowState p = st.DoFlowAnalysis(fc);
+
+                    if (markedunreachable && i < Statements.Count && Statements[i].current != null)
+                    {
+                        fc.ReportUnreachable(Statements[i].current.Location);
+                        break;
+                    }
+                    else ok.Reachable = new Reachability();
+                    markedunreachable = p.Reachable.IsUnreachable;
+                    i++;
                 }
-                else ok.Reachable = new Reachability();
-                i++;
+            
+                back.AddPath(cur);
+                fc.CodePathReturn = back; // restore code path
+                return ok;
             }
-            back.AddPath(cur);
-            fc.CodePathReturn = back; // restore code path
-            return ok;
-        }
+       
     }
     
 	

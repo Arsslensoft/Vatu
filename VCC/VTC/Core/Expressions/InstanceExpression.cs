@@ -43,7 +43,7 @@ namespace VTC.Core.Expressions
        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
        {
            if (method != null)
-               fc.MarkAsUsed(method.Signature);
+               fc.MarkAsUsed(method);
            return _sizeexpr.DoFlowAnalysis(fc);
        }
        public override bool Emit(EmitContext ec)

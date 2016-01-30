@@ -72,7 +72,8 @@ namespace VTC.Core
             return this;
         }
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
-        {
+ {
+     _op.DoFlowAnalysis(fc);
             return _op.Right.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)

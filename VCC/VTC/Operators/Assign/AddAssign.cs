@@ -34,6 +34,12 @@ namespace VTC
             }
             return this;
         }
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            if (IsDelegateMethodAssign)
+                fc.MarkAsUsed(DelegateMethod);
+            return base.DoFlowAnalysis(fc);
+        }
         public override bool Emit(EmitContext ec)
         {
             if (IsDelegateMethodAssign)

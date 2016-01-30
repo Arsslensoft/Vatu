@@ -163,7 +163,7 @@ namespace VTC
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             if (OvlrdOp != null)
-                fc.MarkAsUsed(OvlrdOp.Signature);
+                fc.MarkAsUsed(OvlrdOp);
             return _target.DoFlowAnalysis(fc);
         }
         public override string CommentString()

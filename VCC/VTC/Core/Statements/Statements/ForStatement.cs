@@ -115,10 +115,12 @@ namespace VTC.Core
 
             foreach (Expr e in _inc)
                 ok &= e.DoFlowAnalysis(fc);
-           ok &= _cond.DoFlowAnalysis(fc) & _stmt.DoFlowAnalysis(fc);
+           ok &= _cond.DoFlowAnalysis(fc) ;
 
             foreach (Expr e in _inc)
                 ok &= e.DoFlowAnalysis(fc);
+
+            _stmt.DoFlowAnalysis(fc);
             back.AddPath(cur);
             fc.CodePathReturn = back; // restore code path
             return ok;
