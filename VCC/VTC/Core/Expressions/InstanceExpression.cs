@@ -40,6 +40,12 @@ namespace VTC.Core.Expressions
            ec.EmitPush(EmitContext.A);
            return true;
        }
+       public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+       {
+           if (method != null)
+               fc.MarkAsUsed(method.Signature);
+           return _sizeexpr.DoFlowAnalysis(fc);
+       }
        public override bool Emit(EmitContext ec)
        {
            return EmitToStack(ec);

@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using bsn.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +30,13 @@ namespace VTC.Core
             _def = sdef;
             Size = 0;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+
+
+            return _def.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             _mod = (Modifier)_mod.DoResolve(rc);
             TypeName = new UnionTypeSpec(rc.CurrentNamespace, _name.Name, new List<TypeMemberSpec>(), loc);
@@ -64,11 +70,9 @@ namespace VTC.Core
 
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-
-
-            return _def.Resolve(rc);
+            return _def.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {

@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using bsn.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,7 +45,16 @@ namespace VTC.Core
             _pal = null;
 
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            bool ok = _id.Resolve(rc);
+
+            if (_pal != null)
+                ok &= _pal.Resolve(rc);
+
+            return ok;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             _id = (MethodIdentifier)_id.DoResolve(rc);
 
@@ -63,7 +72,7 @@ namespace VTC.Core
             else ext = null;
             if (_pal != null)
             {
-                _pal.Resolve(rc);
+               
                 _pal = (ParameterListDefinition)_pal.DoResolve(rc);
                 ParameterListDefinition par = _pal;
                 while (par != null)
@@ -80,7 +89,7 @@ namespace VTC.Core
             }
             else if (_tdl != null)
             {
-                _tdl.Resolve(rc);
+       
                 _tdl = (TypeIdentifierListDefinition)_tdl.DoResolve(rc);
                 TypeIdentifierListDefinition par = _tdl;
                 int paid = 0;
@@ -134,14 +143,12 @@ namespace VTC.Core
 
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            bool ok = _id.Resolve(rc);
+            fc.AddNew(method.Signature);
 
-            if (_pal != null)
-                ok &= _pal.Resolve(rc);
-
-            return ok;
+           
+            return base.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {

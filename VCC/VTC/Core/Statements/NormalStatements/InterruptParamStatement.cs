@@ -23,7 +23,13 @@ namespace VTC.Core
             _p = p;
         }
        
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            for (int i = 0; i < _params.Count; i++)
+                _params[i].Resolve(rc);
+            return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             foreach (Expr e in _p)
                 _params.Add((Expr)e.DoResolve(rc));
@@ -53,19 +59,9 @@ namespace VTC.Core
             ec.EmitInstruction(new Vasm.x86.INT() { DestinationValue = itr});
             return true;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            for (int i = 0; i < _params.Count; i++)
-                _params[i].Resolve(rc);
-            return true;
-        }
-        public override Reachability MarkReachable(Reachability rc)
-        {
+       
 
-         return   base.MarkReachable(rc);
-           
-        }
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             for (int i = 0; i < _params.Count; i++)
                 _params[i].DoFlowAnalysis(fc);

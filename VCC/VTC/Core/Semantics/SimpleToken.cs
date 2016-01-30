@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using bsn.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -89,11 +89,15 @@ namespace VTC.Core
 
         public virtual string Name { get { return symbol.Name; } }
 
-        public virtual bool Resolve(ResolveContext rc)
+        public virtual FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            return FlowState.Valid;
+        }
+       public virtual bool Resolve(ResolveContext rc)
         {
             return true;
         }
-        public virtual SimpleToken DoResolve(ResolveContext rc)
+ public virtual SimpleToken DoResolve(ResolveContext rc)
         {
             return this;
         }

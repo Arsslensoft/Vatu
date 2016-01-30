@@ -22,25 +22,22 @@ namespace VTC.Core
 
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            return While.DoResolve(rc);
-        }
-        public override bool Resolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
         {
             return While.Resolve(rc);
         }
+ public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            return While.DoResolve(rc);
+        }
+       
         public override bool Emit(EmitContext ec)
         {
             return While.Emit(ec);
         }
 
-        public override Reachability MarkReachable(Reachability rc)
-        {
-            base.MarkReachable(rc);
-            return While.MarkReachable(rc);
-        }
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+    
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             return While.DoFlowAnalysis(fc);
         }

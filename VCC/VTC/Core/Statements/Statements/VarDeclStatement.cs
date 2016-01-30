@@ -18,29 +18,26 @@ namespace VTC.Core
         {
             _vadecl = vardecl;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+       
+            return _vadecl.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             _vadecl = (VariableDeclaration)_vadecl.DoResolve(rc);
 
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-       
-            return _vadecl.Resolve(rc);
-        }
+        
         public override bool Emit(EmitContext ec)
         {
 
             return _vadecl.Emit(ec);
         }
 
-        public override Reachability MarkReachable(Reachability rc)
-        {
-         
-            return base.MarkReachable(rc);
-        }
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+      
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             return _vadecl.DoFlowAnalysis(fc);
         }

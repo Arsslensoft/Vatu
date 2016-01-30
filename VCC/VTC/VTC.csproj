@@ -33,10 +33,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CommandLine, Version=1.9.71.2, Culture=neutral, PublicKeyToken=de6f01bd326f8c32, processorArchitecture=MSIL">
-      <HintPath>..\packages\CommandLineParser.1.9.71\lib\net40\CommandLine.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
@@ -47,6 +43,117 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Base\ComandLine\Attributes\AssemblyLicenseAttribute.cs" />
+    <Compile Include="Base\ComandLine\Attributes\AssemblyUsageAttribute.cs" />
+    <Compile Include="Base\ComandLine\Attributes\BaseOptionAttribute.cs" />
+    <Compile Include="Base\ComandLine\Attributes\HelpOptionAttribute.cs" />
+    <Compile Include="Base\ComandLine\Attributes\HelpVerbOptionAttribute.cs" />
+    <Compile Include="Base\ComandLine\Attributes\MultiLineTextAttribute.cs" />
+    <Compile Include="Base\ComandLine\Attributes\OptionArrayAttribute.cs" />
+    <Compile Include="Base\ComandLine\Attributes\OptionAttribute.cs" />
+    <Compile Include="Base\ComandLine\Attributes\OptionListAttribute.cs" />
+    <Compile Include="Base\ComandLine\Attributes\ParserStateAttribute.cs" />
+    <Compile Include="Base\ComandLine\Attributes\ValueListAttribute.cs" />
+    <Compile Include="Base\ComandLine\Attributes\ValueOptionAttribute.cs" />
+    <Compile Include="Base\ComandLine\Attributes\VerbOptionAttribute.cs" />
+    <Compile Include="Base\ComandLine\BadOptionInfo.cs" />
+    <Compile Include="Base\ComandLine\Extensions\CharExtensions.cs" />
+    <Compile Include="Base\ComandLine\Extensions\StringExtensions.cs" />
+    <Compile Include="Base\ComandLine\GlobalSuppressions.cs" />
+    <Compile Include="Base\ComandLine\Infrastructure\Assumes.cs" />
+    <Compile Include="Base\ComandLine\Infrastructure\Pair.cs" />
+    <Compile Include="Base\ComandLine\Infrastructure\PopsicleSetter.cs" />
+    <Compile Include="Base\ComandLine\Infrastructure\ReflectionCache.cs" />
+    <Compile Include="Base\ComandLine\Infrastructure\ReflectionHelper.cs" />
+    <Compile Include="Base\ComandLine\Infrastructure\SR.strings.cs">
+      <DependentUpon>SR.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Base\ComandLine\IParserState.cs" />
+    <Compile Include="Base\ComandLine\Parser.cs" />
+    <Compile Include="Base\ComandLine\ParserException.cs" />
+    <Compile Include="Base\ComandLine\ParserSettings.cs" />
+    <Compile Include="Base\ComandLine\ParserState.cs" />
+    <Compile Include="Base\ComandLine\ParsingError.cs" />
+    <Compile Include="Base\ComandLine\Parsing\ArgumentParser.cs" />
+    <Compile Include="Base\ComandLine\Parsing\IArgumentEnumerator.cs" />
+    <Compile Include="Base\ComandLine\Parsing\LongOptionParser.cs" />
+    <Compile Include="Base\ComandLine\Parsing\OneCharStringEnumerator.cs" />
+    <Compile Include="Base\ComandLine\Parsing\OptionGroupParser.cs" />
+    <Compile Include="Base\ComandLine\Parsing\OptionInfo.cs" />
+    <Compile Include="Base\ComandLine\Parsing\OptionMap.cs" />
+    <Compile Include="Base\ComandLine\Parsing\PresentParserState.cs" />
+    <Compile Include="Base\ComandLine\Parsing\PropertyWriter.cs" />
+    <Compile Include="Base\ComandLine\Parsing\StringArrayEnumerator.cs" />
+    <Compile Include="Base\ComandLine\Parsing\TargetCapabilitiesExtensions.cs" />
+    <Compile Include="Base\ComandLine\Parsing\ValueMapper.cs" />
+    <Compile Include="Base\ComandLine\Text\BaseSentenceBuilder.cs" />
+    <Compile Include="Base\ComandLine\Text\CopyrightInfo.cs" />
+    <Compile Include="Base\ComandLine\Text\EnglishSentenceBuilder.cs" />
+    <Compile Include="Base\ComandLine\Text\FormatOptionHelpTextEventArgs.cs" />
+    <Compile Include="Base\ComandLine\Text\HeadingInfo.cs" />
+    <Compile Include="Base\ComandLine\Text\HelpText.cs" />
+    <Compile Include="Base\GoldParser\Grammar\CgtEntryType.cs" />
+    <Compile Include="Base\GoldParser\Grammar\CgtReader.cs" />
+    <Compile Include="Base\GoldParser\Grammar\CgtRecordType.cs" />
+    <Compile Include="Base\GoldParser\Grammar\CgtVersion.cs" />
+    <Compile Include="Base\GoldParser\Grammar\CgtWriter.cs" />
+    <Compile Include="Base\GoldParser\Grammar\CompiledGrammar.cs" />
+    <Compile Include="Base\GoldParser\Grammar\DfaCharset.cs" />
+    <Compile Include="Base\GoldParser\Grammar\DfaState.cs" />
+    <Compile Include="Base\GoldParser\Grammar\GrammarObject.cs" />
+    <Compile Include="Base\GoldParser\Grammar\GrammarObjectSet.cs" />
+    <Compile Include="Base\GoldParser\Grammar\Group.cs" />
+    <Compile Include="Base\GoldParser\Grammar\GroupAdvanceMode.cs" />
+    <Compile Include="Base\GoldParser\Grammar\GroupEndingMode.cs" />
+    <Compile Include="Base\GoldParser\Grammar\IGroup.cs" />
+    <Compile Include="Base\GoldParser\Grammar\IParser.cs" />
+    <Compile Include="Base\GoldParser\Grammar\LalrAction.cs" />
+    <Compile Include="Base\GoldParser\Grammar\LalrActionAccept.cs" />
+    <Compile Include="Base\GoldParser\Grammar\LalrActionGoto.cs" />
+    <Compile Include="Base\GoldParser\Grammar\LalrActionReduce.cs" />
+    <Compile Include="Base\GoldParser\Grammar\LalrActionShift.cs" />
+    <Compile Include="Base\GoldParser\Grammar\LalrActionType.cs" />
+    <Compile Include="Base\GoldParser\Grammar\LalrActionWithLalrState.cs" />
+    <Compile Include="Base\GoldParser\Grammar\LalrState.cs" />
+    <Compile Include="Base\GoldParser\Grammar\ParseMessage.cs" />
+    <Compile Include="Base\GoldParser\Grammar\Rule.cs" />
+    <Compile Include="Base\GoldParser\Grammar\Symbol.cs" />
+    <Compile Include="Base\GoldParser\Grammar\SymbolKind.cs" />
+    <Compile Include="Base\GoldParser\Parser\DummyGroup.cs" />
+    <Compile Include="Base\GoldParser\Parser\IToken.cs" />
+    <Compile Include="Base\GoldParser\Parser\ITokenizer.cs" />
+    <Compile Include="Base\GoldParser\Parser\LalrProcessor.cs" />
+    <Compile Include="Base\GoldParser\Parser\LalrStack.cs" />
+    <Compile Include="Base\GoldParser\Parser\LineInfo.cs" />
+    <Compile Include="Base\GoldParser\Parser\Reduction.cs" />
+    <Compile Include="Base\GoldParser\Parser\TextBuffer.cs" />
+    <Compile Include="Base\GoldParser\Parser\TextToken.cs" />
+    <Compile Include="Base\GoldParser\Parser\Token.cs" />
+    <Compile Include="Base\GoldParser\Parser\Tokenizer.cs" />
+    <Compile Include="Base\GoldParser\Parser\TokenParseResult.cs" />
+    <Compile Include="Base\GoldParser\Semantic\RuleAttribute.cs" />
+    <Compile Include="Base\GoldParser\Semantic\RuleAttributeBase.cs" />
+    <Compile Include="Base\GoldParser\Semantic\RuleDeclarationParser.cs" />
+    <Compile Include="Base\GoldParser\Semantic\RuleTrimAttribute.cs" />
+    <Compile Include="Base\GoldParser\Semantic\SemanticActions.cs" />
+    <Compile Include="Base\GoldParser\Semantic\SemanticNonterminalFactory.cs" />
+    <Compile Include="Base\GoldParser\Semantic\SemanticNonterminalTypeFactory.cs" />
+    <Compile Include="Base\GoldParser\Semantic\SemanticNonterminalTypeFactoryHelper.cs" />
+    <Compile Include="Base\GoldParser\Semantic\SemanticProcessor.cs" />
+    <Compile Include="Base\GoldParser\Semantic\SemanticTerminalFactory.cs" />
+    <Compile Include="Base\GoldParser\Semantic\SemanticTerminalTypeFactory.cs" />
+    <Compile Include="Base\GoldParser\Semantic\SemanticTerminalTypeFactoryHelper.cs" />
+    <Compile Include="Base\GoldParser\Semantic\SemanticToken.cs" />
+    <Compile Include="Base\GoldParser\Semantic\SemanticTokenFactory.cs" />
+    <Compile Include="Base\GoldParser\Semantic\SemanticTrimFactory.cs" />
+    <Compile Include="Base\GoldParser\Semantic\SemanticTypeActions.cs" />
+    <Compile Include="Base\GoldParser\Semantic\SymbolTypeMap.cs" />
+    <Compile Include="Base\GoldParser\Semantic\TerminalAttribute.cs" />
+    <Compile Include="Base\GoldParser\Xml\GrammarXmlProcessor.cs" />
+    <Compile Include="Base\GoldParser\Xml\ProcessResult.cs" />
+    <Compile Include="Base\GoldParser\Xml\TokenXmlReader.cs" />
     <Compile Include="Base\location.cs" />
     <Compile Include="Base\Report.cs" />
     <Compile Include="Base\Error.cs" />
@@ -299,7 +406,12 @@
     <Compile Include="Cast\Casts.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <EmbeddedResource Include="Base\GoldParser\Semantic\GoldRuleDeclaration.egt" />
+    <None Include="Base\ComandLine\Infrastructure\SR.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SR.strings.cs</LastGenOutput>
+    </None>
+    <None Include="Base\GoldParser\Semantic\GoldRuleDeclaration.grm" />
     <EmbeddedResource Include="Samples\Tests\BitAccessTest.vt" />
     <EmbeddedResource Include="Samples\Tests\OperatorsTest.vt" />
     <None Include="Samples\MAIN_LIB.vt" />
@@ -312,13 +424,11 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <None Include="Base\GoldParser\Grammar\GoldParser.txt" />
+    <CodeAnalysisDictionary Include="Base\ComandLine\CustomDictionary.xml" />
     <Content Include="TODO.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\bsn.GoldParser\bsn.GoldParser.csproj">
-      <Project>{1a1a5ae9-7981-471c-9cc7-f7465e675a32}</Project>
-      <Name>bsn.GoldParser</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Vasm\Vasm.csproj">
       <Project>{bf4e6a24-9204-4b24-a271-36c4d8ef8096}</Project>
       <Name>Vasm</Name>

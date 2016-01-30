@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using bsn.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -60,7 +60,17 @@ namespace VTC.Core
 
 
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            bool ok = true;
+
+            if (_fbd._pdef != null)
+                ok &= _fbd._pdef.Resolve(rc);
+            if (_fbd._b != null)
+                ok &= _fbd._b.Resolve(rc);
+            return ok;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             _fbd = (FunctionBodyDefinition)_fbd.DoResolve(rc);
             if(_mtype != null)
@@ -264,16 +274,7 @@ namespace VTC.Core
                 _fbd._b = (Block)_fbd._b.DoResolve(rc);
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            bool ok = true;
-
-            if (_fbd._pdef != null)
-                ok &= _fbd._pdef.Resolve(rc);
-            if (_fbd._b != null)
-                ok &= _fbd._b.Resolve(rc);
-            return ok;
-        }
+     
         public override bool Emit(EmitContext ec)
         {
             if ((mods & Modifiers.Extern) == Modifiers.Extern)
@@ -345,16 +346,13 @@ namespace VTC.Core
             ec.EmitInstruction(new Return() { DestinationValue = (ushort)cleansize });
             return true;
         }
-        public override Reachability MarkReachable(Reachability rc)
-        {
-            if (_fbd != null && _fbd._b != null)
-                return _fbd._b.MarkReachable(rc);
-            return base.MarkReachable(rc);
-        }
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+     
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             fc.CodePathReturn.PathLocation = Location;
+            fc.AddNew(method.Signature);
 
+          
             fc.NoReturnCheck =false;
             if (_fbd != null && _fbd._b != null)
                 return _fbd._b.DoFlowAnalysis(fc);

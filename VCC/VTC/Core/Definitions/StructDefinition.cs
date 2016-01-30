@@ -35,7 +35,16 @@ namespace VTC.Core
             Size = 0;
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+
+            bool ok = _var.Resolve(rc);
+            if (_next_sdef != null)
+                ok &= _next_sdef.Resolve(rc);
+
+            return ok;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             Members = new List<TypeMemberSpec>();
             _var = (VariableDeclaration)_var.DoResolve(rc);
@@ -68,15 +77,7 @@ namespace VTC.Core
             }
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-
-            bool ok = _var.Resolve(rc);
-            if (_next_sdef != null)
-                ok &= _next_sdef.Resolve(rc);
-
-            return ok;
-        }
+     
         public override bool Emit(EmitContext ec)
         {
             return true;

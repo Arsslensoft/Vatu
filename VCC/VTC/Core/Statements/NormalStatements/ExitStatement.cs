@@ -53,17 +53,17 @@ namespace VTC.Core
             }
             return this;
         }
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            return FlowState.Unreachable;
+        }
         public override bool Emit(EmitContext ec)
         {
             if (Exit != null)
                 ec.EmitInstruction(new Jump() { DestinationLabel = Exit });
             return true;
         }
-        public override Reachability MarkReachable(Reachability rc)
-        {
-
-            return base.MarkReachable(rc);
-        }
+        
     }
     
 }

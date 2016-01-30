@@ -36,8 +36,21 @@ namespace VTC.Core
 
      
      
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
         {
+            if (_typeid != null)
+              _typeid.Resolve(rc);
+
+            if (_ident != null)
+               rc.Resolver.TryResolveType(_ident.Name,ref _ts);
+           
+            return base.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            if (_ident != null)
+                rc.Resolver.TryResolveType(_ident.Name, ref _ts);
+
             if (exp != null)
             {
                 exp = (Expr)exp.DoResolve(rc);
@@ -61,16 +74,7 @@ namespace VTC.Core
 
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            if (_typeid != null)
-              _typeid.Resolve(rc);
-
-            if (_ident != null)
-               rc.Resolver.TryResolveType(_ident.Name,ref _ts);
-           
-            return base.Resolve(rc);
-        }
+      
     }
    
 	

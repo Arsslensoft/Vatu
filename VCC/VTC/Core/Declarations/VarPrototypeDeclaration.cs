@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using bsn.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +17,11 @@ namespace VTC.Core.Declarations
 
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            return vadecl.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             return vadecl.DoResolve(rc);
         }
@@ -25,10 +29,11 @@ namespace VTC.Core.Declarations
         {
             return vadecl.Emit(ec);
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            return vadecl.Resolve(rc);
+            return vadecl.DoFlowAnalysis(fc);
         }
+       
 
 
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -34,11 +34,15 @@ namespace VTC.Core
             EmitToStack(ec);
             return true;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            return base.DoFlowAnalysis(fc);
+        }
+       public override bool Resolve(ResolveContext rc)
         {
             return true;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             
             return this;

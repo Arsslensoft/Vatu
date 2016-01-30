@@ -31,12 +31,8 @@ namespace VTC.Core
          
               return IfElse.Emit(ec);
           }
-          public override Reachability MarkReachable(Reachability rc)
-          {
-              base.MarkReachable(rc);
-              return IfElse.MarkReachable(rc);
-          }
-          public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+     
+          public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
           {
               return IfElse.DoFlowAnalysis(fc);
           }

@@ -102,6 +102,7 @@ namespace VTC.Core
            
         }
 
+   
         public void EmitIndirectionsPop(EmitContext ec)
         {
             ec.EmitComment("CURRENT IS " + ToString() + " PARENT IS " + (Parent == null ? "NULL" : Parent.Name) + " ISEXPR = " + IsExpr.ToString() + " ISADR = " + IsByAdr.ToString() + "  ISBYIDX = " + IsByIndex.ToString());

@@ -151,6 +151,11 @@ namespace VTC.Core
             rc.KnowType(TypeName);
             return this;
         }
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+           
+            return base.DoFlowAnalysis(fc);
+        }
     }
 
 }

@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using bsn.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -76,7 +76,18 @@ namespace VTC.Core
         }
 
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            if (_op._op != AccessOperator.ByName)
+            {
+                bool ok = _op.Left.Resolve(rc);
+                ok &= _op.Right.Resolve(rc);
+                return ok;
+            }
+            else return _op.Right.Resolve(rc);
+
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             rc.CurrentScope |= ResolveScopes.AccessOperation;
             AcceptStatement = (_op._op == AccessOperator.ByName);
@@ -128,17 +139,18 @@ namespace VTC.Core
 
 
         }
-        public override bool Resolve(ResolveContext rc)
+
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             if (_op._op != AccessOperator.ByName)
             {
-                bool ok = _op.Left.Resolve(rc);
-                ok &= _op.Right.Resolve(rc);
+                FlowState ok = _op.Left.DoFlowAnalysis(fc);
+                ok &= _op.Right.DoFlowAnalysis(fc);
                 return ok;
             }
-            else return _op.Right.Resolve(rc);
-
+            else return _op.Right.DoFlowAnalysis(fc);
         }
+       
         public override bool Emit(EmitContext ec)
         {
             return _op.Emit(ec);

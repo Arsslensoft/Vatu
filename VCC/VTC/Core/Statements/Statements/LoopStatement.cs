@@ -25,11 +25,13 @@ namespace VTC.Core
 
             _stmt = stmt;
         }
-        public override bool Resolve(ResolveContext rc)
+
+     
+       public override bool Resolve(ResolveContext rc)
         {
             return _stmt.Resolve(rc);
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             rc.CurrentScope |= ResolveScopes.Loop;
             Label lb = rc.DefineLabel(LabelType.LOOP);
@@ -59,24 +61,16 @@ namespace VTC.Core
             ec.MarkLabel(ExitLoop);
             return true;
         }
-        public override Reachability MarkReachable(Reachability rc)
-        {
-            base.MarkReachable(rc);
-            if (_stmt is Block || _stmt is BlockStatement)
-                return _stmt.MarkReachable(rc);
-            else
-                return rc;
-        }
+       
 
-
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             CodePath cur = new CodePath(_stmt.loc); // sub code path
 
             CodePath back = fc.CodePathReturn;
             fc.CodePathReturn = cur; // set current code path
 
-            bool ok = _stmt.DoFlowAnalysis(fc);
+            FlowState ok = _stmt.DoFlowAnalysis(fc);
             back.AddPath(cur);
             fc.CodePathReturn = back; // restore code path
             return ok;

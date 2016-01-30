@@ -19,7 +19,11 @@ namespace VTC
             Operator = UnaryOperator.ValueOf;
         }
         TypeSpec MemberType;
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            return Right.Resolve(rc) ;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (!Right.Type.IsPointer)
                 ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non pointer types");
@@ -43,9 +47,9 @@ namespace VTC
             
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            return Right.Resolve(rc) ;
+            return Right.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {

@@ -13,12 +13,7 @@ namespace VTC.Core
     {
        TypeToken _type;
 
-        public override bool Resolve(ResolveContext rc)
-        {
-            _type.Resolve(rc);
-            return true;
-        }
-
+      
         [Rule(@"<Scalar>   ::= byte")]
         [Rule(@"<Scalar>   ::= int")]
         [Rule(@"<Scalar>   ::= uint")]
@@ -35,13 +30,21 @@ namespace VTC.Core
         }
       
    
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            _type.Resolve(rc);
+            return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
            _type = (TypeToken)_type.DoResolve(rc);
            Type = _type.Type;
             return  this;
         }
-       
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            return _type.DoFlowAnalysis(fc);
+        }
         
     }
  

@@ -25,7 +25,11 @@ namespace VTC.Core
 
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            return base.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
            if (_mod.Name == "fastcall")
                CallingConvention = CallingConventions.FastCall;
@@ -40,10 +44,7 @@ namespace VTC.Core
            else CallingConvention = CallingConventions.StdCall;
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            return base.Resolve(rc);
-        }
+      
     }
    
 	

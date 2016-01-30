@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using bsn.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,7 +48,24 @@ namespace VTC.Core
             }
             return false;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            if (Method != null)
+                fc.MarkAsUsed(Method.Signature);
+            if(Parameters != null)
+            {        FlowState ok = FlowState.Valid;
+                foreach(Expr p in Parameters)
+                     ok &= p.DoFlowAnalysis(fc);
+
+                return ok & base.DoFlowAnalysis(fc);
+            }
+
+            if (DelegateVar != null)
+                fc.MarkAsUsed(DelegateVar.Signature);
+            return base.DoFlowAnalysis(fc);
+        }
+       
+       public override bool Resolve(ResolveContext rc)
         {
 
             bool ok = true;
@@ -56,7 +73,7 @@ namespace VTC.Core
                 ok &= _param.Resolve(rc);
             return true;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             ccvh = new CallingConventionsHandler();
             List<TypeSpec> tp = new List<TypeSpec>();

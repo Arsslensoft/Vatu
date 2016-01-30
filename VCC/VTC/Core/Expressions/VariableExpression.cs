@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using bsn.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,8 +32,14 @@ namespace VTC.Core
         {
 
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
         {
+            variable = rc.Resolver.TryResolveVar(_idName);
+            return base.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
+        {
+     
             if (variable == null)
             {
 
@@ -48,27 +54,21 @@ namespace VTC.Core
                     variable = rc.Resolver.TryResolveField(Name);
 
                 if (variable != null)
-                {
-                    if (variable is VarSpec)
-                        Type = ((VarSpec)variable).MemberType;
-                    else if (variable is FieldSpec)
-                        Type = ((FieldSpec)variable).MemberType;
-                    else if (variable is EnumMemberSpec)
-                        Type = ((EnumMemberSpec)variable).MemberType;
-                    else if (variable is ParameterSpec)
-                        Type = ((ParameterSpec)variable).MemberType;
-                }
+                    Type = variable.memberType;
 
+            
                 if (variable == null && (rc.CurrentScope & ResolveScopes.AccessOperation) != ResolveScopes.AccessOperation)
                     ResolveContext.Report.Error(14, Location, "Unresolved variable '" + Name + "'");
             }
+            else Type = variable.memberType;
             base.DoResolve(rc);
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            variable = rc.Resolver.TryResolveVar(_idName);
-            return base.Resolve(rc);
+            if (variable != null)
+                fc.MarkAsUsed(variable.Signature);
+            return base.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {

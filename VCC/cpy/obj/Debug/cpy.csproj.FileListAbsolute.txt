@@ -2,4 +2,3 @@ D:\Projects\Vatu\Vatu\VCC\cpy\bin\Debug\cpy.exe
 D:\Projects\Vatu\Vatu\VCC\cpy\bin\Debug\cpy.pdb
 D:\Projects\Vatu\Vatu\VCC\cpy\obj\Debug\cpy.exe
 D:\Projects\Vatu\Vatu\VCC\cpy\obj\Debug\cpy.pdb
-D:\Projects\Vatu\Vatu\VCC\cpy\obj\Debug\cpy.csprojResolveAssemblyReference.cache

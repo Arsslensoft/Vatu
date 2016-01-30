@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using bsn.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +25,13 @@ namespace VTC.Core
             _typedef = type;
 
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+
+
+            return _typedef.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             _mod = (Modifier)_mod.DoResolve(rc);
             _typedef = (TypeIdentifier)_typedef.DoResolve(rc);
@@ -34,11 +40,10 @@ namespace VTC.Core
             rc.KnowType(TypeName);
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-
-
-            return _typedef.Resolve(rc);
+           
+            return _typedef.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {

@@ -27,7 +27,17 @@ namespace VTC.Core
 
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            bool ok = true;
+      
+            if (_vardef != null)
+                ok &= _vardef.Resolve(rc);
+            if (_nextvars != null)
+               ok &= _nextvars.Resolve(rc);
+            return ok;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (_nextvars != null)
             {
@@ -42,16 +52,11 @@ namespace VTC.Core
             else return null;
        
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            bool ok = true;
-      
-            if (_vardef != null)
-                ok &= _vardef.Resolve(rc);
-            if (_nextvars != null)
-               ok &= _nextvars.Resolve(rc);
-            return ok;
+            return base.DoFlowAnalysis(fc);
         }
+       
         public override bool Emit(EmitContext ec)
         {
             return true;

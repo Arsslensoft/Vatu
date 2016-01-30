@@ -39,7 +39,12 @@ namespace VTC.Core
             REF = false;
         }
         
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+
+            return _type.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             _type = (TypeIdentifier)_type.DoResolve(rc);
             ParameterType = _type.Type;
@@ -48,11 +53,7 @@ namespace VTC.Core
             ParameterName = new ParameterSpec(_id.Name, rc.CurrentMethod, ParameterType, loc,4,mods );
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-
-            return _type.Resolve(rc);
-        }
+ 
         public override bool Emit(EmitContext ec)
         {
             return true;

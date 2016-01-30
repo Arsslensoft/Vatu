@@ -20,7 +20,11 @@ namespace VTC.Core
 
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             return null;
         }
@@ -29,15 +33,7 @@ namespace VTC.Core
              ec.EmitInstruction(new Vasm.x86.Noop());
              return true;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            return true;
-        }
-        public override Reachability MarkReachable(Reachability rc)
-        {
-        
-            return base.MarkReachable(rc);
-        }
+      
     }
    
 	

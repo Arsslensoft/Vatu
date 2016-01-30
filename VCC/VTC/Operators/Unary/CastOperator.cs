@@ -112,7 +112,12 @@ namespace VTC
             }
             return null;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+
+            return _type.Resolve(rc) && _target.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             _type = (TypeIdentifier)_type.DoResolve(rc);
             Type = _type.Type;
@@ -155,10 +160,11 @@ namespace VTC
             }
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-
-            return _type.Resolve(rc) && _target.Resolve(rc);
+            if (OvlrdOp != null)
+                fc.MarkAsUsed(OvlrdOp.Signature);
+            return _target.DoFlowAnalysis(fc);
         }
         public override string CommentString()
         {

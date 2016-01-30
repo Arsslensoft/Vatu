@@ -26,13 +26,17 @@ namespace VTC.Core
             _base = tbase;
             _pointers = pointers;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            return base.DoFlowAnalysis(fc);
+        }
+       public override bool Resolve(ResolveContext rc)
         {
            
             _base.Resolve(rc);
             return true;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (_pointers != null)
                 _pointers = (TypePointer)_pointers.DoResolve(rc);

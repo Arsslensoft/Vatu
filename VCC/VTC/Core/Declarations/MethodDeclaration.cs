@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using bsn.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,7 +40,17 @@ namespace VTC.Core
 
 
    
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            bool ok = _id.Resolve(rc);
+
+            if (_fbd._pdef != null)
+                ok &= _fbd._pdef.Resolve(rc);
+            if (_fbd._b != null)
+                ok &= _fbd._b.Resolve(rc);
+            return ok;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             ccvh = new CallingConventionsHandler();
             _id = (MethodIdentifier)_id.DoResolve(rc);
@@ -120,16 +130,7 @@ namespace VTC.Core
 
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            bool ok = _id.Resolve(rc);
-
-            if (_fbd._pdef != null)
-                ok &= _fbd._pdef.Resolve(rc);
-            if (_fbd._b != null)
-                ok &= _fbd._b.Resolve(rc);
-            return ok;
-        }
+   
         public override bool Emit(EmitContext ec)
         {
             if ((mods & Modifiers.Extern) == Modifiers.Extern)
@@ -234,22 +235,22 @@ namespace VTC.Core
             return true;
         }
 
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             fc.CodePathReturn.PathLocation = _id.Location;
+            fc.AddNew(method.Signature);
+           
+            
+            
 
            fc.NoReturnCheck =  _type.Type.Equals(BuiltinTypeSpec.Void);
+
             if ( _fbd != null && _fbd._b != null)
                 return _fbd._b.DoFlowAnalysis(fc);
-
-            return base.DoFlowAnalysis(fc);
+            else
+                return base.DoFlowAnalysis(fc);
         }
 
-        public override Reachability MarkReachable(Reachability rc)
-        {
-            if (_fbd != null && _fbd._b != null)
-                return _fbd._b.MarkReachable(rc);
-            return base.MarkReachable(rc);
-        }
+       
     }
 }

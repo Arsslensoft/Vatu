@@ -60,7 +60,13 @@ namespace VTC.Core
             _mod = mod;
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            TType.Resolve(rc);
+
+            return base.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (_mod != null)
             {
@@ -75,12 +81,7 @@ namespace VTC.Core
          
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            TType.Resolve(rc);
-
-            return base.Resolve(rc);
-        }
+       
     }
 
 	

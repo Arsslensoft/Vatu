@@ -27,7 +27,12 @@ namespace VTC
 
         public string Label=null;
         MemberSpec ms= null;
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+
+            return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
 
             Type = BuiltinTypeSpec.UInt;
@@ -56,11 +61,7 @@ namespace VTC
                 ResolveContext.Report.Error(0, Location, "Unresolved name " + _id.Name);
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-
-            return true;
-        }
+       
          public override bool Emit(EmitContext ec)
            {
                if (ms == null)
@@ -84,8 +85,13 @@ namespace VTC
              else ms.LoadEffectiveAddress(ec);
                return true;
            }
-       
 
+           public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+           {
+               if (ms != null)
+                   fc.MarkAsUsed(ms.Signature);
+               return base.DoFlowAnalysis(fc);
+           }
            public override string CommentString()
            {
                return "AddressOf(" + Label + ")";

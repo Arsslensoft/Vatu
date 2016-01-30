@@ -27,7 +27,12 @@ namespace VTC
         }
       
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+         
+            return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
 
             Type = BuiltinTypeSpec.String;
@@ -44,11 +49,7 @@ namespace VTC
 
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-         
-            return true;
-        }
+  
         /*   public override bool Emit(EmitContext ec)
            {
                RegistersEnum acc = ec.GetNextRegister();

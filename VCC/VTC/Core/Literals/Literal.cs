@@ -119,14 +119,15 @@ namespace VTC.Core
             else return TypeCode.Empty;
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            return _value;
-        }
-        public override bool Resolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
         {
             return true;
         }
+ public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            return _value;
+        }
+       
    
     }
 

@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using bsn.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,7 +44,14 @@ namespace VTC.Core.Declarations
             _ret = ret;
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+
+
+            return true;
+
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             _mod = (Modifier)_mod.DoResolve(rc);
             TypeName = new DelegateTypeSpec(rc.CurrentNamespace, _name.Name, _ret.Type, new List<TypeSpec>(), _ccv.CallingConvention, loc);
@@ -60,7 +67,7 @@ namespace VTC.Core.Declarations
                 _ccv = (CallingCV)_ccv.DoResolve(rc);
             if (_tdl != null)
             {
-                _tdl.Resolve(rc);
+ 
                 _tdl = (TypeIdentifierListDefinition)_tdl.DoResolve(rc);
                 TypeIdentifierListDefinition par = _tdl;
                 int paid = 0;
@@ -80,12 +87,10 @@ namespace VTC.Core.Declarations
 
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-
-
-            return true;
-
+        
+            return base.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {

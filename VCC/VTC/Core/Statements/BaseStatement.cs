@@ -21,7 +21,13 @@ namespace VTC.Core
             ns = normal;
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            if (ns != null)
+                return ns.Resolve(rc);
+            return base.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
           /*  if (ns != null)
                 return ns.DoResolve(rc);
@@ -35,21 +41,10 @@ namespace VTC.Core
                 return ns.Emit(ec);
             return base.Emit(ec);
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            if (ns != null)
-                return ns.Resolve(rc);
-            return base.Resolve(rc);
-        }
+       
 
-        public override Reachability MarkReachable(Reachability rc)
-        {
-            if (ns != null)
-                return ns.MarkReachable(rc);
-
-            return base.MarkReachable(rc);
-        }
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+   
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             if (ns != null)
                 return ns.DoFlowAnalysis(fc);

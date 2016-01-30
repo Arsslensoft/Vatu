@@ -36,8 +36,14 @@ namespace VTC
 
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
         {
+            Size = 0;
+            return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            Size = 0;
             if (_type != null)
             {
                 _type = (TypeIdentifier)_type.DoResolve(rc);
@@ -58,11 +64,7 @@ namespace VTC
 
             return new UIntConstant(Size,Location) ;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            Size = 0;
-            return true;
-        }
+   
      /*   public override bool Emit(EmitContext ec)
         {
             RegistersEnum acc = ec.GetNextRegister();

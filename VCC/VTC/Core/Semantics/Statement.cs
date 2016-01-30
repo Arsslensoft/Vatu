@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,38 +14,25 @@ namespace VTC.Core
             loc = CompilerContext.TranslateLocation(position);
         }
 
-        protected bool reachable;
-
-        public bool IsUnreachable
-        {
-            get
-            {
-                return !reachable;
-            }
-        }
+   
 
 
-        public override bool Resolve(ResolveContext rc)
-        {
-            return true;
-        }
+      
         public virtual bool Emit(EmitContext ec)
         {
             return true;
         }
 
-        public virtual Reachability MarkReachable(Reachability rc)
-        {
-            if (!rc.IsUnreachable)
-                reachable = true;
 
-            return rc;
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            return FlowState.Valid;
         }
-        public virtual bool DoFlowAnalysis(FlowAnalysisContext fc)
+       public override bool Resolve(ResolveContext rc)
         {
             return true;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             return this;
         }

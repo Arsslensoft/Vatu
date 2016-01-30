@@ -282,7 +282,7 @@ namespace VTC
                         {
                             MethodDeclaration md = (MethodDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            vstmt.Resolve(childctx);
+                            md.Resolve(childctx);
                             MethodDeclaration d = (MethodDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
@@ -292,7 +292,7 @@ namespace VTC
                             // Flow Analysis
                             if (Options.Flow)
                             {
-                                FlowAnalysisContext fc = new FlowAnalysisContext(childctx.Resolver.KnownLocalVars.Count, d);
+                                FlowAnalysisContext fc = new FlowAnalysisContext( d);
                                 fc.DoFlowAnalysis(childctx);
                             }
                         }
@@ -300,7 +300,7 @@ namespace VTC
                         {
                             OperatorDeclaration md = (OperatorDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            vstmt.Resolve(childctx);
+                            md.Resolve(childctx);
                             OperatorDeclaration d = (OperatorDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
@@ -310,7 +310,7 @@ namespace VTC
                             // Flow Analysis
                             if (Options.Flow)
                             {
-                                FlowAnalysisContext fc = new FlowAnalysisContext(childctx.Resolver.KnownLocalVars.Count, d);
+                                FlowAnalysisContext fc = new FlowAnalysisContext( d);
                                 fc.DoFlowAnalysis(childctx);
                             }
                         }
@@ -318,7 +318,7 @@ namespace VTC
                         {
                             InterruptDeclaration md = (InterruptDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            vstmt.Resolve(childctx);
+                            md.Resolve(childctx);
                             InterruptDeclaration d = (InterruptDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
@@ -329,7 +329,7 @@ namespace VTC
                             // Flow Analysis
                             if (Options.Flow)
                             {
-                                FlowAnalysisContext fc = new FlowAnalysisContext(childctx.Resolver.KnownLocalVars.Count, d);
+                                FlowAnalysisContext fc = new FlowAnalysisContext( d);
                                 fc.DoFlowAnalysis(childctx);
                             }
                         }
@@ -337,7 +337,7 @@ namespace VTC
                         {
                             StructDeclaration md = (StructDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            vstmt.Resolve(childctx);
+                            md.Resolve(childctx);
                             StructDeclaration d = (StructDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
@@ -348,7 +348,7 @@ namespace VTC
                         {
                             UnionDeclaration md = (UnionDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            vstmt.Resolve(childctx);
+                            md.Resolve(childctx);
                             UnionDeclaration d = (UnionDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);
@@ -359,7 +359,7 @@ namespace VTC
                         {
                             EnumDeclaration md = (EnumDeclaration)vstmt;
                             ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
-                            vstmt.Resolve(childctx);
+                            md.Resolve(childctx);
                             EnumDeclaration d = (EnumDeclaration)md.DoResolve(childctx);
                             // RootCtx.UpdateChildContext("<method-decl>", childctx);
                             RootCtx.UpdateFather(childctx);

@@ -33,7 +33,15 @@ namespace VTC.Core
             _inc = inc;
             _stmt = stmt;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            _stmt.Resolve(rc);
+            _inc.Resolve(rc);
+            _init.Resolve(rc);
+            _cond.Resolve(rc);
+            return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             rc.CurrentScope |= ResolveScopes.Loop;
             Label lb = rc.DefineLabel(LabelType.FOR);
@@ -68,14 +76,7 @@ namespace VTC.Core
             rc.EnclosingLoop = ParentLoop;
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            _stmt.Resolve(rc);
-            _inc.Resolve(rc);
-            _init.Resolve(rc);
-            _cond.Resolve(rc);
-            return true;
-        }
+    
         public override bool Emit(EmitContext ec)
         {
             ec.EmitComment("For init");
@@ -100,28 +101,21 @@ namespace VTC.Core
             ec.MarkLabel(ExitLoop);
             return true;
         }
-        public override Reachability MarkReachable(Reachability rc)
-        {
-            base.MarkReachable(rc);
-            if (_stmt is Block || _stmt is BlockStatement)
-                return _stmt.MarkReachable(rc);
-            else
-                return rc;
-        }
 
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             CodePath cur = new CodePath(loc); // sub code path
           
             CodePath back = fc.CodePathReturn;
             fc.CodePathReturn = cur; // set current code path
-            bool ok = true;
+            FlowState ok = FlowState.Valid;
             foreach (Expr e in _init)
                 ok &= e.DoFlowAnalysis(fc);
 
             foreach (Expr e in _inc)
                 ok &= e.DoFlowAnalysis(fc);
-           ok &= _cond.DoFlowAnalysis(fc) && _stmt.DoFlowAnalysis(fc);
+           ok &= _cond.DoFlowAnalysis(fc) & _stmt.DoFlowAnalysis(fc);
 
             foreach (Expr e in _inc)
                 ok &= e.DoFlowAnalysis(fc);

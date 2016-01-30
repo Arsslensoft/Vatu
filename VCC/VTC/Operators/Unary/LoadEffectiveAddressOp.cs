@@ -19,7 +19,11 @@ namespace VTC
             Operator = UnaryOperator.AddressOf;
         }
         TypeSpec MemberType;
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+           return Right.Resolve(rc) ;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
        
                 // LEA
@@ -37,9 +41,10 @@ namespace VTC
                 return this;
          
         }
-        public override bool Resolve(ResolveContext rc)
+  
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-           return Right.Resolve(rc) ;
+            return Right.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {

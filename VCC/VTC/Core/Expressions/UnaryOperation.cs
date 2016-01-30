@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using bsn.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,7 +53,13 @@ namespace VTC.Core
 
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            bool ok = _op.Right.Resolve(rc);
+
+            return ok;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             bool adrop = _op is LoadEffectiveAddressOp || _op is ValueOfOp;
             bool idecop = _op is IncrementOperator || _op is DecrementOperator;
@@ -65,11 +71,9 @@ namespace VTC.Core
             Type = _op.CommonType;
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            bool ok = _op.Right.Resolve(rc);
-
-            return ok;
+            return _op.Right.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {

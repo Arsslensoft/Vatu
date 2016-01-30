@@ -28,7 +28,14 @@ namespace VTC.Core
 
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            bool ok=            _id.Resolve(rc);
+            if (_nextid != null)
+           ok &= _nextid.Resolve(rc);
+            return ok;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
 
             _id = (TypeIdentifier)_id.DoResolve(rc);
@@ -37,13 +44,7 @@ namespace VTC.Core
             return this;
         }
      
-        public override bool Resolve(ResolveContext rc)
-        {
-            bool ok=            _id.Resolve(rc);
-            if (_nextid != null)
-           ok &= _nextid.Resolve(rc);
-            return ok;
-        }
+    
         public override bool Emit(EmitContext ec)
         {
             return true;

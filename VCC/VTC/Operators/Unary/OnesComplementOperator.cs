@@ -20,7 +20,11 @@ namespace VTC
             Operator = UnaryOperator.OnesComplement;
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (Right.Type.Equals(BuiltinTypeSpec.Bool) && Right.Type.IsBuiltinType && !Right.Type.IsPointer)
                 ResolveContext.Report.Error(25, Location, "OnesComplement must be used with non boolean, pointer types, use ! instead");
@@ -33,10 +37,7 @@ namespace VTC
                 OvlrdOp = null;
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            return true;
-        }
+  
         public override bool Emit(EmitContext ec)
         {
             if (OvlrdOp != null)

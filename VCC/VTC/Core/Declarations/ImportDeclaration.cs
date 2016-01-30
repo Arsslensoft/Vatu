@@ -14,6 +14,11 @@ namespace VTC.Core
         {
             Import = new Namespace(id.Name);
         }
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+
+            return base.DoFlowAnalysis(fc);
+        }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             Namespace ns = rc.Resolver.ResolveNS(Import.Name);

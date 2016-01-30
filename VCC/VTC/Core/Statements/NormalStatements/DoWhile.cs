@@ -26,7 +26,11 @@ namespace VTC.Core
             _expr = whilecnd;
         }
       
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            return _expr.Resolve(rc) && _stmt.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
           
             rc.CurrentScope |= ResolveScopes.Loop;
@@ -52,10 +56,7 @@ namespace VTC.Core
     
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            return _expr.Resolve(rc) && _stmt.Resolve(rc);
-        }
+
         public override bool Emit(EmitContext ec)
         {
             if (_expr.current is ConstantExpression || _expr is ConstantExpression)
@@ -108,23 +109,16 @@ namespace VTC.Core
                 ec.MarkLabel(ExitLoop);
             }
         }
-        public override Reachability MarkReachable(Reachability rc)
-        {
-            base.MarkReachable(rc);
-            if (_stmt is Block || _stmt is BlockStatement)
-                return _stmt.MarkReachable(rc);
-            else
-                return rc;
-        }
+       
 
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             CodePath cur = new CodePath(loc); // sub code path
       
             CodePath back = fc.CodePathReturn;
             fc.CodePathReturn = cur; // set current code path
 
-            bool ok = _expr.DoFlowAnalysis(fc) && _stmt.DoFlowAnalysis(fc);
+            FlowState ok = _expr.DoFlowAnalysis(fc) & _stmt.DoFlowAnalysis(fc);
             back.AddPath(cur);
             fc.CodePathReturn = back; // restore code path
             return ok;

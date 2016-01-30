@@ -30,14 +30,7 @@ namespace VTC.Core
         }
 
 
-        public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            _id = (Identifier)_id.DoResolve(rc);
-            if (_value != null)
-                Value = (ConstantExpression)_value.DoResolve(rc);
-            return this;
-        }
-        public override bool Resolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
         {
 
             if (_value != null)
@@ -45,6 +38,14 @@ namespace VTC.Core
                 return _value.Resolve(rc);
             else return true;
         }
+ public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            _id = (Identifier)_id.DoResolve(rc);
+            if (_value != null)
+                Value = (ConstantExpression)_value.DoResolve(rc);
+            return this;
+        }
+      
         public override bool Emit(EmitContext ec)
         {
             // TODO:EMIT ENUM

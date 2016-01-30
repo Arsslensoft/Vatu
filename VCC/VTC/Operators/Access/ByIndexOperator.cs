@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,7 +24,11 @@ namespace VTC
             if (!((expr is ArrayConstant) || (expr is StringConstant)))
                 Index = int.Parse(expr.GetValue().ToString());
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            return Left.Resolve(rc) && Right.Resolve(rc);
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
 
             rc.Resolver.TryResolveMethod(Left.Type.NormalizedName + "_IndexedAccess", ref OvlrdOp, new TypeSpec[2] { Left.Type, BuiltinTypeSpec.UInt });
@@ -114,10 +118,7 @@ namespace VTC
             }
             return new AccessExpression(Left as VariableExpression, Right, this);
         }
-        public override bool Resolve(ResolveContext rc)
-        {
-            return Left.Resolve(rc) && Right.Resolve(rc);
-        }
+      
         public override bool Emit(EmitContext ec)
         {
             if (OvlrdOp != null)

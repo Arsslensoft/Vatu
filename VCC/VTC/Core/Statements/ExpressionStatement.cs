@@ -20,13 +20,14 @@ namespace VTC.Core
             _expr = b;
 
         }
-        public override bool Resolve(ResolveContext rc)
+   
+       public override bool Resolve(ResolveContext rc)
         {
 
 
             return _expr.Resolve(rc);
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
          
             _expr = (Expr)_expr.DoResolve(rc);
@@ -39,10 +40,9 @@ namespace VTC.Core
         {
             return _expr.Emit(ec);
         }
-        public override Reachability MarkReachable(Reachability rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-
-            return base.MarkReachable(rc);
+            return _expr.DoFlowAnalysis(fc);
         }
     }
 

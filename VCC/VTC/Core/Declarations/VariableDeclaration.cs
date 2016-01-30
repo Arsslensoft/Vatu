@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using bsn.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -168,7 +168,18 @@ namespace VTC.Core
                 ResolveContext.Report.Error(7, Location, "Struct and Union members cannot have modifiers");
 
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            bool ok = _vadef.Resolve(rc);
+            if (_valist != null)
+                ok &= _valist.Resolve(rc);
+            if (_mod != null)
+                ok &= _mod.Resolve(rc);
+
+            ok &= _stype.Resolve(rc);
+            return ok;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             rc.IsInVarDeclaration = true;
             Members = new List<TypeMemberSpec>();
@@ -221,16 +232,22 @@ namespace VTC.Core
             rc.IsInVarDeclaration = false;
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+      
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            bool ok = _vadef.Resolve(rc);
-            if (_valist != null)
-                ok &= _valist.Resolve(rc);
-            if (_mod != null)
-                ok &= _mod.Resolve(rc);
+            if (_vadef.IsAssigned)
+                fc.MarkAsAssigned(_vadef.FieldOrLocal.Signature);
 
-            ok &= _stype.Resolve(rc);
-            return ok;
+
+            VariableListDefinition val = _valist;
+            while (val != null)
+            {
+                if (val._vardef._vardef != null && val._vardef._vardef.IsAssigned)
+                    fc.MarkAsAssigned(val._vardef._vardef.FieldOrLocal.Signature);
+
+                val = val._nextvars;
+            }
+            return base.DoFlowAnalysis(fc);
         }
 
         public bool EmitLocalVariable(EmitContext ec, VariableDefinition vadef)
@@ -354,23 +371,6 @@ namespace VTC.Core
             return true;
         }
 
-        public override bool DoFlowAnalysis(FlowAnalysisContext fc)
-        {
-            if(_vadef.IsAssigned)
-                 fc.AssignmentBitSet.Set(_vadef.FlowVarIndex);
-
-          
-            VariableListDefinition val = _valist;
-            while (val != null)
-            {
-                if (val._vardef._vardef != null && val._vardef._vardef.IsAssigned)
-                    fc.AssignmentBitSet.Set(val._vardef._vardef.FlowVarIndex);
-
-
-
-                val = val._nextvars;
-            }
-            return base.DoFlowAnalysis(fc);
-        }
+      
     }
 }

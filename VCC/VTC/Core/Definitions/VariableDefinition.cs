@@ -50,7 +50,17 @@ namespace VTC.Core
             _avd = null;
         }
 
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            //TODO:ARRAY SUPPORT
+            bool ok = true;
+            if (_avd != null)
+               ok &= _avd.Resolve(rc);
+            if (expr != null)
+                ok &= expr.Resolve(rc);
+            return ok;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             ArraySize = -1;
             if (_avd != null)
@@ -68,15 +78,12 @@ namespace VTC.Core
 
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            //TODO:ARRAY SUPPORT
-            bool ok = true;
-            if (_avd != null)
-               ok &= _avd.Resolve(rc);
             if (expr != null)
-                ok &= expr.Resolve(rc);
-            return ok;
+                return expr.DoFlowAnalysis(fc);
+
+            return base.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {

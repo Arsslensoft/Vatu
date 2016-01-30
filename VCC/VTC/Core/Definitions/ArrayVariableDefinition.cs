@@ -32,7 +32,13 @@ namespace VTC.Core
         {
             _expr = null;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+      if (_expr != null)
+            return _expr.Resolve(rc);
+      return true;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             Dimension = 1;
             bool conv = false;
@@ -56,11 +62,9 @@ namespace VTC.Core
                 ResolveContext.Report.Error(47, Location, "Invalid array size");
             return this;
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-      if (_expr != null)
-            return _expr.Resolve(rc);
-      return true;
+            return base.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)
         {

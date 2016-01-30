@@ -1,4 +1,4 @@
-﻿using bsn.GoldParser.Semantic;
+using bsn.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using Vasm.x86;
 
 namespace VTC.Core
 {
-    public class Expr : SimpleToken, IEmit, IEmitExpr, IFlowAnalysis
+    public class Expr : SimpleToken, IEmit, IEmitExpr
     {
         public bool AcceptStatement = false;
         public Expr current;
@@ -54,11 +54,11 @@ namespace VTC.Core
         {
 
         }
-        public override bool Resolve(ResolveContext rc)
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            bool ok = true;
+            FlowState ok = FlowState.Valid;
             if (current != null)
-                ok &= current.Resolve(rc);
+                ok &= current.DoFlowAnalysis(fc);
 
 
             return ok;
@@ -70,7 +70,16 @@ namespace VTC.Core
 
             return true;
         }
-        public override SimpleToken DoResolve(ResolveContext rc)
+       public override bool Resolve(ResolveContext rc)
+        {
+            bool ok = true;
+            if (current != null)
+                ok &= current.Resolve(rc);
+
+
+            return ok;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (current != null)
             {
@@ -109,11 +118,6 @@ namespace VTC.Core
         {
             return "";
         }
-        public virtual bool DoFlowAnalysis(FlowAnalysisContext fc)
-        {
-            if (current != null)
-                return current.DoFlowAnalysis(fc);
-            return true;
-        }
+     
     }
 }
