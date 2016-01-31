@@ -7,16 +7,16 @@ using Vasm.x86;
 
 namespace VTC
 {
-	 /// <summary>
+    /// <summary>
     /// Enum Member Spec
     /// </summary>
     public class EnumMemberSpec : MemberSpec
     {
-      
+
         TypeSpec th;
         public bool IsAssigned { get; set; }
         public ushort Value { get; set; }
-     
+
         public TypeSpec TypeHost
         {
             get
@@ -25,9 +25,9 @@ namespace VTC
             }
             set { th = value; }
         }
-  
+
         public EnumMemberSpec(Namespace ns, string name, TypeSpec host, TypeSpec type, Location loc)
-            : base(name, new MemberSignature(ns,host.Name + "_" + name, loc), Modifiers.NoModifier,ReferenceKind.EnumValue)
+            : base(name, new MemberSignature(ns, host.Name + "_" + name, loc), Modifiers.NoModifier, ReferenceKind.EnumValue)
         {
             NS = ns;
             th = host;
@@ -51,11 +51,11 @@ namespace VTC
 
         public override bool EmitToStack(EmitContext ec)
         {
-            ec.EmitInstruction(new Push() { DestinationValue = Value,Size = th.SizeInBits });
+            ec.EmitInstruction(new Push() { DestinationValue = Value, Size = 16 });
             return true;
         }
     }
 
-	
-	
+
+
 }
