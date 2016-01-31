@@ -11,6 +11,7 @@ namespace Vasm
        public bool IsInterruptOverload { get; set; }
        public bool IsFlat { get; set; }
        public bool IsLibrary { get; set; }
+       public bool IsFloat { get; set; }
        public bool IsVTExec { get; set; }
        public int OLevel { get; set; }
        private static AsmContext mCurrentInstance;
@@ -434,7 +435,8 @@ namespace Vasm
                writer.WriteLine("___vatu_entry:");
 
            }
-
+           if (IsFlat)
+               writer.WriteLine("FINIT");
            if (!IsLibrary)
                interrupt_name = "______INSTALL_INTERRUPTS";
            else if (IsLibrary)

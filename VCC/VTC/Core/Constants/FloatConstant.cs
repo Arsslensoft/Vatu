@@ -13,8 +13,12 @@ namespace VTC.Core
 	
 	public class FloatConstant : ConstantExpression
     {
-        internal Half _value;
-        public FloatConstant(Half value, Location loc)
+   
+
+        public FieldSpec ConstVar { get; set; }
+        internal float _value; 
+        public static int id = 0;
+        public FloatConstant(float value, Location loc)
             : base(BuiltinTypeSpec.Float, loc)
         {
             _value = value;
@@ -29,9 +33,20 @@ namespace VTC.Core
         {
             return _value;
         }
+     
         public override bool Emit(EmitContext ec)
         {
-            EmitToStack(ec);
+
+            if (ConstVar != null)
+            {
+                byte[] data = BitConverter.GetBytes(_value);
+                DataMember dm = new DataMember(ConstVar.Signature.ToString(), data);
+                //dm.IsGlobal = true;
+
+                ec.EmitData(dm, ConstVar, true);
+                //ec.EmitInstruction(new Push() { DestinationRef = ElementReference.New(ConstVar.Signature.ToString()), Size = 16 });
+                ConstVar.EmitToStack(ec);
+            }
             return true;
         }
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
@@ -42,22 +57,29 @@ namespace VTC.Core
         {
             return true;
         }
- public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            
-            return this;
-        }
+       public override SimpleToken DoResolve(ResolveContext rc)
+       {
+           if (!CompilerContext.CompilerOptions.FloatingPointEnabled)
+               ResolveContext.Report.Error(0, Location, "Floating points are disabled by default use --float or -f to enable them");
+         
+                   ConstVar = new FieldSpec(rc.CurrentNamespace, "FL_" + id, Modifiers.Const, Type, loc);
 
+                   id++;
+       
+           
+
+           return this;
+       }
         public override bool EmitToStack(EmitContext ec)
         {
-          
-            ec.EmitInstruction(new Push() { DestinationValue = _value.value, Size = 16 });
+                Emit(ec);
+      
             return true;
         }
         public override bool EmitToRegister(EmitContext ec,RegistersEnum rg)
         {
-            ec.EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = _value.value, Size = 16 });
-            return true;
+          
+            throw new NotImplementedException();
         }
         public override string CommentString()
         {

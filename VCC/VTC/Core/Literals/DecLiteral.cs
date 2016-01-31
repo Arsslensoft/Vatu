@@ -42,8 +42,12 @@ namespace VTC.Core
                             _value = new ArrayConstant(System.Numerics.BigInteger.Parse(value).ToByteArray(), CompilerContext.TranslateLocation(position));
                             break;
 
-
-
+                        case TypeCode.UInt32:
+                            _value = new PointerConstant(ushort.Parse(value), CompilerContext.TranslateLocation(position));
+                            break;
+                        case TypeCode.Single:
+                            _value = new FloatConstant(float.Parse(value), CompilerContext.TranslateLocation(position));
+                            break;
                     }
                 }
                 else if (long.TryParse(value, out v))
@@ -74,8 +78,12 @@ namespace VTC.Core
                 ResolveContext.Report.Error(1, Location, ex.Message);
             }
         }
-     
 
+
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            return _value.DoResolve(rc);
+        }
     } 
    
 	

@@ -15,6 +15,7 @@ namespace VTC
     {
         public DivisionOperator()
         {
+            FloatingPointSupported = true;
             Operator = BinaryOperator.Division;
             LeftRegister = RegistersEnum.AX;
             RightRegister = RegistersEnum.CX;
@@ -29,8 +30,7 @@ namespace VTC
             if (!FixConstant(rc))
                 ResolveContext.Report.Error(23, Location, "Arithmetic operations must have the same types (use cast)");
 
-            if (Right is RegisterExpression || Left is RegisterExpression)
-                ResolveContext.Report.Error(29, Location, "Registers are not allowed for this operation");
+       
             CommonType = Left.Type;
 
              rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), ref OvlrdOp, new TypeSpec[2] { Left.Type, Right.Type });
@@ -38,10 +38,25 @@ namespace VTC
                 OvlrdOp = null;
             return this;
         }
+        bool EmitFloatOperation(EmitContext ec)
+        {
+            Left.EmitToStack(ec);
+            Right.EmitToStack(ec);
+            ec.EmitComment(Left.CommentString() + " / " + Right.CommentString());
+
+            ec.EmitInstruction(new Vasm.x86.x87.FloatDivideAndPop() { DestinationReg = RegistersEnum.ST1, SourceReg = RegistersEnum.ST0 });
+
+
+
+            return true;
+        }
         public override bool Emit(EmitContext ec)
         {
             if (OvlrdOp != null)
                 return base.EmitOverrideOperator(ec);
+
+            if (CommonType.IsFloat && !CommonType.IsPointer)
+                return EmitFloatOperation(ec);
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " / " + Right.CommentString());

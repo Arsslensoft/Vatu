@@ -9,6 +9,7 @@ namespace VTC.Core
 {
     public abstract class Operator : SimpleToken, IEmit, IEmitExpr
     {
+        public bool FloatingPointSupported = false;
         public Namespace Namespace { get; set; }
         public Expr Left { get; set; }
         public Expr Right { get; set; }
@@ -16,7 +17,13 @@ namespace VTC.Core
         public bool FixConstant(ResolveContext rc)
         {
             bool conv = false;
-            if (Left is ConstantExpression && Right is ConstantExpression)
+
+            if (Left.Type.IsFloat && !FloatingPointSupported && CompilerContext.CompilerOptions.FloatingPointEnabled)
+            {
+                ResolveContext.Report.Error(0, Left.Location, "Floating Point not supported for this kind of operators");
+                return false;
+            }
+            else if (Left is ConstantExpression && Right is ConstantExpression)
             {
                 // greater conversion
                 if (Left.Type.Size > Right.Type.Size)
@@ -31,6 +38,7 @@ namespace VTC.Core
                 }
                 else return (Left.Type.Equals(Right.Type));
             }
+
             else if (Left is ConstantExpression)
             {
                 Left = (Left as ConstantExpression).ConvertImplicitly(rc, Right.Type, ref conv);
@@ -42,8 +50,14 @@ namespace VTC.Core
                 Right = (Right as ConstantExpression).ConvertImplicitly(rc, Left.Type, ref conv);
                 return conv;
             }
+            else if (Left == null || Right == null)
+            {
+                ResolveContext.Report.Error(0, Location, "An operation member is null");
+                conv = false;
+                return false;
+            }
             else
-                return (Left.Type.Equals(Right.Type));
+                return (TypeChecker.CompatibleTypes(Left.Type, Right.Type));
         }
         public TypeSpec CommonType { get; set; }
 

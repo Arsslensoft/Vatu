@@ -200,10 +200,32 @@ namespace VTC
             else
                 EmitInstruction(new Push() { DestinationReg = rg, Size = 16, DestinationIsIndirect = adr, DestinationDisplacement = off });
         }
+        public void EmitPushSigned(RegistersEnum rg, byte size = 80, bool adr = false, int off = 0)
+        {
+            if (Registers.Is8Bit(rg))
+                rg = ag.GetHolder(rg);
+            if (size == 8)
+            {
+                ag.SetAsUsed(rg);
+                RegistersEnum drg = ag.GetNextRegister();
+                ag.FreeRegister();
+                ag.FreeRegister();
+                EmitInstruction(new MoveSignExtend() { DestinationReg = drg, Size = 8, SourceReg = rg, SourceDisplacement = off, SourceIsIndirect = adr });
 
+                EmitInstruction(new Push() { DestinationReg = drg, Size = 16 });
+            }
+            else
+                EmitInstruction(new Push() { DestinationReg = rg, Size = 16, DestinationIsIndirect = adr, DestinationDisplacement = off });
+        }
 
-
-
+        public void EmitLoadFloat(RegistersEnum rg, byte size = 32, bool adr = false, int off = 0)
+        {
+                EmitInstruction(new Vasm.x86.x87.FloatLoad() { DestinationReg = rg, Size = 16, DestinationIsIndirect = adr, DestinationDisplacement = off });
+        }
+        public void EmitStoreFloat(RegistersEnum rg, byte size = 32, bool adr = false, int off = 0)
+        {
+            EmitInstruction(new Vasm.x86.x87.FloatStore() { DestinationReg = rg, Size = size, DestinationIsIndirect = adr, DestinationDisplacement = off });
+        }
 
 
         public void EmitBooleanBranch(bool v, Label truecase, ConditionalTestEnum tr, ConditionalTestEnum fls)

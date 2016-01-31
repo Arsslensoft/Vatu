@@ -202,11 +202,20 @@ namespace VTC
       }
       public void EmitCall(EmitContext ec, List<Expr> exp, MethodSpec method)
       {
+         
           int size = 0;
           if (method.CallingConvention == CallingConventions.Pascal || method.CallingConvention == CallingConventions.Default)
           {
               foreach (Expr e in exp)
+              {
                   e.EmitToStack(ec);
+                  if (e.Type.IsFloat && !e.Type.IsPointer) // store floating point to stack
+                  {
+                      ec.EmitInstruction(new Sub() { DestinationReg = RegistersEnum.SP, SourceValue = (ushort)e.Type.Size });
+                      ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, SourceReg = EmitContext.SP });
+                      ec.EmitStoreFloat(RegistersEnum.SI, e.Type.FloatSizeBits, true);
+                  }
+              }
           }
           else if (method.CallingConvention == CallingConventions.StdCall || method.CallingConvention == CallingConventions.Cdecl)
           {
@@ -222,6 +231,13 @@ namespace VTC
                           size++;
                   }
                   else size += 2;
+
+                  if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
+                  {
+                      ec.EmitInstruction(new Sub() { DestinationReg = RegistersEnum.SP, SourceValue = (ushort)exp[i].Type.Size });
+                      ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, SourceReg = EmitContext.SP }); 
+                      ec.EmitStoreFloat(RegistersEnum.SI, exp[i].Type.FloatSizeBits, true);
+                  }
               }
              
           }
@@ -238,6 +254,13 @@ namespace VTC
                           size++;
                   }
                   else size += 2;
+
+                  if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
+                  {
+                      ec.EmitInstruction(new Sub() { DestinationReg = RegistersEnum.SP, SourceValue = (ushort)exp[i].Type.Size });
+                      ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, SourceReg = EmitContext.SP }); 
+                      ec.EmitStoreFloat(RegistersEnum.SI, exp[i].Type.FloatSizeBits, true);
+                  }
               }
               if (exp.Count >= 2)
               {
@@ -261,6 +284,14 @@ namespace VTC
                           size++;
                   }
                   else size += 2;
+
+
+                  if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
+                  {
+                      ec.EmitInstruction(new Sub() { DestinationReg = RegistersEnum.SP, SourceValue = (ushort)exp[i].Type.Size });
+                      ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, SourceReg = EmitContext.SP }); 
+                      ec.EmitStoreFloat(RegistersEnum.SI, exp[i].Type.FloatSizeBits, true);
+                  }
               }
               if (exp.Count >= 4)
               {
@@ -300,7 +331,15 @@ namespace VTC
           if (ccv == CallingConventions.Pascal || ccv == CallingConventions.Default)
           {
               foreach (Expr e in exp)
+              {
                   e.EmitToStack(ec);
+                  if (e.Type.IsFloat && !e.Type.IsPointer) // store floating point to stack
+                  {
+                      ec.EmitInstruction(new Sub() { DestinationReg = RegistersEnum.SP, SourceValue = (ushort)e.Type.Size });
+                      ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, SourceReg = EmitContext.SP }); 
+                      ec.EmitStoreFloat(RegistersEnum.SI, e.Type.FloatSizeBits, true);
+                  }
+              }
           }
           else if (ccv == CallingConventions.StdCall || ccv == CallingConventions.Cdecl)
           {
@@ -315,6 +354,13 @@ namespace VTC
                           size++;
                   }
                   else size += 2;
+
+                  if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
+                  {
+                      ec.EmitInstruction(new Sub() { DestinationReg = RegistersEnum.SP, SourceValue = (ushort)exp[i].Type.Size });
+                      ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, SourceReg = EmitContext.SP }); 
+                      ec.EmitStoreFloat(RegistersEnum.SI, exp[i].Type.FloatSizeBits, true);
+                  }
               }
 
           }
@@ -331,6 +377,13 @@ namespace VTC
                           size++;
                   }
                   else size += 2;
+
+                  if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
+                  {
+                      ec.EmitInstruction(new Sub() { DestinationReg = RegistersEnum.SP, SourceValue = (ushort)exp[i].Type.Size });
+                      ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, SourceReg = EmitContext.SP }); 
+                      ec.EmitStoreFloat(RegistersEnum.SI, exp[i].Type.FloatSizeBits, true);
+                  }
               }
               if (exp.Count >= 2)
               {
@@ -354,6 +407,13 @@ namespace VTC
                           size++;
                   }
                   else size += 2;
+
+                  if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
+                  {
+                      ec.EmitInstruction(new Sub() { DestinationReg = RegistersEnum.SP, SourceValue = (ushort)exp[i].Type.Size });
+                      ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, SourceReg = EmitContext.SP }); 
+                      ec.EmitStoreFloat(RegistersEnum.SI, exp[i].Type.FloatSizeBits, true);
+                  }
               }
               if (exp.Count >= 4)
               {

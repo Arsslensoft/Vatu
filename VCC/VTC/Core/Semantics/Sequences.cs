@@ -7,6 +7,48 @@ using System.Text;
 
 namespace VTC.Core
 {
+    public class Sequence<T> : SimpleToken, IEnumerable<T> where T : SimpleToken
+    {
+        private readonly T item;
+        private readonly Sequence<T> next;
+
+
+
+
+   
+        public Sequence(T item)
+            : this(item, null)
+        {
+        }
+
+
+
+        public Sequence(T item, Sequence<T> next)
+        {
+            this.item = item;
+            this.next = next;
+        }
+
+        #region IEnumerable<T> Members
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            for (Sequence<T> sequence = this; sequence != null; sequence = sequence.next)
+            {
+                if (sequence.item != null)
+                {
+                    yield return sequence.item;
+                }
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        #endregion
+    }
     public class DeclarationSequence<T> : SimpleToken, IEnumerable<T> where T : SimpleToken
     {
         private readonly T item;
@@ -262,5 +304,36 @@ namespace VTC.Core
         }
 
         #endregion
+    }
+
+    public class FunctionSpecifierSequence: Sequence<FunctionSpecifier>
+    {
+
+        [Rule("<Func Specs> ::= <Func Spec>")]
+        public FunctionSpecifierSequence(FunctionSpecifier item)
+            : base(item, null)
+        {
+        }
+
+        [Rule("<Func Specs> ::= <Func Spec>  <Func Specs> ")]
+        public FunctionSpecifierSequence(FunctionSpecifier item, FunctionSpecifierSequence next)
+            : base(item, next)
+        {
+
+        }
+
+        public Specifiers FunctionSpecs { get; set; }
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            FunctionSpecifier fs = null;
+            FunctionSpecs = Specifiers.NoSpec;
+            foreach (FunctionSpecifier s in this)
+            {
+                fs = (FunctionSpecifier)s.DoResolve(rc);
+                FunctionSpecs |= fs.Specs;
+            }
+            return this;
+        }
+     
     }
 }

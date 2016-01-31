@@ -10,8 +10,8 @@ namespace VTC.Core
 {
 	 public class StringConstant : ConstantExpression
     {
-      
 
+        public static Dictionary<string, FieldSpec> ConstantsCache = new Dictionary<string, FieldSpec>();
         public static int id = 0;
         public FieldSpec ConstVar { get; set; }
         string _value;
@@ -21,8 +21,8 @@ namespace VTC.Core
             _value = value;
            
         }
-     
-        bool decl = false;
+
+   
         public override string ToString()
         {
             return "[" + Type.GetTypeName(type) + "] " + GetValue();
@@ -33,12 +33,13 @@ namespace VTC.Core
         }
         public override bool Emit(EmitContext ec)
         {
-            if (ConstVar != null)
-            {
-                ec.EmitData(new DataMember(ConstVar.Signature.ToString(), _value,true), ConstVar, true);
-                ec.EmitInstruction(new Push() { DestinationRef = ElementReference.New(ConstVar.Signature.ToString()), Size = 16 });
+  
+                    DataMember dm = new DataMember(ConstVar.Signature.ToString(), _value, true);
+           
+                    ec.EmitData(dm, ConstVar, true);
+                    ec.EmitInstruction(new Push() { DestinationRef = ElementReference.New(ConstVar.Signature.ToString()), Size = 16 });
 
-            }
+            
             return true;
         }
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
@@ -49,17 +50,19 @@ namespace VTC.Core
         {
             return true;
         }
- public override SimpleToken DoResolve(ResolveContext rc)
+
+        public override SimpleToken DoResolve(ResolveContext rc)
         {
-    
-                ConstVar = new FieldSpec(rc.CurrentNamespace, "STRC_" + id,  Modifiers.Const, Type, loc);
-          
-            id++;
+       
+                    ConstVar = new FieldSpec(rc.CurrentNamespace, "STRC_" + id, Modifiers.Const, Type, loc);
+                    id++;
+             
+     
             return this;
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            if (!decl)
+           
                 Emit(ec);
       
      

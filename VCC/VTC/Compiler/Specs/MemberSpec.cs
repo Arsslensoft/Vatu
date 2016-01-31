@@ -13,7 +13,7 @@ namespace VTC
     /// </summary>
     public class MethodSpec : MemberSpec, IEquatable<MethodSpec>
     {
-
+        public bool IsVariadic { get; set; }
         public CallingConventions CallingConvention { get; set; }
         public List<ParameterSpec> Parameters { get; set; }
         public bool IsOperator { get; set; }
@@ -30,6 +30,7 @@ namespace VTC
             : base(name, new MemberSignature(ns, name, param,loc), mods ,ReferenceKind.Method)
         {
             IsOperator = false;
+            IsVariadic = false;
             NS = ns;
             CallingConvention =ccv;
             memberType = type;

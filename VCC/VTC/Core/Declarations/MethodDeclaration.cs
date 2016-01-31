@@ -15,30 +15,22 @@ namespace VTC.Core
         CallingConventions ccv = CallingConventions.StdCall;
         CallingConventionsHandler ccvh;
         FunctionBodyDefinition _fbd;
-        FunctionSpecifier _spec;
+    
         Specifiers specs;
         public List<ParameterSpec> Parameters;
 
+  
         MethodIdentifier _id;
         [Rule(@"<Func Decl> ::= <Func ID> <Func Body>")]
         public MethodDeclaration(MethodIdentifier id, FunctionBodyDefinition fbd)
         {
             _name = id.Id;
             _id = id;
-            _spec = null;
+ 
             _fbd = fbd;
         }
 
-        [Rule(@"<Func Decl> ::= <Func Spec> <Func ID> <Func Body>")]
-        public MethodDeclaration(FunctionSpecifier spec, MethodIdentifier id, FunctionBodyDefinition fbd)
-        {
-            _name = id.Id;
-            _id = id;
-            _spec = spec;
-            _fbd = fbd;
-        }
-
-
+    
    
        public override bool Resolve(ResolveContext rc)
         {
@@ -56,22 +48,20 @@ namespace VTC.Core
             _id = (MethodIdentifier)_id.DoResolve(rc);
             ccv = _id.CV;
             mods = _id.Mods;
+            specs = _id.Specs;
             _fbd = (FunctionBodyDefinition)_fbd.DoResolve(rc);
             Parameters = _fbd.Parameters;
-            if (_spec != null)
-            {
-                _spec = (FunctionSpecifier)_spec.DoResolve(rc);
-                specs = _spec.Specs;
-            }
-            else specs = Specifiers.NoSpec;
+           
             base._type = _id.TType;
 
 
-            if (specs == Specifiers.Entry && CompilerContext.EntryPointFound)
+            if ((specs & Specifiers.Entry) == Specifiers.Entry && CompilerContext.EntryPointFound)
                 ResolveContext.Report.Error(0, Location, "Entry point already defined");
-            else if (specs == Specifiers.Entry)
+            else if ((specs & Specifiers.Entry) == Specifiers.Entry)
                 CompilerContext.EntryPointFound = true;
 
+            if ((specs & Specifiers.Variadic) == Specifiers.Variadic && ccv != CallingConventions.Cdecl && ccv != CallingConventions.VeryFastCall)
+                 ResolveContext.Report.Error(0, Location, "Variadic functions can only be used with cdecl & syscall calling conventions");
 
             if (_fbd._ext != null && !_fbd._ext.Static)
                 _fbd.ParamTypes.Insert(0, _fbd._ext.ExtendedType);
@@ -84,6 +74,7 @@ namespace VTC.Core
                 ParameterSpec thisps = new ParameterSpec("this", method, _fbd._ext.ExtendedType, loc, 4, Modifiers.Ref);
                 Parameters.Insert(0, thisps);
             }
+
             // Calling Convention
             ccvh.SetParametersIndex(ref Parameters, ccv);
             if (ccv == CallingConventions.FastCall)
@@ -102,7 +93,10 @@ namespace VTC.Core
                 ResolveContext.Report.Error(9, Location, "Cannot use very fast call with struct or union parameter at index 1 , 2 or 3");
             else if (ccv == CallingConventions.VeryFastCall && Parameters.Count >= 4 && (Parameters[0].MemberType.Size > 2 || Parameters[1].MemberType.Size > 2 || Parameters[2].MemberType.Size > 2 || Parameters[3].MemberType.Size > 2))
                 ResolveContext.Report.Error(9, Location, "Cannot use very fast call with struct or union parameter at index 1, 2, 3 or 4");
-          
+                 
+             // variadic
+              method.IsVariadic = (specs & Specifiers.Variadic) == Specifiers.Variadic;
+
             if (_fbd._ext == null)
             {
                 MethodSpec m = null;
@@ -118,24 +112,41 @@ namespace VTC.Core
                     ResolveContext.Report.Error(45, Location, "Another method with same signature has already extended this type.");
            
             }
+
             rc.CurrentMethod = method;
+            if (method.IsVariadic) // reserve local variable index for variadic
+            {
+                VarSpec paramsv = new VarSpec(rc.CurrentNamespace, "params", method, BuiltinTypeSpec.Pointer, Location, 0, Modifiers.Const, false);
+                rc.KnowVar(paramsv);
+            }
+
+
             if (specs == Specifiers.Isolated && method.MemberType != BuiltinTypeSpec.Void)
                 ResolveContext.Report.Error(45, Location, "only void methods can be isolated.");
 
             if (!method.MemberType.IsBuiltinType)
                 ResolveContext.Report.Error(45, Location, "return type must be builtin type " + method.MemberType.ToString() + " is user-defined type.");
-            if (_fbd._b != null)
+          
+          if (_fbd._b != null)
                 _fbd._b = (Block)_fbd._b.DoResolve(rc);
 
 
             return this;
         }
-   
+ int GetNextIndex(ParameterSpec p)
+ {
+    int paramidx = (p.MemberType.Size == 1) ? 2 : p.MemberType.Size;
+
+     if (p.MemberType.Size != 1 && p.MemberType.Size % 2 != 0)
+         paramidx++;
+
+     return paramidx + p.StackIdx;
+ }
         public override bool Emit(EmitContext ec)
         {
             if ((mods & Modifiers.Extern) == Modifiers.Extern)
                 ec.DefineGlobal(method);
-            if (specs == Specifiers.Entry)
+            if ((specs & Specifiers.Entry) == Specifiers.Entry)
                 ec.SetEntry(method.Signature.ToString());
 
 
@@ -147,7 +158,7 @@ namespace VTC.Core
             ec.EmitComment("create stackframe");
             ec.EmitInstruction(new Push() { DestinationReg = EmitContext.BP, Size = 80 });
             ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, SourceReg = EmitContext.SP, Size = 80 });
-            if (specs == Specifiers.Isolated)
+            if ((specs & Specifiers.Isolated) == Specifiers.Isolated)
                 ec.EmitInstruction(new Pushad());
             // allocate variables
 
@@ -193,6 +204,17 @@ namespace VTC.Core
                     ccvh.EmitVFastCall(ec, 1);
                 }
             }
+            // Variadic Parameter Start Assign
+            if (method.IsVariadic)
+            {
+                ec.EmitComment("Variadic Parameter Offset Copy");
+                ushort off = 4;
+                if (Parameters.Count > 0)
+                    off = (ushort)GetNextIndex(Parameters[Parameters.Count - 1]);
+
+                ec.EmitInstruction(new Lea() { DestinationReg = EmitContext.SI, SourceReg = EmitContext.BP, SourceDisplacement = off, SourceIsIndirect = true });
+                ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationIsIndirect = true, DestinationDisplacement = -2, SourceReg = EmitContext.SI});
+            }
 
             if (size != 0)         // no allocation
                 ec.EmitInstruction(new Sub() { DestinationReg = EmitContext.SP, SourceValue = size, Size = 80 });
@@ -204,11 +226,14 @@ namespace VTC.Core
                     ec.EmitComment("Parameter " + par.Name + " @BP" + par.StackIdx);
 
             }
+            if (method.IsVariadic)
+                ec.EmitComment("Variadic Pointer Address @BP-2");
+
             if (locals.Count > 0)
             {
                 ec.EmitComment("Local Vars Definitions");
                 foreach (VarSpec v in locals)
-                    ec.EmitComment("Parameter " + v.Name + " @BP" + v.StackIdx);
+                    ec.EmitComment("Local " + v.Name + " @BP" + v.StackIdx);
             }
             ec.EmitComment("Block");
             // Emit Code
@@ -225,7 +250,7 @@ namespace VTC.Core
                 ec.EmitInstruction(new Jump() { DestinationLabel = method.Signature + "_ret" });
             }
             // Destroy Stack Frame
-            if (specs == Specifiers.Isolated)
+            if ((specs & Specifiers.Isolated) == Specifiers.Isolated)
                 ec.EmitInstruction(new Popad());
 
             ec.EmitComment("destroy stackframe");

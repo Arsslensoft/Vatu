@@ -24,13 +24,23 @@ namespace VTC
                 return GetTypeName(this);
             }
         }
-      
+        public byte FloatSizeBits
+        {
+            get
+            {
+                if (IsFloat)
+                    return 32;
+                else return 80;
+            }
+
+        }
         public byte SizeInBits
         {
             get
             {
                 if (Size <= 2)
                     return (byte)(Size * 8);
+       
                 else return 80;
             }
 
@@ -134,6 +144,14 @@ namespace VTC
             }
 
         }
+        public bool IsFloat
+        {
+            get
+            {
+                return _bt  == BuiltinTypes.Float;
+            }
+
+        }
         public bool IsPointer
         {
             get
@@ -166,7 +184,10 @@ namespace VTC
             }
 
         }
-
+        public bool IsSigned
+        {
+            get { return BuiltinType == BuiltinTypes.SByte || BuiltinType == BuiltinTypes.Int; }
+        }
         public bool IsUnsigned
         {
             get { return BuiltinType == BuiltinTypes.Byte || BuiltinType == BuiltinTypes.UInt; }
@@ -223,6 +244,7 @@ namespace VTC
                     case BuiltinTypes.Byte:
                         return 1;
                     case BuiltinTypes.Float:
+                        return 4;
                     case BuiltinTypes.Int:
                     case BuiltinTypes.UInt:
                     case  BuiltinTypes.String:
@@ -249,6 +271,7 @@ namespace VTC
                     case BuiltinTypes.Byte:
                         return 1;
                     case BuiltinTypes.Float:
+                        return 4;
                     case BuiltinTypes.Int:
                     case BuiltinTypes.UInt:
                     case BuiltinTypes.String:
@@ -355,7 +378,7 @@ namespace VTC
             get { return Name.Replace("*", "P"); }
         }
       
-        public bool Equals(TypeSpec tp)
+        public virtual bool Equals(TypeSpec tp)
         {
             return tp.Signature == Signature;
         }

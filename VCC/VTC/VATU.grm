@@ -10,9 +10,9 @@
 {Hex Digit}      = {Digit} + [abcdefABCDEF]
 {Oct Digit}      = [01234567]
 {Binary Digit}   = [01]
-{Literal Suffix} = [iusbafIUSBAF]
+{Literal Suffix} = [iusbafpdeIUSBAFPDE]
 {Literal Prefix} = [-]
-
+{Float Suffix}   = [fFdDeE]
                                                               
 {Id Head}        = {Letter} + [_]
 {Id Tail}        = {Id Head} + {Digit}
@@ -34,10 +34,10 @@ NullLiteral      = null
 StringLiteral    = '"'( {String Ch} | '\'{Printable} )* '"'
                  
 CharLiteral      = '' ( {Char Ch} | '\'{Printable} )''
-FloatLiteral     = {Digit}*'.'{Digit}+
+FloatLiteral     = {Literal Prefix}{Digit}*'.'{Digit}+{Float Suffix} | {Digit}*'.'{Digit}+{Float Suffix} | {Literal Prefix}{Digit}*'.'{Digit}+ | {Digit}*'.'{Digit}+
                  
 
-IncludeLiteral    = '<'( {Printable} )+ '>'
+IncludeLiteral    = '<' ( {Printable} )+ '>'
 Id               = {Id Head}{Id Tail}*    
 
 OperatorLiteralUnary  =  '@' [!&#$%*+-,/<>=?\^_|~£¤µ.:]+
@@ -73,7 +73,6 @@ Comment Line  = '//'
             | <Import> <Imports>   
                    
 <Namespace> ::= namespace <Name>
-             | default namespace
 
 ! ===================================================================
 !  Global Declaration 
@@ -128,8 +127,9 @@ Comment Line  = '//'
  <Func Proto> ::=<Func ID> '(' <Types>  ')' <Func Ext> ';'
                | <Func ID> '(' <Params> ')' <Func Ext> ';'   
                | <Func ID> '('  ')' <Func Ext> ';'   
-      
+        
                
+
 <Operator Definition Decl> ::= <Mod> define Id operator <Operator Def> ';'
                  | <Mod> define bool Id operator <Operator Def> ';'
 
@@ -144,7 +144,6 @@ Comment Line  = '//'
 ! Method  Declaration
 ! ===================================================================  
 <Func Decl>  ::= <Func ID> <Func Body>
-               | <Func Spec> <Func ID> <Func Body>
 
 <Oper Decl>  ::= <Mod> override <Type> operator <Operator> <Func Body>
                | <Mod> override <Type> operator <Cast Kind> <Func Body> ! source type to dest type
@@ -156,7 +155,7 @@ Comment Line  = '//'
 
 <Func Body>  ::= '(' <Params>  ')' <Func Ext> <Block>
               | '(' ')' <Func Ext>  <Block>     
-             
+              
 <Params>     ::= <Param> ',' <Params>
                | <Param>
                
@@ -172,9 +171,19 @@ Comment Line  = '//'
               | <CallCV> <Type> ID
               | <Type> ID
               | <Mod> <Type> ID
+              ! Function Specs Support
+              | <Mod> <Func Specs> <CallCV> <Type> ID
+              | <Func Specs> <CallCV> <Type> ID
+              | <Func Specs> <Type> ID
+              | <Mod> <Func Specs> <Type> ID
               
+
+<Func Specs> ::= <Func Spec> <Func Specs> 
+              | <Func Spec> 
+                         
 <Func Spec> ::= entry
              | isolated
+             | variadic
              
 <CallCV>    ::= stdcall 
              | fastcall
@@ -283,6 +292,8 @@ Comment Line  = '//'
              | string
              | pointer
              | float
+
+             
              
 <Pointers> ::= '*' <Pointers>
               |         
@@ -459,6 +470,8 @@ Comment Line  = '//'
                | <Var Expr>
                
 <Var Expr>     ::= Id
+                | this
+                | params
 <Method Expr>  ::= Id '(' <PARAM EXPR> ')' 
                 
                 

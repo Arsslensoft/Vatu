@@ -38,6 +38,9 @@ namespace VTC
        [Option('g', "debug", HelpText = "Debug option", DefaultValue = false)]
        public bool Debug { get; set; }
 
+       [Option('f', "float", HelpText = "Floating point support", DefaultValue = false)]
+       public bool FloatingPointEnabled { get; set; }
+
 
        [Option('p', "platform", Required = false, DefaultValue = Platform.Intel16,
 HelpText = "Platform")]

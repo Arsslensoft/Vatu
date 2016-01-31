@@ -14,6 +14,7 @@ namespace VTC
     {
         public SubtractionOperator()
         {
+            FloatingPointSupported = true;
             Operator = BinaryOperator.Subtraction;
             LeftRegister = RegistersEnum.AX;
             RightRegister = RegistersEnum.CX;
@@ -24,27 +25,33 @@ namespace VTC
                 ResolveContext.Report.Error(23, Location, "Arithmetic operations must have the same types (use cast)");
 
             CommonType = Left.Type;
-            if (Right is RegisterExpression && Left is RegisterExpression)
-                RegisterOperation = true;
-            else if (Right is RegisterExpression || Left is RegisterExpression)
-                ResolveContext.Report.Error(28, Location, "Register expected, Left and Right must be registers");
-
+        
             rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), ref OvlrdOp, new TypeSpec[2] { Left.Type, Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
             return this;
+        }
+        bool EmitFloatOperation(EmitContext ec)
+        {
+            Left.EmitToStack(ec);
+            Right.EmitToStack(ec);
+            ec.EmitComment(Left.CommentString() + " - " + Right.CommentString());
+
+            ec.EmitInstruction(new Vasm.x86.x87.FloatSubAndPop() { DestinationReg = RegistersEnum.ST1, SourceReg = RegistersEnum.ST0 });
+
+
+
+            return true;
         }
         public override bool Emit(EmitContext ec)
         {
             if (OvlrdOp != null)
                 return base.EmitOverrideOperator(ec);
 
-            if (RegisterOperation)
-            {
-                RegisterExpression.EmitOperation(ec, new Add(), ((RegisterExpression)Right).Register, ((RegisterExpression)Left).Register);
-                return true;
-            }
+            if (CommonType.IsFloat && !CommonType.IsPointer)
+                return EmitFloatOperation(ec);
 
+      
             Left.EmitToStack(ec);
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " - " + Right.CommentString());

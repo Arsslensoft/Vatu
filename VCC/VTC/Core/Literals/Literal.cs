@@ -36,8 +36,15 @@ namespace VTC.Core
 				return TypeCode.Single;
 			case 'D': case 'd':
 				return TypeCode.Double;
-		
-          
+
+            case 'E':
+            case 'e':
+                return TypeCode.Decimal;
+        
+
+            case 'P':
+            case 'p':
+                return TypeCode.UInt32;          
 			default:
       
 				return TypeCode.Empty;

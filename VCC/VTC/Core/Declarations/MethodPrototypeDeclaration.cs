@@ -12,6 +12,7 @@ namespace VTC.Core
         MethodSpec method;
         CallingConventions ccv = CallingConventions.StdCall;
         Modifiers mods = Modifiers.Private;
+        Specifiers specs = Specifiers.NoSpec;
         Stack<ParameterSpec> Params { get; set; }
         public List<ParameterSpec> Parameters { get; set; }
 
@@ -19,7 +20,7 @@ namespace VTC.Core
         MethodIdentifier _id; 
         ParameterListDefinition _pal; 
         TypeIdentifierListDefinition _tdl;
-  
+   
         [Rule(@" <Func Proto> ::= <Func ID> ~'(' <Types> ~')' <Func Ext> ~';'")]
         public MethodPrototypeDeclaration(MethodIdentifier id, TypeIdentifierListDefinition tdl, FunctionExtensionDefinition _ext)
         {
@@ -27,8 +28,6 @@ namespace VTC.Core
             _tdl = tdl;
             ext = _ext;
         }
-
-
         [Rule(@"<Func Proto> ::= <Func ID> ~'(' <Params> ~')' <Func Ext> ~';'")]
         public MethodPrototypeDeclaration(MethodIdentifier id, ParameterListDefinition pal, FunctionExtensionDefinition _ext)
         {
@@ -36,7 +35,6 @@ namespace VTC.Core
             _pal = pal;
             ext = _ext;
         }
-
         [Rule(@"<Func Proto> ::= <Func ID> ~'(' ~')' <Func Ext> ~';'")]
         public MethodPrototypeDeclaration(MethodIdentifier id, FunctionExtensionDefinition _ext)
         {
@@ -45,6 +43,9 @@ namespace VTC.Core
             _pal = null;
 
         }
+
+
+
        public override bool Resolve(ResolveContext rc)
         {
             bool ok = _id.Resolve(rc);
@@ -57,10 +58,11 @@ namespace VTC.Core
  public override SimpleToken DoResolve(ResolveContext rc)
         {
             _id = (MethodIdentifier)_id.DoResolve(rc);
-
+            specs = _id.Specs;
             ccv = _id.CV;
             mods = _id.Mods;
             mods |= Modifiers.Prototype;
+   
             base._type = _id.TType;
             method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, null, this.loc);
             Params = new Stack<ParameterSpec>();
@@ -120,8 +122,9 @@ namespace VTC.Core
             if (ext != null && !ext.Static)
                 tp.Insert(0, ext.ExtendedType);
             method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, tp.ToArray(), this.loc);
+            method.IsVariadic = (specs & Specifiers.Variadic) == Specifiers.Variadic;
             method.Parameters = Parameters;
-           
+            rc.CurrentMethod = method;
             // extension
             if (ext != null)
             {
@@ -152,7 +155,8 @@ namespace VTC.Core
         }
         public override bool Emit(EmitContext ec)
         {
-            ec.DefineExtern(method);
+            if ((mods & Modifiers.Extern) == Modifiers.Extern)
+                 ec.DefineExtern(method);
             return true;
         }
     }

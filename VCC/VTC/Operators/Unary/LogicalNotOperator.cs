@@ -18,7 +18,7 @@ namespace VTC
             Register = RegistersEnum.AX;
             Operator = UnaryOperator.LogicalNot;
         }
-        AssignExpression ae;
+
        public override bool Resolve(ResolveContext rc)
         {
             return true;

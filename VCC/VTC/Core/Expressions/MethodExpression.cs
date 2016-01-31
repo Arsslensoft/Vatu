@@ -74,7 +74,7 @@ namespace VTC.Core
                 ok &= _param.Resolve(rc);
             return true;
         }
- public override SimpleToken DoResolve(ResolveContext rc)
+         public override SimpleToken DoResolve(ResolveContext rc)
         {
             ccvh = new CallingConventionsHandler();
             List<TypeSpec> tp = new List<TypeSpec>();
@@ -131,7 +131,9 @@ namespace VTC.Core
       
                 if (Method == null)
                     ResolveContext.Report.Error(46, Location, "Unknown method " + msig.NormalSignature + " ");
-                else if (Method.Parameters.Count != Parameters.Count)
+              
+                
+                else if (!Method.IsVariadic && Method.Parameters.Count != Parameters.Count)
                     ResolveContext.Report.Error(46, Location, "the method " + Method.Name + " has different parameters");
                 else if (!MatchParameterTypes(rc))
                     ResolveContext.Report.Error(46, Location, "the method " + Method.Name + " has different parameters types. try casting");
@@ -157,6 +159,7 @@ namespace VTC.Core
 
             return true;
         }
+
         bool MatchParameterTypes(DelegateTypeSpec t)
         {
             for (int i = 0; i < t.Parameters.Count; i++)

@@ -27,7 +27,7 @@ namespace VTC
                 Emitter.Offset = value;
             }
         }
-        public Namespace NS { get; set; }
+
         public FieldSpec(Namespace ns,string name, Modifiers mods, TypeSpec type, Location loc,bool access =false)
             : base(name, new MemberSignature(ns,name, loc), mods,ReferenceKind.Field)
         {
@@ -47,9 +47,15 @@ namespace VTC
                        Emitter = new ArrayEmitter(this, 0, ReferenceKind.Field);
                 else Emitter = new HostedArrayEmitter(this, 0, ReferenceKind.Field);
             }
+
             else if (memberType.IsBuiltinType || memberType.IsDelegate)
             {
-                if (memberType.Size == 2)
+                if (memberType.IsFloat && !memberType.IsPointer)
+                    Emitter = new FloatEmitter(this, 0, ReferenceKind.Field);
+                else if (memberType.IsSigned && memberType.Size == 1)
+                    Emitter = new SByteEmitter(this, 0, ReferenceKind.Field);
+
+                else  if (memberType.Size == 2)
                     Emitter = new WordEmitter(this, 0, ReferenceKind.Field);
                 else if (memberType.Size == 1)
                     Emitter = new ByteEmitter(this, 0, ReferenceKind.Field);

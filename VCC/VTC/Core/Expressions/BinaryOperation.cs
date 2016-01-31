@@ -65,6 +65,101 @@ namespace VTC.Core
             IsConstant = false;
             _op.Right = right;
         }
+      
+
+        bool requireoverload = false;
+       public override bool Resolve(ResolveContext rc)
+        {
+            bool ok = _op.Left.Resolve(rc);
+            ok &= _op.Right.Resolve(rc);
+
+            return ok;
+        }
+ public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            Expr tmp;
+            if (_op.Right != null)
+                _op.Right = (Expr)_op.Right.DoResolve(rc);
+            else _op.RightType = (TypeToken)_op.RightType.DoResolve(rc);
+          
+             _op.Left = (Expr)_op.Left.DoResolve(rc);
+         
+          
+            if (_op.Right != null)
+            {
+                if (!TypeChecker.ArtihmeticsAllowed(_op.Right.Type, _op.Left.Type))
+                    requireoverload = true;
+
+                // check for const
+                if (_op.Right is ConstantExpression && _op.Left is ConstantExpression)
+                {
+                    IsConstant = true;
+                    ConstantFolding cfold = new ConstantFolding(_op,this);
+                    // try calculate
+                    tmp = cfold.TryEvaluate();
+                    if (tmp != this)
+                        return tmp;
+                }
+            }
+
+            // end check const
+            _op = (BinaryOp)_op.DoResolve(rc);
+            if (requireoverload && _op.OvlrdOp == null)
+                ResolveContext.Report.Error(46, Location, "Binary operations are not allowed for this type");
+            Type = _op.CommonType;
+            return this;
+        }
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+ {
+     _op.DoFlowAnalysis(fc);
+            FlowState ok = _op.Left.DoFlowAnalysis(fc);
+            if (_op.Right != null)
+                ok &= _op.Right.DoFlowAnalysis(fc);
+
+            return ok & base.DoFlowAnalysis(fc);
+        }
+       
+        public override bool Emit(EmitContext ec)
+        {
+            return _op.Emit(ec);
+        }
+        public override bool EmitToStack(EmitContext ec)
+        {
+            Emit(ec);
+            return true;
+        }
+
+        public override string CommentString()
+        {
+            if(_op.Right != null)
+            return _op.Left.CommentString() + _op.CommentString() + _op.Right.CommentString();
+            else return _op.Left.CommentString() + "is" + _op.RightType.Name ;
+        }
+
+        public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
+        {
+            return _op.EmitBranchable(ec, truecase, v);
+        }
+
+    }
+
+    public class ConstantFolding
+    {
+        #region Constant Folding
+      readonly  Operator _op;
+      readonly Expr _operation;
+      public Location Location
+      {
+          get
+          {
+              return _operation.Location;
+          }
+      }
+      public ConstantFolding(Operator op,Expr oper)
+      {
+          _op = op;
+          _operation = oper;
+      }
         byte GetValueAsByte(Expr rexp, Expr lexp)
         {
             ByteConstant lce = ((ByteConstant)lexp);
@@ -172,6 +267,7 @@ namespace VTC.Core
         }
         ushort GetValueAsUInt(Expr rexp, Expr lexp)
         {
+
             UIntConstant lce = ((UIntConstant)lexp);
             UIntConstant rce = ((UIntConstant)rexp);
 
@@ -227,6 +323,30 @@ namespace VTC.Core
             throw new Exception("Failed");
 
         }
+        float GetValueAsFloat(Expr rexp, Expr lexp)
+        {
+
+            FloatConstant lce = ((FloatConstant)lexp);
+            FloatConstant rce = ((FloatConstant)rexp);
+
+
+            if (_op is AdditionOperator)
+                return (float)(lce._value + rce._value);
+            else if (_op is SubtractionOperator)
+                return (float)(lce._value - rce._value);
+            else if (_op is MultiplyOperator)
+                return (float)(lce._value * rce._value);
+            else if (_op is DivisionOperator)
+                return (float)(lce._value / rce._value);
+            else if (_op is ModulusOperator)
+                return (float)(lce._value % rce._value);
+
+
+
+            throw new Exception("Failed");
+
+        }
+
 
         bool CompareExpr(Expr rexp, Expr lexp)
         {
@@ -325,8 +445,24 @@ namespace VTC.Core
                 return lv == false;
             else return false;
         }
+        bool EvalueComparison(float lv, float rv)
+        {
+            if (_op is EqualOperator)
+                return lv == rv;
+            else if (_op is NotEqualOperator)
+                return lv != rv;
+            else if (_op is GreaterThanOperator)
+                return lv > rv;
+            else if (_op is LessThanOperator)
+                return lv < rv;
+            else if (_op is GreaterThanOrEqualOperator)
+                return lv >= rv;
+            else if (_op is LessThanOrEqualOperator)
+                return lv <= rv;
+            else return false;
+        }
 
-        Expr TryEvaluate()
+       public Expr TryEvaluate()
         {
             try
             {
@@ -340,90 +476,23 @@ namespace VTC.Core
                         return new SByteConstant(GetValueAsSByte(_op.Right, _op.Left), Location);
                     else if (_op.Left is IntConstant)
                         return new IntConstant(GetValueAsInt(_op.Right, _op.Left), Location);
-                    else if (_op.Left is UIntConstant)
+                    else if (_op.Left is UIntConstant || _op.Left is PointerConstant)
                         return new UIntConstant(GetValueAsUInt(_op.Right, _op.Left), Location);
                     else if (_op.Left is BoolConstant)
                         return new BoolConstant(GetValueAsBool(_op.Right, _op.Left), Location);
-                    else return this;
+
+                    else if (_op.Left is FloatConstant)
+                        return new FloatConstant(GetValueAsFloat(_op.Right, _op.Left), Location);
+                    else return _operation;
                 }
             }
             catch
             {
-                return this;
+                return _operation;
             }
 
         }
-        bool requireoverload = false;
-       public override bool Resolve(ResolveContext rc)
-        {
-            bool ok = _op.Left.Resolve(rc);
-            ok &= _op.Right.Resolve(rc);
 
-            return ok;
-        }
- public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            Expr tmp;
-            if (_op.Right != null)
-                _op.Right = (Expr)_op.Right.DoResolve(rc);
-            else _op.RightType = (TypeToken)_op.RightType.DoResolve(rc);
-
-
-            _op.Left = (Expr)_op.Left.DoResolve(rc);
-            if (_op.Right != null)
-            {
-                if (!TypeChecker.ArtihmeticsAllowed(_op.Right.Type, _op.Left.Type))
-                    requireoverload = true;
-
-                // check for const
-                if (_op.Right is ConstantExpression && _op.Left is ConstantExpression)
-                {
-                    IsConstant = true;
-                    // try calculate
-                    tmp = TryEvaluate();
-                    if (tmp != this)
-                        return tmp;
-                }
-            }
-
-            // end check const
-            _op = (BinaryOp)_op.DoResolve(rc);
-            if (requireoverload && _op.OvlrdOp == null)
-                ResolveContext.Report.Error(46, Location, "Binary operations are not allowed for this type");
-            Type = _op.CommonType;
-            return this;
-        }
-        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
- {
-     _op.DoFlowAnalysis(fc);
-            FlowState ok = _op.Left.DoFlowAnalysis(fc);
-            if (_op.Right != null)
-                ok &= _op.Right.DoFlowAnalysis(fc);
-
-            return ok & base.DoFlowAnalysis(fc);
-        }
-       
-        public override bool Emit(EmitContext ec)
-        {
-            return _op.Emit(ec);
-        }
-        public override bool EmitToStack(EmitContext ec)
-        {
-            Emit(ec);
-            return true;
-        }
-
-        public override string CommentString()
-        {
-            if(_op.Right != null)
-            return _op.Left.CommentString() + _op.CommentString() + _op.Right.CommentString();
-            else return _op.Left.CommentString() + "is" + _op.RightType.Name ;
-        }
-
-        public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
-        {
-            return _op.EmitBranchable(ec, truecase, v);
-        }
-
+        #endregion
     }
 }

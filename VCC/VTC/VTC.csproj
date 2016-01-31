@@ -165,6 +165,8 @@
     <Compile Include="Compiler\CallingConventions.cs" />
     <Compile Include="Compiler\Emitter\ArrayEmitter.cs" />
     <Compile Include="Compiler\Emitter\ByteEmitter.cs" />
+    <Compile Include="Compiler\Emitter\FloatEmitter.cs" />
+    <Compile Include="Compiler\Emitter\SByteEmitter.cs" />
     <Compile Include="Compiler\Emitter\HostedMatrixEmitter.cs" />
     <Compile Include="Compiler\Emitter\MatrixEmitter.cs" />
     <Compile Include="Compiler\Emitter\HostedArrayEmitter.cs" />
@@ -207,13 +209,16 @@
     <Compile Include="Core\Constants\ArrayConstant.cs" />
     <Compile Include="Core\Constants\BoolConstant.cs" />
     <Compile Include="Core\Constants\ByteConstant.cs" />
+    <Compile Include="Core\Constants\PointerConstant.cs" />
     <Compile Include="Core\Constants\FloatConstant.cs" />
     <Compile Include="Core\Constants\IntConstant.cs" />
     <Compile Include="Core\Definitions\InheritanceDefinition.cs" />
     <Compile Include="Core\Expressions\DeclaredExpression.cs" />
     <Compile Include="Core\Expressions\InstanceExpression.cs" />
+    <Compile Include="Core\Expressions\ParamsExpression.cs" />
     <Compile Include="Core\Expressions\Register\RegisterBinaryOperation.cs" />
     <Compile Include="Core\Expressions\Register\RegisterUnaryOperation.cs" />
+    <Compile Include="Core\Expressions\ThisExpression.cs" />
     <Compile Include="Core\Literals\FloatLiteral.cs" />
     <Compile Include="Core\Literals\IntegralConst.cs" />
     <Compile Include="Core\Constants\NullConstant.cs" />

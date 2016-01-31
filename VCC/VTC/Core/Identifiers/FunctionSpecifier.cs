@@ -15,6 +15,7 @@ namespace VTC.Core
         SimpleToken tt;
         [Rule(@"<Func Spec>  ::= isolated")]
         [Rule(@"<Func Spec>  ::= entry")]
+        [Rule(@"<Func Spec>  ::= variadic")]
         public FunctionSpecifier(SimpleToken t)
         {
             tt = t;
@@ -27,7 +28,9 @@ namespace VTC.Core
 
             else if (tt.Name == "isolated")
                 Specs = Specifiers.Isolated;
-
+            else if (tt.Name == "variadic")
+                Specs = Specifiers.Variadic;
+            else Specs = Specifiers.NoSpec;
             return this;
         }
     }

@@ -23,7 +23,9 @@ namespace VTC.Core
                 else return CallingConventions.Default;
             }
         }
+        public Specifiers Specs { get; set; }
         Modifier _mod;
+        FunctionSpecifierSequence _fsp;
         [Rule(@"<Func ID> ::= <CallCV> <Type> Id")]
         public MethodIdentifier(CallingCV ccv, TypeToken type, Identifier id)
             : base(id.Name)
@@ -60,6 +62,47 @@ namespace VTC.Core
             _mod = mod;
         }
 
+        // Function Specs
+        [Rule(@"<Func ID> ::= <Func Specs> <CallCV> <Type> Id")]
+        public MethodIdentifier(FunctionSpecifierSequence fs,CallingCV ccv, TypeToken type, Identifier id)
+            : base(id.Name)
+        {
+            Id = id;
+            TType = type;
+            CCV = ccv;
+            _fsp = fs;
+        }
+        [Rule(@"<Func ID> ::= <Func Specs> <Type> Id")]
+        public MethodIdentifier(FunctionSpecifierSequence fs,TypeToken type, Identifier id)
+            : base(id.Name)
+        {
+            Id = id;
+            TType = type;
+            CCV = null;
+            _fsp = fs;
+        }
+
+        [Rule(@"<Func ID> ::= <Mod> <Func Specs> <CallCV> <Type> Id")]
+        public MethodIdentifier(Modifier mod, FunctionSpecifierSequence fs, CallingCV ccv, TypeToken type, Identifier id)
+            : base(id.Name)
+        {
+            Id = id;
+            TType = type;
+            CCV = ccv;
+            _mod = mod;
+            _fsp = fs;
+        }
+        [Rule(@"<Func ID> ::= <Mod> <Func Specs> <Type> Id")]
+        public MethodIdentifier(Modifier mod,FunctionSpecifierSequence fs, TypeToken type, Identifier id)
+            : base(id.Name)
+        {
+            Id = id;
+            TType = type;
+            CCV = null;
+            _mod = mod;
+            _fsp = fs;
+        }
+
        public override bool Resolve(ResolveContext rc)
         {
             TType.Resolve(rc);
@@ -74,6 +117,13 @@ namespace VTC.Core
                 Mods = _mod.ModifierList;
             }
             else Mods = Modifiers.Private;
+
+            if (_fsp != null)
+            {
+                _fsp = (FunctionSpecifierSequence)_fsp.DoResolve(rc);
+                Specs = _fsp.FunctionSpecs;
+            }
+            else Specs = Specifiers.NoSpec;
             TType = (TypeToken)TType.DoResolve(rc);
             base.Type = TType.Type;
             if (CCV != null)

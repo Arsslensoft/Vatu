@@ -9,4 +9,29 @@ namespace Vasm.x86.x87
     public class FloatCompareAndSetAndPop : InstructionWithDestination
     {
     }
+    [Vasm.OpCode("fcompp")]
+    public class FloatCompareAnd2Pop : Instruction
+    {
+
+
+    }
+    [Vasm.OpCode("fstsw")]
+    public class FloatStoreStatus : InstructionWithDestination
+    {
+
+
+    }
+    [Vasm.OpCode("sahf")]
+    public class StoreAHToFlags : Instruction
+    {
+
+
+    }
+    [Vasm.OpCode("fwait")]
+    public class FloatWait : Instruction
+    {
+
+
+    }
+   
 }

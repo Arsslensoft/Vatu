@@ -32,6 +32,12 @@ namespace VTC.Core
         {
 
         }
+
+        public VariableExpression(string name)
+            : base(name)
+        {
+
+        }
        public override bool Resolve(ResolveContext rc)
         {
             variable = rc.Resolver.TryResolveVar(_idName);

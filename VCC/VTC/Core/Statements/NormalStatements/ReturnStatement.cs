@@ -37,7 +37,7 @@ namespace VTC.Core
             if (_expr != null)
             {
                 _expr = (Expr)_expr.DoResolve(rc);
-                if (!_expr.Type.Equals(rc.CurrentMethod.MemberType))
+                if (!TypeChecker.CompatibleTypes(_expr.Type,rc.CurrentMethod.MemberType))
                     ResolveContext.Report.Error(0, Location, "Return expression type must be " + rc.CurrentMethod.MemberType.Name);
             
              

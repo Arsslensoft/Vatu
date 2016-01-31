@@ -22,7 +22,7 @@ namespace VTC
         {
           
         }
-        public bool Equals(TypeSpec bt)
+        public override bool Equals(TypeSpec bt)
         {
             if (bt.IsArray && this.Name == "string")
                 return true;

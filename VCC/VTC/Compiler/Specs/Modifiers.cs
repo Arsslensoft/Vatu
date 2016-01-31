@@ -14,15 +14,16 @@ namespace VTC
     [Flags]
     public enum Modifiers
     {
+        NoModifier = 0,
         Static = 1,
         Extern = 1 << 1,
-        NoModifier = 1 << 2,
-        Prototype = 1 << 3,
+
+        Prototype = 1 << 2,
        
-        Const = 1 << 4,
-        Private = 1 << 5,
-        Ref = 1 << 6,
-        Public = 1 << 7
+        Const = 1 << 3,
+        Private = 1 << 4,
+        Ref = 1 << 5,
+        Public = 1 << 6
     }
 
 	

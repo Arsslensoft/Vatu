@@ -6,6 +6,11 @@ using System.Text;
 
 namespace VTC.Core
 {
+    [Terminal("this")]
+    [Terminal("params")]
+    [Terminal("variadic")]
+
+
     [Terminal(":=")]
     [Terminal("define")]
     [Terminal("LOW")]

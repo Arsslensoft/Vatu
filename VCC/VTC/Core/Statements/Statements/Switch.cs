@@ -74,22 +74,7 @@ namespace VTC.Core
         {
 
 
-            // define switch
-            SWITCH = rc.DefineLabel(LabelType.SW);
-            SWITCH_EXIT = rc.DefineLabel(SWITCH.Name + "_EXIT");
-            foreach (Case c in _cases)
-                if (c != null) 
-                    ResolvedCases.Add(c);
-                
-            HasDefault = false;
-            int index = 0;
-            if (ResolvedCases.Count > 0)
-            {
-                for (int i = 0; i < ResolvedCases.Count; i++)
-                    HasDefault = HasDefault || ResolvedCases[i].SetSwitch(this, SWITCH, SWITCH_EXIT, ref index);
-            }
-
-    
+           
 
             rc.EnclosingSwitch = this;
 

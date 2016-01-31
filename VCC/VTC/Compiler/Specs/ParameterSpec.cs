@@ -103,7 +103,12 @@ namespace VTC
             }
             else if (memberType.IsBuiltinType || memberType.IsDelegate)
             {
-                if (memberType.Size == 2)
+                if (memberType.IsFloat && !memberType.IsPointer)
+                    Emitter = new FloatEmitter(this, 4, ReferenceKind.Parameter);
+                else if (memberType.IsSigned && memberType.Size == 1)
+                    Emitter = new SByteEmitter(this, 4, ReferenceKind.Parameter);
+
+                else if (memberType.Size == 2)
                     Emitter = new WordEmitter(this, 4, ReferenceKind.Parameter);
                 else if (memberType.Size == 1)
                     Emitter = new ByteEmitter(this, 4, ReferenceKind.Parameter);

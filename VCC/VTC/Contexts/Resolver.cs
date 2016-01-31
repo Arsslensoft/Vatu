@@ -235,6 +235,89 @@ namespace VTC
             }
             return null;
         }
+        public void ResolveVariadicMethod(Namespace ns, string name, ref MethodSpec mtd, TypeSpec[] par = null)
+        {
+            if (CurrentExtensionLookup == null)
+            {
+                if (par != null)
+                {
+                    MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
+                    for (int i = 0; i < KnownMethods.Count; i++)
+                    {
+                        if (KnownMethods[i].NS.Name != ns.Name)
+                            continue;
+                        if (msig.Signature.StartsWith(KnownMethods[i].Signature.Signature) && ((!KnownMethods[i].IsPrivate || CurrentNamespace == ns)))
+                        {
+                            // Variadic Signature Match
+                            mtd = KnownMethods[i];
+                            return;
+
+                        }
+                    }
+                }
+                else
+                {
+                    MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
+                    for (int i = 0; i < KnownMethods.Count; i++)
+                    {
+                        if (KnownMethods[i].NS.Name != ns.Name)
+                            continue;
+                        if (msig.Signature.StartsWith(KnownMethods[i].Signature.Signature) && ((!KnownMethods[i].IsPrivate || CurrentNamespace == ns)))
+                        {
+                            // Variadic Signature Match
+                            mtd = KnownMethods[i];
+                            return;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                List<MethodSpec> ml = CurrentExtensionLookup.ExtendedMethods;
+                if (IsExtensionStatic)
+                    ml = CurrentExtensionLookup.StaticExtendedMethods;
+                if (par != null && !IsExtensionStatic)
+                {
+                    List<TypeSpec> ts = new List<TypeSpec>();
+                    ts.AddRange(par);
+                    ts.Insert(0, CurrentExtensionLookup);
+                    par = ts.ToArray();
+                }
+                else if (!IsExtensionStatic)
+                    par = new TypeSpec[1] { CurrentExtensionLookup };
+
+                if (par != null)
+                {
+                    MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
+                    for (int i = 0; i < ml.Count; i++)
+                    {
+                        if (msig.ExtensionSignature.StartsWith(ml[i].Signature.ExtensionSignature) && ((!ml[i].IsPrivate || CurrentNamespace == ns)))
+                        {
+                            // Variadic Signature Match
+                            mtd = ml[i];
+                            return;
+
+                        }
+                    }
+                }
+                else
+                {
+                    MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
+                    for (int i = 0; i < ml.Count; i++)
+                    {
+
+                        if (msig.ExtensionSignature.StartsWith(ml[i].Signature.ExtensionSignature) && ((!ml[i].IsPrivate || CurrentNamespace == ns)))
+                        {
+                            // Variadic Signature Match
+                            mtd = ml[i];
+                            return;
+
+                        }
+                    }
+                }
+            }
+
+        }
         public void ResolveMethod(Namespace ns, string name, ref MethodSpec mtd,TypeSpec[] par=null)
         {
             if (CurrentExtensionLookup == null)
@@ -302,7 +385,8 @@ namespace VTC
                     for (int i = 0; i < ml.Count; i++)
                     {
 
-                        if (ml[i].Signature == msig && ((!ml[i].IsPrivate || CurrentNamespace == ns))){
+                        if (ml[i].Signature.ExtensionSignature == msig.ExtensionSignature && ((!ml[i].IsPrivate || CurrentNamespace == ns)))
+                        {
                             mtd = ml[i];
                                  return;
                         
@@ -375,7 +459,26 @@ namespace VTC
             return null;
         }
 
+        public void TryResolveVariadicMethod(string name, ref MethodSpec ms, TypeSpec[] param = null)
+        {
+            ResolveVariadicMethod(CurrentNamespace, name, ref ms, param);
+            if (ms == null)
+            {
+                ResolveVariadicMethod(Namespace.Default, name, ref ms, param);
 
+
+                if (ms == null)
+                {
+                    foreach (Namespace ns in Imports)
+                    {
+                        ResolveVariadicMethod(ns, name, ref ms, param);
+                        if (ms != null)
+                            return;
+                    }
+                }
+            }
+            return;
+        }
         public void TryResolveMethod(string name,ref MethodSpec ms, TypeSpec[] param = null)
         {
             ResolveMethod(CurrentNamespace, name, ref ms,param);
@@ -394,7 +497,9 @@ namespace VTC
                     }
                 }
             }
-            return;
+         
+           if(ms == null)
+            TryResolveVariadicMethod(name, ref ms, param);
         }
         public VarSpec TryResolveVar(string name)
         {
