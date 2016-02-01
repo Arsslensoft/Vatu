@@ -37,13 +37,18 @@ namespace VTC
         }
         bool EmitFloatOperation(EmitContext ec)
         {
-            Left.EmitToStack(ec);
             Right.EmitToStack(ec);
+            Left.EmitToStack(ec);
+      
             ec.EmitComment(Left.CommentString() + " % " + Right.CommentString());
-
-            ec.EmitInstruction(new Vasm.x86.x87.FloatPRem1() );
-
-
+            Label modlb = ec.DefineLabel(LabelType.FLOAT_REM);
+            ec.MarkLabel(modlb);
+            ec.EmitInstruction(new Vasm.x86.x87.FloatPRem() );
+            ec.EmitInstruction(new Vasm.x86.x87.FloatStoreStatus() { DestinationReg = EmitContext.A });
+            ec.EmitInstruction(new Vasm.x86.x87.FloatWait());
+            ec.EmitInstruction(new Vasm.x86.x87.StoreAHToFlags());
+            ec.EmitInstruction(new ConditionalJump() {DestinationLabel = modlb.Name,Condition =  ConditionalTestEnum.ParityEven });
+            ec.EmitInstruction(new Vasm.x86.x87.FloatStoreAndPop() {DestinationReg = RegistersEnum.ST1 });
 
             return true;
         }
@@ -94,6 +99,7 @@ namespace VTC
                 ec.EmitInstruction(new MoveZeroExtend() { DestinationReg = LeftRegister.Value, SourceReg = RegistersEnum.AH, Size = 80 });
             else
                 ec.EmitInstruction(new Mov() { DestinationReg =  LeftRegister.Value, SourceReg = RegistersEnum.DX, Size = 80 });
+
             ec.EmitPush(LeftRegister.Value);
         
             return true;

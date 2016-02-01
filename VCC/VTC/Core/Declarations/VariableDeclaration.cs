@@ -296,16 +296,17 @@ namespace VTC.Core
                         if (f.MemberType.Equals(BuiltinTypeSpec.String))
                         {
                             if (((mods & Modifiers.Const) == Modifiers.Const))
-                                ec.EmitDataWithConv(f.Signature.ToString(), val, f, ((mods & Modifiers.Const) == Modifiers.Const));
+                                ec.EmitDataWithConv(f.Signature.ToString(), val, f, ((mods & Modifiers.Const) == Modifiers.Const), (vadef.expr is StringConstant)?(vadef.expr as StringConstant).Verbatim:false);
                             else
                             {
                                 string datasig = f.Signature.ToString() + "_data_value";
-                                ec.EmitDataWithConv(datasig, val, f, ((mods & Modifiers.Const) == Modifiers.Const));
+                                ec.EmitDataWithConv(datasig, val, f, ((mods & Modifiers.Const) == Modifiers.Const), (vadef.expr is StringConstant)?(vadef.expr as StringConstant).Verbatim:false);
                                 ec.EmitDataWithConv(f.Signature.ToString(), f, datasig);
                             }
                             // ec.ag.InitInstructions.Add(new Mov() { SourceRef = ElementReference.New(datasig), DestinationRef = ElementReference.New(f.Signature.ToString()), DestinationIsIndirect = true, Size = 16 });
 
                         }
+                      
                         else
                         {
                             ec.EmitDataWithConv(f.Signature.ToString(), val, f, ((mods & Modifiers.Const) == Modifiers.Const));
@@ -313,11 +314,9 @@ namespace VTC.Core
                     }
                     else if (f.MemberType.Equals( BuiltinTypeSpec.String))
                     {
-                        string datasig = f.Signature.ToString() + "_" + DateTime.Now.ToFileTime().ToString();
-                        ec.EmitDataWithConv(datasig, "", f, ((mods & Modifiers.Const) == Modifiers.Const));
-                        ec.EmitDataWithConv(f.Signature.ToString(), new byte[2], f, ((mods & Modifiers.Const) == Modifiers.Const));
-                        ec.ag.InitInstructions.Add(new Mov() { SourceRef = ElementReference.New(datasig), DestinationRef = ElementReference.New(f.Signature.ToString()), DestinationIsIndirect = true, Size = 16 });
-
+                        string datasig = f.Signature.ToString() + "_data_value";
+                        ec.EmitDataWithConv(datasig, "", f, ((mods & Modifiers.Const) == Modifiers.Const), (vadef.expr is StringConstant) ? (vadef.expr as StringConstant).Verbatim : false);
+                        ec.EmitDataWithConv(f.Signature.ToString(), f, datasig);
                     }
                     else ec.EmitDataWithConv(f.Signature.ToString(), new byte[f.MemberType.Size], f, ((mods & Modifiers.Const) == Modifiers.Const));
 

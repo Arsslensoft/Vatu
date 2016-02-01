@@ -32,12 +32,13 @@ BooleanLiteral   = true | false
 NullLiteral      = null
 
 StringLiteral    = '"'( {String Ch} | '\'{Printable} )* '"'
+                 | '@"' ( {Printable}  )* '"'
                  
 CharLiteral      = '' ( {Char Ch} | '\'{Printable} )''
 FloatLiteral     = {Literal Prefix}{Digit}*'.'{Digit}+{Float Suffix} | {Digit}*'.'{Digit}+{Float Suffix} | {Literal Prefix}{Digit}*'.'{Digit}+ | {Digit}*'.'{Digit}+
                  
 
-IncludeLiteral    = '<' ( {Printable} )+ '>'
+!IncludeLiteral    = '<' ( {Printable} )+ '>'
 Id               = {Id Head}{Id Tail}*    
 
 OperatorLiteralUnary  =  '@' [!&#$%*+-,/<>=?\^_|~£¤µ.:]+
@@ -88,7 +89,7 @@ Comment Line  = '//'
           | <Namespace> '{' <Decls> '}'
           | <Decl>
           
-<Include Decl> ::= include IncludeLiteral
+<Include Decl> ::= include StringLiteral
                 
 <Includes Decl> ::=  <Include Decl> <Includes Decl>         
                  |           

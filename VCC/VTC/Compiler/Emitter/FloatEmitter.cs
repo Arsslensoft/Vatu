@@ -28,22 +28,22 @@ namespace VTC
            if (ReferenceType == ReferenceKind.Field)
            {
                ec.EmitComment("Float Store Field @" + Signature.ToString() + " " + Offset);
-               ec.EmitInstruction(new FloatStore() { DestinationRef = ElementReference.New(Signature.ToString()), DestinationDisplacement = Offset, DestinationIsIndirect = true, Size = 32});
+               ec.EmitInstruction(new FloatStoreAndPop() { DestinationRef = ElementReference.New(Signature.ToString()), DestinationDisplacement = Offset, DestinationIsIndirect = true, Size = 32 });
            }
            else if (ReferenceType == ReferenceKind.LocalVariable)
            {
                ec.EmitComment("Float Store Var @BP" + Offset);
-               ec.EmitInstruction(new FloatStore() { DestinationReg = EmitContext.BP, DestinationDisplacement = Offset, DestinationIsIndirect = true, Size = 32 });
+               ec.EmitInstruction(new FloatStoreAndPop() { DestinationReg = EmitContext.BP, DestinationDisplacement = Offset, DestinationIsIndirect = true, Size = 32 });
            }
            else if (ReferenceType == ReferenceKind.Register)
            {
                ec.EmitComment("Float Store REG @" + Register.ToString() + Offset);
-               ec.EmitInstruction(new FloatStore() { DestinationReg = Register, DestinationDisplacement = Offset, DestinationIsIndirect = true, Size = 32 });
+               ec.EmitInstruction(new FloatStoreAndPop() { DestinationReg = Register, DestinationDisplacement = Offset, DestinationIsIndirect = true, Size = 32 });
            }
            else
            {
                ec.EmitComment("Float Store Parameter @BP " + Offset);
-               ec.EmitInstruction(new FloatStore() { DestinationReg = EmitContext.BP, DestinationDisplacement = Offset, DestinationIsIndirect = true, Size = 32 });
+               ec.EmitInstruction(new FloatStoreAndPop() { DestinationReg = EmitContext.BP, DestinationDisplacement = Offset, DestinationIsIndirect = true, Size = 32 });
            }
            return true;
        }

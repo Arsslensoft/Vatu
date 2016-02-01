@@ -15,11 +15,12 @@ namespace VTC.Core
         public static int id = 0;
         public FieldSpec ConstVar { get; set; }
         string _value;
-        public StringConstant(string value, Location loc)
+        public bool Verbatim { get; set; }
+        public StringConstant(string value, Location loc,bool verb = false)
             : base(BuiltinTypeSpec.String, loc)
         {
             _value = value;
-           
+            Verbatim = verb;
         }
 
    
@@ -34,7 +35,7 @@ namespace VTC.Core
         public override bool Emit(EmitContext ec)
         {
   
-                    DataMember dm = new DataMember(ConstVar.Signature.ToString(), _value, true);
+                    DataMember dm = new DataMember(ConstVar.Signature.ToString(), _value, true,Verbatim);
            
                     ec.EmitData(dm, ConstVar, true);
                     ec.EmitInstruction(new Push() { DestinationRef = ElementReference.New(ConstVar.Signature.ToString()), Size = 16 });

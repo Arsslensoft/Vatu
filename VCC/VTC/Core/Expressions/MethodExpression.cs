@@ -176,17 +176,40 @@ namespace VTC.Core
                 DelegateVar.EmitToStack(ec);
                 ec.EmitPop(RegistersEnum.BX);
                 ccvh.EmitCall(ec, Parameters, DelegateVar, RegistersEnum.BX, (DelegateVar.MemberType as DelegateTypeSpec).CCV);
+
+                if ((DelegateVar.MemberType as DelegateTypeSpec).ReturnType.IsFloat && !(DelegateVar.MemberType as DelegateTypeSpec).ReturnType.IsPointer) // pop floating point
+                    ec.EmitInstruction(new Vasm.x86.x87.FloatFree() { DestinationReg = RegistersEnum.ST0 });
+
             }
             else
+            {
                 ccvh.EmitCall(ec, Parameters, Method);
-
+                if (Method.MemberType.IsFloat && !Method.MemberType.IsPointer) // pop floating point
+                    ec.EmitInstruction(new Vasm.x86.x87.FloatFree() { DestinationReg = RegistersEnum.ST0 });
+            }
 
             return true;
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            Emit(ec);
-            ec.EmitPush(EmitContext.A);
+            if (isdelegate && DelegateVar != null)
+            {
+                DelegateVar.EmitToStack(ec);
+                ec.EmitPop(RegistersEnum.BX);
+                ccvh.EmitCall(ec, Parameters, DelegateVar, RegistersEnum.BX, (DelegateVar.MemberType as DelegateTypeSpec).CCV);
+
+                if (!((DelegateVar.MemberType as DelegateTypeSpec).ReturnType.IsFloat && !(DelegateVar.MemberType as DelegateTypeSpec).ReturnType.IsPointer)) // pop floating point
+                    ec.EmitPush(EmitContext.A);
+               
+
+            }
+            else
+            {
+                ccvh.EmitCall(ec, Parameters, Method);
+                if (!(Method.MemberType.IsFloat && !Method.MemberType.IsPointer)) // pop floating point
+                    ec.EmitPush(EmitContext.A);
+            }
+
             return true;
         }
         public override bool EmitFromStack(EmitContext ec)
@@ -197,8 +220,22 @@ namespace VTC.Core
         public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
         {
             Emit(ec);
-            ec.EmitInstruction(new Compare() { DestinationReg = EmitContext.A, SourceValue = (ushort)1 });
-            ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.Equal, ConditionalTestEnum.NotEqual);
+            if (Method.MemberType.IsFloat && !Method.MemberType.IsPointer) //  floating point compare
+            {
+                ec.EmitInstruction(new Vasm.x86.X86.x87.FloatPushZero() );
+                ec.EmitInstruction(new Vasm.x86.x87.FloatCompareAnd2Pop());
+                ec.EmitInstruction(new Vasm.x86.x87.FloatStoreStatus() { DestinationReg = EmitContext.A });
+                ec.EmitInstruction(new Vasm.x86.x87.FloatWait());
+                ec.EmitInstruction(new Vasm.x86.x87.StoreAHToFlags());
+
+                // jumps
+                ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.NotEqual, ConditionalTestEnum.Equal);
+            }
+            else
+            {
+                ec.EmitInstruction(new Compare() { DestinationReg = EmitContext.A, SourceValue = (ushort)1 });
+                ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.Equal, ConditionalTestEnum.NotEqual);
+            }
             return true;
         }
         public override string CommentString()

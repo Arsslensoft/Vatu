@@ -436,23 +436,26 @@ namespace Vasm
 
            }
            if (IsFlat)
-               writer.WriteLine("FINIT");
-           if (!IsLibrary)
-               interrupt_name = "______INSTALL_INTERRUPTS";
-           else if (IsLibrary)
-               interrupt_name = "______INSTALL_INTERRUPTS_" + DateTime.Now.ToFileTimeUtc().ToString();
-          
-           if(IsLibrary && IsInterruptOverload && Interrupts.Count > 0)
-                   writer.WriteLine("\t\tglobal	"+interrupt_name);
-           else if (!IsLibrary && IsInterruptOverload && Interrupts.Count > 0)
-               writer.WriteLine("\t\tcall "+interrupt_name);
+               writer.WriteLine("FINIT ; Initialize's the floating point unit");
 
+ 
            foreach (Instruction inst in mDefInstructions)
            {
                writer.Write("\t");
                inst.WriteText(this, writer);
                writer.WriteLine();
            }
+
+           if (!IsLibrary)
+               interrupt_name = "______INSTALL_INTERRUPTS";
+           else if (IsLibrary)
+               interrupt_name = "______INSTALL_INTERRUPTS_" + DateTime.Now.ToFileTimeUtc().ToString();
+
+           if (IsLibrary && IsInterruptOverload && Interrupts.Count > 0)
+               writer.WriteLine("\t\tglobal	" + interrupt_name);
+           else if (!IsLibrary && IsInterruptOverload && Interrupts.Count > 0)
+               writer.WriteLine("\t\tcall " + interrupt_name);
+
            if(!string.IsNullOrEmpty(EntryPoint))
                writer.Write("\t\tcall " + EntryPoint);
                

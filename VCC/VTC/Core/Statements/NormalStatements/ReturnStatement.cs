@@ -60,10 +60,12 @@ namespace VTC.Core
         }
         public override bool Emit(EmitContext ec)
         {   bool ok=true;
-            if (_expr != null)
+            if (_expr != null )
             {
-                ok = _expr.Emit(ec);
-                ec.EmitInstruction(new Vasm.x86.Pop() { DestinationReg = EmitContext.A });
+                
+                ok = _expr.EmitToStack(ec);
+                if (!(_expr.Type.IsFloat && !_expr.Type.IsPointer))
+                      ec.EmitInstruction(new Vasm.x86.Pop() { DestinationReg = EmitContext.A });
             }
             ec.EmitInstruction(new Vasm.x86.Jump() { DestinationLabel = this.ReturnLabel.Name });
             return ok;

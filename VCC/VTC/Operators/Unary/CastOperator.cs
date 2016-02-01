@@ -18,6 +18,8 @@ namespace VTC
         protected MethodSpec OvlrdOp;
         protected TypeIdentifier _type;
         protected Expr _target;
+        protected LoadEffectiveAddressOp FloatAdr;
+        #region CAST OVERLOADING
         public virtual bool EmitOverrideOperatorFromStack(EmitContext ec)
         {
  
@@ -54,7 +56,7 @@ namespace VTC
 
             return true;
         }
-      
+        #endregion
         public Expr Target
         {
             get { return _target; }
@@ -117,7 +119,7 @@ namespace VTC
 
             return _type.Resolve(rc) && _target.Resolve(rc);
         }
- public override SimpleToken DoResolve(ResolveContext rc)
+        public override SimpleToken DoResolve(ResolveContext rc)
         {
             _type = (TypeIdentifier)_type.DoResolve(rc);
             Type = _type.Type;
@@ -150,8 +152,20 @@ namespace VTC
                     return _target;
                 else if (PointerFix())
                     return Target;
+                else if (FloatFix())
+                {
+                    if (!float_to_int)
+                    {
+                        LoadEffectiveAddressOp lea = new LoadEffectiveAddressOp();
+                        lea.loc = FloatAdr.loc;
+                        _target = new UnaryOperation(_target, lea);
+
+                        _target = (Expr)_target.DoResolve(rc);
+                    }
+                }
                 else if (ConstantFix(rc))
                     return Target;
+
                 else if (_target is CastOperator) // cast under cast
                     return Target;
 
@@ -172,40 +186,20 @@ namespace VTC
         }
         public override bool Emit(EmitContext ec)
         {
-            if (OvlrdOp != null)
-                return EmitOverrideOperator(ec);
-
-            if (nofix)
-            {
-                ec.EmitComment(CommentString());
-                return _target.Emit(ec);
-            }
-            else
-            {
-                _target.Emit(ec);
-                // cast
-                RegistersEnum src = RegistersEnum.AX;
-
-                ec.EmitPop(src); // take target
-                ec.EmitComment(CommentString());
-                if (to16 && tosign)
-                    Conversion.EmitConvert8To16Signed(ec, src);
-                else if (to16 && !tosign)
-                    Conversion.EmitConvert8To16Unsigned(ec, src);
-                else if (!to16)
-                    Conversion.EmitConvert16To8(ec, src);
-                ec.EmitPush(src);
-
-             
-                return true;
-
-            }
+            return EmitToStack(ec);
         }
         public override bool EmitToStack(EmitContext ec)
         {
             if (OvlrdOp != null)
                 return EmitOverrideOperator(ec);
 
+            if (float_fix)
+            {
+                if (float_to_int)
+                    Conversion.EmitConvertFloatTo16(ec, _target);
+                else Conversion.EmitConvert16ToFloat(ec, _target);
+                return true;
+            }
             if (nofix)
             {
                 ec.EmitComment(CommentString());
@@ -240,6 +234,14 @@ namespace VTC
                 ec.EmitPop(rg);
                 return true;
             }
+            if (float_fix)
+            {
+                if (float_to_int)
+                    Conversion.EmitConvertFloatTo16(ec, _target);
+                else Conversion.EmitConvert16ToFloat(ec, _target);
+                ec.EmitPop(rg); // take target
+
+            }
             if (nofix)
                 return _target.EmitToRegister(ec, rg);
             else
@@ -268,6 +270,14 @@ namespace VTC
                 EmitOverrideOperatorFromStack(ec);
                 return _target.EmitFromStack(ec);
             }
+            if (float_fix)
+            {
+                if (float_to_int)
+                    Conversion.EmitConvertFloatTo16Stack(ec, _target);
+                else Conversion.EmitConvert16ToFloatStack(ec, _target);
+
+                return true;
+            }
             if (nofix)
                 return _target.EmitFromStack(ec);
             else
@@ -291,7 +301,32 @@ namespace VTC
                 return _target.EmitFromStack(ec);
             }
         }
-
+        bool float_to_int = false;
+        bool float_fix = false;
+        bool FloatFix()
+        {
+            if (_target.Type.IsFloat && !_target.Type.IsPointer) // float -> integer
+            {
+                if (Type.BuiltinType == BuiltinTypes.Int || Type.BuiltinType == BuiltinTypes.UInt)
+                {
+                    float_fix = true;
+                    float_to_int = false;
+                    return true;
+                }
+                else return false;
+            }
+            else if (Type.BuiltinType == BuiltinTypes.UInt || Type.BuiltinType == BuiltinTypes.Int) // integer->float
+            {
+                if (_target.Type.IsFloat && !_target.Type.IsPointer)
+                {
+                    float_fix = true;
+                    float_to_int = true;
+                    return true;
+                }
+                else return false;
+            }
+            else return false;
+        }
         bool ByteToWordFix()
         {
             if (_target.Type.BuiltinType == BuiltinTypes.Byte || _target.Type.BuiltinType == BuiltinTypes.SByte) // byte or sbyte => int or uint

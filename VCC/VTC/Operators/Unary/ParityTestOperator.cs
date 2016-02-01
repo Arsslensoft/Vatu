@@ -23,11 +23,11 @@ namespace VTC
         {
             return true;
         }
- public override SimpleToken DoResolve(ResolveContext rc)
+        public override SimpleToken DoResolve(ResolveContext rc)
         {
-            if (Right.Type.Equals(BuiltinTypeSpec.Bool) && Right.Type.IsBuiltinType && !Right.Type.IsPointer)
+            if (Right.Type.Equals(BuiltinTypeSpec.Bool) )
                 ResolveContext.Report.Error(33, Location, "Parity Operators must be used with non boolean, pointer types");
-         
+            UnaryCheck(rc);
             CommonType = BuiltinTypeSpec.Bool;
 
             if (Right is RegisterExpression)
@@ -37,21 +37,13 @@ namespace VTC
                 OvlrdOp = null;
             return this;
         }
-   
+
+
         public override bool Emit(EmitContext ec)
         {
             if (OvlrdOp != null)
                 return base.EmitOverrideOperator(ec);
-            if (RegisterOperation)
-            {
-                ec.EmitComment("¤" + Right.CommentString());
-
-                ec.EmitInstruction(new Test() { DestinationReg = ((RegisterExpression)Right).Register, SourceValue = 1, Size = 80 });
-                ec.EmitBoolean(ec.GetLow(Register.Value), ConditionalTestEnum.ParityEven, ConditionalTestEnum.ParityOdd);
-                ec.EmitPush(((RegisterExpression)Right).Register);
-
-                return true;
-            }
+           
             Right.EmitToStack(ec);
             ec.EmitComment("¤" + Right.CommentString());
             ec.EmitPop(Register.Value);
@@ -72,16 +64,7 @@ namespace VTC
         {
             if (OvlrdOp != null)
                 return base.EmitOverrideOperatorBranchable(ec,truecase,v, ConditionalTestEnum.ParityEven, ConditionalTestEnum.ParityOdd);
-            if (RegisterOperation)
-            {
-                ec.EmitComment("¤" + Right.CommentString());
-
-                ec.EmitInstruction(new Test() { DestinationReg = ((RegisterExpression)Right).Register, SourceValue = 1, Size = 80 });
-                ec.EmitBoolean(ec.GetLow(Register.Value), ConditionalTestEnum.ParityEven, ConditionalTestEnum.ParityOdd);
-                ec.EmitPush(((RegisterExpression)Right).Register);
-
-                return true;
-            }
+           
             Right.EmitToStack(ec);
             ec.EmitComment("¤" + Right.CommentString());
             ec.EmitPop(Register.Value);

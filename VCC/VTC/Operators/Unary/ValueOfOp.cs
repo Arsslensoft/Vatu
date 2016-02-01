@@ -12,7 +12,7 @@ namespace VTC
 {
 	public class ValueOfOp : UnaryOp
     {
-        MemberSpec ms;
+     
         public ValueOfOp()
         {
             Register = RegistersEnum.AX;
@@ -23,7 +23,7 @@ namespace VTC
         {
             return Right.Resolve(rc) ;
         }
- public override SimpleToken DoResolve(ResolveContext rc)
+        public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (!Right.Type.IsPointer)
                 ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non pointer types");
@@ -35,8 +35,8 @@ namespace VTC
             //}
             //else 
            
-            if (!(Right is VariableExpression))
-                   ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non variable nor access expressions");
+            //if (!(Right is VariableExpression))
+            //       ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non variable nor access expressions");
 
 
             MemberType = Right.Type;
@@ -53,17 +53,17 @@ namespace VTC
         }
         public override bool Emit(EmitContext ec)
         {
-            if (ms != null)
-            {
-                if (ms is VarSpec)
-                    ms.ValueOf(ec);
-                else if (ms is FieldSpec)
-                    ms.ValueOf(ec);
-                else if (ms is ParameterSpec)
-                    ms.ValueOf(ec);
-            }
-            else
-            {
+            //if (ms != null)
+            //{
+            //    if (ms is VarSpec)
+            //        ms.ValueOf(ec);
+            //    else if (ms is FieldSpec)
+            //        ms.ValueOf(ec);
+            //    else if (ms is ParameterSpec)
+            //        ms.ValueOf(ec);
+            //}
+            //else
+            //{
 
 
                 ec.EmitComment("ValueOf @Var");
@@ -78,7 +78,7 @@ namespace VTC
 
                     PushAllFromRegister(ec, EmitContext.SI, MemberType.BaseType.Size, 0);
                 }
-            }
+           // }
             return true;
 
         }
@@ -89,17 +89,17 @@ namespace VTC
         }
         public override bool EmitFromStack(EmitContext ec)
         {
-            if (ms != null)
-            {
-                if (ms is VarSpec)
-                    ms.ValueOfStack(ec);
-                else if (ms is FieldSpec)
-                    ms.ValueOfStack(ec);
-                else if (ms is ParameterSpec)
-                    ms.ValueOfStack(ec);
-            }
-            else
-            {
+            //if (ms != null)
+            //{
+            //    if (ms is VarSpec)
+            //        ms.ValueOfStack(ec);
+            //    else if (ms is FieldSpec)
+            //        ms.ValueOfStack(ec);
+            //    else if (ms is ParameterSpec)
+            //        ms.ValueOfStack(ec);
+            //}
+            //else
+            //{
                 
 
                  Right.Emit(ec);
@@ -113,7 +113,7 @@ namespace VTC
                     PopAllToRegister(ec, EmitContext.SI, MemberType.BaseType.Size, 0);
          
 
-            }
+            //}
             return true;
         }
         public override string CommentString()

@@ -38,7 +38,7 @@ namespace Vasm
               sb.AppendLine(string.Format("\t\t;Installing interrupt {0}", idef.Number));
               sb.AppendLine(string.Format("\t\tmov     dx, {0}", idef.Destination.Name));
               sb.AppendLine(string.Format("\t\tmov     [es:{0}*4], dx", idef.Number));
-              sb.AppendLine("\t\tmov     ax, cs");
+              sb.AppendLine("\t\tmov     ax, ds"); // changed cs -> ds
               sb.AppendLine(string.Format("\t\tmov     [es:{0}*4+2], ax", idef.Number));
           }
           sb.AppendLine("\t\tpop es");

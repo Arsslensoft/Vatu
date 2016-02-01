@@ -23,6 +23,7 @@ namespace VTC.Core.Literals
                     int l = GetSuffix().Length;
                     TypeCode tpc = GetTypeBySuffix();
                     value = value.Remove(value.Length - l, l);
+                    f = float.Parse(value.Replace(".",","));
                     switch (tpc)
                     {
                         case TypeCode.Single:
@@ -30,7 +31,7 @@ namespace VTC.Core.Literals
                             break;
                     }
                 }
-              else if (float.TryParse(value, out f))
+                else if (float.TryParse(value.Replace(".", ","), out f))
                         _value = new FloatConstant(f, CompilerContext.TranslateLocation(position));
               //else if (double.TryParse(value, out d))
               //      _value = new FloatConstant(d, CompilerContext.TranslateLocation(position));

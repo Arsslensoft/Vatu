@@ -224,7 +224,7 @@ namespace VTC
         }
         public void EmitStoreFloat(RegistersEnum rg, byte size = 32, bool adr = false, int off = 0)
         {
-            EmitInstruction(new Vasm.x86.x87.FloatStore() { DestinationReg = rg, Size = size, DestinationIsIndirect = adr, DestinationDisplacement = off });
+            EmitInstruction(new Vasm.x86.x87.FloatStoreAndPop() { DestinationReg = rg, Size = size, DestinationIsIndirect = adr, DestinationDisplacement = off });
         }
 
 
@@ -351,15 +351,17 @@ namespace VTC
             DataMember dm = new DataMember(name, value.ToString());
             EmitData(dm, v, false);
         }
-        public void EmitDataWithConv(string name, object value, MemberSpec v, bool constant = false)
+        public void EmitDataWithConv(string name, object value, MemberSpec v, bool constant = false,bool verbatim = false)
         {
             DataMember dm;
             if (value is string)
             {
                 if (constant)
-                    dm = new DataMember(name, value.ToString(), true);
-                else dm = new DataMember(name, value.ToString(), false);
+                    dm = new DataMember(name, value.ToString(), true, verbatim);
+                else dm = new DataMember(name, value.ToString(), false, verbatim);
             }
+            else if (value is float)
+                dm = new DataMember(name, BitConverter.GetBytes((float)value));
             else if (value is byte[])
                 dm = new DataMember(name, (byte[])value);
             else if (value is bool)
@@ -438,6 +440,37 @@ namespace VTC
         }
 
 
+        public static void EmitConvert16ToFloat(EmitContext ec,VTC.Core.Expr lea)
+        {
+            lea.EmitToStack(ec);
+            ec.EmitPop(RegistersEnum.SI);
+            ec.EmitInstruction(new Vasm.x86.x87.IntLoad() { DestinationReg = EmitContext.SI, DestinationIsIndirect = true, Size = 16 });   
+        }
+        public static void EmitConvertFloatTo16(EmitContext ec, VTC.Core.Expr e)
+        {
+            e.EmitToStack(ec); // push float
+            ec.EmitPush((ushort)0);// reserve word
+            ec.EmitInstruction(new Mov() {  DestinationReg = EmitContext.SI, SourceReg = EmitContext.SP}); // mov si,sp
+            ec.EmitInstruction(new Vasm.x86.x87.IntStoreAndPop() { DestinationReg = EmitContext.SI, Size = 16 ,DestinationIsIndirect = true }); // store int to [si]
+            
 
+        }
+        public static void EmitConvert16ToFloatStack(EmitContext ec, VTC.Core.Expr e)
+        {
+            // int already in stack
+            ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceReg = EmitContext.SP }); // mov si,sp
+            ec.EmitInstruction(new Vasm.x86.x87.IntLoad() { DestinationReg = EmitContext.SI, DestinationIsIndirect = true, Size = 16 });
+            // store float
+            e.EmitFromStack(ec);
+        }
+        public static void EmitConvertFloatTo16Stack(EmitContext ec, VTC.Core.Expr e)
+        {
+            // float in stack
+            ec.EmitPush((ushort)0);// reserve word
+            ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.SI, SourceReg = EmitContext.SP }); // mov si,sp
+            ec.EmitInstruction(new Vasm.x86.x87.IntStoreAndPop() { DestinationReg = EmitContext.SI, Size = 16, DestinationIsIndirect = true }); // store int to [si]
+            e.EmitFromStack(ec);
+
+        }
     }
 }

@@ -9,6 +9,19 @@ namespace VTC
 {
   public  class CallingConventionsHandler
     {
+      int GetParameterSize(TypeSpec tp,bool reference)
+      {
+          if (reference)
+              return 2;
+          else if (tp.IsFloat && tp.IsPointer)
+              return 2;
+          else
+          {
+              if (tp.Size != 1 && tp.Size % 2 != 0)
+                  return (tp.Size == 1) ? 2 : tp.Size + 1;
+              else return (tp.Size == 1) ? 2 : tp.Size ;
+          }
+      }
       void HandleLeftToRight(ref List<ParameterSpec> L_R)
       {     
           int paramidx = 4; // Initial Stack Position
@@ -16,15 +29,9 @@ namespace VTC
        {
               L_R[i].StackIdx = paramidx;
               L_R[i].InitialStackIndex = paramidx;
-              if (L_R[i].IsReference)
-                  paramidx += 2;
-              else
-              {
-                  paramidx += (L_R[i].MemberType.Size == 1) ? 2 : L_R[i].MemberType.Size;
 
-                  if (L_R[i].MemberType.Size != 1 && L_R[i].MemberType.Size % 2 != 0)
-                      paramidx++;
-              }
+              paramidx += GetParameterSize(L_R[i].MemberType, L_R[i].IsReference);
+             
           }
 
       }
@@ -37,15 +44,9 @@ namespace VTC
               {
                   L_R[i].StackIdx = paramidx;
                   L_R[i].InitialStackIndex = paramidx;
-                  if (L_R[i].IsReference)
-                      paramidx += 2;
-                  else
-                  {
-                      paramidx += (L_R[i].MemberType.Size == 1) ? 2 : L_R[i].MemberType.Size;
 
-                      if (L_R[i].MemberType.Size != 1 && L_R[i].MemberType.Size % 2 != 0)
-                          paramidx++;
-                  }
+                  paramidx += GetParameterSize(L_R[i].MemberType, L_R[i].IsReference);
+              
               }
           }
           else if(L_R.Count > 2 && CallingConventions.FastCall == ccv)
@@ -167,13 +168,14 @@ namespace VTC
           int size = 0;
           foreach (ParameterSpec p in L_R)
           {
-              if (p.MemberType.Size > 1 && !p.IsReference)
-              {
-                  size += p.MemberType.Size;
-                  if (p.MemberType.Size % 2 != 0)
-                      size++;
-              }
-              else size += 2;
+              //if (p.MemberType.Size > 1 && !p.IsReference)
+              //{
+              //    size += p.MemberType.Size;
+              //    if (p.MemberType.Size % 2 != 0)
+              //        size++;
+              //}
+              //else size += 2;
+              size += GetParameterSize(p.MemberType, p.IsReference);
           }
          
           if (ccv == CallingConventions.StdCall || ccv == CallingConventions.Pascal || ccv == CallingConventions.Default)
@@ -223,14 +225,15 @@ namespace VTC
               for (int i = exp.Count - 1; i >= 0; i--)
               {
                   exp[i].EmitToStack(ec);
-                  if (exp[i].Type.Size > 1)
-                  {
+                  //if (exp[i].Type.Size > 1)
+                  //{
 
-                      size += (exp[i].Type.Size == 1 ) ? 2 : exp[i].Type.Size;
-                      if (exp[i].Type.Size % 2 != 0)
-                          size++;
-                  }
-                  else size += 2;
+                  //    size += (exp[i].Type.Size == 1 ) ? 2 : exp[i].Type.Size;
+                  //    if (exp[i].Type.Size % 2 != 0)
+                  //        size++;
+                  //}
+                  //else size += 2;
+                  size += GetParameterSize(exp[i].Type, false);
 
                   if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
                   {
@@ -247,13 +250,15 @@ namespace VTC
               {
                   
                   exp[i].EmitToStack(ec);
-                  if (exp[i].Type.Size > 1)
-                  {
-                      size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
-                      if (exp[i].Type.Size % 2 != 0)
-                          size++;
-                  }
-                  else size += 2;
+                  //if (exp[i].Type.Size > 1)
+                  //{
+                  //    size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
+                  //    if (exp[i].Type.Size % 2 != 0)
+                  //        size++;
+                  //}
+                  //else size += 2;
+                  size += GetParameterSize(exp[i].Type, false);
+
 
                   if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
                   {
@@ -277,14 +282,14 @@ namespace VTC
               {
 
                   exp[i].EmitToStack(ec);
-                  if (exp[i].Type.Size > 1)
-                  {
-                      size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
-                      if (exp[i].Type.Size % 2 != 0)
-                          size++;
-                  }
-                  else size += 2;
-
+                  //if (exp[i].Type.Size > 1)
+                  //{
+                  //    size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
+                  //    if (exp[i].Type.Size % 2 != 0)
+                  //        size++;
+                  //}
+                  //else size += 2;
+                  size += GetParameterSize(exp[i].Type, false);
 
                   if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
                   {
@@ -347,13 +352,15 @@ namespace VTC
               for (int i = exp.Count - 1; i >= 0; i--)
               {
                   exp[i].EmitToStack(ec);
-                  if (exp[i].Type.Size > 1)
-                  {
-                      size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
-                      if (exp[i].Type.Size % 2 != 0)
-                          size++;
-                  }
-                  else size += 2;
+                  //if (exp[i].Type.Size > 1)
+                  //{
+                  //    size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
+                  //    if (exp[i].Type.Size % 2 != 0)
+                  //        size++;
+                  //}
+                  //else size += 2;
+                  size += GetParameterSize(exp[i].Type, false);
+
 
                   if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
                   {
@@ -370,13 +377,14 @@ namespace VTC
               {
 
                   exp[i].EmitToStack(ec);
-                  if (exp[i].Type.Size > 1)
-                  {
-                      size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
-                      if (exp[i].Type.Size % 2 != 0)
-                          size++;
-                  }
-                  else size += 2;
+                  //if (exp[i].Type.Size > 1)
+                  //{
+                  //    size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
+                  //    if (exp[i].Type.Size % 2 != 0)
+                  //        size++;
+                  //}
+                  //else size += 2;
+                  size += GetParameterSize(exp[i].Type, false);
 
                   if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
                   {
@@ -400,13 +408,15 @@ namespace VTC
               {
 
                   exp[i].EmitToStack(ec);
-                  if (exp[i].Type.Size > 1)
-                  {
-                      size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
-                      if (exp[i].Type.Size % 2 != 0)
-                          size++;
-                  }
-                  else size += 2;
+                  //if (exp[i].Type.Size > 1)
+                  //{
+                  //    size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
+                  //    if (exp[i].Type.Size % 2 != 0)
+                  //        size++;
+                  //}
+                  //else size += 2;
+                  size += GetParameterSize(exp[i].Type, false);
+
 
                   if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
                   {

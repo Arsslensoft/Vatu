@@ -11,11 +11,24 @@ namespace VTC.Core
 	 [Terminal("StringLiteral")]
     public class StringLiteral : Literal
     {
-     
+
+         public string StrVal { get; set; }
         public StringLiteral(string value) 
             : base(value)
-        {
-            _value = new StringConstant(value.Remove(0,1).Remove(value.Length -2,1), CompilerContext.TranslateLocation(position));
+         {
+             if (value.StartsWith("@"))
+             {
+                 StrVal = value.Remove(0, 2);
+                 StrVal = StrVal.Remove(StrVal.Length - 1, 1);
+                 _value = new StringConstant(StrVal, CompilerContext.TranslateLocation(position),true);
+             }
+             else
+             {
+                 StrVal = value.Remove(0, 1);
+                 StrVal = StrVal.Remove(StrVal.Length - 1, 1);
+                 _value = new StringConstant(StrVal, CompilerContext.TranslateLocation(position));
+             }
+         
 
         }
 

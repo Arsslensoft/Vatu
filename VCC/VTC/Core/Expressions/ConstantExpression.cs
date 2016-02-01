@@ -175,7 +175,10 @@ namespace VTC.Core
                     return new ByteConstant(byte.Parse(v.ToString()), loc);
                 case BuiltinTypes.Bool:
                     return new BoolConstant(bool.Parse(v.ToString()), loc);
-
+                case BuiltinTypes.Pointer:
+                    return new PointerConstant(ushort.Parse(v.ToString()), loc);
+                case BuiltinTypes.Float:
+                    return new FloatConstant(float.Parse(v.ToString()), loc);
             }
 
 

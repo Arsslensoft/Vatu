@@ -11,6 +11,7 @@ namespace Vasm {
     public string Name { get; private set; }
     public bool IsComment { get; set; }
     public byte[] RawDefaultValue { get; set; }
+    public float? FloatValue { get; set; }
     public uint Alignment { get; set; }
     protected object[] UntypedDefaultValue;
     public string RawAsm = null;
@@ -24,9 +25,11 @@ namespace Vasm {
       Name = aName;
     }
 
-    public DataMember(string aName, string aValue, bool cnst) {
+    bool verbatim = false;
+    public DataMember(string aName, string aValue, bool cnst,bool verb) {
       Name = aName;
       StrConst = cnst;
+      verbatim = verb;
       //var xBytes = ASCIIEncoding.ASCII.GetBytes(aValue);
       //var xBytes2 = new byte[xBytes.Length + 1];
       //xBytes.CopyTo(xBytes2, 0);
@@ -34,10 +37,15 @@ namespace Vasm {
       //RawDefaultValue = xBytes2;
       StrVal = aValue;
     }
-
-    public DataMember(string aName, params object[] aDefaultValue) {
-      Name = aName;
-      UntypedDefaultValue = aDefaultValue;
+    public DataMember(string aName, float aValue)
+    {
+        Name = aName;
+        FloatValue = aValue;
+    }
+    public DataMember(string aName,  object[] aDefaultValue)
+    {
+        Name = aName;
+        UntypedDefaultValue = aDefaultValue;
     }
 
   
@@ -127,6 +135,14 @@ namespace Vasm {
           aOutput.WriteLine();
           return;
       }
+      if (FloatValue.HasValue)
+      {
+
+          aOutput.Write(Name);
+          aOutput.Write(" dd " + FloatValue.ToString().Replace(",","."));
+          aOutput.WriteLine();
+          return;
+      }
       if (StrVal != null)
       {
           if (IsGlobal)
@@ -160,7 +176,9 @@ namespace Vasm {
           //if (!string.IsNullOrEmpty(last))
           //    strdecl += "\"" + last + "\"";
           //else strdecl = strdecl.Remove(strdecl.Length - 1, 1);
-          StringHelper.WriteNormalizedString(StrVal,aOutput);
+            if (!verbatim)
+              StringHelper.WriteNormalizedString(StrVal, aOutput);
+          else aOutput.Write("\"" + StringHelper.StringFromVerbatimLiteral(StrVal) +"\"");
          
           if (!StrConst)
           {

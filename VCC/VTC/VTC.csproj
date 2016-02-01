@@ -394,6 +394,7 @@
     <Compile Include="Operators\Binary\SubtractionOperator.cs" />
     <Compile Include="Operators\Unary\AddressOfOperator.cs" />
     <Compile Include="Operators\Unary\CastOperator.cs" />
+    <Compile Include="Operators\Unary\NegationOperator.cs" />
     <Compile Include="Operators\Unary\DecrementOperator.cs" />
     <Compile Include="Operators\Unary\ExtendedUnaryOperator.cs" />
     <Compile Include="Operators\Unary\IncrementOperator.cs" />

@@ -14,7 +14,8 @@ namespace VTC
     public class ZeroTestOperator : UnaryOp
     {
         public ZeroTestOperator()
-        {
+         {
+             FloatingPointSupported = true;
             Register = RegistersEnum.AX;
             Operator = UnaryOperator.ZeroTest;
         }
@@ -25,11 +26,9 @@ namespace VTC
         }
  public override SimpleToken DoResolve(ResolveContext rc)
         {
-            if (Right.Type.Equals(BuiltinTypeSpec.Bool) && Right.Type.IsBuiltinType && !Right.Type.IsPointer)
-                ResolveContext.Report.Error(32, Location, "Zero Operators must be used with non boolean, pointer types");
-         
+          
             CommonType = BuiltinTypeSpec.Bool;
-
+            UnaryCheck(rc);
 
             if (Right is RegisterExpression)
                 RegisterOperation = true;
@@ -38,21 +37,53 @@ namespace VTC
                 OvlrdOp = null;
             return this;
         }
-    
-        public override bool Emit(EmitContext ec)
-        {
-            if (OvlrdOp != null)
-                return base.EmitOverrideOperator(ec);
-            if (RegisterOperation)
-            {
-                ec.EmitComment("??" + Right.CommentString());
-              
-                ec.EmitInstruction(new Compare() { DestinationReg = ((RegisterExpression)Right).Register, SourceValue = 0, Size = 80 });
-                ec.EmitBoolean(ec.GetLow(Register.Value), ConditionalTestEnum.Zero, ConditionalTestEnum.NotZero);
-                ec.EmitPush(((RegisterExpression)Right).Register);
-             
-                return true;
-            }
+
+
+ bool EmitFloatOperationBranchable(EmitContext ec, Label truecase, bool v)
+ {
+     Right.EmitToStack(ec);
+     ec.EmitComment(" ?? " + Right.CommentString());
+     ec.EmitInstruction(new Vasm.x86.x87.FloatTest());
+     ec.EmitInstruction(new Vasm.x86.x87.FloatStoreStatus() { DestinationReg = EmitContext.A });
+     ec.EmitInstruction(new Vasm.x86.x87.FloatWait());
+     ec.EmitInstruction(new Vasm.x86.x87.StoreAHToFlags());
+
+
+     // jumps
+     ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.Zero, ConditionalTestEnum.NotZero);
+
+     return true;
+ }
+ bool EmitFloatOperation(EmitContext ec)
+ {
+
+     Right.EmitToStack(ec);
+     ec.EmitComment(" ?? " + Right.CommentString());
+     ec.EmitInstruction(new Vasm.x86.x87.FloatTest());
+     ec.EmitInstruction(new Vasm.x86.x87.FloatStoreStatus() { DestinationReg = EmitContext.A });
+     ec.EmitInstruction(new Vasm.x86.x87.FloatWait());
+     ec.EmitInstruction(new Vasm.x86.x87.StoreAHToFlags());
+
+
+     ec.EmitBoolean(ec.GetLow(Register.Value), ConditionalTestEnum.Zero, ConditionalTestEnum.NotZero);
+     ec.EmitPush(Register.Value);
+
+
+     return true;
+ }
+
+
+ public override bool Emit(EmitContext ec)
+ {
+     if (OvlrdOp != null)
+         base.EmitOverrideOperator(ec);
+
+ 
+
+     if (Right.Type.IsFloat && !Right.Type.IsPointer)
+         return EmitFloatOperation(ec);
+
+
             Right.EmitToStack(ec);
             ec.EmitComment("??" + Right.CommentString());
             ec.EmitPop(Register.Value);
@@ -74,17 +105,9 @@ namespace VTC
         {
             if (OvlrdOp != null)
                 return base.EmitOverrideOperatorBranchable(ec, truecase, v, ConditionalTestEnum.Zero, ConditionalTestEnum.NotZero);
-
-            if (RegisterOperation)
-            {
-                ec.EmitComment("??" + Right.CommentString());
-
-                ec.EmitInstruction(new Compare() { DestinationReg = ((RegisterExpression)Right).Register, SourceValue = 0, Size = 80 });
-                ec.EmitBoolean(ec.GetLow(Register.Value), ConditionalTestEnum.Zero, ConditionalTestEnum.NotZero);
-                ec.EmitPush(((RegisterExpression)Right).Register);
-
-                return true;
-            }
+            if (Right.Type.IsFloat && !Right.Type.IsPointer)
+                return EmitFloatOperationBranchable(ec,truecase,v);
+         
             Right.EmitToStack(ec);
             ec.EmitComment("??" + Right.CommentString());
             ec.EmitPop(Register.Value);

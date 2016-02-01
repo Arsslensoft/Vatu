@@ -42,7 +42,8 @@ namespace VTC
         BOOL_EXPR,
         SW,
         FOR,
-        IF_EXPR
+        IF_EXPR,
+        FLOAT_REM
 
     }
     [Flags]

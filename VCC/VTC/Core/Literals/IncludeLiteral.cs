@@ -1,4 +1,4 @@
-﻿using VTC.Base.GoldParser.Semantic;
+﻿/*using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Text;
 namespace VTC.Core
 {
 
-    [Terminal("IncludeLiteral")]
+   // [Terminal("IncludeLiteral")]
     public class IncludeLiteral : Literal
     {
         public string IncludeFile { get; set; }
@@ -22,3 +22,4 @@ namespace VTC.Core
 
     }
 }
+*/

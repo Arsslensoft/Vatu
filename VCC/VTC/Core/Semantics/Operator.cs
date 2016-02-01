@@ -61,6 +61,13 @@ namespace VTC.Core
         }
         public TypeSpec CommonType { get; set; }
 
+        public void UnaryCheck(ResolveContext rc)
+        {
+            if (Right.Type.IsFloat && !FloatingPointSupported && CompilerContext.CompilerOptions.FloatingPointEnabled)
+                ResolveContext.Report.Error(0, Right.Location, "Floating Point not supported for this kind of operators");
+        
+        }
+
         public Operator()
         {
             loc = CompilerContext.TranslateLocation(position);

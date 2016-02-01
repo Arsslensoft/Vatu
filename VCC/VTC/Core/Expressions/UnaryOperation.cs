@@ -32,6 +32,8 @@ namespace VTC.Core
                 _op = new LoadEffectiveAddressOp();
             else if (op is MultiplyOperator)
                 _op = new ValueOfOp();
+            else if (op is SubtractionOperator)
+                _op = new NegationOperator();
             _op.Right = target;
         }
         [Rule(@"<Op Unary>   ::= OperatorLiteralUnary   <Op Unary>")]

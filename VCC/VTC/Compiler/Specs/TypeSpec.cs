@@ -262,6 +262,7 @@ namespace VTC
 
         protected int GetSizeBt(TypeSpec type)
         {
+          
             if (type.IsBuiltinType)
             {
                 switch (type.BuiltinType)
