@@ -342,6 +342,7 @@
     <Compile Include="Core\Statements\NormalStatment.cs" />
     <Compile Include="Core\Statements\Statements\AsmStatement.cs" />
     <Compile Include="Core\Statements\Statements\Case.cs" />
+    <Compile Include="Core\Statements\Statements\TryCatchStatement.cs" />
     <Compile Include="Core\Statements\Statements\ForStatement.cs" />
     <Compile Include="Core\Statements\Statements\IfElseStatement.cs" />
     <Compile Include="Core\Statements\Statements\IfStatement.cs" />

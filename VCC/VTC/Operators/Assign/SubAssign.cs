@@ -25,7 +25,7 @@ namespace VTC
             }
             else
             {
-                Left = (Expr)Left.DoResolve(rc);
+                //Left = (Expr)Left.DoResolve(rc);
                 rc.Resolver.TryResolveMethod(((Right as DeclaredExpression).Expression as VariableExpression).Name, ref DelegateMethod, (Left.Type as DelegateTypeSpec).Parameters.ToArray());
                 if (DelegateMethod == null)
                     ResolveContext.Report.Error(0, Location, "Unresolved delegate method");

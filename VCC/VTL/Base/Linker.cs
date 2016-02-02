@@ -44,7 +44,7 @@ namespace VTL
             Interrupts = new List<SymbolEntry<uint>>();
             EntryPoint = opt.EntryPoint;
             Origin = opt.Origin;
-          
+            interrupt_enabled = opt.IsInterrupt;
             Align = opt.Align;
             // Map Object Files
             LoadObjectsAndMap(opt.Libraries);
@@ -296,10 +296,11 @@ namespace VTL
             // Install interrupts 
             foreach (SymbolEntry<uint> inter in Interrupts)
             {
-                    Writer.Write((byte)0xE8);
-                    Writer.Write((ushort)(inter.Value - Origin - 4));
-                    Writer.Write((byte)0);             
+                Writer.Write((byte)0xE8);
+                Writer.Write((ushort)(inter.Value - Origin - 4));
+                Writer.Write((byte)0);
             }
+
             // Jump to Entry Point
                 Writer.Write((byte)0xE9);
                 Writer.Write((ushort)(entry.Value + _entry_displacement - Origin - 3));

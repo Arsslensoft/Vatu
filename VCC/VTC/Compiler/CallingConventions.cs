@@ -12,7 +12,7 @@ namespace VTC
 			StdCall = 2,
 			FastCall = 3,
             Pascal  = 4,
-            VeryFastCall = 5,
+            VatuSysCall = 5,
             Default = 0
 	} 
 }

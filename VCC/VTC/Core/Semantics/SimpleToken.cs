@@ -6,6 +6,9 @@ using System.Text;
 
 namespace VTC.Core
 {
+    [Terminal("try")]
+    [Terminal("catch")]
+
     [Terminal("this")]
     [Terminal("params")]
     [Terminal("variadic")]
@@ -30,7 +33,7 @@ namespace VTC.Core
     [Terminal("extends")]
     [Terminal("delegate")]
     [Terminal("public")]
-    [Terminal("vfastcall")]
+    [Terminal("vsyscall")]
     [Terminal("ref")]
     [Terminal("isolated")]
     [Terminal("interrupt")]

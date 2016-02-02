@@ -60,7 +60,7 @@ namespace VTC.Core
             else if ((specs & Specifiers.Entry) == Specifiers.Entry)
                 CompilerContext.EntryPointFound = true;
 
-            if ((specs & Specifiers.Variadic) == Specifiers.Variadic && ccv != CallingConventions.Cdecl && ccv != CallingConventions.VeryFastCall)
+            if ((specs & Specifiers.Variadic) == Specifiers.Variadic && ccv != CallingConventions.Cdecl && ccv != CallingConventions.VatuSysCall)
                  ResolveContext.Report.Error(0, Location, "Variadic functions can only be used with cdecl & syscall calling conventions");
 
             if (_fbd._ext != null && !_fbd._ext.Static)
@@ -79,21 +79,23 @@ namespace VTC.Core
             ccvh.SetParametersIndex(ref Parameters, ccv);
             if (ccv == CallingConventions.FastCall)
                 ccvh.ReserveFastCall(rc, Parameters);
-            else if (ccv == CallingConventions.VeryFastCall)
-                ccvh.ReserveVFastCall(rc, Parameters);
+            else if (ccv == CallingConventions.VatuSysCall && _id.CCV != null)
+            {
+                method.VSCDescriptor = _id.CCV.Descriptor;
+                method.VSCInterrupt = _id.CCV.Interrupt;
+
+                if (Parameters.Count > 0)
+                    ResolveContext.Report.Error(0, Location, "Vatu system call requires pure variadic function, parameters definition is not allowed");
+
+            }
 
             method.Parameters = Parameters;
 
 
-            if ((ccv == CallingConventions.FastCall || ccv == CallingConventions.VeryFastCall) && Parameters.Count >= 1 && Parameters[0].MemberType.Size > 2)
+            if ((ccv == CallingConventions.FastCall) && Parameters.Count >= 1 && Parameters[0].MemberType.Size > 2)
                 ResolveContext.Report.Error(9, Location, "Cannot use fast call with struct or union parameter at index 1");
-            else if ((ccv == CallingConventions.FastCall || ccv == CallingConventions.VeryFastCall) && Parameters.Count >= 2 && (Parameters[0].MemberType.Size > 2 || Parameters[1].MemberType.Size > 2))
-                ResolveContext.Report.Error(9, Location, "Cannot use fast call with struct or union parameter at index 1 or 2");
-            else if (ccv == CallingConventions.VeryFastCall && Parameters.Count >= 3 && (Parameters[0].MemberType.Size > 2 || Parameters[1].MemberType.Size > 2 || Parameters[2].MemberType.Size > 2))
-                ResolveContext.Report.Error(9, Location, "Cannot use very fast call with struct or union parameter at index 1 , 2 or 3");
-            else if (ccv == CallingConventions.VeryFastCall && Parameters.Count >= 4 && (Parameters[0].MemberType.Size > 2 || Parameters[1].MemberType.Size > 2 || Parameters[2].MemberType.Size > 2 || Parameters[3].MemberType.Size > 2))
-                ResolveContext.Report.Error(9, Location, "Cannot use very fast call with struct or union parameter at index 1, 2, 3 or 4");
-                 
+            else if ((ccv == CallingConventions.FastCall ) && Parameters.Count >= 2 && (Parameters[0].MemberType.Size > 2 || Parameters[1].MemberType.Size > 2))
+                ResolveContext.Report.Error(9, Location, "Cannot use fast call with struct or union parameter at index 1,2");
              // variadic
               method.IsVariadic = (specs & Specifiers.Variadic) == Specifiers.Variadic;
 
@@ -133,7 +135,7 @@ namespace VTC.Core
 
             return this;
         }
- int GetNextIndex(ParameterSpec p)
+         int GetNextIndex(ParameterSpec p)
  {
     int paramidx = (p.MemberType.Size == 1) ? 2 : p.MemberType.Size;
 
@@ -181,41 +183,21 @@ namespace VTC.Core
                     ccvh.EmitFastCall(ec, 1);
                 }
             }
-            else if (ccv == CallingConventions.VeryFastCall)
-            {
-                if (Parameters.Count >= 4)
-                {
-                    size += 8;
-                    ccvh.EmitVFastCall(ec, 4);
-                }
-                else if (Parameters.Count >= 3)
-                {
-                    size += 6;
-                    ccvh.EmitVFastCall(ec, 3);
-                }
-                else if (Parameters.Count >= 2)
-                {
-                    size += 4;
-                    ccvh.EmitVFastCall(ec, 2);
-                }
-                else if (Parameters.Count == 1)
-                {
-                    size += 2;
-                    ccvh.EmitVFastCall(ec, 1);
-                }
-            }
+          
+
             // Variadic Parameter Start Assign
-            if (method.IsVariadic)
+            if (method.IsVariadic )
             {
                 ec.EmitComment("Variadic Parameter Offset Copy");
                 ushort off = 4;
                 if (Parameters.Count > 0)
                     off = (ushort)GetNextIndex(Parameters[Parameters.Count - 1]);
-
-                ec.EmitInstruction(new Lea() { DestinationReg = EmitContext.SI, SourceReg = EmitContext.BP, SourceDisplacement = off, SourceIsIndirect = true });
+                if(ccv != CallingConventions.VatuSysCall)
+                     ec.EmitInstruction(new Lea() { DestinationReg = EmitContext.SI, SourceReg = EmitContext.BP, SourceDisplacement = off, SourceIsIndirect = true });
+               
                 ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationIsIndirect = true, DestinationDisplacement = -2, SourceReg = EmitContext.SI});
             }
-
+          
             if (size != 0)         // no allocation
                 ec.EmitInstruction(new Sub() { DestinationReg = EmitContext.SP, SourceValue = size, Size = 80 });
             //EMit params

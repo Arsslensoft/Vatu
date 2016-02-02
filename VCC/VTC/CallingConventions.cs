@@ -37,7 +37,7 @@ namespace VTC
       }
       void HandleRightToLeft(ref List<ParameterSpec> L_R, CallingConventions ccv)
       {
-          if (ccv != CallingConventions.FastCall)
+          if (ccv != CallingConventions.FastCall && ccv != CallingConventions.VatuSysCall)
           {
               int paramidx = 4; // Initial Stack Position
               for (int i = 0; i < L_R.Count; i++)
@@ -56,33 +56,11 @@ namespace VTC
               {
                   L_R[i].StackIdx = paramidx;
                   L_R[i].InitialStackIndex = paramidx;
-                  if (L_R[i].IsReference)
-                      paramidx += 2;
-                  else
-                  {
-                      paramidx += (L_R[i].MemberType.Size == 1) ? 2 : L_R[i].MemberType.Size;
-                      if (L_R[i].MemberType.Size != 1 && L_R[i].MemberType.Size % 2 != 0)
-                          paramidx++;
-                  }
+                  paramidx += GetParameterSize(L_R[i].MemberType, L_R[i].IsReference);
               }
           }
-          else if (L_R.Count > 4 && CallingConventions.VeryFastCall == ccv)
-          {
-              int paramidx = 4; // Initial Stack Position
-              for (int i = 2; i < L_R.Count; i++)
-              {
-                  L_R[i].StackIdx = paramidx;
-                  L_R[i].InitialStackIndex = paramidx;
-                  if (L_R[i].IsReference)
-                      paramidx += 2;
-                  else
-                  {
-                      paramidx += (L_R[i].MemberType.Size == 1) ? 2 : L_R[i].MemberType.Size;
-                      if (L_R[i].MemberType.Size != 1 && L_R[i].MemberType.Size % 2 != 0)
-                          paramidx++;
-                  }
-              }
-          }
+      
+    
       }
       public void EmitFastCall(EmitContext ec,int par)
       {
@@ -95,33 +73,16 @@ namespace VTC
               ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -2, DestinationIsIndirect = true, SourceReg = EmitContext.C });
 
       }
-      public void EmitVFastCall(EmitContext ec, int par)
+      public void EmitVSysCall(EmitContext ec, List<ParameterSpec> L_R)
       {
-         
-          if (par == 4)
+          int paramidx = 0;
+          for (int i = 0; i < L_R.Count; i++)
           {
-              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -2, DestinationIsIndirect = true, SourceReg = EmitContext.A });
-              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -4, DestinationIsIndirect = true, SourceReg = EmitContext.B });
-              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -6, DestinationIsIndirect = true, SourceReg = EmitContext.C });
-              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -8, DestinationIsIndirect = true, SourceReg = EmitContext.D});
+              RegisterSpec rs = new RegisterSpec(L_R[i].MemberType, RegistersEnum.DI, Location.Null, paramidx);
+              rs.EmitToStack(ec);
+              L_R[i].EmitFromStack(ec);
+              paramidx += GetParameterSize(L_R[i].MemberType, L_R[i].IsReference);
           }
-          else if (par == 3)
-          {
-              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -2, DestinationIsIndirect = true, SourceReg = EmitContext.A });
-              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -4, DestinationIsIndirect = true, SourceReg = EmitContext.B });
-              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -6, DestinationIsIndirect = true, SourceReg = EmitContext.C });
-           
-          }
-          else if (par == 2)
-          {
-              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -2, DestinationIsIndirect = true, SourceReg = EmitContext.A });
-              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -4, DestinationIsIndirect = true, SourceReg = EmitContext.B });
-
-          }
-          else if (par == 1)
-              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.BP, DestinationDisplacement = -2, DestinationIsIndirect = true, SourceReg = EmitContext.A });
-
-          
       }
       public void ReserveFastCall(ResolveContext rc, List<ParameterSpec> par)
       {
@@ -142,22 +103,24 @@ namespace VTC
           }
 
       }
-
-      public void ReserveVFastCall(ResolveContext rc, List<ParameterSpec> par)
+      public void ReserveVSysCall(ResolveContext rc, List<ParameterSpec> par)
       {
-          for (int i = 0; i < par.Count; i++)
-          {
-              rc.LocalStackIndex -= 2;
+
+        for(int i = 0; i < par.Count;i++)
+        {
+            rc.LocalStackIndex -= GetParameterSize(par[i].MemberType, par[i].IsReference);
               par[i].StackIdx = rc.LocalStackIndex;
               par[i].InitialStackIndex = rc.LocalStackIndex;
-          }
-       
+ 
+        }
+
+          
 
       }
-
+  
       public void SetParametersIndex(ref  List<ParameterSpec> L_R, CallingConventions ccv)
       {
-          if (ccv == CallingConventions.StdCall || ccv == CallingConventions.Cdecl || ccv == CallingConventions.FastCall || ccv == CallingConventions.VeryFastCall)
+          if (ccv == CallingConventions.StdCall || ccv == CallingConventions.Cdecl || ccv == CallingConventions.FastCall || ccv == CallingConventions.VatuSysCall)
               HandleRightToLeft(ref L_R,ccv);
           else if (ccv == CallingConventions.Pascal || ccv == CallingConventions.Default)
               HandleLeftToRight(ref L_R);
@@ -178,13 +141,13 @@ namespace VTC
               size += GetParameterSize(p.MemberType, p.IsReference);
           }
          
-          if (ccv == CallingConventions.StdCall || ccv == CallingConventions.Pascal || ccv == CallingConventions.Default)
+          if (ccv == CallingConventions.StdCall || ccv == CallingConventions.Pascal || ccv == CallingConventions.Default )
           {
               if (size > 0)
                   ec.EmitInstruction(new Return() { DestinationValue = (ushort)size  });
               else ec.EmitInstruction(new SimpleReturn());
           }
-          else if(ccv == CallingConventions.Cdecl)
+          else if (ccv == CallingConventions.Cdecl || ccv == CallingConventions.VatuSysCall)
               ec.EmitInstruction(new SimpleReturn());
           else if (ccv == CallingConventions.FastCall)
           {
@@ -192,12 +155,7 @@ namespace VTC
                   ec.EmitInstruction(new Return() { DestinationValue = (ushort)(size - 4) });
               else ec.EmitInstruction(new SimpleReturn());
           }
-          else if (ccv == CallingConventions.VeryFastCall)
-          {
-              if (size > 8)
-                  ec.EmitInstruction(new Return() { DestinationValue = (ushort)(size - 8) });
-              else ec.EmitInstruction(new SimpleReturn());
-          }
+      
         
         
             
@@ -276,19 +234,12 @@ namespace VTC
                   ec.EmitPop(EmitContext.C);
 
           }
-          else if (method.CallingConvention == CallingConventions.VeryFastCall)
+          else if (method.CallingConvention == CallingConventions.VatuSysCall)
           {
               for (int i = exp.Count - 1; i >= 0; i--)
               {
 
                   exp[i].EmitToStack(ec);
-                  //if (exp[i].Type.Size > 1)
-                  //{
-                  //    size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
-                  //    if (exp[i].Type.Size % 2 != 0)
-                  //        size++;
-                  //}
-                  //else size += 2;
                   size += GetParameterSize(exp[i].Type, false);
 
                   if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
@@ -298,34 +249,18 @@ namespace VTC
                       ec.EmitStoreFloat(RegistersEnum.SI, exp[i].Type.FloatSizeBits, true);
                   }
               }
-              if (exp.Count >= 4)
-              {
-                  ec.EmitPop(EmitContext.A);
-                  ec.EmitPop(EmitContext.B);
-                  ec.EmitPop(EmitContext.C);
-                  ec.EmitPop(EmitContext.D);
-              }
-              else if (exp.Count == 3)
-              {
-                  ec.EmitPop(EmitContext.A);
-                  ec.EmitPop(EmitContext.B);
-                  ec.EmitPop(EmitContext.C);
-
-              }
-              else if (exp.Count == 1)
-              {
-                  ec.EmitPop(EmitContext.A);
-                  ec.EmitPop(EmitContext.B);
-
-              }
-              else if (exp.Count == 1)
-                  ec.EmitPop(EmitContext.A);
+           // Set descriptor
+              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.A, SourceValue = method.VSCDescriptor ,Size = 16});
+              ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.DI, SourceReg = EmitContext.SP });
 
           }
           // call
+          if (method.CallingConvention == CallingConventions.VatuSysCall)
+              ec.EmitInstruction(new INT() { DestinationValue = method.VSCInterrupt});
+          else
           ec.EmitCall(method);
 
-           if(method.CallingConvention == CallingConventions.Cdecl && size > 0)
+          if (method.CallingConvention == CallingConventions.Cdecl || method.CallingConvention == CallingConventions.VatuSysCall && size > 0)
                ec.EmitInstruction(new Add() { DestinationReg = EmitContext.SP, SourceValue = (ushort)size, Size = 80 });
            
 
@@ -402,57 +337,11 @@ namespace VTC
                   ec.EmitPop(EmitContext.C);
 
           }
-          else if (ccv == CallingConventions.VeryFastCall)
-          {
-              for (int i = exp.Count - 1; i >= 0; i--)
-              {
-
-                  exp[i].EmitToStack(ec);
-                  //if (exp[i].Type.Size > 1)
-                  //{
-                  //    size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
-                  //    if (exp[i].Type.Size % 2 != 0)
-                  //        size++;
-                  //}
-                  //else size += 2;
-                  size += GetParameterSize(exp[i].Type, false);
-
-
-                  if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
-                  {
-                      ec.EmitInstruction(new Sub() { DestinationReg = RegistersEnum.SP, SourceValue = (ushort)exp[i].Type.Size });
-                      ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, SourceReg = EmitContext.SP }); 
-                      ec.EmitStoreFloat(RegistersEnum.SI, exp[i].Type.FloatSizeBits, true);
-                  }
-              }
-              if (exp.Count >= 4)
-              {
-                  ec.EmitPop(EmitContext.A);
-                  ec.EmitPop(EmitContext.B);
-                  ec.EmitPop(EmitContext.C);
-                  ec.EmitPop(EmitContext.D);
-              }
-              else if (exp.Count == 3)
-              {
-                  ec.EmitPop(EmitContext.A);
-                  ec.EmitPop(EmitContext.B);
-                  ec.EmitPop(EmitContext.C);
-
-              }
-              else if (exp.Count == 1)
-              {
-                  ec.EmitPop(EmitContext.A);
-                  ec.EmitPop(EmitContext.B);
-
-              }
-              else if (exp.Count == 1)
-                  ec.EmitPop(EmitContext.A);
-
-          }
+        
           // call
           ec.EmitInstruction(new Call() { DestinationReg = rg });
 
-          if (ccv == CallingConventions.Cdecl && size > 0)
+          if (ccv == CallingConventions.Cdecl || ccv == CallingConventions.VatuSysCall && size > 0)
               ec.EmitInstruction(new Add() { DestinationReg = EmitContext.SP, SourceValue = (ushort)size, Size = 80 });
 
 

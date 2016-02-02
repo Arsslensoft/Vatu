@@ -17,7 +17,7 @@ namespace VTC
         MethodSpec DelegateMethod;
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-            IsDelegateMethodAssign = (Left.Type.IsDelegate && Right is DeclaredExpression && ((Right as DeclaredExpression).Expression is VariableExpression));
+            IsDelegateMethodAssign = (Left.Type.IsDelegate && (  Right  is AccessOperation || (Right is DeclaredExpression && ((Right as DeclaredExpression).Expression is VariableExpression) ||((Right as DeclaredExpression).Expression is MethodExpression))));
             if (!IsDelegateMethodAssign)
             {
                 Right = (Expr)Right.DoResolve(rc);
@@ -27,8 +27,22 @@ namespace VTC
             }
             else
             {
-                Left = (Expr)Left.DoResolve(rc);
-                rc.Resolver.TryResolveMethod(((Right as DeclaredExpression).Expression as VariableExpression).Name, ref DelegateMethod, (Left.Type as DelegateTypeSpec).Parameters.ToArray());
+               // Left = (Expr)Left.DoResolve(rc);
+                if (Right is AccessOperation)
+                {
+                    Right = (Expr)Right.DoResolve(rc);
+                    if (Right is MethodExpression)
+                        DelegateMethod = (Right as MethodExpression).Method;
+               
+                }
+                else if ((Right as DeclaredExpression).Expression is MethodExpression)
+                {
+                    Right = (MethodExpression)Right.DoResolve(rc);
+                    DelegateMethod = (Right as MethodExpression).Method;
+                }
+                else
+                    rc.Resolver.TryResolveMethod(((Right as DeclaredExpression).Expression as VariableExpression).Name, ref DelegateMethod, (Left.Type as DelegateTypeSpec).Parameters.ToArray());
+              
                 if (DelegateMethod == null)
                     ResolveContext.Report.Error(0, Location, "Unresolved delegate method");
             }

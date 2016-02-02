@@ -15,7 +15,7 @@ namespace VTL
 
         protected override void LoadObjectsAndMap(string[] inobj)
         {
-            interrupt_enabled = false;
+            //interrupt_enabled = false;
             Origin = 256;
             base.LoadObjectsAndMap(inobj);
         }

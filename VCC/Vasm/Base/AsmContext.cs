@@ -172,7 +172,7 @@ namespace Vasm
               
         }
         public Dictionary<string, StructElement> DeclaredStructVars = new Dictionary<string, StructElement>();
-
+    
         public StructElement GetStruct(string name)
         {
             foreach (StructElement se in mStructs)
@@ -394,6 +394,7 @@ namespace Vasm
        {
            Externals.Add(func);
        }
+    
        void InitCode(AssemblyWriter writer)
        {
            // Write out code
@@ -451,14 +452,14 @@ namespace Vasm
            else if (IsLibrary)
                interrupt_name = "______INSTALL_INTERRUPTS_" + DateTime.Now.ToFileTimeUtc().ToString();
 
-           if (IsLibrary && IsInterruptOverload && Interrupts.Count > 0)
-               writer.WriteLine("\t\tglobal	" + interrupt_name);
-           else if (!IsLibrary && IsInterruptOverload && Interrupts.Count > 0)
-               writer.WriteLine("\t\tcall " + interrupt_name);
 
-           if(!string.IsNullOrEmpty(EntryPoint))
+
+           if (!string.IsNullOrEmpty(EntryPoint))
+           {
+               if ( IsInterruptOverload && Interrupts.Count > 0)
+                   writer.WriteLine("\t\tcall " + interrupt_name);
                writer.Write("\t\tcall " + EntryPoint);
-               
+           }
          
                writer.WriteLine();
            
@@ -505,6 +506,7 @@ namespace Vasm
            if (!IsLibrary)
            writer.WriteLine("PROGRAM_END:");
        }
+    
        public virtual void Emit(AssemblyWriter writer)
        {
            // Optimize
@@ -531,6 +533,8 @@ namespace Vasm
            }
 
            writer.WriteLine();
+
+         
            // Write out data declarations
            if (!IsFlat)
            writer.WriteLine(";section .data");

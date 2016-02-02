@@ -45,8 +45,9 @@ namespace VTC.Core
             else if(!rc.CurrentMethod.MemberType.Equals(BuiltinTypeSpec.Void))
                 ResolveContext.Report.Error(0, Location, "Empty returns are only used with void methods");
 
-            ReturnLabel = new Label(rc.CurrentMethod.Signature + "_ret");
-
+            if (rc.EnclosingTry == null)
+                ReturnLabel = new Label(rc.CurrentMethod.Signature + "_ret");
+            else ReturnLabel = rc.EnclosingTry.TryReturn;
             // set exit loops
             ILoop enc = rc.EnclosingLoop;
             while (enc != null)

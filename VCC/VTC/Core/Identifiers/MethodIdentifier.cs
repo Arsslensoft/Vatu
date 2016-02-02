@@ -13,7 +13,7 @@ namespace VTC.Core
         public Identifier Id { get; set; }
         public TypeToken TType { get; set; }
         public Modifiers Mods { get; set; }
-        private CallingCV CCV { get; set; }
+        internal CallingCV CCV { get; set; }
         public CallingConventions CV
         {
             get

@@ -10,7 +10,9 @@ namespace VTC.Core
 {
 	public class UseStatement : BaseStatement
     {
-        
+   
+
+
         Statement _stmt;
         Namespace ns;
         [Rule(@"<Statement>        ::= ~use <Name> <Statement>")]

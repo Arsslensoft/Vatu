@@ -397,19 +397,7 @@ namespace VTC
         }
         bool PointerFix()
         {
-            if (Type.IsPointer && (_target.Type.Equals(BuiltinTypeSpec.UInt) || _target.Type.Equals(BuiltinTypeSpec.Pointer)))
-                {
-                    _target.Type = Type;
-                    nofix = true;
-                    return true;
-                }
-            else if (_target.Type.IsPointer && (Type.Equals(BuiltinTypeSpec.UInt) || Type.Equals(BuiltinTypeSpec.Pointer)))
-                {
-                    _target.Type = Type;
-                    nofix = true;
-                    return true;
-                }
-            else if (Type.IsDelegate && (_target.Type.Equals(BuiltinTypeSpec.UInt) || _target.Type.Equals(BuiltinTypeSpec.Pointer)))
+            if (Type.IsDelegate && (_target.Type.Equals(BuiltinTypeSpec.UInt) || _target.Type.Equals(BuiltinTypeSpec.Pointer)))
             {
                 _target.Type = Type;
                 nofix = true;
@@ -421,6 +409,19 @@ namespace VTC
                 nofix = true;
                 return true;
             }
+            else if (Type.IsPointer && (_target.Type.Equals(BuiltinTypeSpec.UInt) || _target.Type.Equals(BuiltinTypeSpec.Pointer)))
+                {
+                    _target.Type = Type;
+                    nofix = true;
+                    return true;
+                }
+            else if (_target.Type.IsPointer && (Type.Equals(BuiltinTypeSpec.UInt) || Type.Equals(BuiltinTypeSpec.Pointer)))
+                {
+                    _target.Type = Type;
+                    nofix = true;
+                    return true;
+                }
+             
                 else if (_target.Type.Equals(BuiltinTypeSpec.Pointer) && Type.Equals(BuiltinTypeSpec.UInt))
                 {
                     _target.Type = BuiltinTypeSpec.UInt;
@@ -436,6 +437,7 @@ namespace VTC
                 }
             return false;
         }
+
         bool TypeDefFix()
         {
             TypeSpec a=Type.GetTypeDefBase(Type),b=_target.Type.GetTypeDefBase(_target.Type);

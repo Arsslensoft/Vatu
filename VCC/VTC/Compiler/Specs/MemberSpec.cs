@@ -17,7 +17,11 @@ namespace VTC
         public CallingConventions CallingConvention { get; set; }
         public List<ParameterSpec> Parameters { get; set; }
         public bool IsOperator { get; set; }
-      
+
+        public ushort VSCInterrupt { get; set; }
+        public ushort VSCDescriptor { get; set; }
+
+
         public bool IsPrototype
         {
             get
@@ -35,6 +39,8 @@ namespace VTC
             CallingConvention =ccv;
             memberType = type;
             Parameters = new List<ParameterSpec>();
+            VSCInterrupt = 0;
+            VSCDescriptor = 0;
         }
         public override string ToString()
         {

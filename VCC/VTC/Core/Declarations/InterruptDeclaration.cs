@@ -70,7 +70,7 @@ namespace VTC.Core
             ec.EmitComment("Interrupt: Number = " + interrupt.ToString());
             // save flags
             ec.EmitComment("save flags");
-            ec.EmitInstruction(new Pushad());
+           // ec.EmitInstruction(new Pushad());
             // create stack frame
             ec.EmitComment("create stackframe");
             ec.EmitInstruction(new Push() { DestinationReg = EmitContext.BP, Size = 80 });
@@ -100,7 +100,7 @@ namespace VTC.Core
 
             // restore flags
             ec.EmitComment("restore flags");
-            ec.EmitInstruction(new Popad());
+           // ec.EmitInstruction(new Popad());
             // ret
             ec.EmitInstruction(new IRET());
 
@@ -111,6 +111,7 @@ namespace VTC.Core
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             fc.AddNew(method);
+            fc.MarkAsUsed(method);
             fc.CodePathReturn.PathLocation = Location;
 
             fc.NoReturnCheck = true;

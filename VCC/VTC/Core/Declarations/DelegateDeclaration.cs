@@ -80,7 +80,8 @@ namespace VTC.Core.Declarations
                     paid++;
                 }
             }
-
+            if (_ccv != null && _ccv.CallingConvention == CallingConventions.VatuSysCall)
+                ResolveContext.Report.Error(0, Location, "Vatu system call can't be implemented using delegates");
             DelegateTypeSpec NT = new DelegateTypeSpec(rc.CurrentNamespace, _name.Name, _ret.Type, tp, _ccv.CallingConvention, loc);
 
             rc.UpdateType(TypeName, NT);

@@ -17,6 +17,15 @@ namespace VTC
         bool HasBreak { get; set; }
 
     }
+    public interface ITry
+    {
+        ITry ParentTry { get; set; }
+        Label EnterTry { get; set; }
+        Label ExitTry { get; set; }
+        Label TryCatch { get; set; }
+        Label TryReturn { get; set; }
+       
+    }
     public interface IConditional
     {
         IConditional ParentIf { get; set; }
@@ -43,7 +52,8 @@ namespace VTC
         SW,
         FOR,
         IF_EXPR,
-        FLOAT_REM
+        FLOAT_REM,
+        TRY_CATCH
 
     }
     [Flags]
@@ -53,13 +63,15 @@ namespace VTC
         Normal = 1,
         Loop = 1 << 2,
         If = 1 << 3,
-        Case = 1 << 4
+        Case = 1 << 4,
+        Try = 1 << 5
     }
     public class ResolveContext : IDisposable
     {
       
         public IConditional EnclosingIf { get; set; }
         public ILoop EnclosingLoop { get; set; }
+        public ITry EnclosingTry { get; set; }
         public Switch EnclosingSwitch { get; set; }
         public Label DefineLabel(string name)
         {

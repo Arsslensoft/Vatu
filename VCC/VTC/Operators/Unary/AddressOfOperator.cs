@@ -49,9 +49,10 @@ namespace VTC
                     {
                         MethodSpec mt = null;
                       rc.Resolver.TryResolveMethod(_id.Name,ref mt);
-                      ms = mt;
+                    
                       if (mt == null)
                             Label = _id.Name;
+                      else Label = mt.Signature.ToString();
                            
                     }
                       

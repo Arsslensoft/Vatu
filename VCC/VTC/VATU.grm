@@ -191,7 +191,7 @@ Comment Line  = '//'
              | cdecl 
              | pascal
              | default
-             | vfastcall
+             | vsyscall '(' <Integral Const> ',' <Integral Const> ')'
              
 
              
@@ -310,6 +310,7 @@ Comment Line  = '//'
                | while '(' <Expression> ')' <Statement> 
                | for '(' <PARAM EXPR> ';' <Expression>  ';' <PARAM EXPR> ')' <Statement>
                | use <Name> <Statement>
+               | try <Statement> catch '(' <Integral Const> ')' <Statement>
                | loop <Statement>
                | <Normal Stm>
      

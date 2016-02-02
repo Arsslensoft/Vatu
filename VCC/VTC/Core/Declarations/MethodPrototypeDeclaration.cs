@@ -124,6 +124,13 @@ namespace VTC.Core
             method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, tp.ToArray(), this.loc);
             method.IsVariadic = (specs & Specifiers.Variadic) == Specifiers.Variadic;
             method.Parameters = Parameters;
+
+          if (ccv == CallingConventions.VatuSysCall && _id.CCV != null)
+            {
+                method.VSCDescriptor = _id.CCV.Descriptor;
+                method.VSCInterrupt = _id.CCV.Interrupt;
+
+                }
             rc.CurrentMethod = method;
             // extension
             if (ext != null)
