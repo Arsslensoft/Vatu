@@ -310,7 +310,7 @@ Comment Line  = '//'
                | while '(' <Expression> ')' <Statement> 
                | for '(' <PARAM EXPR> ';' <Expression>  ';' <PARAM EXPR> ')' <Statement>
                | use <Name> <Statement>
-               | try <Statement> catch '(' <Integral Const> ')' <Statement>
+               | try <Statement> catch '(' <Expression> ')' <Statement>
                | loop <Statement>
                | <Normal Stm>
      

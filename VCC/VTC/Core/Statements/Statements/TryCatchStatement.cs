@@ -21,12 +21,12 @@ namespace VTC.Core
 
         Statement _stmt;
         Statement _cstmt;
-        ushort ExHandler = 0;
+        Expr ExHandler ;
     
-        [Rule(@"<Statement>        ::= ~try <Statement> ~catch ~'(' <Integral Const> ~')' <Statement>")]
-        public TryCatchStatement(Statement stmt, Literal errc,Statement cstmt)
+        [Rule(@"<Statement>        ::= ~try <Statement> ~catch ~'(' <Expression> ~')' <Statement>")]
+        public TryCatchStatement(Statement stmt, Expr errc, Statement cstmt)
         {
-            ExHandler = ushort.Parse(errc.Value.GetValue().ToString());
+            ExHandler = errc;
             _cstmt = cstmt;
             _stmt = stmt;
         }
@@ -48,13 +48,8 @@ namespace VTC.Core
             rc.EnclosingTry = this;
 
 
-            TryCatchStatus = rc.Resolver.TryResolveName("TryCatchState");
-            if (TryCatchStatus == null)
-                ResolveContext.Report.Error(0, Location, "Try catch can't be used without the TryCatchState variable");
-            else if (TryCatchStatus.MemberType.GetSize(TryCatchStatus.MemberType)  != 6 || !TryCatchStatus.MemberType.IsStruct)
-                ResolveContext.Report.Error(0, Location, "TryCatchState variable must be a struct size of 6 bytes for CS, Error code & catch @ ");
 
-
+            ExHandler = (Expr)ExHandler.DoResolve(rc);
             _stmt = (Statement)_stmt.DoResolve(rc);
 
             _cstmt = (Statement)_cstmt.DoResolve(rc);
@@ -77,17 +72,11 @@ namespace VTC.Core
             // try enter routine
             ec.MarkLabel(EnterTry);
             ec.EmitComment("Try Enter Routine");
-            TryCatchStatus.EmitToStack(ec); // copy
-
-            ec.EmitInstruction(new Push() { DestinationRef = ElementReference.New(TryCatch.Name), Size = 16 });
-            ec.EmitPush(ExHandler);
-            ec.EmitPush(RegistersEnum.CS, 16);
-            // pop
-            TryCatchStatus.EmitFromStack(ec);
-
+            ec.EmitComment("TODO CALL TENR");
+            
             // try code
             _stmt.Emit(ec);
-
+            ec.EmitInstruction(new Jump() { DestinationLabel = ExitTry.Name });
             // catch
             ec.MarkLabel(TryCatch);
             _cstmt.Emit(ec);
@@ -97,8 +86,7 @@ namespace VTC.Core
             ec.EmitComment("Try Return Routine");
             // exit routine
             ec.EmitComment("Try Exit Routine");
-            // pop copy
-            TryCatchStatus.EmitFromStack(ec);
+            ec.EmitComment("TODO CALL TEXR");
 
 
             ec.EmitInstruction(new Jump() {DestinationLabel = enclosing_return.Name });
@@ -119,7 +107,7 @@ namespace VTC.Core
    
             CodePath back = fc.CodePathReturn;
             fc.CodePathReturn = cur; // set current code path
-            FlowState ok = FlowState.Valid;
+            FlowState ok = ExHandler.DoFlowAnalysis(fc);
 
 
             _stmt.DoFlowAnalysis(fc);
