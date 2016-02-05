@@ -12,7 +12,7 @@
 {Binary Digit}   = [01]
 {Literal Suffix} = [iusbafpdeIUSBAFPDE]
 {Literal Prefix} = [-]
-{Float Suffix}   = [fFdDeE]
+{Float Suffix}   = [fF]
                                                               
 {Id Head}        = {Letter} + [_]
 {Id Tail}        = {Id Head} + {Digit}
@@ -90,7 +90,9 @@ Comment Line  = '//'
           | <Decl>
           
 <Include Decl> ::= include StringLiteral
-                
+               | ressource <Name> StringLiteral
+               
+
 <Includes Decl> ::=  <Include Decl> <Includes Decl>         
                  |           
                 
@@ -259,8 +261,12 @@ Comment Line  = '//'
 <Struct Var Decl>  ::=  <Type> <Var> <Var List>  ';'          
              
 <Var>      ::= ID
-             | ID '=' <Op If> 
+             | ID '=' <Var Init Def>
 
+<Var Init Def> ::= <Op If>
+                | <Initializer>
+                | <NDim Initializer>
+                
 <Array>    ::= '[' <Integral Const>  ']'
              | '[]'
              | '[' <Integral Const> ']' <Array>
@@ -465,7 +471,9 @@ Comment Line  = '//'
                | '(' <Expression> ')'
                | <Declared Expression> 
                | new <Type> '(' <Expression> ')'
-              ! | <Initializer>
+               | checked '(' <Expression> ')'
+               | unchecked '(' <Expression> ')'
+ 
                
 
 <Declared Expression> ::=<Method Expr>     
@@ -484,10 +492,18 @@ Comment Line  = '//'
                | <Multiline String Literals>
                
 
-!<Initliazers>  ::= <Value>
-!               | <Value> ',' <Initliazers>      
-          
-!<Initializer> ::= '{' <Initliazers>  '}'   
+<Initializers>  ::= <CONSTANT>
+               | <CONSTANT> ',' <Initializers>   
+
+<Initializer> ::= '{' <Initializers>  '}'   
+               
+                
+<NDim Initializers>  ::= <Initializer>
+               | <Initializer> ',' <NDim Initializers>   
+               | <NDim Initializer> 
+               | <NDim Initializer>  ',' <NDim Initializers>   
+<NDim Initializer>    ::=  '{' <NDim Initializers>  '}'       
+
                                   
 <Integral Const> ::= OctLiteral   
                    | HexLiteral

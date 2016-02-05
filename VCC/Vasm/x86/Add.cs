@@ -8,6 +8,7 @@ namespace Vasm.x86 {
 	public class Add: InstructionWithDestinationAndSourceAndSize {
         public Add() : base("add")
         {
+            OptimizingBehaviour = OptimizationKind.None;
         }
 	}
 }

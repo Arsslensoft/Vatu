@@ -8,5 +8,9 @@ namespace Vasm.x86 {
     /// </summary>
     [Vasm.OpCode("sub")]
     public class Sub : InstructionWithDestinationAndSourceAndSize {
+         public Sub()
+        {
+            OptimizingBehaviour = OptimizationKind.None;
+        }
     }
 }

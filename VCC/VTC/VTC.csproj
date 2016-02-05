@@ -209,10 +209,15 @@
     <Compile Include="Core\Constants\ArrayConstant.cs" />
     <Compile Include="Core\Constants\BoolConstant.cs" />
     <Compile Include="Core\Constants\ByteConstant.cs" />
+    <Compile Include="Core\Constants\InitializerConstant.cs" />
+    <Compile Include="Core\Constants\MultiDimInitializerConstant.cs" />
     <Compile Include="Core\Constants\PointerConstant.cs" />
     <Compile Include="Core\Constants\FloatConstant.cs" />
     <Compile Include="Core\Constants\IntConstant.cs" />
+    <Compile Include="Core\Declarations\RessourceDeclaration.cs" />
+    <Compile Include="Core\Definitions\VariableInitDefinition.cs" />
     <Compile Include="Core\Definitions\InheritanceDefinition.cs" />
+    <Compile Include="Core\Expressions\CheckedExpressions.cs" />
     <Compile Include="Core\Expressions\DeclaredExpression.cs" />
     <Compile Include="Core\Expressions\InstanceExpression.cs" />
     <Compile Include="Core\Expressions\ParamsExpression.cs" />

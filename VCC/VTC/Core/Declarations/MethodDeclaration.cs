@@ -66,7 +66,7 @@ namespace VTC.Core
             if (_fbd._ext != null && !_fbd._ext.Static)
                 _fbd.ParamTypes.Insert(0, _fbd._ext.ExtendedType);
 
-            method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods, _id.TType.Type, ccv, _fbd.ParamTypes.ToArray(), this.loc);
+            method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods, _id.TType.Type, ccv, _fbd.ParamTypes.ToArray(), this._id.Location);
 
             // reserve first param for extension
             if (_fbd._ext != null && !_fbd._ext.Static)

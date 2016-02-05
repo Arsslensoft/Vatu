@@ -8,6 +8,11 @@ namespace Vasm.x86 {
 	public class Compare: InstructionWithDestinationAndSourceAndSize {
         public Compare() : base("cmp")
         {
+      
+            OptimizingBehaviour = OptimizationKind.None;
+        
+
+
         }
 	}
 }

@@ -64,7 +64,7 @@ namespace VTC.Core
             mods |= Modifiers.Prototype;
    
             base._type = _id.TType;
-            method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, null, this.loc);
+            method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, null, this._id.Location);
             Params = new Stack<ParameterSpec>();
             Parameters = new List<ParameterSpec>();
             List<TypeSpec> tp = new List<TypeSpec>();
@@ -121,7 +121,7 @@ namespace VTC.Core
                 ResolveContext.Report.Error(45, Location, "return type must be builtin type " + method.MemberType.ToString() + " is user-defined type.");
             if (ext != null && !ext.Static)
                 tp.Insert(0, ext.ExtendedType);
-            method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, tp.ToArray(), this.loc);
+            method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, tp.ToArray(), this.Location);
             method.IsVariadic = (specs & Specifiers.Variadic) == Specifiers.Variadic;
             method.Parameters = Parameters;
 

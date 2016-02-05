@@ -14,6 +14,9 @@ namespace Vasm {
     public float? FloatValue { get; set; }
     public uint Alignment { get; set; }
     protected object[] UntypedDefaultValue;
+    
+
+
     public string RawAsm = null;
 
     // Hack for not to emit raw data. See RawAsm
@@ -24,7 +27,7 @@ namespace Vasm {
     protected DataMember(string aName) {
       Name = aName;
     }
-
+    string[] Labels = null;
     bool verbatim = false;
     public DataMember(string aName, string aValue, bool cnst,bool verb) {
       Name = aName;
@@ -47,8 +50,20 @@ namespace Vasm {
         Name = aName;
         UntypedDefaultValue = aDefaultValue;
     }
-
-  
+    public DataMember(string aName, string[] aDefaultValue)
+    {
+        Name = aName;
+        Labels = aDefaultValue;
+    }
+    public DataMember(string aName, sbyte[] aDefaultValue)
+    {
+        Name = aName;
+        List<byte> b = new List<byte>();
+        foreach (sbyte s in aDefaultValue)
+            b.Add((byte)s);
+        RawDefaultValue = b.ToArray();
+        //UntypedDefaultValue = aDefaultValue;
+    }
     public DataMember(string aName, byte[] aDefaultValue) {
       Name = aName;
       RawDefaultValue = aDefaultValue;
@@ -126,6 +141,16 @@ namespace Vasm {
       if (RawAsm != null) {
         aOutput.WriteLine(RawAsm);
         return;
+      }
+      if (Labels != null)
+      {
+
+          aOutput.Write(Name);
+           foreach (string lb in Labels)
+               aOutput.WriteLine ( " dw " + lb);
+         
+          aOutput.WriteLine();
+          return;
       }
       if (ReferenceName != null)
       {

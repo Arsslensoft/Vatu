@@ -42,8 +42,8 @@ namespace VTC.Core
         //    _id = id;
         //    _avd = avd;
         //}
-        [Rule(@"<Var>      ::= Id ~'=' <Op If> ")]
-        public VariableDefinition(Identifier id, Expr ifexpr)
+        [Rule(@"<Var>      ::= Id ~'=' <Var Init Def>")]
+        public VariableDefinition(Identifier id, VariableInitDefinition ifexpr)
         {
             expr = ifexpr;
             _id = id;
@@ -59,7 +59,7 @@ namespace VTC.Core
                 ok &= expr.Resolve(rc);
             return ok;
         }
- public override SimpleToken DoResolve(ResolveContext rc)
+       public override SimpleToken DoResolve(ResolveContext rc)
         {
           
            

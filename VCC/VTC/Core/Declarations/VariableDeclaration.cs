@@ -53,6 +53,8 @@ namespace VTC.Core
             else if (vadef.expr is CastOperator)
                 vadef.expr = ((CastOperator)vadef.expr).Target;
 
+
+
             if (rc.IsInGlobal() && !rc.IsInTypeDef && !rc.IsInEnum && !rc.IsInStruct && !rc.IsInUnion) // field def
                 ResolveField(rc, vadef);
             else if (!rc.IsInTypeDef && !rc.IsInEnum && !rc.IsInStruct && !rc.IsInUnion) // local var definition
@@ -118,6 +120,10 @@ namespace VTC.Core
                 if (!(vadef.expr is ArrayConstant))
                     vadef.expr = ConstantExpression.CreateConstantFromValue(Type, ((ConstantExpression)(vadef.expr)).GetValue(), vadef.expr.Location);
             }
+            else if (vadef.expr is InitializerConstant && !(vadef.expr as InitializerConstant).MatchType(Type))
+                 ResolveContext.Report.Error(0, Location, "Initializers mismatch");
+            else if (vadef.expr is MultiDimInitializerConstant && !(vadef.expr as MultiDimInitializerConstant).MatchType(Type))
+                ResolveContext.Report.Error(0, Location, "Multi-Dim initializers mismatch");
 
 
 
@@ -140,6 +146,9 @@ namespace VTC.Core
 
             if (Type.IsForeignType || Type.IsArray)
                 vadef.IsAssigned = true;
+
+           if(vadef.expr is InitializerConstant || vadef.expr is MultiDimInitializerConstant)
+               ResolveContext.Report.Error(0, Location, "Initializers can't be applied to local variables");
         }
 
         void ResolveStructMember(ResolveContext rc, VariableDefinition vadef)
@@ -168,7 +177,7 @@ namespace VTC.Core
             ok &= _stype.Resolve(rc);
             return ok;
         }
-         public override SimpleToken DoResolve(ResolveContext rc)
+       public override SimpleToken DoResolve(ResolveContext rc)
        {
            ArraySize = -1;
             rc.IsInVarDeclaration = true;
@@ -221,7 +230,7 @@ namespace VTC.Core
 
                 val = val._nextvars;
             }
-           if(_vadef.expr != null && !(_vadef.expr is ConstantExpression) && !TypeChecker.CompatibleTypes(Type,_vadef.expr.Type))
+            if (_vadef.expr != null && !(_vadef.expr is ConstantExpression) && !(_vadef.expr is InitializerConstant) && !(_vadef.expr is MultiDimInitializerConstant) && !TypeChecker.CompatibleTypes(Type, _vadef.expr.Type))
                ResolveContext.Report.Error(35, Location, "Source and target must have same types");
 
            if ((mods & Modifiers.Extern) == Modifiers.Extern && IsAbstract)
@@ -286,6 +295,7 @@ namespace VTC.Core
             {
                 if (vadef.expr == null && Type.IsForeignType)
                     ec.EmitData(new DataMember(f.Signature.ToString(), new byte[f.MemberType.Size]), f);
+             
                 //   ec.AddInstanceOfStruct(FieldOrLocal.Signature.ToString(), f.MemberType);
                 // assign struct
                 else if (Type.IsBuiltinType)
@@ -322,7 +332,16 @@ namespace VTC.Core
 
                 }
             }
-
+            else if (vadef.expr is InitializerConstant)
+            {
+                DataMember data = (vadef.expr as InitializerConstant).GetData(ec,f.Signature.ToString());
+                ec.EmitData(data, f);
+            }
+            else if (vadef.expr is MultiDimInitializerConstant)
+            {
+                DataMember data = (vadef.expr as MultiDimInitializerConstant).GetData(ec, f.Signature.ToString());
+                ec.EmitData(data, f);
+            }
             else ec.EmitData(new DataMember(f.Signature.ToString(), new byte[f.MemberType.GetSize(f.MemberType)]), f);
             return true;
         }

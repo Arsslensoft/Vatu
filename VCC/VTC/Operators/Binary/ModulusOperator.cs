@@ -60,11 +60,14 @@ namespace VTC
             if (CommonType.IsFloat && !CommonType.IsPointer)
                 return EmitFloatOperation(ec);
             Left.EmitToStack(ec);
+            ec.MarkOptimizable(); // Marks last instruction as last push
             Right.EmitToStack(ec);
+            ec.MarkOptimizable(); // Marks last instruction as last push
+
             ec.EmitComment(Left.CommentString() + " % " + Right.CommentString());
             ec.EmitPop(RightRegister.Value);
             ec.EmitPop(LeftRegister.Value);
-            ec.EmitInstruction(new Xor() { DestinationReg = EmitContext.D,SourceReg = EmitContext.D, Size = 80 });
+            ec.EmitInstruction(new Xor() { DestinationReg = EmitContext.D, SourceReg = EmitContext.D, Size = 80, OptimizingBehaviour = OptimizationKind.None });
             // TODO:CHECKED DIV
             if (unsigned)
             {

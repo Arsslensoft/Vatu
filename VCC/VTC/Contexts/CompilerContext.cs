@@ -164,7 +164,38 @@ namespace VTC
         }
         #endregion
 
+        public void EmitRessources(CompiledSource src, EmitContext ec)
+        {
+            foreach (KeyValuePair<FieldSpec, byte[]> p in src.DefaultDependency.RessourcesSpecs)
+            {
+                DataMember dm = new DataMember(p.Key.Signature.ToString(), p.Value);
+                ec.EmitData(dm, p.Key, true);
+            }
+        }
+        public bool ResolveRessources(CompiledSource src, ResolveContext ctx)
+        {
+            foreach (RessourceDeclaration rsx in src.DefaultDependency.Ressources)
+            {
+                MemberSpec ms = ctx.Resolver.TryResolveName(rsx.NS,rsx.Name);
+                if (ms != null)
+                    ResolveContext.Report.Error(0, rsx.Location, "Duplicate ressource name definition");
+              string file =   FixInclude(rsx.IncludeFile, Path.GetDirectoryName(ResolveContext.Report.FilePath));
+            string path = Path.GetDirectoryName(file);
+            if (!Paths.Contains(path))
+                Paths.Add(path);
 
+                byte[] data = File.ReadAllBytes(file);
+                ArrayTypeSpec arr = new ArrayTypeSpec(BuiltinTypeSpec.Byte.NS, BuiltinTypeSpec.Byte,data.Length);
+
+                FieldSpec fs = new FieldSpec(rsx.NS, rsx.Name, Modifiers.Const | Modifiers.Public,arr, rsx.Location);
+
+
+                ctx.KnowField(fs);
+                src.DefaultDependency.RessourcesSpecs.Add(fs, data);
+            }
+
+            return true;
+        }
         public bool ResolveDependency(CompiledSource src,int idx)
         {
             DependencyParsing dep = DependencyCache[idx];
@@ -258,11 +289,19 @@ namespace VTC
                 else RootCtx.FillKnownByKnown(src.DefaultDependency.RootCtx.Resolver);
                 // includes
                 foreach (IncludeDeclaration incl in cunit.Includes)
-                    IncludeFile(incl.IncludeFile, src);
+                {
+                    if (incl is RessourceDeclaration)
+                        src.DefaultDependency.Ressources.Add(incl as RessourceDeclaration);
+                    else
+                        IncludeFile(incl.IncludeFile, src);
+                }
 
+         
                 if (old_ctx != null)
                     RootCtx.FillKnownByKnown(old_ctx.Resolver);
 
+                // ressources
+                ResolveRessources(src, RootCtx);
 
                 return (ResolveContext.Report.ErrorCount == 0);
             }
@@ -282,13 +321,25 @@ namespace VTC
                 else RootCtx.FillKnownByKnown(src.DefaultDependency.RootCtx.Resolver);
 
                 // includes
+                // includes
                 foreach (IncludeDeclaration incl in cunit.Includes)
-                    IncludeFile(incl.IncludeFile, src);
+                {
+                    if (incl is RessourceDeclaration)
+                        src.DefaultDependency.Ressources.Add(incl as RessourceDeclaration);
+                    else
+                        IncludeFile(incl.IncludeFile, src);
+                }
 
                 if (old_ctx != null)
                     RootCtx.FillKnownByKnown(old_ctx.Resolver);
+
+
                 if (stmts != null)
-                { 
+                {
+
+                    // ressources
+                    ResolveRessources(src, RootCtx);
+
                     // PreProcess
                     
                     foreach (Declaration sstmt in stmts.Declarations)
@@ -404,6 +455,8 @@ namespace VTC
                 }
 
             }
+      
+
             return (ResolveContext.Report.ErrorCount == 0);
         }
         public bool PreprocessSources()
@@ -574,6 +627,9 @@ namespace VTC
                             ResolveCtx.InsertRange(0, RResolveCtx.ToArray());
 
                             EmitContext ec = CreateEmit(pc.Source);
+                            //Ressources
+                            EmitRessources(pc.Source, ec);
+
                             int i = 0;
                             foreach (Declaration stmt in Resolved)
                             {
@@ -679,7 +735,12 @@ namespace VTC
 
         public static Location TranslateLocation(VTC.Base.GoldParser.Parser.LineInfo li)
         {
-            return new Location(li.Line, li.Column, li.Index);
+            Location loc = new Location(li.Line, li.Column, li.Index);
+            if (ResolveContext.Report != null)
+                loc.FullPath = ResolveContext.Report.FilePath;
+        
+            
+            return loc;
         }
     }
 }

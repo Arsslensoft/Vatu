@@ -6,5 +6,9 @@ using System.Text;
 namespace Vasm.x86 {
     [Vasm.OpCode("or")]
     public class Or : InstructionWithDestinationAndSourceAndSize {
+         public Or()
+        {
+            OptimizingBehaviour = OptimizationKind.None;
+        }
     }
 }

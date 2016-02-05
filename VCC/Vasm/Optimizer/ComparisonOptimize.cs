@@ -11,7 +11,10 @@ namespace Vasm.Optimizer
       public ComparisonOptimizer()
       {
           Level = 1;
+          Priority = 1;
+
       }
+      public int Priority { get; set; }
       public int Level { get; set; }
       Push GetLastPush(List<Instruction> ins, int start, ref int idx)
       {

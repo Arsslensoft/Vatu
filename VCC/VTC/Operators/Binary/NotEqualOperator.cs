@@ -73,15 +73,19 @@ namespace VTC
                 return EmitFloatOperation(ec);
 
             Left.EmitToStack(ec);
+            ec.MarkOptimizable(); // Marks last instruction as last push
             Right.EmitToStack(ec);
+            ec.MarkOptimizable(); // Marks last instruction as last push
+
+
             ec.EmitComment(Left.CommentString() + " != " + Right.CommentString());
             ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
 
             if (Left.Type.Size == 1)
-               ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg =ec.GetLow( RightRegister.Value), Size = 80 });
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80, OptimizingBehaviour = OptimizationKind.PPO });
             else
-               ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80, OptimizingBehaviour = OptimizationKind.PPO });
 
             ec.EmitBoolean(ec.GetLow(LeftRegister.Value), ConditionalTestEnum.NotEqual, ConditionalTestEnum.Equal);
 
@@ -100,15 +104,19 @@ namespace VTC
                 return EmitFloatOperationBranchable(ec, truecase, v);
 
             Left.EmitToStack(ec);
+            ec.MarkOptimizable(); // Marks last instruction as last push
             Right.EmitToStack(ec);
+            ec.MarkOptimizable(); // Marks last instruction as last push
+
+
             ec.EmitComment(Left.CommentString() + " != " + Right.CommentString());
             ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
 
             if (Left.Type.Size == 1)
-                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80 });
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceReg = ec.GetLow(RightRegister.Value), Size = 80, OptimizingBehaviour = OptimizationKind.PPO });
             else
-                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80, OptimizingBehaviour = OptimizationKind.PPO });
 
             // jumps
 

@@ -9,8 +9,15 @@ namespace VTC
 {
     public class DependencyParsing : IEquatable<DependencyParsing>
     {
-
+        public DependencyParsing()
+        {
+            Ressources = new List<RessourceDeclaration>();
+            RessourcesSpecs = new Dictionary<FieldSpec, byte[]>();
+        }
         public ResolveContext RootCtx { get; set; }
+        public List<RessourceDeclaration> Ressources { get; set; }
+        public Dictionary<FieldSpec,byte[]> RessourcesSpecs { get; set; }
+
         public List<ResolveContext> ResolveCtx { get; set; }
         public List<Declaration> Declarations { get; set; }
         public bool Parsed { get; set; }

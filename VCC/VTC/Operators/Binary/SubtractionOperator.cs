@@ -53,13 +53,15 @@ namespace VTC
 
       
             Left.EmitToStack(ec);
+            ec.MarkOptimizable(); // Marks last instruction as last push
             Right.EmitToStack(ec);
+            ec.MarkOptimizable(); // Marks last instruction as last push
             ec.EmitComment(Left.CommentString() + " - " + Right.CommentString());
             ec.EmitPop(RightRegister.Value);
             ec.EmitPop(LeftRegister.Value);
-      
 
-            ec.EmitInstruction(new Sub() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+
+            ec.EmitInstruction(new Sub() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80, OptimizingBehaviour = OptimizationKind.PPO });
             ec.EmitPush(LeftRegister.Value);
 
             return true;

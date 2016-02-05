@@ -58,7 +58,9 @@ namespace VTC
                 return EmitFloatOperation(ec);
 
             Left.EmitToStack(ec);
+            ec.MarkOptimizable(); // Marks last instruction as last push
             Right.EmitToStack(ec);
+            ec.MarkOptimizable(); // Marks last instruction as last push
             ec.EmitComment(Left.CommentString() + " * " + Right.CommentString());
             ec.EmitPop(RightRegister.Value);
             ec.EmitPop(LeftRegister.Value);
@@ -67,14 +69,14 @@ namespace VTC
             if (unsigned)
             {
                 if (bytemul)
-                    ec.EmitInstruction(new Multiply() { DestinationReg = ec.GetLow(RightRegister.Value), Size = 80 });
-                else ec.EmitInstruction(new Multiply() { DestinationReg = RightRegister.Value, Size = 80 });
+                    ec.EmitInstruction(new Multiply() { DestinationReg = ec.GetLow(RightRegister.Value), Size = 80, OptimizingBehaviour = OptimizationKind.PPO });
+                else ec.EmitInstruction(new Multiply() { DestinationReg = RightRegister.Value, Size = 80, OptimizingBehaviour = OptimizationKind.PPO });
             }
             else
             {
                 if (bytemul)
-                    ec.EmitInstruction(new SignedMultiply() { DestinationReg = ec.GetLow(RightRegister.Value), Size = 80 });
-                else ec.EmitInstruction(new SignedMultiply() { DestinationReg =RightRegister.Value, Size = 80 });
+                    ec.EmitInstruction(new SignedMultiply() { DestinationReg = ec.GetLow(RightRegister.Value), Size = 80, OptimizingBehaviour = OptimizationKind.PPO });
+                else ec.EmitInstruction(new SignedMultiply() { DestinationReg =RightRegister.Value, Size = 80 , OptimizingBehaviour = OptimizationKind.PPO});
             }
             if (bytemul)
                 ec.EmitInstruction(new MoveZeroExtend() { DestinationReg = LeftRegister.Value, SourceReg = RegistersEnum.AL, Size = 80 });

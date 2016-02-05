@@ -8,6 +8,58 @@ namespace Vasm.Optimizer
 {
   public  class OptimizeUtils
     {
+       public static Push GetLastPush(List<Instruction> ins, int start, ref int idx)
+        {
+            for (int i = start; i >= 0; i--)
+            {
+
+                if (!ins[i].Emit || ins[i] is Comment)
+                    continue;
+                else if (ins[i] is Push)
+                {
+                    idx = i;
+                    return ins[i] as Push;
+                }
+                else return null;
+
+            }
+            return null;
+        }
+       public static Push GetLastOptimizablePush(List<Instruction> ins, int start, ref int idx)
+       {
+           for (int i = start; i >= 0; i--)
+           {
+
+               if (!ins[i].Emit || ins[i] is Comment)
+                   continue;
+               else if (ins[i] is Push && ins[i].IsOperationPush)
+               {
+                   idx = i;
+                   return ins[i] as Push;
+               }
+               
+
+
+           }
+           return null;
+       }
+      public static  Pop GetLastPop(List<Instruction> ins, int start, ref int idx)
+        {
+            for (int i = start; i >= 0; i--)
+            {
+
+                if (!ins[i].Emit || ins[i] is Comment)
+                    continue;
+                else if (ins[i] is Pop)
+                {
+                    idx = i;
+                    return ins[i] as Pop;
+                }
+                else return null;
+
+            }
+            return null;
+        }
       public static bool IsDestinationRegister(InstructionWithDestinationAndSize ins)
       {
           return ins.DestinationReg.HasValue;

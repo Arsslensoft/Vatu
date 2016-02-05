@@ -10,44 +10,86 @@ namespace Vasm.Optimizer
 
        static Optimizer()
        {
+           
            Optimizers = new Dictionary<int, List<IOptimizer>>();
-           // in order 1 -> 5
-           IOptimizer[] opt = { new ComparisonOptimizer(), new PushPopO1()};
-
-           foreach (IOptimizer o in opt)
+           try
            {
-               if (Optimizers.ContainsKey(o.Level))
-                   Optimizers[o.Level].Add(o);
+               IOptimizer[] opt = { new PushPopO1(), new PPO() };
 
-               else
+               foreach (IOptimizer o in opt)
                {
-                   Optimizers.Add(o.Level, new List<IOptimizer>());
-                   Optimizers[o.Level].Add(o);
+                   if (Optimizers.ContainsKey(o.Level))
+                       Optimizers[o.Level].Add(o);
+
+                   else
+                   {
+                       Optimizers.Add(o.Level, new List<IOptimizer>());
+                       Optimizers[o.Level].Add(o);
+                   }
                }
-           }
 
           
+           }
+           catch
+           {
+
+           }
        }
 
        public static int Optimizations = 0;
         static Dictionary<int , List<IOptimizer>> Optimizers { get; set; }
+        public static List<IOptimizer>  GetAllAvailableOptimizersByLevel(int lvl)
+        {
+            List<IOptimizer> opt = new List<IOptimizer>();
+            foreach (KeyValuePair<int, List<IOptimizer>> o in Optimizers)
+            {
+                if (o.Key > lvl)
+                    continue;
+
+
+                opt.AddRange(o.Value);
+            }
+
+            opt.Sort();
+            return opt;
+        }
+        public static List<IOptimizer> GetAllAvailableOptimizersByPriority(int lvl,List<IOptimizer> OPT)
+        {
+            List<IOptimizer> opt = new List<IOptimizer>();
+            foreach (IOptimizer o in OPT)
+                if (o.Priority == lvl)
+                    opt.Add(o);
+       
+            return opt;
+        }
        public static bool Optimize(int lvl, ref List<Instruction> ins, List<Instruction> ext)
        {
            bool opt = true;
-           foreach (KeyValuePair<int, List<IOptimizer>> o in Optimizers)
+           List<IOptimizer> AVOP = GetAllAvailableOptimizersByLevel(lvl);
+           for(int MAX_PRIO = 0; MAX_PRIO < 9; MAX_PRIO++)
            {
-               if (o.Key > lvl)
+
+               List<IOptimizer> p = GetAllAvailableOptimizersByPriority(MAX_PRIO, AVOP);
+               if (p.Count == 0)
                    continue;
-           
-                   foreach (IOptimizer vopt in o.Value)
-                   {
-                       opt &= vopt.CheckForOptimization(ins, ext);
-                       if (opt)
-                           opt &= vopt.Optimize(ref ins);
-                   }
-               
+               OptimizeForPriority(ref ins, p, MAX_PRIO);
+
            }
            return opt;
+       }
+       public static bool OptimizeForPriority(ref List<Instruction> ins, List<IOptimizer> AVOP,int priority)
+       {
+             int i = 0;
+             bool ok = true;
+             for (i = 0; i < ins.Count; i++)
+             {
+                 foreach (IOptimizer o in AVOP)
+                 {
+                     if (o.Match(ins[i], i))
+                       ok &=  o.Optimize(ref ins);
+                 }
+             }
+             return ok;
        }
 
     }

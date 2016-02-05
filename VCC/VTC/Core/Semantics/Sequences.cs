@@ -306,6 +306,117 @@ namespace VTC.Core
         #endregion
     }
 
+    public class MultiDimInitializerSequence : Sequence<Expr>
+    {
+        public bool HasMultiDim { get; set; }
+        public List<Expr> Expressions { get; set; }
+          [Rule("<NDim Initializers>   ::= <NDim Initializer>")]
+        [Rule("<NDim Initializers>   ::= <Initializer>")]
+        public MultiDimInitializerSequence(Expr item)
+            : base(item, null)
+        {
+        }
+
+        [Rule("<NDim Initializers>  ::= <NDim Initializer> ~',' <NDim Initializers>    ")]
+        [Rule("<NDim Initializers>  ::= <Initializer> ~',' <NDim Initializers>    ")]
+        public MultiDimInitializerSequence(Expr item, MultiDimInitializerSequence next)
+            : base(item, next)
+        {
+
+        }
+
+
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            Expressions = new List<Expr>();
+            TypeSpec first = null;
+            bool ismultidim = false;
+
+            foreach (Expr l in this)
+            {
+                Expr tmp = (Expr)l.DoResolve(rc);
+                if (tmp is InitializerConstant)
+                {
+         
+                    if (first == null)
+                    {
+                        first = tmp.Type;
+                        HasMultiDim = false;
+                        ismultidim = false;
+                        Expressions.Add(tmp);
+                    }
+                    else if (ismultidim )
+                        ResolveContext.Report.Error(0, Location, "Initializers dimensions has been violated");
+                    else if (!first.Equals(tmp.Type))
+                        ResolveContext.Report.Error(0, Location, "Initializers must have same type as the first element");
+                    else Expressions.Add(tmp);
+                }
+                else if (tmp is MultiDimInitializerConstant)
+                {
+                    if (first == null)
+                    {
+                        first = tmp.Type;
+                        ismultidim = true;
+                        HasMultiDim = true;
+                        Expressions.Add(tmp);
+                    }
+                    else if (!ismultidim)
+                        ResolveContext.Report.Error(0, Location, "Initializers dimensions has been violated");
+                    else if (!first.Equals(tmp.Type))
+                        ResolveContext.Report.Error(0, Location, "Initializers must have same type as the first element");
+                    else Expressions.Add(tmp);
+                }
+                else ResolveContext.Report.Error(0, Location, "Initializers must be constant expressions");
+
+            }
+            return this;
+        }
+
+    }
+    public class InitializerSequence : Sequence<Literal>
+    {
+
+        public List<Expr> Expressions { get; set; }
+        [Rule("<Initializers>  ::= <CONSTANT>")]
+        public InitializerSequence(Literal item)
+            : base(item, null)
+        {
+        }
+
+        [Rule("<Initializers> ::= <CONSTANT> ~',' <Initializers>    ")]
+        public InitializerSequence(Literal item, InitializerSequence next)
+            : base(item, next)
+        {
+
+        }
+
+      
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+            Expressions = new List<Expr>();
+            TypeSpec first = null;
+            foreach (Expr l in this)
+            {
+                Expr tmp = (Expr)l.DoResolve(rc);
+                if (tmp is ConstantExpression)
+                {
+                    if (first == null)
+                    {
+                        first = tmp.Type;
+                        Expressions.Add(tmp);
+                    }
+                    else if (!first.Equals(tmp.Type))
+                        ResolveContext.Report.Error(0, Location, "Initializers must have same type as the first element");
+                    else Expressions.Add(tmp);
+
+                }
+                else ResolveContext.Report.Error(0, Location, "Initializers must be constant expressions");
+
+            }
+            return this;
+        }
+
+    }
     public class FunctionSpecifierSequence: Sequence<FunctionSpecifier>
     {
 

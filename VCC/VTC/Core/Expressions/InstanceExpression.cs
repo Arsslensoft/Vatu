@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using Vasm.x86;
 
-namespace VTC.Core.Expressions
+namespace VTC.Core
 {
    public class InstanceExpression : Expr
     {

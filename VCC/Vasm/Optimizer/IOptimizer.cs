@@ -5,10 +5,11 @@ using System.Text;
 
 namespace Vasm.Optimizer
 {
-    interface IOptimizer
+    public interface IOptimizer : IComparer<IOptimizer>, IComparable<IOptimizer>
     {
+        int Priority { get; set; }
         int Level { get; set; }
-        bool CheckForOptimization(List<Instruction> ins, List<Instruction> externals = null);
         bool Optimize(ref List<Instruction> src);
+        bool Match(Instruction ins, int idx);
     }
 }

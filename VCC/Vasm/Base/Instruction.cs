@@ -3,12 +3,26 @@ using System.Collections.Generic;
 using System.IO;
 
 namespace Vasm {
+    public enum OptimizationKind
+    {
+        None = 0,
+        PPO = 1,
+        PPOC = 2,
+        PPIO = 4
+    }
+    
   public abstract class Instruction : BaseAssemblerElement {
       /// <summary>
       /// Cache for the default mnemonics.
       /// </summary>
       public static Dictionary<Type, string> defaultMnemonicsCache = new Dictionary<Type,string>();
+
+
       public bool Emit = true;
+      public bool IsOperationPush = false;
+      public OptimizationKind OptimizingBehaviour = OptimizationKind.None;
+
+
     protected string mMnemonic;
     public string Mnemonic {
       get { return mMnemonic; }
