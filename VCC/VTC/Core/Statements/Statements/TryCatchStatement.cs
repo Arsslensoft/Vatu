@@ -15,16 +15,23 @@ namespace VTC.Core
         public Label ExitTry { get; set; }
         public Label TryCatch { get; set; }
         public Label TryReturn { get; set; }
-        public MemberSpec TryCatchStatus { get; set; }
+   
 
         Label enclosing_return = null;
 
         Statement _stmt;
         Statement _cstmt;
-        Expr ExHandler ;
-    
-        [Rule(@"<Statement>        ::= ~try <Statement> ~catch ~'(' <Expression> ~')' <Statement>")]
-        public TryCatchStatement(Statement stmt, Expr errc, Statement cstmt)
+        VariableExpression ExHandler ;
+
+        public bool SupportedThrow(VariableExpression exp)
+        {
+            if (exp.Type == ExHandler.Type)
+                return true;
+            else return false;
+        }
+
+        [Rule(@"<Statement>        ::= ~try <Statement> ~catch ~'('  <Var Expr> ~')' <Statement>")]
+        public TryCatchStatement(Statement stmt, VariableExpression errc, Statement cstmt)
         {
             ExHandler = errc;
             _cstmt = cstmt;
@@ -49,7 +56,7 @@ namespace VTC.Core
 
 
 
-            ExHandler = (Expr)ExHandler.DoResolve(rc);
+            ExHandler = (VariableExpression)ExHandler.DoResolve(rc);
             _stmt = (Statement)_stmt.DoResolve(rc);
 
             _cstmt = (Statement)_cstmt.DoResolve(rc);
@@ -79,6 +86,7 @@ namespace VTC.Core
             ec.EmitInstruction(new Jump() { DestinationLabel = ExitTry.Name });
             // catch
             ec.MarkLabel(TryCatch);
+            ExHandler.EmitFromStack(ec); // exception
             _cstmt.Emit(ec);
             ec.EmitInstruction(new Jump() { DestinationLabel = ExitTry.Name });
 
@@ -93,8 +101,7 @@ namespace VTC.Core
             ec.MarkLabel(ExitTry);
             // exit routine code
             ec.EmitComment("Try Exit Routine");
-            // pop copy
-            TryCatchStatus.EmitFromStack(ec);
+      
 
 
             return true;

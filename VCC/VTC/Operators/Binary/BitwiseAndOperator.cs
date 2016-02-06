@@ -25,10 +25,7 @@ namespace VTC
                 ResolveContext.Report.Error(22, Location, "Bitwise operation must have the same type");
             CommonType = Left.Type;
 
-            if (Right is RegisterExpression && Left is RegisterExpression)
-                RegisterOperation = true;
-            else if (Right is RegisterExpression || Left is RegisterExpression)
-                ResolveContext.Report.Error(28, Location, "Register expected, Left and Right must be registers");
+       
             rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), ref OvlrdOp, new TypeSpec[2] { Left.Type, Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
@@ -51,6 +48,28 @@ namespace VTC
             ec.EmitInstruction(new And() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80, OptimizingBehaviour = OptimizationKind.PPO });
             ec.EmitPush(LeftRegister.Value);
 
+
+            return true;
+        }
+
+
+        public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
+        {
+            Left.EmitToStack(ec);
+            Right.EmitToStack(ec);
+            ec.EmitComment(Left.CommentString() + " && " + Right.CommentString());
+            ec.EmitPop(LeftRegister.Value);
+            ec.EmitPop(RightRegister.Value);
+
+            ec.EmitInstruction(new And() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+
+            if (CommonType.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceValue = EmitContext.TRUE, Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceValue = EmitContext.TRUE, Size = 80 });
+
+            ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.Equal, ConditionalTestEnum.NotEqual);
+          
 
             return true;
         }

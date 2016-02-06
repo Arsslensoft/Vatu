@@ -316,7 +316,7 @@ Comment Line  = '//'
                | while '(' <Expression> ')' <Statement> 
                | for '(' <PARAM EXPR> ';' <Expression>  ';' <PARAM EXPR> ')' <Statement>
                | use <Name> <Statement>
-               | try <Statement> catch '(' <Expression> ')' <Statement>
+               | try <Statement> catch '(' <Var Expr> ')' <Statement>
                | loop <Statement>
                | <Normal Stm>
      
@@ -339,6 +339,7 @@ Comment Line  = '//'
                | exit ';'
                | exit DecLiteral ';'
                | pass ';'
+               | throw <Var Expr> ';'
                | interrupt <Integral Const> ';'
                | interrupt <Integral Const> '(' <PARAM EXPR> ')' ';'
                | return <Expression> ';'
@@ -346,10 +347,7 @@ Comment Line  = '//'
                | delete <Value> ';'
                | <ASM Statement>
                | ';'              !Null statement          
-               
-
-
-
+                           
 
 <Case Stm> ::=  case <Integral Const List> ':' <Stm List>
               | default ':' <Stm List>   

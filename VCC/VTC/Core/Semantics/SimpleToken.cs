@@ -6,6 +6,7 @@ using System.Text;
 
 namespace VTC.Core
 {
+    [Terminal("throw")]
     [Terminal("ressource")]
     [Terminal("try")]
     [Terminal("catch")]

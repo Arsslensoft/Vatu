@@ -87,6 +87,7 @@ namespace VTC
                 ec.EmitInstruction(new Add() { DestinationReg = Register.Value, SourceValue = (ushort)Right.Type.BaseType.Size });
             else
             ec.EmitInstruction(new INC() { DestinationReg = Register.Value, Size = 80 });
+            EmitCheckOvf(ec, Register.Value, CommonType.IsSigned);
             ec.EmitPush(Register.Value);
 
 
@@ -118,6 +119,7 @@ namespace VTC
                 ec.EmitInstruction(new Add() { DestinationReg = Register.Value, SourceValue = (ushort)Right.Type.BaseType.Size });
             else
                 ec.EmitInstruction(new INC() { DestinationReg = Register.Value, Size = 80 });
+            EmitCheckOvf(ec, Register.Value, CommonType.IsSigned);
             ec.EmitPush(Register.Value);
             ec.EmitPush(Register.Value);
 

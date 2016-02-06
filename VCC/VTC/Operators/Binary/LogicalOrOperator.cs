@@ -40,12 +40,22 @@ namespace VTC
         {
             
             Left.EmitToStack(ec);
+            ec.EmitPop(LeftRegister.Value);
+            Label avoid = ec.DefineLabel(LabelType.BOOL_EXPR, "LOR");
+            ec.EmitInstruction(new Compare() { SourceValue = EmitContext.TRUE, DestinationReg = LeftRegister.Value });
+            ec.EmitPush(LeftRegister.Value);
+            ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.Equal, DestinationLabel = avoid.Name });
+     
+
+
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " || " + Right.CommentString());
-            ec.EmitPop( LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
+            ec.EmitPop(LeftRegister.Value);
+
             ec.EmitInstruction(new Or() { DestinationReg = LeftRegister.Value, SourceReg =RightRegister.Value, Size = 80 });
             ec.EmitPush(LeftRegister.Value);
+            ec.MarkLabel(avoid); // keeps left in the stack with false value
 
        
             return true;
@@ -53,6 +63,7 @@ namespace VTC
         public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
         {
             Left.EmitToStack(ec);
+
             Right.EmitToStack(ec);
             ec.EmitComment(Left.CommentString() + " || " + Right.CommentString());
             ec.EmitPop(LeftRegister.Value);
@@ -64,12 +75,8 @@ namespace VTC
             else
                 ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceValue = EmitContext.TRUE, Size = 80 });
 
-      
-            if (v)
-                ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.Equal, DestinationLabel = truecase.Name });
-            else
-                ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.NotEqual, DestinationLabel = truecase.Name });
 
+            ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.Equal, ConditionalTestEnum.NotEqual);
 
             return true;
         }

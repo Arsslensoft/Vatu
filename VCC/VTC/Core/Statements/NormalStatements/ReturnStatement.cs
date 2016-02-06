@@ -48,15 +48,15 @@ namespace VTC.Core
             if (rc.EnclosingTry == null)
                 ReturnLabel = new Label(rc.CurrentMethod.Signature + "_ret");
             else ReturnLabel = rc.EnclosingTry.TryReturn;
-            // set exit loops
-            ILoop enc = rc.EnclosingLoop;
-            while (enc != null)
-            {
+            //// set exit loops
+            //ILoop enc = rc.EnclosingLoop;
+            //while (enc != null)
+            //{
 
-                enc.HasBreak = true;
-                enc = enc.ParentLoop;
+            //    enc.HasBreak = true;
+            //    enc = enc.ParentLoop;
 
-            }
+            //}
             return this;
         }
         public override bool Emit(EmitContext ec)

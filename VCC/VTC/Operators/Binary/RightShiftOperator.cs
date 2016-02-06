@@ -34,8 +34,7 @@ namespace VTC
             if (ShiftValue > 15)
                 noshift = true;
 
-            if (Left is RegisterExpression)
-                RegisterOperation = true;
+          
             rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), ref OvlrdOp, new TypeSpec[2] { Left.Type, Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
@@ -46,11 +45,7 @@ namespace VTC
             if (OvlrdOp != null)
                 return base.EmitOverrideOperator(ec);
 
-            if (RegisterOperation)
-            {
-                RegisterExpression.EmitOperation(ec, new ShiftRight(), ShiftValue, ((RegisterExpression)Left).Register);
-                return true;
-            }
+          
             if (noshift)
             {
                 ec.EmitInstruction(new Mov() { SourceValue = 0, DestinationReg = LeftRegister.Value, Size = 16 });

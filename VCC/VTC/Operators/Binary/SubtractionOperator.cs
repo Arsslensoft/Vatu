@@ -62,6 +62,7 @@ namespace VTC
 
 
             ec.EmitInstruction(new Sub() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80, OptimizingBehaviour = OptimizationKind.PPO });
+            EmitCheckOvf(ec, LeftRegister.Value, CommonType.IsSigned);
             ec.EmitPush(LeftRegister.Value);
 
             return true;

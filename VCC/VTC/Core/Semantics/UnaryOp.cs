@@ -55,5 +55,16 @@ namespace VTC.Core
 
             return true;
         }
+
+        public void EmitCheckOvf(EmitContext ec, RegistersEnum rg, bool signed)
+        {
+            if (CheckOverlflow)
+            {
+                Label lb = ec.DefineLabel(LabelType.CHECKED_EXPR);
+                ec.EmitInstruction(new ConditionalJump() { Condition = signed ? ConditionalTestEnum.NoOverflow : ConditionalTestEnum.NotCarry, DestinationLabel = lb.Name });
+                ec.EmitInstruction(new Xor() { DestinationReg = rg, SourceReg = rg }); // make 0
+                ec.MarkLabel(lb);
+            }
+        }
     }
 }

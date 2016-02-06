@@ -80,7 +80,8 @@ namespace VTC
             }
             if (bytemul)
                 ec.EmitInstruction(new MoveZeroExtend() { DestinationReg = LeftRegister.Value, SourceReg = RegistersEnum.AL, Size = 80 });
-
+            
+            EmitCheckOvf(ec, LeftRegister.Value, CommonType.IsSigned);
             ec.EmitPush(LeftRegister.Value);
       
             return true;

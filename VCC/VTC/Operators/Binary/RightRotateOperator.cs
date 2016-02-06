@@ -36,8 +36,7 @@ namespace VTC
 
             norot = (RotValue == 0);
 
-            if (Left is RegisterExpression)
-                RegisterOperation = true;
+          
             rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(),ref OvlrdOp, new TypeSpec[2] { Left.Type, Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
@@ -47,11 +46,7 @@ namespace VTC
         {
             if (OvlrdOp != null)
                 return base.EmitOverrideOperator(ec);
-            if (RegisterOperation)
-            {
-                RegisterExpression.EmitOperation(ec, new RotateRight(), RotValue, ((RegisterExpression)Left).Register);
-                return true;
-            }
+           
             if (norot)
             {
                 Left.EmitToStack(ec);

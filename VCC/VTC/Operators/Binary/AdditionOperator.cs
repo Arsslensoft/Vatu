@@ -25,7 +25,7 @@ namespace VTC
                 ResolveContext.Report.Error(23, Location, "Arithmetic operations must have the same types (use cast)");
             
             
-
+           
             CommonType = Left.Type;
         
             rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), ref OvlrdOp, new TypeSpec[2] { Left.Type, Right.Type });
@@ -62,6 +62,7 @@ namespace VTC
             ec.EmitPop(LeftRegister.Value);
 
             ec.EmitInstruction(new Add() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80, OptimizingBehaviour = OptimizationKind.PPO });
+            EmitCheckOvf(ec, LeftRegister.Value, CommonType.IsSigned);
             ec.EmitPush(LeftRegister.Value);
          
             return true;

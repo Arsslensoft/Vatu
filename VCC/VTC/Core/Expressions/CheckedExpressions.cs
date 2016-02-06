@@ -17,5 +17,29 @@ namespace VTC.Core.Expressions
           _expr = exp;
           _checked = (tok.Name == "checked");
       }
+
+      public override SimpleToken DoResolve(ResolveContext rc)
+      {
+          rc.CurrentScope &= ~ResolveScopes.CheckedArithmetics;
+          if (!_checked)
+          {
+              ResolveScopes old_scope = rc.CurrentScope;
+              rc.CurrentScope &= ~ResolveScopes.CheckedArithmetics; // uncheked
+              _expr = (Expr)_expr.DoResolve(rc);
+              rc.CurrentScope = old_scope;
+          }
+          else
+          {
+              ResolveScopes old_scope = rc.CurrentScope;
+              rc.CurrentScope |= ResolveScopes.CheckedArithmetics; // cheked
+              _expr = (Expr)_expr.DoResolve(rc);
+              rc.CurrentScope = old_scope;
+          }
+          return _expr;
+      }
+      public override bool Resolve(ResolveContext rc)
+      {
+          return _expr.Resolve(rc);
+      }
     }
 }

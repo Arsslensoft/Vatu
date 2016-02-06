@@ -60,6 +60,7 @@ namespace VTC
              ec.EmitComment(" -- " + Right.CommentString());
              ec.EmitInstruction(new Vasm.x86.x87.FloatSubAndPop() { DestinationReg = RegistersEnum.ST1, SourceReg = RegistersEnum.ST0 });
              ec.EmitInstruction(new Vasm.x86.x87.FloatLoad() { DestinationReg = RegistersEnum.ST0 }); // second push 
+           
              Right.EmitFromStack(ec);
 
 
@@ -88,6 +89,7 @@ namespace VTC
                 ec.EmitInstruction(new Sub() { DestinationReg = Register.Value, SourceValue = (ushort)Right.Type.BaseType.Size });
             else
                 ec.EmitInstruction(new Dec() { DestinationReg = Register.Value, Size = 80 });
+            EmitCheckOvf(ec, Register.Value, CommonType.IsSigned);
             ec.EmitPush(Register.Value);
 
 
@@ -122,6 +124,7 @@ namespace VTC
                 ec.EmitInstruction(new Sub() { DestinationReg = Register.Value, SourceValue = (ushort)Right.Type.BaseType.Size });
             else
                 ec.EmitInstruction(new Dec() { DestinationReg = Register.Value, Size = 80 });
+            EmitCheckOvf(ec, Register.Value, CommonType.IsSigned);
             ec.EmitPush(Register.Value);
             ec.EmitPush(Register.Value);
 

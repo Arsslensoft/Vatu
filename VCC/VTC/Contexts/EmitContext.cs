@@ -55,7 +55,7 @@ namespace VTC
         {
             ag.Instructions[ag.Instructions.Count - 1].IsOperationPush = true;
         }
-
+        public const byte FALSE = 0;
         public const byte TRUE = 1;
         public const RegistersEnum A = RegistersEnum.AX;
         public const RegistersEnum B = RegistersEnum.BX;

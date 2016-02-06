@@ -331,6 +331,7 @@
     <Compile Include="Core\Statements\BaseStatement.cs" />
     <Compile Include="Core\Statements\Block.cs" />
     <Compile Include="Core\Statements\BlockStatement.cs" />
+    <Compile Include="Core\Statements\NormalStatements\ThrowStatement.cs" />
     <Compile Include="Core\Statements\NormalStatements\InterruptParamStatement.cs" />
     <Compile Include="Core\Statements\RegisterExpressionStatement.cs" />
     <Compile Include="Core\Statements\EmptyStatement.cs" />

@@ -13,11 +13,11 @@ namespace VTC.Core
         public Namespace Namespace { get; set; }
         public Expr Left { get; set; }
         public Expr Right { get; set; }
-
+        protected bool CheckOverlflow = false;
         public bool FixConstant(ResolveContext rc)
         {
             bool conv = false;
-
+            CheckOverlflow = (rc.CurrentScope & ResolveScopes.CheckedArithmetics) == ResolveScopes.CheckedArithmetics;
             if (Left.Type.IsFloat && !FloatingPointSupported && CompilerContext.CompilerOptions.FloatingPointEnabled)
             {
                 ResolveContext.Report.Error(0, Left.Location, "Floating Point not supported for this kind of operators");

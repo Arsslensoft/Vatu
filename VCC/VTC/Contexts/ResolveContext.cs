@@ -24,6 +24,7 @@ namespace VTC
         Label ExitTry { get; set; }
         Label TryCatch { get; set; }
         Label TryReturn { get; set; }
+        bool SupportedThrow(VariableExpression exp);
        
     }
     public interface IConditional
@@ -53,7 +54,8 @@ namespace VTC
         FOR,
         IF_EXPR,
         FLOAT_REM,
-        TRY_CATCH
+        TRY_CATCH,
+        CHECKED_EXPR
 
     }
     [Flags]
@@ -64,7 +66,9 @@ namespace VTC
         Loop = 1 << 2,
         If = 1 << 3,
         Case = 1 << 4,
-        Try = 1 << 5
+        Try = 1 << 5,
+        CheckedArithmetics = 1 << 6
+       
     }
     public class ResolveContext : IDisposable
     {
