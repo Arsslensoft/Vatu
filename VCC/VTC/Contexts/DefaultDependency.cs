@@ -11,11 +11,11 @@ namespace VTC
     {
         public DependencyParsing()
         {
-            Ressources = new List<RessourceDeclaration>();
-            RessourcesSpecs = new Dictionary<FieldSpec, byte[]>();
+ 
+            RessourcesSpecs = new Dictionary<FieldSpec, byte[]>(new MemberSpecEqualityComparer());
         }
         public ResolveContext RootCtx { get; set; }
-        public List<RessourceDeclaration> Ressources { get; set; }
+ 
         public Dictionary<FieldSpec,byte[]> RessourcesSpecs { get; set; }
 
         public List<ResolveContext> ResolveCtx { get; set; }

@@ -184,6 +184,7 @@
     <Compile Include="Compiler\Specs\IMember.cs" />
     <Compile Include="Compiler\Specs\MemberSignature.cs" />
     <Compile Include="Compiler\Specs\MemberSpec.cs" />
+    <Compile Include="Compiler\Specs\MemberSpecEqualityComparer.cs" />
     <Compile Include="Compiler\Specs\MethodSpec.cs" />
     <Compile Include="Compiler\Specs\Modifiers.cs" />
     <Compile Include="Compiler\Specs\OperatorSpec.cs" />

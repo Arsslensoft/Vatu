@@ -84,6 +84,8 @@ namespace VTC.Core
                         {
                             if (roottype.IsSigned)
                                 dat.Add((byte)((sbyte)str.GetValue()));
+                            else if (roottype.Equals(BuiltinTypeSpec.Bool))
+                                dat.Add(((bool)str.GetValue()) ? (byte)1 : (byte)0);
                             else dat.Add((byte)str.GetValue());
                         }
 

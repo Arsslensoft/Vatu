@@ -14,7 +14,29 @@ namespace VTC.Core
         public CharLiteral(string value)
             : base(value, true)
         {try{
-            _value = new ByteConstant(Encoding.ASCII.GetBytes(value.Replace("'",""))[0], CompilerContext.TranslateLocation(position));
+
+            char c = value[1];
+            if (c == '\\' && value.Length > 3)
+            {
+                switch (value[2])
+                {
+                    // --- Simple character escapes
+                    case '\'': c = '\''; break;
+                    case '\"': c = '\"'; break;
+                    case '\\': c = '\\'; break;
+                    case '0': c = '\0'; break;
+                    case 'a': c = '\a'; break;
+                    case 'b': c = '\b'; break;
+                    case 'f': c = '\f'; break;
+                    case 'n': c = '\n'; break;
+                    case 'r': c = '\r'; break;
+                    case 't': c = '\t'; break;
+                    case 'v': c = '\v'; break;
+                  
+
+                }
+            }
+            _value = new ByteConstant((byte)c, CompilerContext.TranslateLocation(position));
         }
         catch (Exception ex)
         {

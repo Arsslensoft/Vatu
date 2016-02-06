@@ -84,7 +84,10 @@ namespace VTC.Core
                   foreach (ConstantExpression str in _initseq.Expressions)
                   {
                       if (type.BaseType.IsSigned)
-                              us.Add((byte)((sbyte)str.GetValue()));
+                          us.Add((byte)((sbyte)str.GetValue()));
+                      else if (type.BaseType.Equals(BuiltinTypeSpec.Bool))
+                          us.Add(((bool)str.GetValue()) ? (byte)1 : (byte)0);
+
                       else us.Add((byte)str.GetValue());
                   }
 

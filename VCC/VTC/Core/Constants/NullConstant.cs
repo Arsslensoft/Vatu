@@ -13,7 +13,7 @@ namespace VTC.Core
     {
         int _value;
         public NullConstant(Location loc)
-            : base(BuiltinTypeSpec.UInt, loc)
+            : base(BuiltinTypeSpec.Pointer, loc)
         {
             _value = 0;
         }

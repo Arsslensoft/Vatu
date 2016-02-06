@@ -18,6 +18,10 @@ namespace VTC
   
     public sealed class CompilerContext
     {
+
+        object rsx_lock = new object();
+        object include_lock = new object();
+
         internal static bool EntryPointFound = false;
         internal static Settings CompilerOptions { get; set; }
     
@@ -149,18 +153,45 @@ namespace VTC
             string path = Path.GetDirectoryName(dep.File);
             if (!Paths.Contains(path))
                 Paths.Add(path);
-            if (DependencyCache.Contains(dep))
+            lock (include_lock)
             {
-                dep = DependencyCache[DependencyCache.IndexOf(dep)];
-                return ResolveDependency(csrc, DependencyCache.IndexOf(dep));
+                if (DependencyCache.Contains(dep))
+                {
+                    dep = DependencyCache[DependencyCache.IndexOf(dep)];
+                    return ResolveDependency(csrc, DependencyCache.IndexOf(dep));
+                }
+                else
+                {
+                    dep.InputStream = new StreamReader(File.OpenRead(dep.File));
+                    DependencyCache.Add(dep);
+                    return ResolveDependency(csrc, DependencyCache.Count - 1);
+                }
             }
-            else
+        }
+        public bool IncludeRessource(RessourceDeclaration rsx, CompiledSource src, ResolveContext ctx)
+        {
+            lock (rsx_lock)
             {
-                dep.InputStream = new StreamReader(File.OpenRead(dep.File));
-                DependencyCache.Add(dep);
-                return ResolveDependency(csrc, DependencyCache.Count - 1);
+                MemberSpec ms = ctx.Resolver.TryResolveName(rsx.NS, rsx.Name);
+                if (ms != null)
+                    return false;
+                string file = FixInclude(rsx.IncludeFile, Path.GetDirectoryName(ResolveContext.Report.FilePath));
+                string path = Path.GetDirectoryName(file);
+                if (!Paths.Contains(path))
+                    Paths.Add(path);
+
+                byte[] data = File.ReadAllBytes(file);
+                ArrayTypeSpec arr = new ArrayTypeSpec(BuiltinTypeSpec.Byte.NS, BuiltinTypeSpec.Byte, data.Length);
+
+                FieldSpec fs = new FieldSpec(rsx.NS, rsx.Name, Modifiers.Const | Modifiers.Public, arr, rsx.Location);
+
+
+                ctx.KnowField(fs);
+                if(!src.DefaultDependency.RessourcesSpecs.ContainsKey(fs))
+                        src.DefaultDependency.RessourcesSpecs.Add(fs, data);
+
             }
-         
+            return true;
         }
         #endregion
 
@@ -172,30 +203,8 @@ namespace VTC
                 ec.EmitData(dm, p.Key, true);
             }
         }
-        public bool ResolveRessources(CompiledSource src, ResolveContext ctx)
-        {
-            foreach (RessourceDeclaration rsx in src.DefaultDependency.Ressources)
-            {
-                MemberSpec ms = ctx.Resolver.TryResolveName(rsx.NS,rsx.Name);
-                if (ms != null)
-                    ResolveContext.Report.Error(0, rsx.Location, "Duplicate ressource name definition");
-              string file =   FixInclude(rsx.IncludeFile, Path.GetDirectoryName(ResolveContext.Report.FilePath));
-            string path = Path.GetDirectoryName(file);
-            if (!Paths.Contains(path))
-                Paths.Add(path);
-
-                byte[] data = File.ReadAllBytes(file);
-                ArrayTypeSpec arr = new ArrayTypeSpec(BuiltinTypeSpec.Byte.NS, BuiltinTypeSpec.Byte,data.Length);
-
-                FieldSpec fs = new FieldSpec(rsx.NS, rsx.Name, Modifiers.Const | Modifiers.Public,arr, rsx.Location);
-
-
-                ctx.KnowField(fs);
-                src.DefaultDependency.RessourcesSpecs.Add(fs, data);
-            }
-
-            return true;
-        }
+   
+    
         public bool ResolveDependency(CompiledSource src,int idx)
         {
             DependencyParsing dep = DependencyCache[idx];
@@ -204,6 +213,9 @@ namespace VTC
                 // transfer
                 src.DefaultDependency.RootCtx.FillKnownByKnown(dep.RootCtx.Resolver);
                 src.DefaultDependency.DependsOn.Add(dep);
+               // ressources
+                foreach (KeyValuePair<FieldSpec, byte[]> p in dep.RessourcesSpecs)
+                    src.DefaultDependency.RessourcesSpecs.Add(p.Key, p.Value);
                 return true;
 
             }
@@ -252,6 +264,9 @@ namespace VTC
                             // transfer
                             src.DefaultDependency.RootCtx.FillKnownByKnown(RootCtx.Resolver);
 
+                            // ressources
+                            foreach (KeyValuePair<FieldSpec, byte[]> p in dep.RessourcesSpecs)
+                                src.DefaultDependency.RessourcesSpecs.Add(p.Key, p.Value);
                         }
 
                     }
@@ -291,7 +306,7 @@ namespace VTC
                 foreach (IncludeDeclaration incl in cunit.Includes)
                 {
                     if (incl is RessourceDeclaration)
-                        src.DefaultDependency.Ressources.Add(incl as RessourceDeclaration);
+                        IncludeRessource(incl as RessourceDeclaration, src, RootCtx);
                     else
                         IncludeFile(incl.IncludeFile, src);
                 }
@@ -300,8 +315,7 @@ namespace VTC
                 if (old_ctx != null)
                     RootCtx.FillKnownByKnown(old_ctx.Resolver);
 
-                // ressources
-                ResolveRessources(src, RootCtx);
+               
 
                 return (ResolveContext.Report.ErrorCount == 0);
             }
@@ -325,7 +339,7 @@ namespace VTC
                 foreach (IncludeDeclaration incl in cunit.Includes)
                 {
                     if (incl is RessourceDeclaration)
-                        src.DefaultDependency.Ressources.Add(incl as RessourceDeclaration);
+                        IncludeRessource(incl as RessourceDeclaration, src, RootCtx);
                     else
                         IncludeFile(incl.IncludeFile, src);
                 }
@@ -337,8 +351,7 @@ namespace VTC
                 if (stmts != null)
                 {
 
-                    // ressources
-                    ResolveRessources(src, RootCtx);
+             
 
                     // PreProcess
                     
