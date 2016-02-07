@@ -56,12 +56,15 @@ namespace VTC
         public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
         {
             Left.EmitToStack(ec);
+            ec.MarkOptimizable(); // Marks last instruction as last push
             Right.EmitToStack(ec);
+            ec.MarkOptimizable(); // Marks last instruction as last push
+
             ec.EmitComment(Left.CommentString() + " && " + Right.CommentString());
             ec.EmitPop(LeftRegister.Value);
             ec.EmitPop(RightRegister.Value);
 
-            ec.EmitInstruction(new And() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 });
+            ec.EmitInstruction(new And() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80 , OptimizingBehaviour = OptimizationKind.PPO});
 
             if (CommonType.Size == 1)
                 ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceValue = EmitContext.TRUE, Size = 80 });

@@ -108,7 +108,7 @@ namespace VTC
 
                 ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.A, SourceIsIndirect = false, Size = 16, SourceReg = Register });
                 ec.EmitInstruction(new Add() { DestinationReg = EmitContext.A, SourceValue = (ushort)(Offset), Size = 16 });
-                ec.EmitPush(EmitContext.SI, 16, false);
+                ec.EmitPush(EmitContext.A, 16, false);
 
             }
             else
@@ -179,8 +179,8 @@ namespace VTC
                 ec.EmitComment("ValueOf Access Hosted Array @" + Register.ToString() + Offset);
                 ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.A, SourceIsIndirect = false, Size = 16, SourceReg = Register });
                 ec.EmitInstruction(new Add() { DestinationReg = EmitContext.A, SourceValue = (ushort)(Offset), Size = 16 });
-                ec.EmitInstruction(new Lea() { DestinationReg = EmitContext.SI, SourceIsIndirect = true, Size = 16, SourceReg = EmitContext.SI, SourceDisplacement = off });
-                ec.EmitPush(EmitContext.SI);
+                ec.EmitInstruction(new Lea() { DestinationReg = EmitContext.A, SourceIsIndirect = true, Size = 16, SourceReg =EmitContext.A, SourceDisplacement = off });
+                ec.EmitPush(EmitContext.A);
 
             }
             else

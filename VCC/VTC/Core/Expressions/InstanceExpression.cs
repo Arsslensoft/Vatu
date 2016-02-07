@@ -36,6 +36,10 @@ namespace VTC.Core
        public override bool EmitToStack(EmitContext ec)
        {
            _sizeexpr.EmitToStack(ec);
+           ec.EmitPop(EmitContext.A);
+           ec.EmitMovToRegister(EmitContext.C, (ushort)_type.Type.GetSize(_type.Type));
+           ec.EmitInstruction(new Multiply() { DestinationReg = EmitContext.C});
+           ec.EmitPush(EmitContext.A);
            ec.EmitInstruction(new Call() { DestinationLabel = method.Signature.ToString() });
            ec.EmitPush(EmitContext.A);
            return true;

@@ -108,7 +108,7 @@ namespace VTC
 
                 ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.A, SourceIsIndirect = false, Size = 16, SourceReg = Register });
                 ec.EmitInstruction(new Add() { DestinationReg = EmitContext.A, SourceValue = (ushort)(Offset), Size = 16 });
-                ec.EmitPush(EmitContext.SI, 16, false);
+                ec.EmitPush(EmitContext.A, 16, false);
 
             }
             else

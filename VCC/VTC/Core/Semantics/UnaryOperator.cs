@@ -8,6 +8,6 @@ namespace VTC.Core
     public enum UnaryOperator : byte
     {
         UnaryPlus, UnaryNegation, LogicalNot, OnesComplement,
-        AddressOf, ValueOf, PostfixIncrement, PostfixDecrement, ZeroTest, ParityTest, UserDefined,New
+        AddressOf, ValueOf, PostfixIncrement, PostfixDecrement, ZeroTest, ParityTest, UserDefined, New, PrefixIncrement, PrefixDecrement
     }
 }

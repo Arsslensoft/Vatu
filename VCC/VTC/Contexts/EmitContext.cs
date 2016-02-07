@@ -156,6 +156,7 @@ namespace VTC
         {
             ag.Emit(ins);
         }
+        #region Stack
         public void EmitPop(RegistersEnum rg, byte size = 80, bool adr = false, int off = 0)
         {
             if (Registers.Is8Bit(rg))
@@ -225,6 +226,52 @@ namespace VTC
             else
                 EmitInstruction(new Push() { DestinationReg = rg, Size = 16, DestinationIsIndirect = adr, DestinationDisplacement = off });
         }
+        #endregion
+        #region Mov
+        public void EmitMovFromRegister(RegistersEnum rg, RegistersEnum src,byte size = 80, bool adr = false, int off = 0)
+        {
+        
+
+            if (size == 8)
+            {
+                if (off != 0)
+                    EmitInstruction(new Mov() { DestinationReg = rg, Size = 8, DestinationIsIndirect = adr, DestinationDisplacement = off, SourceReg = GetLow(src) });
+                else EmitInstruction(new Mov() { DestinationReg = rg, Size = 8, DestinationIsIndirect = adr, SourceReg = GetLow(src) });
+            }
+            else
+            {
+                if (off != 0)
+                    EmitInstruction(new Mov() { DestinationReg = rg, Size = 16, DestinationIsIndirect = adr, DestinationDisplacement = off, SourceReg = src });
+                else EmitInstruction(new Mov() { DestinationReg = rg, Size = 16, DestinationIsIndirect = adr, SourceReg = src });
+            }
+        }
+        public void EmitMovToRegister(RegistersEnum dst,bool v)
+        {
+            EmitInstruction(new Mov() {DestinationReg = dst ,SourceValue = (v ? (ushort)EmitContext.TRUE : (ushort)0), Size = 16 });
+        }
+        public void EmitMovToRegister(RegistersEnum dst, byte v)
+        {
+            EmitInstruction(new Mov() { DestinationReg = dst, SourceValue = v, Size = 16 });
+        }
+        public void EmitMovToRegister(RegistersEnum dst, ushort v)
+        {
+            EmitInstruction(new Mov() { DestinationReg = dst, SourceValue = v, Size = 16 });
+        }
+        public void EmitMovToRegister(RegistersEnum rg, RegistersEnum src, byte size = 80, bool adr = false, int off = 0)
+        {
+            if (size == 8)
+                EmitInstruction(new MoveZeroExtend() { DestinationReg = rg, Size = 8, SourceReg = src, SourceDisplacement = off, SourceIsIndirect = adr });
+            else
+                EmitInstruction(new Mov() { DestinationReg = rg, Size = 16, SourceReg = src, SourceDisplacement = off, SourceIsIndirect = adr });
+        }
+        public void EmitMovToRegisterSigned(RegistersEnum rg, RegistersEnum src, byte size = 80, bool adr = false, int off = 0)
+        {
+            if (size == 8)
+                EmitInstruction(new MoveSignExtend() { DestinationReg = rg, Size = 8, SourceReg = src, SourceDisplacement = off, SourceIsIndirect = adr });
+            else
+                EmitInstruction(new Mov() { DestinationReg = rg, Size = 16, SourceReg = src, SourceDisplacement = off, SourceIsIndirect = adr });
+        }
+        #endregion
 
         public void EmitLoadFloat(RegistersEnum rg, byte size = 32, bool adr = false, int off = 0)
         {

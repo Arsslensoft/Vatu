@@ -29,12 +29,13 @@ namespace VTC.Core
         }
  public override SimpleToken DoResolve(ResolveContext rc)
         {
-            rc.Resolver.TryResolveMethod("op_alloc_delete",ref DeleteOperator, new TypeSpec[1] { BuiltinTypeSpec.UInt});
+            rc.Resolver.TryResolveMethod("op_alloc_delete",ref DeleteOperator, new TypeSpec[2] { BuiltinTypeSpec.Pointer ,BuiltinTypeSpec.UInt});
             //if (rc.CurrentMethod == DeleteOperator)
             //    DeleteOperator = null;
             SizeExpr = (Expr)SizeExpr.DoResolve(rc);
-            if(!SizeExpr.Type.Equals(BuiltinTypeSpec.UInt))
-                ResolveContext.Report.Error(0, Location, "Delete operator accepts only uint as parameter");
+            if(!SizeExpr.Type.IsPointer)
+                ResolveContext.Report.Error(0, Location, "Delete operator accepts only pointer type as parameter");
+            
             if (DeleteOperator == null)
                 ResolveContext.Report.Error(0, Location, "Unresolved delete operator overload");
             return this;
@@ -47,6 +48,7 @@ namespace VTC.Core
         public override bool Emit(EmitContext ec)
         {
             SizeExpr.EmitToStack(ec);
+            ec.EmitPush((ushort)SizeExpr.Type.BaseType.Size);
             ec.EmitComment("Override Operator : Delete " + SizeExpr.CommentString());
             ec.EmitCall(DeleteOperator);
         

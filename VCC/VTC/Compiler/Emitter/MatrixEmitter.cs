@@ -111,7 +111,7 @@ namespace VTC
 
                 ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.A, SourceIsIndirect = false, Size = 16, SourceReg = Register });
                 ec.EmitInstruction(new Add() { DestinationReg = EmitContext.A, SourceValue = (ushort)(Offset), Size = 16 });
-                ec.EmitPush(EmitContext.SI, MemberType.BaseType.SizeInBits, false);
+                ec.EmitPush(EmitContext.A, MemberType.BaseType.SizeInBits, false);
 
             }
             else
@@ -153,8 +153,8 @@ namespace VTC
                 ec.EmitComment("ValueOf Access Multi-Dim Array @" + Register.ToString() + Offset);
                 ec.EmitInstruction(new Mov() { DestinationReg = EmitContext.A, SourceIsIndirect = false, Size = 16, SourceReg = Register });
                 ec.EmitInstruction(new Add() { DestinationReg = EmitContext.A, SourceValue = (ushort)(Offset), Size = 16 });
-                ec.EmitInstruction(new Add() { DestinationReg = EmitContext.SI, SourceValue = (ushort)off, Size = 16 });
-                ec.EmitPush(EmitContext.SI, 16, false);
+                ec.EmitInstruction(new Add() { DestinationReg = EmitContext.A, SourceValue = (ushort)off, Size = 16 });
+                ec.EmitPush(EmitContext.A, 16, false);
 
             }
             else

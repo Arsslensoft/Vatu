@@ -11,7 +11,7 @@ namespace VTC.Core
 
 	public class TypeIdentifierListDefinition : Definition
     {
-        
+        public List<TypeSpec> Types { get; set; }
        public TypeIdentifier _id;
        public TypeIdentifierListDefinition _nextid;
         [Rule(@"<Types>      ::= <Type>  ~',' <Types>")]
@@ -37,10 +37,15 @@ namespace VTC.Core
         }
  public override SimpleToken DoResolve(ResolveContext rc)
         {
+            Types = new List<TypeSpec>();
 
             _id = (TypeIdentifier)_id.DoResolve(rc);
+            Types.Add(_id.Type);
             if (_nextid != null)
+            {
                 _nextid = (TypeIdentifierListDefinition)_nextid.DoResolve(rc);
+                Types.AddRange(_nextid.Types);
+            }
             return this;
         }
      

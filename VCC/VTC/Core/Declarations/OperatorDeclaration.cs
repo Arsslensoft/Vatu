@@ -173,22 +173,19 @@ namespace VTC.Core
             {
                 UnaryOp uop = OpSym as UnaryOp;
                 OpName = "op_alloc_" + (OpSym as UnaryOp).Name;
-
+                bool delete = (OpSym as UnaryOp).Name == "delete";
                 rc.Resolver.TryResolveMethod(OpName, ref method, _fbd.ParamTypes.ToArray());
                 if (method != null && (method.Modifiers & Modifiers.Prototype) == 0)
                     ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
                 else if (method != null)
                     hasproto = true;
-                // operator checks
-                if (_fbd.ParamTypes.Count != 1)
-                    ResolveContext.Report.Error(45, Location, "Allocation operators must have 1 parameters with same return type");
-
+                
 
                 // match types
-                if (!_mtype.Type.Equals(BuiltinTypeSpec.Pointer) || !_fbd.ParamTypes[0].Equals(BuiltinTypeSpec.UInt))
-                    ResolveContext.Report.Error(45, Location, "Allocation operators must have pointer as return type and uint as parameter type");
-
-
+                if (!delete && (!_mtype.Type.Equals(BuiltinTypeSpec.Pointer) || !_fbd.ParamTypes[0].Equals(BuiltinTypeSpec.UInt)))
+                    ResolveContext.Report.Error(45, Location, "New allocation operator must have pointer as return type and uint as parameter type");
+                else if (delete && (_fbd.ParamTypes.Count != 2 || !_mtype.Type.Equals(BuiltinTypeSpec.Bool) || !_fbd.ParamTypes[0].Equals(BuiltinTypeSpec.Pointer) || !_fbd.ParamTypes[1].Equals(BuiltinTypeSpec.UInt)))
+                    ResolveContext.Report.Error(45, Location, "Delete allocation operator must have bool as return type and pointer, uint as parameter types");
             }
             else if (_casttype == null && OpSym is UnaryOp)
             {

@@ -16,19 +16,18 @@ namespace VTC.Core
         public List<ParameterSpec> Parameters { get; set; }
 
         Modifier _mod;
-        TypeToken _comptype;
         TypeToken _mtype;
         SimpleToken OpSym;
         TypeToken _casttype;
 
         public TypeIdentifierListDefinition _tidl;
         CastKind ckind;
-        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator <Operator> ~'(' <Type> ~')' ~';' ")]
-        public OperatorPrototypeDeclaration(Modifier mod, TypeToken type, DefinedOperator oper, TypeToken cmp)
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator <Operator> ~'(' <Types> ~')' ~';' ")]
+        public OperatorPrototypeDeclaration(Modifier mod, TypeToken type, DefinedOperator oper, TypeIdentifierListDefinition tidl)
         {
             _mtype = type;
             _mod = mod;
-            _comptype = cmp;
+            _tidl = tidl;
             if(oper.IsBinary)
                   OpSym = oper.Binary.Operator;
             else OpSym = oper.Unary.Operator;
@@ -36,11 +35,11 @@ namespace VTC.Core
       
 
         // Operator Userdef
-        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator <Operator Def>  ~'(' <Type> ~')' ~';'  ")]
-        public OperatorPrototypeDeclaration(Modifier mod, TypeToken type, OperatorDefinition oper, TypeToken cmp)
+        [Rule(@"<Oper Proto> ::= <Mod> ~override <Type> ~operator <Operator Def>  ~'(' <Types> ~')' ~';'  ")]
+        public OperatorPrototypeDeclaration(Modifier mod, TypeToken type, OperatorDefinition oper, TypeIdentifierListDefinition tidl)
         {
             _mtype = type;
-            _comptype = cmp;
+            _tidl = tidl;
             _mod = mod;
             if(!oper.IsBinary)
                 OpSym = new ExtendedUnaryOperator(oper.Unary.Sym, oper.Unary.Value.GetValue().ToString());
@@ -84,8 +83,8 @@ namespace VTC.Core
             List<TypeSpec> tp = new List<TypeSpec>();
             Parameters = new List<ParameterSpec>();
 
-            if (_comptype != null)
-                _comptype = (TypeToken)_comptype.DoResolve(rc);
+            if (_tidl != null)
+                _tidl = (TypeIdentifierListDefinition)_tidl.DoResolve(rc);
 
             base._type = _mtype;
             bool hasproto = false;
@@ -99,7 +98,7 @@ namespace VTC.Core
                     return this;
                 }
 
-                if (oper.IsLogic && _comptype == null)
+                if (oper.IsLogic && _mtype == null)
                     ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
 
                 OpName = _type.Type.NormalizedName + "_" + oper.Name;
@@ -108,20 +107,15 @@ namespace VTC.Core
                 if (method != null && (method.Modifiers & Modifiers.Prototype) == Modifiers.Prototype)
                     ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
 
-                if (oper.IsLogic && _mtype.Type != BuiltinTypeSpec.Bool && _comptype != null)
+                if (oper.IsLogic && _mtype.Type != BuiltinTypeSpec.Bool && _tidl != null)
                     ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
 
+                if(_tidl == null || _tidl.Types.Count != 2 || !_tidl.Types[0].Equals(_tidl.Types[1]))
+                    ResolveContext.Report.Error(45, Location, "Binary operators must have 2 parameters with same type ");
                 // operator checks
-                if (_comptype != null)
-                {
-                    tp.Add(_comptype.Type);
-                    tp.Add(_comptype.Type);
-                }
-                else
-                {
-                    tp.Add(_mtype.Type);
-                    tp.Add(_mtype.Type);
-                }
+                if (_tidl != null)
+                    tp.AddRange(_tidl.Types);
+             
 
             }
             else if (_casttype == null && OpSym is ExtendedUnaryOperator)
@@ -134,7 +128,7 @@ namespace VTC.Core
                     ResolveContext.Report.Error(0, Location, "Unknown operator");
                     return this;
                 }
-                if (oper.IsLogic && _comptype == null)
+                if (oper.IsLogic && _mtype == null)
                     ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
 
                 OpName = _type.Type.NormalizedName + "_" + oper.Name;
@@ -145,15 +139,17 @@ namespace VTC.Core
                 else if (method == null)
                     hasproto = true;
 
-                if (oper.IsLogic && _mtype.Type != BuiltinTypeSpec.Bool && _comptype != null)
+                if (oper.IsLogic && _mtype.Type != BuiltinTypeSpec.Bool && _tidl != null)
                     ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
 
 
                 // match types      
 
-                if (_comptype != null)
-                    tp.Add(_comptype.Type);
-                else tp.Add(_mtype.Type);
+                if (_tidl == null || _tidl.Types.Count != 1 )
+                    ResolveContext.Report.Error(45, Location, "Unary operators must have 1 parameter");
+                // operator checks
+                if (_tidl != null)
+                    tp.AddRange(_tidl.Types);
 
 
 
@@ -168,37 +164,41 @@ namespace VTC.Core
                     ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
 
                 // operator checks
+                if (_tidl == null || _tidl.Types.Count != 2 || !_tidl.Types[0].Equals(_tidl.Types[1]))
+                    ResolveContext.Report.Error(45, Location, "Binary operators must have 2 parameters with same type ");
+
 
                 if (_mtype.Type != BuiltinTypeSpec.Bool && (bop.Operator & BinaryOperator.ComparisonMask) == BinaryOperator.ComparisonMask)
                     ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
-                else if ((bop.Operator & BinaryOperator.ComparisonMask) != BinaryOperator.ComparisonMask)
-                {
-                    // match types
-                    tp.Add(_mtype.Type);
-                    tp.Add(_mtype.Type);
 
-                }
-                else if ((bop.Operator & BinaryOperator.ComparisonMask) == BinaryOperator.ComparisonMask)
-                {
-                    tp.Add(_comptype.Type);
-                    tp.Add(_comptype.Type);
-                }
+                if (_tidl != null)
+                    tp.AddRange(_tidl.Types);
+                
+              
             }
             else if (OpSym is UnaryOp && ((OpSym as UnaryOp).Name == "new" || (OpSym as UnaryOp).Name == "delete"))
             {
                 UnaryOp uop = OpSym as UnaryOp;
                 OpName = "op_alloc_" + (OpSym as UnaryOp).Name;
-
-                rc.Resolver.TryResolveMethod(OpName, ref method, new TypeSpec[1]{_comptype.Type});
+                bool delete = (OpSym as UnaryOp).Name == "delete";
+                if(delete)
+                   rc.Resolver.TryResolveMethod(OpName, ref method, new TypeSpec[2]{BuiltinTypeSpec.Pointer, BuiltinTypeSpec.UInt});
+                else
+                   rc.Resolver.TryResolveMethod(OpName, ref method, new TypeSpec[1] { BuiltinTypeSpec.UInt });
+            
                 if (method != null)
                     ResolveContext.Report.Error(9, Location, "Duplicate operator name, multiple operator overloading is not allowed");
             
                 // operator checks
-              
-                // match types
-                if (!_mtype.Type.Equals(BuiltinTypeSpec.Pointer) || !_comptype.Type.Equals(BuiltinTypeSpec.UInt))
-                    ResolveContext.Report.Error(45, Location, "Allocation operators must have pointer as return type and uint as parameter type");
 
+                if (delete && (_tidl == null || _tidl.Types.Count != 2 || !_tidl.Types[0].Equals(BuiltinTypeSpec.Pointer) || !_tidl.Types[1].Equals(BuiltinTypeSpec.UInt) || !_mtype.Type.Equals(BuiltinTypeSpec.Bool)))
+                    ResolveContext.Report.Error(45, Location, "Delete operator must have 2 parameters (pointer,uint) & returns bool ");
+                else if (!delete && (_tidl == null || _tidl.Types.Count != 1 || !_tidl.Types[0].Equals(BuiltinTypeSpec.UInt) || !_mtype.Type.Equals(BuiltinTypeSpec.Pointer) ))
+                    ResolveContext.Report.Error(45, Location, "New operator must have 1 parameter uint & returns pointer");
+                    
+                    if (_tidl != null)
+                    tp.AddRange(_tidl.Types);
+             
 
             }
             else if (_casttype == null && OpSym is UnaryOp)
@@ -212,13 +212,15 @@ namespace VTC.Core
                 else if (method == null)
                     hasproto = true;
 
-                if (_mtype.Type != BuiltinTypeSpec.Bool && _comptype != null)
+                if (_mtype.Type != BuiltinTypeSpec.Bool && (uop.Operator == UnaryOperator.ParityTest || uop.Operator == UnaryOperator.ZeroTest))
                     ResolveContext.Report.Error(45, Location, "Comparison operator must return bool");
 
                 // match types
-                if (uop.Operator == UnaryOperator.ParityTest || uop.Operator == UnaryOperator.ZeroTest)
-                    tp.Add(_comptype.Type);
-                else tp.Add(_mtype.Type);
+                if (_tidl == null || _tidl.Types.Count != 1)
+                    ResolveContext.Report.Error(45, Location, "Unary operators must have 1 parameters");
+
+                if (_tidl != null)
+                    tp.AddRange(_tidl.Types);
 
 
             }

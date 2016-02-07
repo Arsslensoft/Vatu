@@ -469,10 +469,13 @@ namespace Vasm
            // Emit
         
             writer.WriteLine("bits 16");
-           if(!IsLibrary)
-            writer.WriteLine("PROGRAM_ORG:");
-
-          
+            if (!IsLibrary)
+                writer.WriteLine("PROGRAM_ORG:");
+            else
+            {
+                writer.WriteLine("extern PROGRAM_ORG");
+                writer.WriteLine("extern PROGRAM_END");
+            }
              
             
            // INT Install         

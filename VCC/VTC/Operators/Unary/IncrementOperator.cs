@@ -17,7 +17,7 @@ namespace VTC
         {
             FloatingPointSupported = true;
             Register = RegistersEnum.AX;
-            Operator = UnaryOperator.PostfixIncrement;
+            Operator = UnaryOperator.PrefixIncrement;
         }
         AssignExpression ae;
        public override bool Resolve(ResolveContext rc)
@@ -56,10 +56,18 @@ namespace VTC
  {
 
      Right.EmitToStack(ec);
+     if (Operator == UnaryOperator.PostfixIncrement)
+         ec.EmitInstruction(new Vasm.x86.x87.FloatLoad() { DestinationReg = RegistersEnum.ST0 });
+
      ec.EmitInstruction(new Vasm.x86.X86.x87.FloatPushOne());
      ec.EmitComment(" ++ " + Right.CommentString());
+
      ec.EmitInstruction(new Vasm.x86.x87.FloatAddAndPop() { DestinationReg = RegistersEnum.ST1, SourceReg = RegistersEnum.ST0 });
-     ec.EmitInstruction(new Vasm.x86.x87.FloatLoad() { DestinationReg = RegistersEnum.ST0 }); // second push 
+  
+     if(Operator == UnaryOperator.PrefixIncrement)
+         ec.EmitInstruction(new Vasm.x86.x87.FloatLoad() { DestinationReg = RegistersEnum.ST0 }); // second push 
+
+
      Right.EmitFromStack(ec);
 
 
@@ -115,13 +123,18 @@ namespace VTC
             Right.EmitToStack(ec);
             ec.EmitComment(Right.CommentString() + "++ ");
             ec.EmitPop(Register.Value);
+            if (Operator == UnaryOperator.PostfixIncrement)
+                ec.EmitPush(Register.Value);
+
             if (Right.Type.IsPointer)
                 ec.EmitInstruction(new Add() { DestinationReg = Register.Value, SourceValue = (ushort)Right.Type.BaseType.Size });
             else
                 ec.EmitInstruction(new INC() { DestinationReg = Register.Value, Size = 80 });
             EmitCheckOvf(ec, Register.Value, CommonType.IsSigned);
             ec.EmitPush(Register.Value);
-            ec.EmitPush(Register.Value);
+
+            if(Operator == UnaryOperator.PrefixIncrement)
+                   ec.EmitPush(Register.Value);
 
             ae.EmitFromStack(ec);
             //   ec.EmitPush(ec.FirstRegister());

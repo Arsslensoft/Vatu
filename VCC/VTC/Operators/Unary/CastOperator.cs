@@ -435,6 +435,14 @@ namespace VTC
                     nofix = true;
                     return true;
                 }
+
+            else if (Type.IsPointer && _target.Type.IsPointer)
+            {
+                _target.Type = Type;
+                nofix = true;
+                return true;
+            }
+          
             return false;
         }
 

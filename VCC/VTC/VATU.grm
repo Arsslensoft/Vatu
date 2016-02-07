@@ -137,8 +137,8 @@ Comment Line  = '//'
                  | <Mod> define bool Id operator <Operator Def> ';'
 
                  
-<Oper Proto> ::= <Mod> override <Type> operator <Operator> '(' <Type> ')' ';' ! binary & unary
-            | <Mod> override <Type> operator <Operator Def> '(' <Type>  ')' ';'   ! operator def (binary & unary)  
+<Oper Proto> ::= <Mod> override <Type> operator <Operator> '(' <Types> ')' ';' ! binary & unary
+            | <Mod> override <Type> operator <Operator Def> '(' <Types>  ')' ';'   ! operator def (binary & unary)  
             | <Mod> override <Type> operator <Cast Kind> '(' <Type>  ')' ';' ! cast
  
 <Var Prototype> ::= global <Var Decl>

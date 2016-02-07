@@ -50,6 +50,30 @@ namespace VTC
 
             return true;
         }
+
+        public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
+        {
+            Left.EmitToStack(ec);
+            ec.MarkOptimizable(); // Marks last instruction as last push
+            Right.EmitToStack(ec);
+            ec.MarkOptimizable(); // Marks last instruction as last push
+
+            ec.EmitComment(Left.CommentString() + " ^ " + Right.CommentString());
+            ec.EmitPop(LeftRegister.Value);
+            ec.EmitPop(RightRegister.Value);
+
+            ec.EmitInstruction(new Xor() { DestinationReg = LeftRegister.Value, SourceReg = RightRegister.Value, Size = 80, OptimizingBehaviour = OptimizationKind.PPO });
+
+            if (CommonType.Size == 1)
+                ec.EmitInstruction(new Compare() { DestinationReg = ec.GetLow(LeftRegister.Value), SourceValue = EmitContext.TRUE, Size = 80 });
+            else
+                ec.EmitInstruction(new Compare() { DestinationReg = LeftRegister.Value, SourceValue = EmitContext.TRUE, Size = 80 });
+
+            ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.Equal, ConditionalTestEnum.NotEqual);
+
+
+            return true;
+        }
     }
     
 	

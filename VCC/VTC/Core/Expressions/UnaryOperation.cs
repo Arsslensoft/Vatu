@@ -48,9 +48,13 @@ namespace VTC.Core
         [Rule(@"<Op Unary>   ::= <Op Pointer> '++'")]
         public UnaryOperation(Expr target, UnaryOp op)
         {
+            if (op is IncrementOperator)
+                op.Operator = UnaryOperator.PostfixIncrement;
+            else op.Operator = UnaryOperator.PostfixDecrement;
+
 
             _op = op;
-
+            
             _op.Right = target;
 
         }

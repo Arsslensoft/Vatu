@@ -17,7 +17,7 @@ namespace VTC
         {
             FloatingPointSupported = true;
             Register = RegistersEnum.AX;
-            Operator = UnaryOperator.PostfixDecrement;
+            Operator = UnaryOperator.PrefixDecrement;
         }
         AssignExpression ae;
        public override bool Resolve(ResolveContext rc)
@@ -56,10 +56,15 @@ namespace VTC
          {
 
              Right.EmitToStack(ec);
+             if (Operator == UnaryOperator.PostfixDecrement)
+                 ec.EmitInstruction(new Vasm.x86.x87.FloatLoad() { DestinationReg = RegistersEnum.ST0 });
+
              ec.EmitInstruction(new Vasm.x86.X86.x87.FloatPushOne());
              ec.EmitComment(" -- " + Right.CommentString());
              ec.EmitInstruction(new Vasm.x86.x87.FloatSubAndPop() { DestinationReg = RegistersEnum.ST1, SourceReg = RegistersEnum.ST0 });
-             ec.EmitInstruction(new Vasm.x86.x87.FloatLoad() { DestinationReg = RegistersEnum.ST0 }); // second push 
+        
+             if (Operator == UnaryOperator.PrefixDecrement)
+                 ec.EmitInstruction(new Vasm.x86.x87.FloatLoad() { DestinationReg = RegistersEnum.ST0 }); // second push 
            
              Right.EmitFromStack(ec);
 
@@ -85,6 +90,7 @@ namespace VTC
             Right.EmitToStack(ec);
             ec.EmitComment(Right.CommentString() + "-- ");
             ec.EmitPop(Register.Value);
+   
             if (Right.Type.IsPointer)
                 ec.EmitInstruction(new Sub() { DestinationReg = Register.Value, SourceValue = (ushort)Right.Type.BaseType.Size });
             else
@@ -120,13 +126,20 @@ namespace VTC
             Right.EmitToStack(ec);
             ec.EmitComment(Right.CommentString() + "-- ");
             ec.EmitPop(Register.Value);
+
+            if (Operator == UnaryOperator.PostfixDecrement)
+                ec.EmitPush(Register.Value); 
+
+
             if (Right.Type.IsPointer)
                 ec.EmitInstruction(new Sub() { DestinationReg = Register.Value, SourceValue = (ushort)Right.Type.BaseType.Size });
             else
                 ec.EmitInstruction(new Dec() { DestinationReg = Register.Value, Size = 80 });
             EmitCheckOvf(ec, Register.Value, CommonType.IsSigned);
             ec.EmitPush(Register.Value);
-            ec.EmitPush(Register.Value);
+         
+            if (Operator == UnaryOperator.PrefixDecrement)
+                 ec.EmitPush(Register.Value);
 
             ae.EmitFromStack(ec);
             //   ec.EmitPush(ec.FirstRegister());
