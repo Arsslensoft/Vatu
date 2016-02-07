@@ -30,6 +30,7 @@ namespace VTC
                     // back up 
                     TypeSpec oldext = rc.CurrentExtensionLookup;
                     bool staticext = rc.StaticExtensionLookup;
+                    rc.ResolverStack.Push(new ResolveState(rc.CurrentNamespace, rc.CurrentExtensionLookup, rc.StaticExtensionLookup));
 
                     rc.CurrentExtensionLookup = LeftType.Type;
                     rc.StaticExtensionLookup = true;
@@ -41,6 +42,8 @@ namespace VTC
                     // restore
                     rc.CurrentExtensionLookup = oldext;
                     rc.StaticExtensionLookup = staticext;
+                    rc.ResolverStack.Pop();
+
                     rc.CurrentScope &= ~ResolveScopes.AccessOperation;
                     return Right;
                 }
@@ -48,9 +51,13 @@ namespace VTC
             else if (Namespace != null) // NS::Value
             {
                 Namespace lastns = rc.CurrentNamespace;
+                rc.ResolverStack.Push(new ResolveState(rc.CurrentNamespace, rc.CurrentExtensionLookup, rc.StaticExtensionLookup));
+
                 rc.CurrentNamespace = Namespace;
+
                 Right = (Expr)Right.DoResolve(rc);
 
+                rc.ResolverStack.Pop();
                 rc.CurrentNamespace = lastns;
                 rc.CurrentScope &= ~ResolveScopes.AccessOperation;
                 return Right;

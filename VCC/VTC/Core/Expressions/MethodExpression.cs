@@ -24,7 +24,7 @@ namespace VTC.Core
             _id = id;
             _param = expr;
         }
-
+   
         MemberSpec DelegateVar;
         bool ResolveDelegate(ResolveContext rc)
         {
@@ -76,6 +76,13 @@ namespace VTC.Core
         }
          public override SimpleToken DoResolve(ResolveContext rc)
         {
+            ResolveState rs = null;
+            if (rc.ResolverStack.Count > 0)
+            {
+                 rs = rc.ResolverStack.Pop();
+                rs.Copy(rc);
+            }
+
             ccvh = new CallingConventionsHandler();
             List<TypeSpec> tp = new List<TypeSpec>();
             Parameters = new List<Expr>();
@@ -91,7 +98,12 @@ namespace VTC.Core
                 }
 
             }
-
+            if (rc.ResolverStack.Count > 0 && rs != null) 
+            {
+                rs.Restore(rc);
+                rc.ResolverStack.Push(rs);
+                
+            }
             MemberSignature msig = new MemberSignature();
             if (tp.Count > 0)
             {

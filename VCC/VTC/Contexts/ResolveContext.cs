@@ -7,7 +7,34 @@ using VTC.Core;
 
 namespace VTC
 {
+   public class ResolveState
+    {
+       public TypeSpec CurrentExtension;
+        public Namespace CurrentNS;
+       public bool StaticLookup;
+        public ResolveState(Namespace ns, TypeSpec ts, bool st)
+        {
+            CurrentExtension = ts;
+            CurrentNS = ns;
+            StaticLookup = st;
+        }
+        public void Copy(ResolveContext rc)
+        {
+            rc.ResolverStack.Push(new ResolveState(rc.CurrentNamespace, rc.CurrentExtensionLookup, rc.StaticExtensionLookup));
+            rc.CurrentNamespace = CurrentNS;
+            rc.CurrentExtensionLookup = CurrentExtension;
+            rc.StaticExtensionLookup = StaticLookup;
 
+          
+        }
+        public void Restore(ResolveContext rc)
+        {
+            ResolveState rs = rc.ResolverStack.Pop();
+            rc.CurrentNamespace = rs.CurrentNS;
+            rc.CurrentExtensionLookup = rs.CurrentExtension;
+            rc.StaticExtensionLookup = rs.StaticLookup;
+        }
+    }
     public interface ILoop
     {
         ILoop ParentLoop { get; set; }
@@ -92,12 +119,13 @@ namespace VTC
 
         Block current_block;
         static Report rp;
+
         public static Report Report { get { return rp; } set { rp = value; } }
         static ResolveContext()
         {
             Report = new ConsoleReporter();
         }
-        public Stack<object> ResolverStack { get; set; }
+        public Stack<ResolveState> ResolverStack { get; set; }
 
         public List<ResolveContext> ChildContexts { get; set; }
         public bool IsInTypeDef { get; set; }
@@ -134,7 +162,7 @@ namespace VTC
         void FillKnown()
         {
             CurrentScope = ResolveScopes.Normal;
-            ResolverStack = new Stack<object>();
+            ResolverStack = new Stack<ResolveState>();
             Resolver.KnowType(BuiltinTypeSpec.Bool);
             Resolver.KnowType(BuiltinTypeSpec.Byte);
             Resolver.KnowType(BuiltinTypeSpec.SByte);

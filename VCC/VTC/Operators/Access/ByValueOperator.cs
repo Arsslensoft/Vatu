@@ -50,6 +50,7 @@ namespace VTC
             // back up 
             TypeSpec oldext = rc.CurrentExtensionLookup;
             Expr extvar = rc.ExtensionVar;
+            rc.ResolverStack.Push(new ResolveState(rc.CurrentNamespace, rc.CurrentExtensionLookup, rc.StaticExtensionLookup));
 
 
             rc.CurrentExtensionLookup = Left.Type;
@@ -61,18 +62,19 @@ namespace VTC
             {
 
                 ResolveContext.Report.Error(0, Location, "Unresolved extended field");
+                rc.ResolverStack.Pop();
                 rc.ExtensionVar = extvar;
                 rc.CurrentExtensionLookup = oldext;
                 return false;
             }
             else if (Right is MethodExpression && (Right as MethodExpression).Method == null)
             {
-
+                rc.ResolverStack.Pop();
                 rc.ExtensionVar = extvar;
                 rc.CurrentExtensionLookup = oldext;
                 return false;
             }
-
+            rc.ResolverStack.Pop();
             rc.ExtensionVar = extvar;
             rc.CurrentExtensionLookup = oldext;
 
