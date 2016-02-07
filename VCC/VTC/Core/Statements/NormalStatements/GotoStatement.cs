@@ -67,8 +67,8 @@ namespace VTC.Core
         }
 
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
-        {
-            return base.DoFlowAnalysis(fc);
+        {  
+            return FlowState.Unreachable;
         }
     }
     

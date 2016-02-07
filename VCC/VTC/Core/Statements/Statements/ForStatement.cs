@@ -146,10 +146,7 @@ namespace VTC.Core
      
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            CodePath cur = new CodePath(loc); // sub code path
-          
-            CodePath back = fc.CodePathReturn;
-            fc.CodePathReturn = cur; // set current code path
+         
             FlowState ok = FlowState.Valid;
             foreach (Expr e in _init)
                 ok &= e.DoFlowAnalysis(fc);
@@ -162,8 +159,7 @@ namespace VTC.Core
                 ok &= e.DoFlowAnalysis(fc);
 
             _stmt.DoFlowAnalysis(fc);
-            back.AddPath(cur);
-            fc.CodePathReturn = back; // restore code path
+         
 
             if (infinite && !HasBreak)
                 return FlowState.Unreachable;

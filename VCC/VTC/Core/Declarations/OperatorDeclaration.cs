@@ -346,13 +346,22 @@ namespace VTC.Core
      
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            fc.CodePathReturn.PathLocation = Location;
+       
             fc.AddNew(method);
 
-          
-            fc.NoReturnCheck =false;
+
+            fc.LookForUnreachableBrace = !fc.NoReturnCheck;
+            fc.NoReturnCheck = false;
+            FlowState fs = FlowState.Valid;
             if (_fbd != null && _fbd._b != null)
-                return _fbd._b.DoFlowAnalysis(fc);
+                fs = _fbd._b.DoFlowAnalysis(fc);
+            else
+                fs = base.DoFlowAnalysis(fc);
+
+            if (!fs.Reachable.IsUnreachable && !fc.NoReturnCheck)
+                fc.ReportNotAllCodePathsReturns(Location);
+
+            fc.LookForUnreachableBrace = false;
 
             return base.DoFlowAnalysis(fc);
         }

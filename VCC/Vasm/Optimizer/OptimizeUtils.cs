@@ -8,13 +8,56 @@ namespace Vasm.Optimizer
 {
   public  class OptimizeUtils
     {
-       public static Push GetLastPush(List<Instruction> ins, int start, ref int idx)
-        {
-            for (int i = start; i >= 0; i--)
-            {
+      public static bool CrossUsage(InstructionWithDestinationAndSize a, InstructionWithDestinationAndSize b)
+      {
+          if (!a.DestinationReg.HasValue || !b.DestinationReg.HasValue)
+              return false;
+              return a.DestinationReg.Value == b.DestinationReg.Value;
+     
+      }
+      public static bool BothIndirect(InstructionWithDestinationAndSourceAndSize a, InstructionWithDestinationAndSourceAndSize b,bool src)
+      {
+          if (src)
+              return a.SourceIsIndirect && b.SourceIsIndirect;
+          else return b.DestinationIsIndirect && a.DestinationIsIndirect;
+      }
+      public static bool IsImmediate(InstructionWithDestinationAndSourceAndSize a,bool src)
+      {
+          if (src)
+              return a.SourceValue.HasValue || (!a.SourceIsIndirect && a.SourceRef != null);
+          else return a.DestinationValue.HasValue || (!a.DestinationIsIndirect && a.DestinationRef != null);
+      }
+      
+      public static Mov GetLastMove(List<Instruction> ins, int start, ref int idx)
+      {
+          if (start <= 0 || start >= ins.Count || ins == null)
+              return null;
+          for (int i = start; i > 0; i--)
+          {
+              if (ins[i] == null)
+                  continue;
+              if (!ins[i].Emit || ins[i] is Comment)
+                  continue;
+              else if (ins[i] is Mov)
+              {
+                  idx = i;
+                  return ins[i] as Mov;
+              }
+              else return null;
 
-                if (!ins[i].Emit || ins[i] is Comment)
-                    continue;
+          }
+          return null;
+      }
+       public static Push GetLastPush(List<Instruction> ins, int start, ref int idx)
+      {
+          if (start <= 0 || start >= ins.Count || ins == null)
+              return null;
+          for (int i = start; i > 0; i--)
+          {
+              if (ins[i] == null)
+                  continue;
+              if (!ins[i].Emit || ins[i] is Comment)
+                  continue;
                 else if (ins[i] is Push)
                 {
                     idx = i;
@@ -27,9 +70,12 @@ namespace Vasm.Optimizer
         }
        public static Push GetLastOptimizablePush(List<Instruction> ins, int start, ref int idx)
        {
-           for (int i = start; i >= 0; i--)
+           if (start <= 0 || start >= ins.Count || ins == null)
+               return null;
+           for (int i = start; i > 0; i--)
            {
-
+               if (ins[i] == null)
+                   continue;
                if (!ins[i].Emit || ins[i] is Comment)
                    continue;
                else if (ins[i] is Push && ins[i].IsOperationPush)
@@ -45,9 +91,12 @@ namespace Vasm.Optimizer
        }
       public static  Pop GetLastPop(List<Instruction> ins, int start, ref int idx)
         {
-            for (int i = start; i >= 0; i--)
+            if (start <= 0 || start >= ins.Count || ins == null)
+                return null;
+            for (int i = start; i > 0; i--)
             {
-
+                if (ins[i] == null)
+                    continue;
                 if (!ins[i].Emit || ins[i] is Comment)
                     continue;
                 else if (ins[i] is Pop)
@@ -88,6 +137,57 @@ namespace Vasm.Optimizer
           }
           return false;
       }
+      public static bool CopyDestination(Mov src, ref InstructionWithDestinationAndSourceAndSize ins, bool assrc)
+      {
+          if (assrc && !src.DestinationEmpty)
+          {
+              ins.SourceReg = src.DestinationReg;
+              ins.SourceValue = src.DestinationValue;
+              ins.SourceRef = src.DestinationRef;
+              ins.Size = src.Size;
+              ins.SourceDisplacement = src.DestinationDisplacement;
+              ins.SourceIsIndirect = src.DestinationIsIndirect;
+              return true;
+          }
+          else if (!src.DestinationEmpty)
+          {
+              ins.DestinationReg = src.DestinationReg;
+              ins.DestinationValue = src.DestinationValue;
+              ins.DestinationRef = src.DestinationRef;
+              ins.Size = src.Size;
+              ins.DestinationDisplacement = src.DestinationDisplacement;
+              ins.DestinationIsIndirect = src.DestinationIsIndirect;
+              return true;
+          }
+          return false;
+      }
+      public static bool CopySource(Mov src, ref InstructionWithDestinationAndSourceAndSize ins, bool assrc)
+      {
+          if (assrc && !src.DestinationEmpty)
+          {
+              ins.SourceReg = src.SourceReg;
+              ins.SourceValue = src.SourceValue;
+              ins.SourceRef = src.SourceRef;
+          if(src.SourceReg.HasValue)
+                ins.Size = Registers.GetSize(src.SourceReg.Value);
+              ins.SourceDisplacement = src.SourceDisplacement;
+              ins.SourceIsIndirect = src.SourceIsIndirect;
+              return true;
+          }
+          else if (!src.DestinationEmpty)
+          {
+              ins.DestinationReg = src.SourceReg;
+              ins.DestinationValue = src.SourceValue;
+              ins.DestinationRef = src.SourceRef;
+                 if(src.SourceReg.HasValue)
+                ins.Size = Registers.GetSize(src.SourceReg.Value);
+              ins.DestinationDisplacement = src.SourceDisplacement;
+              ins.DestinationIsIndirect = src.SourceIsIndirect;
+              return true;
+          }
+          return false;
+      }
+      
       public static bool IsDestinationField(InstructionWithDestinationAndSize ins)
       {
           return ins.DestinationRef != null;
@@ -124,7 +224,18 @@ namespace Vasm.Optimizer
               m &= true;
           return m;
       }
-
+     public static bool SameOperands(Mov a)
+     {
+         bool m = false;
+         if (a.DestinationDisplacement == a.SourceDisplacement)
+             if (a.DestinationIsIndirect == a.SourceIsIndirect)
+                 if (a.DestinationRef == a.SourceRef)
+                     if (a.DestinationReg == a.SourceReg)
+                         if (a.DestinationValue == a.SourceValue)
+                             m = true;
+     
+         return m;
+     }
      public static bool IsDestinationMemory(InstructionWithDestinationAndSize ins)
      {
          return ins.DestinationIsIndirect;

@@ -148,45 +148,12 @@ namespace VTC
             }
         }
     }
-   
-    public class CodePath
-    {
-        public Location PathLocation { get; set; }
-        public bool Returns { get; set; }
-        public List<CodePath> CodePaths { get; set; }
-
-        public CodePath(Location loc)
-        {
-            Returns = false;
-            CodePaths = new List<CodePath>();
-            PathLocation = loc;
-        }
-
-        public void AddPath(CodePath cp)
-        {
-            CodePaths.Add(cp);
-        }
-       
-        public bool CheckReturn()
-        {
-        
-            if (CodePaths.Count == 0 || Returns) // end of path or returns
-                return Returns;
-
-            bool ret = true;
-            foreach (CodePath cp in CodePaths)
-                ret &= cp.CheckReturn();
-           
-            return ret;
-        }
-    }
-
- 
+  
 
     public class FlowAnalysisContext
     {
         public bool NoReturnCheck=false;
-        public CodePath CodePathReturn { get; set; }
+        public bool LookForUnreachableBrace = false;
 
         public static SignatureBitSet  ProgramFlowState { get; set; }
 
@@ -212,24 +179,18 @@ namespace VTC
     
         public FlowAnalysisContext(Declaration decl)
         {
-            CodePathReturn = new CodePath(decl.loc);
+         
             Decl = decl;
          
         }
      
-        public bool FindNoReturn()
-        {
-         return   CodePathReturn.CheckReturn();
-        }
-
+   
         public FlowState DoFlowAnalysis(ResolveContext rc, bool noretcheck = false)
         {
      
             
           FlowState fl =  Decl.DoFlowAnalysis(this);
-          if (!NoReturnCheck && !noretcheck && !FindNoReturn())
-              ResolveContext.Report.Warning(CodePathReturn.PathLocation, "Not all code paths returns a value ");
-          Location loc = CodePathReturn.PathLocation;
+     
           //if (FindUnreachableCode(ref loc))
           //    ResolveContext.Report.Warning(loc, "Unreachable code detected");
 

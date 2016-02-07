@@ -14,7 +14,7 @@ namespace Vasm.Optimizer
            Optimizers = new Dictionary<int, List<IOptimizer>>();
            try
            {
-               IOptimizer[] opt = { new PushPopO1(), new PPO() };
+               IOptimizer[] opt = { new PushPopO1(), new MovO1(),new PushPopO0(), new PopPushO1(), new PPO() };
 
                foreach (IOptimizer o in opt)
                {
@@ -35,7 +35,7 @@ namespace Vasm.Optimizer
 
            }
        }
-
+       public static int OptimizationsSize = 0;
        public static int Optimizations = 0;
         static Dictionary<int , List<IOptimizer>> Optimizers { get; set; }
         public static List<IOptimizer>  GetAllAvailableOptimizersByLevel(int lvl)
@@ -43,7 +43,7 @@ namespace Vasm.Optimizer
             List<IOptimizer> opt = new List<IOptimizer>();
             foreach (KeyValuePair<int, List<IOptimizer>> o in Optimizers)
             {
-                if (o.Key > lvl)
+                if (o.Key != lvl)
                     continue;
 
 
@@ -62,19 +62,26 @@ namespace Vasm.Optimizer
        
             return opt;
         }
+        public static bool OptimizeForLevel(int lvl, ref List<Instruction> ins, List<Instruction> ext)
+        {
+            bool opt = true;
+            List<IOptimizer> AVOP = GetAllAvailableOptimizersByLevel(lvl);
+            for (int MAX_PRIO = 0; MAX_PRIO < 9; MAX_PRIO++)
+            {
+
+                List<IOptimizer> p = GetAllAvailableOptimizersByPriority(MAX_PRIO, AVOP);
+                if (p.Count == 0)
+                    continue;
+                OptimizeForPriority(ref ins, p, MAX_PRIO);
+
+            }
+            return opt;
+        }
        public static bool Optimize(int lvl, ref List<Instruction> ins, List<Instruction> ext)
        {
            bool opt = true;
-           List<IOptimizer> AVOP = GetAllAvailableOptimizersByLevel(lvl);
-           for(int MAX_PRIO = 0; MAX_PRIO < 9; MAX_PRIO++)
-           {
-
-               List<IOptimizer> p = GetAllAvailableOptimizersByPriority(MAX_PRIO, AVOP);
-               if (p.Count == 0)
-                   continue;
-               OptimizeForPriority(ref ins, p, MAX_PRIO);
-
-           }
+           for (int l = 1; l <= lvl; l++)
+               opt &= OptimizeForLevel(l, ref ins, ext);
            return opt;
        }
        public static bool OptimizeForPriority(ref List<Instruction> ins, List<IOptimizer> AVOP,int priority)

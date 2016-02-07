@@ -64,7 +64,7 @@ namespace VTC.Core
      
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            fc.CodePathReturn.Returns = true;
+        
             if (_expr != null)
                 _expr.DoFlowAnalysis(fc);
             return FlowState.Unreachable;

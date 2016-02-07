@@ -13,6 +13,7 @@ namespace VTC
 	[Terminal("++")]
     public class IncrementOperator : UnaryOp
     {
+ 
         public IncrementOperator()
         {
             FloatingPointSupported = true;
@@ -124,19 +125,20 @@ namespace VTC
             ec.EmitComment(Right.CommentString() + "++ ");
             ec.EmitPop(Register.Value);
             if (Operator == UnaryOperator.PostfixIncrement)
-                ec.EmitPush(Register.Value);
+                ec.EmitMovToRegister(RegistersEnum.CX, Register.Value);
 
             if (Right.Type.IsPointer)
                 ec.EmitInstruction(new Add() { DestinationReg = Register.Value, SourceValue = (ushort)Right.Type.BaseType.Size });
             else
                 ec.EmitInstruction(new INC() { DestinationReg = Register.Value, Size = 80 });
             EmitCheckOvf(ec, Register.Value, CommonType.IsSigned);
+ 
             ec.EmitPush(Register.Value);
-
-            if(Operator == UnaryOperator.PrefixIncrement)
-                   ec.EmitPush(Register.Value);
-
             ae.EmitFromStack(ec);
+
+            if (Operator == UnaryOperator.PrefixIncrement)
+                ec.EmitPush(Register.Value);
+            else ec.EmitPush(RegistersEnum.CX);
             //   ec.EmitPush(ec.FirstRegister());
 
 

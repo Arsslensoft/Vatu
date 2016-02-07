@@ -37,9 +37,9 @@ namespace VTC
                 return base.EmitOverrideOperator(ec);
 
             Left.EmitToStack(ec);
-            ec.MarkOptimizable(); // Marks last instruction as last push
+            //ec.MarkOptimizable(); // Marks last instruction as last push
             Right.EmitToStack(ec);
-            ec.MarkOptimizable(); // Marks last instruction as last push
+            //ec.MarkOptimizable(); // Marks last instruction as last push
 
 
             ec.EmitComment(Left.CommentString() + " | " + Right.CommentString());
@@ -55,9 +55,9 @@ namespace VTC
         public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
         {
             Left.EmitToStack(ec);
-            ec.MarkOptimizable(); // Marks last instruction as last push
+            //ec.MarkOptimizable(); // Marks last instruction as last push
             Right.EmitToStack(ec);
-            ec.MarkOptimizable(); // Marks last instruction as last push
+            //ec.MarkOptimizable(); // Marks last instruction as last push
 
             ec.EmitComment(Left.CommentString() + " | " + Right.CommentString());
             ec.EmitPop(LeftRegister.Value);

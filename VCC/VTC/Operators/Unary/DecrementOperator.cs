@@ -128,7 +128,7 @@ namespace VTC
             ec.EmitPop(Register.Value);
 
             if (Operator == UnaryOperator.PostfixDecrement)
-                ec.EmitPush(Register.Value); 
+                ec.EmitMovToRegister(RegistersEnum.CX, Register.Value);
 
 
             if (Right.Type.IsPointer)
@@ -137,11 +137,11 @@ namespace VTC
                 ec.EmitInstruction(new Dec() { DestinationReg = Register.Value, Size = 80 });
             EmitCheckOvf(ec, Register.Value, CommonType.IsSigned);
             ec.EmitPush(Register.Value);
-         
-            if (Operator == UnaryOperator.PrefixDecrement)
-                 ec.EmitPush(Register.Value);
-
             ae.EmitFromStack(ec);
+
+            if (Operator == UnaryOperator.PrefixDecrement)
+                ec.EmitPush(Register.Value);
+            else ec.EmitPush(RegistersEnum.CX);
             //   ec.EmitPush(ec.FirstRegister());
 
 

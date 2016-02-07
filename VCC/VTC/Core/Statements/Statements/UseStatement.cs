@@ -63,15 +63,11 @@ namespace VTC.Core
 
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-            CodePath cur = new CodePath(_stmt.loc); // sub code path
-   
-            CodePath back = fc.CodePathReturn;
-            fc.CodePathReturn = cur; // set current code path
-            FlowState ok = FlowState.Valid;
-            _stmt.DoFlowAnalysis(fc);
-            back.AddPath(cur);
-            fc.CodePathReturn = back; // restore code path
-            return ok;
+
+           
+            return _stmt.DoFlowAnalysis(fc);
+      
+         
         }
     }
     

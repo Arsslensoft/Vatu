@@ -10,94 +10,95 @@ namespace Vasm.Optimizer
    {
        public PPO()
        {
-           Level = 5;
-           Priority = 2;
+           Level = 3;
+           Priority = 1;
        }
        public int Level { get; set; }
       public int Priority { get; set; }
 
-      Push Left = null;
-      Push Right = null;
-      Pop RightPop = null;
-      Pop LeftPop = null;
+      Mov Move = null;
+      Mov SecondMove = null;
+      int MoveIdx = -1;
+      int SecondMoveIdx = -1;
 
-      int LeftIdx = -1;
-      int RightIdx = -1;
-
-      int LeftPopIdx = -1;
-      int RightPopIdx = -1;
-    
       int CurrentIndex = -1;
 
       public static int Optimizations = 0;
 
       public int Compare(IOptimizer x, IOptimizer y)
       {
-          if (x.Priority > y.Priority)
+          if (x.Level == y.Level)
+          {
+              if (x.Priority > y.Priority)
+                  return 1;
+              else if (x.Priority == y.Priority)
+                  return 0;
+              else return -1;
+          }
+          else if (x.Level > y.Level)
               return 1;
-          else if (x.Priority == y.Priority)
-              return 0;
           else return -1;
       }
       public int CompareTo(IOptimizer y)
       {
-          if (Priority > y.Priority)
+          if (Level == y.Level)
+          {
+              if (Priority > y.Priority)
+                  return 1;
+              else if (Priority == y.Priority)
+                  return 0;
+              else return -1;
+          }
+          else if (Level > y.Level)
               return 1;
-          else if (Priority == y.Priority)
-              return 0;
           else return -1;
       }
 
       public bool Optimize(ref List<Instruction> src)
       {
    
-          if (CurrentIndex == -1)
+          if (CurrentIndex < 1)
               return false;
+          if (!(src[CurrentIndex] is InstructionWithDestinationAndSourceAndSize))
+              return false;
+          InstructionWithDestinationAndSourceAndSize Operator = src[CurrentIndex] as InstructionWithDestinationAndSourceAndSize;
+   
 
-          Instruction Operator = src[CurrentIndex];
-          LeftPop = OptimizeUtils.GetLastPop(src, CurrentIndex - 1, ref LeftPopIdx);
-          if (LeftPop != null)
-          {
-              RightPop = OptimizeUtils.GetLastPop(src, LeftPopIdx - 1, ref RightPopIdx);
-              if (RightPop != null)
-              {
-                  Right = OptimizeUtils.GetLastOptimizablePush(src, RightPopIdx - 1, ref RightIdx);
-                  if (Right != null)
-                  {
-                      Left = OptimizeUtils.GetLastOptimizablePush(src, RightIdx - 1, ref LeftIdx);
-                      if (Left != null)
+          Move = OptimizeUtils.GetLastMove(src, CurrentIndex - 1,ref MoveIdx) ;
+          SecondMove = OptimizeUtils.GetLastMove(src, MoveIdx - 1, ref SecondMoveIdx);
+
+          if (Move != null && SecondMove == null) // just a single mov
                       {
                           // optimize
-                          src[LeftIdx].Emit = false;
-                          src[RightIdx].Emit = false;
+                          src[MoveIdx].Emit = false; // eliminate mov
+                          OptimizeUtils.CopySource(Move, ref Operator, true);
 
-                          InstructionWithDestinationAndSourceAndSize mv = new Mov();
-                          OptimizeUtils.CopyDestination((InstructionWithDestinationAndSize)Right, ref mv, true);
-                          OptimizeUtils.CopyDestination((InstructionWithDestinationAndSize)RightPop, ref mv, false);
-                          src[RightPopIdx] = mv;
-
-                          mv = new Mov();
-                          OptimizeUtils.CopyDestination((InstructionWithDestinationAndSize)Left, ref mv, true);
-                          OptimizeUtils.CopyDestination((InstructionWithDestinationAndSize)LeftPop, ref mv, false);
-                          src[LeftPopIdx] = mv;
-
-                        Optimizer.Optimizations+=2;
+                        Optimizer.Optimizations+=1;
+                        Optimizer.OptimizationsSize += 3;
                           Optimizations++;
                       }
-                      else return false;
-                  }
-                  else return false;
-              }
-              else return false;
+          else if (Move != null && !OptimizeUtils.BothIndirect(Move, SecondMove, true)  && !OptimizeUtils.IsImmediate(SecondMove, true)) // just a single mov (s
+          {
+              // optimize
+              src[MoveIdx].Emit = false; // eliminate mov
+              src[SecondMoveIdx].Emit = false; // eliminate mov
+
+              OptimizeUtils.CopySource(Move, ref Operator, true);
+              OptimizeUtils.CopySource(SecondMove, ref Operator, false);
+
+              Optimizer.Optimizations += 2;
+              Optimizer.OptimizationsSize += 6;
+              Optimizations++;
           }
-          else return false;
+                      else return false;
+                 
 
           return true;
 
       }
       public bool Match(Instruction ins, int idx)
       {
-          if (ins.OptimizingBehaviour != OptimizationKind.PPO)
+          if ( ins != null && ins.OptimizingBehaviour != OptimizationKind.PPO)
               return false;
 
           CurrentIndex = idx;

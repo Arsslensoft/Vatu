@@ -7,13 +7,13 @@ using Vasm.x86;
 namespace Vasm.Optimizer
 {
  
-  public  class PushPopO1 : IOptimizer
+  public  class PopPushO1 : IOptimizer
   {
- 
-      public PushPopO1()
+
+      public PopPushO1()
        {
            Level = 2;
-           Priority =1;
+           Priority =2;
        }
        public int Level { get; set; }
       public int Priority { get; set; }
@@ -33,53 +33,33 @@ namespace Vasm.Optimizer
            if (CurrentIndex == -1)
                return false;
 
-           Pop OldPop = (Pop)src[CurrentIndex];
+           Push OldPush = (Push)src[CurrentIndex];
            pushidx = -1;
-           Push OldPush = OptimizeUtils.GetLastPush(src,CurrentIndex - 1, ref pushidx);
+           Pop OldPop  = OptimizeUtils.GetLastPop(src, CurrentIndex - 1, ref pushidx);
 
-           if (OldPush == null)
+           if (OldPop == null)
                return false;
-        
-
-
+       
            // check for same operands
            if (OptimizeUtils.SameOperands(OldPop, OldPush))
            {
                src[CurrentIndex].Emit = false;
                src[pushidx].Emit = false;
                SamePushPop++;
-               Optimizer.OptimizationsSize += 6;
+               Optimizer.OptimizationsSize += 3;
                Optimizer.Optimizations++;
                return true;
            }
-           if (OldPop.DestinationIsIndirect && OldPush.DestinationIsIndirect)
-               return false;
 
 
-           // Transfer to mov dst,src
-           if (OptimizeUtils.CanTransfer(OldPush, OldPop))
-           {
-               src[CurrentIndex].Emit = false;
-               src[pushidx].Emit = false;
 
-               InstructionWithDestinationAndSourceAndSize mv = new Mov();
-               OptimizeUtils.CopyDestination((InstructionWithDestinationAndSize)OldPush, ref mv, true);
-               OptimizeUtils.CopyDestination((InstructionWithDestinationAndSize)OldPop, ref mv, false);
-               src[CurrentIndex] = mv;
-               src[pushidx] = null;
-
-               PushPopCount++;
-               Optimizer.OptimizationsSize += 3;
-               Optimizer.Optimizations++;
-
-           }
-
+          
            return true;
        }
        public bool Match(Instruction ins, int idx)
        {
            CurrentIndex = idx;
-           return (ins is Pop);
+           return (ins is Push);
            
        }
 

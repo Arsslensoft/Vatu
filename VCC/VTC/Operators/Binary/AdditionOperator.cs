@@ -54,9 +54,9 @@ namespace VTC
                 return EmitFloatOperation(ec);
            
             Left.EmitToStack(ec);
-            ec.MarkOptimizable(); // Marks last instruction as last push
+            //ec.MarkOptimizable(); // Marks last instruction as last push
             Right.EmitToStack(ec);
-            ec.MarkOptimizable(); // Marks last instruction as last push
+            //ec.MarkOptimizable(); // Marks last instruction as last push
 
 
             ec.EmitComment(Left.CommentString() + " + " + Right.CommentString());

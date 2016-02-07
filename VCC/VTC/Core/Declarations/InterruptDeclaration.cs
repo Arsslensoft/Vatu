@@ -112,11 +112,20 @@ namespace VTC.Core
         {
             fc.AddNew(method);
             fc.MarkAsUsed(method);
-            fc.CodePathReturn.PathLocation = Location;
 
+
+            fc.LookForUnreachableBrace = !fc.NoReturnCheck;
             fc.NoReturnCheck = true;
+            FlowState fs = FlowState.Valid;
             if (_b != null)
-                return _b.DoFlowAnalysis(fc);
+                fs = _b.DoFlowAnalysis(fc);
+            else
+                fs = base.DoFlowAnalysis(fc);
+
+            if (!fs.Reachable.IsUnreachable && !fc.NoReturnCheck)
+                fc.ReportNotAllCodePathsReturns(Location);
+
+            fc.LookForUnreachableBrace = false;
 
             return base.DoFlowAnalysis(fc);
         }

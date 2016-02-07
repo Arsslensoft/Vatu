@@ -47,14 +47,8 @@ namespace VTC
     public class EmitContext
     {
 
-        public void SetOptimizingKind(OptimizationKind k)
-        {
-            ag.Instructions[ag.Instructions.Count - 1].OptimizingBehaviour = k;
-        }
-        public void MarkOptimizable()
-        {
-            ag.Instructions[ag.Instructions.Count - 1].IsOperationPush = true;
-        }
+    
+       
         public const byte FALSE = 0;
         public const byte TRUE = 1;
         public const RegistersEnum A = RegistersEnum.AX;
