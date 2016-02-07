@@ -25,21 +25,9 @@ namespace VTC
         {
 
 
-            if (Right is RegisterExpression && Left is RegisterExpression)
-            {
-                RegisterExpression.EmitOperation(ec, new Xchg(), ((RegisterExpression)Right).Register, ((RegisterExpression)Left).Register, false);
-
-                return true;
-            }
-
             Right.EmitToStack(ec);
             Left.EmitToStack(ec);
-            ec.EmitPop(EmitContext.A);
-            ec.EmitPop(EmitContext.B);
             ec.EmitComment(Left.CommentString() + "<>" + Right.CommentString());
-            ec.EmitInstruction(new Xchg() { SourceReg = EmitContext.A, DestinationReg = EmitContext.B, Size = 16 });
-            ec.EmitPush(EmitContext.A);
-            ec.EmitPush(EmitContext.B);
             Right.EmitFromStack(ec);
             Left.EmitFromStack(ec);
             return true;
