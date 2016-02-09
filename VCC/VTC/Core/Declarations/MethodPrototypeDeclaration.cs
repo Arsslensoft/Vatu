@@ -117,8 +117,9 @@ namespace VTC.Core
             rc.CurrentMethod = method;
 
 
-            if (!method.MemberType.IsBuiltinType)
+            if (!method.MemberType.IsBuiltinType && !method.memberType.IsPointer && !method.memberType.IsTemplate)
                 ResolveContext.Report.Error(45, Location, "return type must be builtin type " + method.MemberType.ToString() + " is user-defined type.");
+          
             if (ext != null && !ext.Static)
                 tp.Insert(0, ext.ExtendedType);
             method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, tp.ToArray(), this.Location);

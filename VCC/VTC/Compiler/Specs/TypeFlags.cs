@@ -24,7 +24,8 @@ namespace VTC
         Null = 1 << 8,
         Register = 1 << 9,
         Union = 1 << 10,
-        Delegate = 1 << 11
+        Delegate = 1 << 11,
+        Template = 1 << 12
     }
     
 	

@@ -13,18 +13,20 @@ namespace VTC.Core
         StructDefinition _def;
         InheritanceDefinition _ihd;
         Modifier _mod;
+        TemplateDefinition _tdef;
         bool istypedef = false;
-        [Rule(@"<Struct Decl>  ::= <Mod> ~struct Id <Inheritance> ~'{' <Struct Def> ~'}'  ~';' ")]
-        public StructDeclaration(Modifier mod, Identifier id,InheritanceDefinition ihd, StructDefinition sdef)
+        [Rule(@"<Struct Decl>  ::= <Mod> ~struct Id <Template Def> <Inheritance> ~'{' <Struct Def> ~'}'  ~';' ")]
+        public StructDeclaration(Modifier mod, Identifier id, TemplateDefinition tdef, InheritanceDefinition ihd, StructDefinition sdef)
         {
+            _tdef = tdef;
             _mod = mod;
             _name = id;
             _def = sdef;
             Size = 0;
             _ihd = ihd;
         }
-        [Rule(@"<Struct Decl>  ::= <Mod> ~typedef ~struct  <Inheritance>  ~'{' <Struct Def> ~'}' Id ~';' ")]
-        public StructDeclaration(Modifier mod,InheritanceDefinition ihd, StructDefinition sdef, Identifier id)
+        [Rule(@"<Struct Decl>  ::= <Mod> ~typedef ~struct <Template Def>  <Inheritance>  ~'{' <Struct Def> ~'}' Id ~';' ")]
+        public StructDeclaration(Modifier mod,TemplateDefinition tdef,InheritanceDefinition ihd, StructDefinition sdef, Identifier id)
         {
             istypedef = true;
             _mod = mod;
@@ -32,6 +34,7 @@ namespace VTC.Core
             _def = sdef;
             Size = 0;
             _ihd = ihd;
+            _tdef = tdef;
         }
 
        
@@ -44,13 +47,24 @@ namespace VTC.Core
  public override SimpleToken DoResolve(ResolveContext rc)
         {
             List<TypeMemberSpec> members = new List<TypeMemberSpec>();
+            List<TemplateTypeSpec> templates = new List<TemplateTypeSpec>();
             _mod = (Modifier)_mod.DoResolve(rc);
+            if (_tdef != null && _tdef._tid != null)
+            {
+                _tdef = (TemplateDefinition)_tdef.DoResolve(rc);
+                templates.AddRange(_tdef.Templates);
+                foreach(TemplateTypeSpec tts in _tdef.Templates)
+                rc.KnowType(tts);
+            }
+            else _tdef = null;
+
+
             if (_ihd != null)
             {
                 _ihd = (InheritanceDefinition)_ihd.DoResolve(rc);
-                TypeName = new StructTypeSpec(rc.CurrentNamespace, _name.Name, new List<TypeMemberSpec>(), _ihd.Inherited, loc);
+                TypeName = new StructTypeSpec(rc.CurrentNamespace, _name.Name, new List<TypeMemberSpec>(), _ihd.Inherited, templates, loc);
             }
-            else TypeName = new StructTypeSpec(rc.CurrentNamespace, _name.Name, new List<TypeMemberSpec>(), new List<StructTypeSpec>(), loc);
+            else TypeName = new StructTypeSpec(rc.CurrentNamespace, _name.Name, new List<TypeMemberSpec>(), new List<StructTypeSpec>(), templates, loc);
             rc.KnowType(TypeName);
             _def = (StructDefinition)_def.DoResolve(rc);
             if (_def != null)
@@ -100,8 +114,8 @@ namespace VTC.Core
 
        
             if(_ihd != null)
-             NewType = new StructTypeSpec(rc.CurrentNamespace, _name.Name, _def.Members, _ihd.Inherited, loc);
-            else NewType = new StructTypeSpec(rc.CurrentNamespace, _name.Name, _def.Members,new List<StructTypeSpec>(), loc);
+             NewType = new StructTypeSpec(rc.CurrentNamespace, _name.Name, _def.Members, _ihd.Inherited,templates, loc);
+            else NewType = new StructTypeSpec(rc.CurrentNamespace, _name.Name, _def.Members, new List<StructTypeSpec>(), templates, loc);
            
             NewType.Modifiers = _mod.ModifierList;
             foreach (int id in tobeupdated)
@@ -114,6 +128,11 @@ namespace VTC.Core
             NewType.UpdateSize();
             rc.UpdateType(TypeName, NewType);
 
+            if (templates.Count > 0)
+            {
+                foreach (TemplateTypeSpec tts in templates)
+                    rc.Resolver.KnownTypes.Remove(tts);
+            }
 
             return this;
         }

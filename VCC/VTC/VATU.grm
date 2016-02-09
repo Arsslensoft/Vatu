@@ -40,11 +40,12 @@ FloatLiteral     = {Literal Prefix}{Digit}*'.'{Digit}+{Float Suffix} | {Digit}*'
 
 !IncludeLiteral    = '<' ( {Printable} )+ '>'
 Id               = {Id Head}{Id Tail}*    
-
+TemplateId       = '$'[ABCDEFGHIJKLMNOPQRSTUVWXYZ]
 OperatorLiteralUnary  =  '@' [!&#$%*+-,/<>=?\^_|~£¤µ.:]+
 OperatorLiteralBinary  =  '@@' [!&#$%*+-,/<>=?\^_|~£¤µ.:]+     
 
                  
+
                  
 ! ===================================================================
 ! Comments
@@ -110,6 +111,7 @@ Comment Line  = '//'
                 | <Enum Decl>
                 | <Typedef Decl> 
                 | <Delegate Decl>
+                | <Template Decl>
                 
 <Prototypes Decl> ::=  <Func Proto>
           | <Oper Proto>
@@ -216,12 +218,12 @@ Comment Line  = '//'
 
 <Typedef Decl> ::= <Mod> typedef <Type> ID ';'
 
-<Struct Decl>  ::= <Mod> struct Id <Inheritance>  '{' <Struct Def> '}'  ';' 
-                | <Mod> typedef struct <Inheritance>  '{' <Struct Def> '}'  Id ';' 
+<Struct Decl>  ::= <Mod> struct Id <Template Def> <Inheritance>  '{' <Struct Def> '}'  ';' 
+                | <Mod> typedef struct <Template Def> <Inheritance>  '{' <Struct Def> '}'  Id ';' 
                 
 
-<Union Decl>   ::= <Mod> union Id '{' <Struct Def> '}'  ';' 
-                | <Mod> typedef union '{' <Struct Def> '}' Id ';' 
+<Union Decl>   ::= <Mod> union Id <Template Def> '{' <Struct Def> '}'  ';' 
+                | <Mod> typedef union <Template Def> '{' <Struct Def> '}' Id ';' 
                 
 <Enum Decl>    ::= <Mod> enum Id '{' <Enum Def> '}'  ';'
                  | <Mod> typedef enum '{' <Enum Def> '}'  Id ';'
@@ -232,7 +234,11 @@ Comment Line  = '//'
                   | <Mod> typedef <CallCV> delegate <Type> '(' <Types>  ')' ID ';'                 
                   | <Mod> <CallCV> delegate <Type> ID '(' ')' ';'
                   | <Mod> typedef <CallCV> delegate <Type> '(' ')' ID ';'   
+                  
+<Template Decl> ::= <Mod> <Template Def> ';'
+ 
 
+                            
 <Inheritance> ::= extends <Types>
               | 
 ! ===================================================================
@@ -248,7 +254,11 @@ Comment Line  = '//'
 
 <Enum Val>     ::= Id
                  | Id '=' <Integral Const>
-                 
+   
+<Template Def> ::=   template '<' <Templates> '>'  
+                |   
+<Templates>    ::=  TemplateId ',' <Templates>
+                | TemplateId
 ! ===================================================================
 ! Variable Declaration
 ! ===================================================================
@@ -286,7 +296,9 @@ Comment Line  = '//'
              | <Name> '::' <Base> <Pointers> <Array>     
                   
 <Base>     ::= <Scalar>
-             | '@'Id  
+             | '@'Id
+             | '@'Id '<' <Types> '>'
+             | TemplateId  
              | typeof Id
              | typeof '(' <Expression> ')'
              

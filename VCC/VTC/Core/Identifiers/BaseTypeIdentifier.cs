@@ -13,6 +13,8 @@ namespace VTC.Core
     {
         TypeToken _typeid;
         Identifier _ident;
+        TemplateIdentifier _tident;
+        TypeIdentifierListDefinition _tidl;
         Expr exp;
 
          [Rule(@"<Base>     ::= ~'@'Id")]
@@ -21,7 +23,18 @@ namespace VTC.Core
         {
             _ident = type;
         }
+         [Rule(@"<Base>     ::= TemplateId")]
+         public BaseTypeIdentifier(TemplateIdentifier type)
+         {
+             _tident = type;
+         }
 
+            [Rule(@"<Base>     ::= ~'@'Id ~'<' <Types> ~'>'")]
+         public BaseTypeIdentifier(Identifier type, TypeIdentifierListDefinition tidl)
+         {
+             _ident = type;
+             _tidl = tidl;
+         } 
 
         [Rule(@"<Base> ::= ~typeof ~'(' <Expression> ~')'")]
         public BaseTypeIdentifier(Expr op)
@@ -43,13 +56,60 @@ namespace VTC.Core
 
             if (_ident != null)
                rc.Resolver.TryResolveType(_ident.Name,ref _ts);
-           
+
+
+            if (_tident != null)
+                rc.Resolver.TryResolveType(_tident.Name, ref _ts);
             return base.Resolve(rc);
         }
  public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (_ident != null)
-                rc.Resolver.TryResolveType(_ident.Name, ref _ts);
+            {
+                if (_tidl == null)
+                    rc.Resolver.TryResolveType(_ident.Name, ref _ts);
+                else
+                {
+                    _tidl = (TypeIdentifierListDefinition)_tidl.DoResolve(rc);
+              
+                    // check if all non templates
+                    foreach (TypeSpec t in _tidl.Types)
+                    {
+                        if (t is TemplateTypeSpec)
+                            ResolveContext.Report.Error(0, Location, t.Name + " is a template, a template can't define a template");
+                    }
+
+                    MemberSignature msig = new MemberSignature(rc.CurrentNamespace, _ident.Name, _tidl.Types.ToArray(), Location);
+                    rc.Resolver.TryResolveType(_ident.Name, ref _ts,msig.NoNamespaceSignature); // the type signature with template is found
+                    if (_ts == null)
+                    {
+                        rc.Resolver.TryResolveType(_ident.Name, ref _ts);
+                        if (_ts != null && _ts is StructTypeSpec)
+                        {
+                            StructTypeSpec st = (_ts as StructTypeSpec);
+                            if (st.Templates.Count != _tidl.Types.Count)
+                                ResolveContext.Report.Error(0, Location, "Templates, Types count mismatch");
+                            else
+                            {
+                                StructTypeSpec dst = st.CopyWithTemplate(_tidl.Types);
+                                if (dst == null)
+                                    ResolveContext.Report.Error(0, Location, "Failed to initialize type with current templates definition");
+                                else
+                                {
+                                    rc.Resolver.KnowType(dst);
+                                    _ts = dst;
+                                    return this;
+                                }
+                            }
+                        }
+
+                    }
+                    else return this;
+                }
+            }
+            if (_tident != null)
+                rc.Resolver.TryResolveType(_tident.Name, ref _ts);
+
 
             if (exp != null)
             {

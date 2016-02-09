@@ -36,7 +36,7 @@ namespace VTC
                 Emitter = new ArrayEmitter(this, index, ReferenceKind.Register);
                 else Emitter = new HostedArrayEmitter(this, index, ReferenceKind.Register);
             }
-            else if (memberType.IsBuiltinType || memberType.IsDelegate)
+            else if (memberType.IsBuiltinType || memberType.IsDelegate || memberType.IsTemplate)
             {
                 if (memberType.IsFloat && !memberType.IsPointer)
                     Emitter = new FloatEmitter(this, index, ReferenceKind.Register);

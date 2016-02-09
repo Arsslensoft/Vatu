@@ -51,6 +51,11 @@ namespace VTC
         }
         public override void Warning(Location location, string message)
         {
+            if (CompilerContext.CompilerOptions.WarningsAreErrors)
+            {
+                Error(0, location, message);
+                return;
+            }
             if (!location.IsNull)
                 Console.Error.WriteLine("Warning:0:{0}:{1},{2}:{3}", FilePath, location.Row, location.Column, message);
 

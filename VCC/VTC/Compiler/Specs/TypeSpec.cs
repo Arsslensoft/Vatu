@@ -24,6 +24,7 @@ namespace VTC
                 return GetTypeName(this);
             }
         }
+      
         public byte FloatSizeBits
         {
             get
@@ -65,7 +66,13 @@ namespace VTC
             }
 
         }
-
+        public bool IsTemplate
+        {
+            get
+            {
+                return (_flags & TypeFlags.Template) == TypeFlags.Template;
+            }
+        }
         public bool IsValueType
         {
             get

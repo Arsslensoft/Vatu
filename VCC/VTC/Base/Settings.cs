@@ -67,7 +67,7 @@ HelpText = "Parallel Compilation threads")]
         public int OptimizeLevel { get; set; }
 
             [Option("Werror", Required = false, DefaultValue = false,
-   HelpText = "Enable optimizations")]
+   HelpText = "Warn as error")]
                public bool WarningsAreErrors { get; set; }
 
             [Option( "Wall", Required = false, DefaultValue = false,

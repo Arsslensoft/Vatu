@@ -13,7 +13,7 @@ namespace VTC.Core
         StructDefinition _def;
         Modifier _mod;
         bool istypedef = false;
-        [Rule(@"<Union Decl>  ::= <Mod> ~union Id ~'{' <Struct Def> ~'}'  ~';' ")]
+        [Rule(@"<Union Decl>  ::= <Mod> ~union Id ~<Template Def> ~'{' <Struct Def> ~'}'  ~';' ")]
         public UnionDeclaration(Modifier mod, Identifier id, StructDefinition sdef)
         {
             _mod = mod;
@@ -21,7 +21,7 @@ namespace VTC.Core
             _def = sdef;
             Size = 0;
         }
-        [Rule(@"<Union Decl>  ::= <Mod> ~typedef ~union  ~'{' <Struct Def> ~'}' Id ~';' ")]
+        [Rule(@"<Union Decl>  ::= <Mod> ~typedef ~union ~<Template Def>  ~'{' <Struct Def> ~'}' Id ~';' ")]
         public UnionDeclaration(Modifier mod, StructDefinition sdef, Identifier id)
         {
             istypedef = true;

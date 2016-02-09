@@ -126,7 +126,7 @@ namespace VTC.Core
             if (specs == Specifiers.Isolated && method.MemberType != BuiltinTypeSpec.Void)
                 ResolveContext.Report.Error(45, Location, "only void methods can be isolated.");
 
-            if (!method.MemberType.IsBuiltinType)
+            if (!method.MemberType.IsBuiltinType && !method.memberType.IsPointer && !method.memberType.IsTemplate)
                 ResolveContext.Report.Error(45, Location, "return type must be builtin type " + method.MemberType.ToString() + " is user-defined type.");
           
           if (_fbd._b != null)

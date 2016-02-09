@@ -194,14 +194,21 @@ namespace VTC
             }
             else return m;
         }
-        public bool ResolveType(Namespace ns, string name,ref TypeSpec tp)
+        public bool ResolveType(Namespace ns, string name,ref TypeSpec tp,string sig = null)
         {
             tp = null;
             for (int i = 0; i < KnownTypes.Count; i++)
             {
                 if (KnownTypes[i].NS.Name != ns.Name)
                     continue;
-                if (KnownTypes[i].Name == name && ((!KnownTypes[i].IsPrivate || CurrentNamespace == ns)))
+
+                if (sig == null && KnownTypes[i].Name == name && ((!KnownTypes[i].IsPrivate || CurrentNamespace == ns)))
+                {
+                    tp = KnownTypes[i];
+                    return true;
+
+                }
+                else if (KnownTypes[i].Signature.NoNamespaceSignature == sig && ((!KnownTypes[i].IsPrivate || CurrentNamespace == ns)))
                 {
                     tp = KnownTypes[i];
                     return true;
@@ -320,37 +327,44 @@ namespace VTC
         }
         public void ResolveMethod(Namespace ns, string name, ref MethodSpec mtd,TypeSpec[] par=null)
         {
+            bool hastemplate = false;
             if (CurrentExtensionLookup == null)
             {
-                if (par != null)
-                {
+              //  if (par != null)
+              //  {
                     MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
                     for (int i = 0; i < KnownMethods.Count; i++)
                     {
                         if (KnownMethods[i].NS.Name != ns.Name)
                             continue;
-                        if (KnownMethods[i].Signature == msig && ((!KnownMethods[i].IsPrivate || CurrentNamespace == ns)))
-                        {
-                            mtd = KnownMethods[i];
-                               return;
+                        //if (KnownMethods[i].Signature == msig && ((!KnownMethods[i].IsPrivate || CurrentNamespace == ns)))
+                        //{
+                        //    mtd = KnownMethods[i];
+                        //       return;
                         
-                        }
-                    }
-                }
-                else
-                {
-                    MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
-                    for (int i = 0; i < KnownMethods.Count; i++)
-                    {
-                        if (KnownMethods[i].NS.Name != ns.Name)
-                            continue;
-                        if (KnownMethods[i].Signature == msig && ((!KnownMethods[i].IsPrivate || CurrentNamespace == ns)))
+                        //}
+                        if (KnownMethods[i].MatchSignature(msig, name, par,ref hastemplate) && ((!KnownMethods[i].IsPrivate || CurrentNamespace == ns)))
                         {
                             mtd = KnownMethods[i];
                             return;
+
                         }
                     }
-                }
+             //   }
+                //else
+                //{
+                //    MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
+                //    for (int i = 0; i < KnownMethods.Count; i++)
+                //    {
+                //        if (KnownMethods[i].NS.Name != ns.Name)
+                //            continue;
+                //        if (KnownMethods[i].Signature == msig && ((!KnownMethods[i].IsPrivate || CurrentNamespace == ns)))
+                //        {
+                //            mtd = KnownMethods[i];
+                //            return;
+                //        }
+                //    }
+                //}
             }
             else
             {
@@ -573,17 +587,17 @@ namespace VTC
             }
             else return m;
         }
-        public bool TryResolveType(string name, ref TypeSpec type)
+        public bool TryResolveType(string name, ref TypeSpec type,string sig = null)
         {
-            bool ok = ResolveType(CurrentNamespace, name,ref type);
+            bool ok = ResolveType(CurrentNamespace, name, ref type, sig);
             if (!ok)
             {
-                ok = ResolveType(Namespace.Default, name, ref type);
+                ok = ResolveType(Namespace.Default, name, ref type,sig);
                 if (!ok)
                 {
                     foreach (Namespace ns in Imports)
                     {
-                        ok = ResolveType(ns, name, ref type);
+                        ok = ResolveType(ns, name, ref type, sig);
                         if (ok)
                             return true;
                     }

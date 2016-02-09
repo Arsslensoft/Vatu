@@ -50,6 +50,10 @@ namespace VTC
        public MemberSignature Signature
        {
            get { return _sig; }
+           protected set
+           {
+               _sig = value;
+           }
 
        }
         /// <summary>

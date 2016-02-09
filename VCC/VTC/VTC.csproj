@@ -177,6 +177,7 @@
     <Compile Include="Compiler\Specs\ArrayTypeSpec.cs" />
     <Compile Include="Compiler\Specs\BuiltinTypes.cs" />
     <Compile Include="Compiler\Specs\BuiltinTypeSpec.cs" />
+    <Compile Include="Compiler\Specs\TemplateTypeSpec.cs" />
     <Compile Include="Compiler\Specs\DelegateTypeSpec.cs" />
     <Compile Include="Compiler\Specs\EnumMemberSpec.cs" />
     <Compile Include="Compiler\Specs\EnumTypeSpec.cs" />
@@ -215,7 +216,9 @@
     <Compile Include="Core\Constants\PointerConstant.cs" />
     <Compile Include="Core\Constants\FloatConstant.cs" />
     <Compile Include="Core\Constants\IntConstant.cs" />
+    <Compile Include="Core\Declarations\TemplateDeclaration.cs" />
     <Compile Include="Core\Declarations\RessourceDeclaration.cs" />
+    <Compile Include="Core\Definitions\TemplateDefinition.cs" />
     <Compile Include="Core\Definitions\VariableInitDefinition.cs" />
     <Compile Include="Core\Definitions\InheritanceDefinition.cs" />
     <Compile Include="Core\Expressions\CheckedExpressions.cs" />
@@ -225,6 +228,7 @@
     <Compile Include="Core\Expressions\Register\RegisterBinaryOperation.cs" />
     <Compile Include="Core\Expressions\Register\RegisterUnaryOperation.cs" />
     <Compile Include="Core\Expressions\ThisExpression.cs" />
+    <Compile Include="Core\Identifiers\TemplateIdentifier.cs" />
     <Compile Include="Core\Literals\FloatLiteral.cs" />
     <Compile Include="Core\Literals\IntegralConst.cs" />
     <Compile Include="Core\Constants\NullConstant.cs" />

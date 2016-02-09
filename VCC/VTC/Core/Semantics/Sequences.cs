@@ -447,4 +447,33 @@ namespace VTC.Core
         }
      
     }
+    public class TemplateSequence : Sequence<TemplateIdentifier>
+    {
+
+        [Rule("<Templates>    ::=  TemplateId")]
+        public TemplateSequence(TemplateIdentifier item)
+            : base(item, null)
+        {
+        }
+
+        [Rule("<Templates>    ::=  TemplateId ~',' <Templates>")]
+        public TemplateSequence(TemplateIdentifier item, TemplateSequence next)
+            : base(item, next)
+        {
+
+        }
+
+        public List<TemplateIdentifier> Templates { get; set; }
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {
+          
+            Templates = new List<TemplateIdentifier>();
+            foreach (TemplateIdentifier s in this)
+            {
+                Templates.Add(s);
+            }
+            return this;
+        }
+
+    }
 }

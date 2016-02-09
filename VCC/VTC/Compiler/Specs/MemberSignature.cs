@@ -21,11 +21,15 @@ namespace VTC
         public Location Location { get { return _loc; } }
         string _extsig;
         public string ExtensionSignature { get { return _extsig; } }
+
+        string _nns;
+        public string NoNamespaceSignature { get { return _nns; } }
         public MemberSignature(Namespace ns, string name,TypeSpec[] param, Location loc)
         {
             _nsig = name;
             _signature = name;
             _extsig = name;
+            _nns = name;
             if (!ns.IsDefault)
             {
                 _signature = ns.Normalize() + "_" + _signature;
@@ -40,6 +44,7 @@ namespace VTC
                     _extsig += "_" + p.GetTypeName(p).Replace("*", "P"); 
                     _signature += "_" + p.GetTypeName(p).Replace("*", "P");
                     _nsig +=  p.GetTypeName(p) + ",";
+                    _nns += "_" + p.GetTypeName(p).Replace("*", "P");
                 }
                 if (param.Length > 0)
                     _nsig = _nsig.Remove(_nsig.Length - 1,1) +")";
@@ -53,10 +58,12 @@ namespace VTC
             _nsig = name;
             _signature = name;
             _extsig = name;
+            _nns = name;
             if (!ns.IsDefault)
             {
                 _signature = ns.Normalize() + "_" + _signature;
                 _nsig = ns.Normalize() + "." + _nsig;
+
             }
             _loc = loc;
 

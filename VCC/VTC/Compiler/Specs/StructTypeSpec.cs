@@ -15,13 +15,14 @@ namespace VTC
     {
         public List<TypeMemberSpec> Members { get; set; }
         public List<StructTypeSpec> Inherited { get; private set; }
-       
-        public StructTypeSpec(Namespace ns,string name, List<TypeMemberSpec> mem,List<StructTypeSpec> ihd, Location loc)
+        public List<TemplateTypeSpec> Templates { get; set; }
+
+        public StructTypeSpec(Namespace ns,string name, List<TypeMemberSpec> mem,List<StructTypeSpec> ihd,List<TemplateTypeSpec> templates, Location loc)
             : base(ns,name, BuiltinTypes.Unknown, TypeFlags.Struct, Modifiers.NoModifier, loc)
         {
             Members = mem;
             Size = 0;
-
+            Templates = templates;
             Inherited = ihd;
 
             foreach (TypeMemberSpec m in mem)
@@ -29,6 +30,8 @@ namespace VTC
 
           
         }
+
+       
         public void UpdateSize()
         {
             Size = 0;
@@ -71,6 +74,45 @@ namespace VTC
 
             return this;
         }
+        int GetTemplateIdx(TemplateTypeSpec tts)
+        {
+            for (int i = 0; i < Templates.Count; i++)
+                if (Templates[i].Template == tts.Template)
+                    return i;
+
+            return -1;
+        }
+        public StructTypeSpec CopyWithTemplate(List<TypeSpec> type)
+        {
+            List<TypeMemberSpec> tmp = new List<TypeMemberSpec>();
+            StructTypeSpec newsts = new StructTypeSpec(NS,Name, new List<TypeMemberSpec>(), Inherited,new List<TemplateTypeSpec>(), Signature.Location);
+            newsts.Signature = new MemberSignature(NS, Name,type.ToArray(),Signature.Location);
+            int midx = 0;
+            foreach (TypeMemberSpec m in Members)
+            {
+                TypeSpec mt = m.MemberType;
+                if (mt is TemplateTypeSpec)
+                {
+                    int idx = GetTemplateIdx(mt as TemplateTypeSpec);
+                    if (idx == -1)
+                        return null;
+                    else mt = type[idx];
+                }
+                TypeMemberSpec nm = new TypeMemberSpec(m.NS, m.Name, newsts, mt, m.Signature.Location, m.Index);
+                nm.Index = midx;
+                midx += nm.MemberType.GetSize(nm.MemberType);
+                tmp.Add(nm);
+            }
+
+            // new sts update
+            newsts = new StructTypeSpec(NS, Name, tmp, Inherited, new List<TemplateTypeSpec>(),Signature.Location);
+            newsts.Signature = new MemberSignature(NS, Name, type.ToArray(), Signature.Location);
+            newsts.UpdateSize();
+
+            return newsts;
+        }
+
+
     }
 
 	

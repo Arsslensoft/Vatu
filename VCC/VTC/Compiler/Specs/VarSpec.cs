@@ -60,7 +60,7 @@ namespace VTC
                 else
                     Emitter = new ArrayEmitter(this, 0, ReferenceKind.LocalVariable);
             }
-            else if (memberType.IsBuiltinType || memberType.IsDelegate)
+            else if (memberType.IsBuiltinType || memberType.IsDelegate || memberType.IsTemplate)
             {
                 if (memberType.IsFloat && !memberType.IsPointer)
                     Emitter = new FloatEmitter(this, 0, ReferenceKind.LocalVariable);

@@ -101,7 +101,7 @@ namespace VTC
                 else
                     Emitter = new HostedArrayEmitter(this, 4, ReferenceKind.Parameter);
             }
-            else if (memberType.IsBuiltinType || memberType.IsDelegate)
+            else if (memberType.IsBuiltinType || memberType.IsDelegate || memberType.IsTemplate)
             {
                 if (memberType.IsFloat && !memberType.IsPointer)
                     Emitter = new FloatEmitter(this, 4, ReferenceKind.Parameter);
@@ -115,7 +115,7 @@ namespace VTC
             }
             else if (memberType.IsForeignType)
                 Emitter = new StructEmitter(this, 4, ReferenceKind.Parameter);
-          
+       
             InitialStackIndex = initstackidx;
         }
         public override string ToString()
