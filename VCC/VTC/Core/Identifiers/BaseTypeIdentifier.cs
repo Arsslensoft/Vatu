@@ -102,6 +102,24 @@ namespace VTC.Core
                                 }
                             }
                         }
+                        else if (_ts != null && _ts is UnionTypeSpec)
+                        {
+                            UnionTypeSpec st = (_ts as UnionTypeSpec);
+                            if (st.Templates.Count != _tidl.Types.Count)
+                                ResolveContext.Report.Error(0, Location, "Templates, Types count mismatch");
+                            else
+                            {
+                                UnionTypeSpec dst = st.CopyWithTemplate(_tidl.Types);
+                                if (dst == null)
+                                    ResolveContext.Report.Error(0, Location, "Failed to initialize type with current templates definition");
+                                else
+                                {
+                                    rc.Resolver.KnowType(dst);
+                                    _ts = dst;
+                                    return this;
+                                }
+                            }
+                        }
 
                     }
                     else return this;

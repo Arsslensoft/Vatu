@@ -47,6 +47,8 @@ namespace VTC
                     Emitter = new WordEmitter(this, index, ReferenceKind.Register);
                 else if (memberType.Size == 1)
                     Emitter = new ByteEmitter(this, index, ReferenceKind.Register);
+                else if (memberType.IsTemplate && memberType.Size > 2)
+                    Emitter = new StructEmitter(this, 0, ReferenceKind.Register);
             }
             else if (memberType.IsForeignType)
                 Emitter = new StructEmitter(this, index, ReferenceKind.Register);

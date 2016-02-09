@@ -1,7 +1,7 @@
 ﻿"Name"    = 'VATU' 
 "Version" = '2015'
 "Author"  = 'Arsslen Idadi' 
-"About"   = 'ANSI-C variant.'
+"About"   = 'Enhanced ANSI-C only for 8086.'
 
 "Case Sensitive" = True
 "Start Symbol"   = <COMPILATION UNIT>
@@ -236,7 +236,7 @@ Comment Line  = '//'
                   | <Mod> typedef <CallCV> delegate <Type> '(' ')' ID ';'   
                   
 <Template Decl> ::= <Mod> <Template Def> ';'
- 
+                | <Mod> <Template Def> sizeof <Integral Const> ';'
 
                             
 <Inheritance> ::= extends <Types>

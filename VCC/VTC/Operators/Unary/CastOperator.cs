@@ -152,6 +152,8 @@ namespace VTC
                     return _target;
                 else if (PointerFix())
                     return Target;
+                else if (TemplateFix())
+                    return Target;
                 else if (FloatFix())
                 {
                     if (!float_to_int)
@@ -454,7 +456,28 @@ namespace VTC
                 return true;
             else return false;
         }
-
+        bool TemplateFix()
+        {
+            if (Type.IsTemplate && _target.Type.IsTemplate && (Type as TemplateTypeSpec).Size == (_target.Type as TemplateTypeSpec).Size)
+            {
+                _target.Type = Type;
+                nofix = true;
+                return true;
+            }
+            else if (Type.IsForeignType && _target.Type.IsTemplate && Type.Size ==_target.Type.Size)
+            {
+                _target.Type = Type;
+                nofix = true;
+                return true;
+            }
+            else if (_target.Type.IsForeignType && Type.IsTemplate && Type.Size == _target.Type.Size)
+            {
+                _target.Type = Type;
+                nofix = true;
+                return true;
+            }
+            return false;
+        }
         bool ispointer = false;
         int CastOffset = 0;
         bool GetInheritedStructIndex(StructTypeSpec st,StructTypeSpec cmp,ref int off)

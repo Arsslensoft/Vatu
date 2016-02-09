@@ -11,7 +11,7 @@ namespace VTC.Core.Declarations
         public TemplateTypeSpec TypeName { get; set; }
 
         TemplateDefinition _tdl;
-      
+        ushort size = 2;
         Modifier _mod;
         [Rule(@"<Template Decl>  ::=  <Mod> <Template Def> ~';' ")]
         public TemplateDeclaration(Modifier mod, TemplateDefinition def)
@@ -21,7 +21,14 @@ namespace VTC.Core.Declarations
             _mod = mod;
      
         }
-    
+        [Rule(@"<Template Decl>  ::=  <Mod> <Template Def> ~sizeof <Integral Const> ~';' ")]
+        public TemplateDeclaration(Modifier mod, TemplateDefinition def, Literal lit)
+        {
+
+            _tdl = def;
+            _mod = mod;
+            size = ushort.Parse(lit.Value.GetValue().ToString());
+        }
 
        public override bool Resolve(ResolveContext rc)
         {
@@ -36,11 +43,12 @@ namespace VTC.Core.Declarations
             _tdl = (TemplateDefinition)_tdl.DoResolve(rc);
             foreach (TemplateTypeSpec ts in _tdl.Templates)
             {
-                TemplateTypeSpec tt = new TemplateTypeSpec(rc.CurrentNamespace, ts.Name, null, true, Location);
+                TemplateTypeSpec tt = new TemplateTypeSpec(rc.CurrentNamespace, ts.Name, null, true, Location,(int)size);
                 tt.Modifiers = _mod.ModifierList;
 
                 rc.KnowType(tt);
             }
+
 
             return this;
         }

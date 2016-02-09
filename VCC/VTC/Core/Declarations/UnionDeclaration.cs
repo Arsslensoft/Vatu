@@ -13,17 +13,20 @@ namespace VTC.Core
         StructDefinition _def;
         Modifier _mod;
         bool istypedef = false;
-        [Rule(@"<Union Decl>  ::= <Mod> ~union Id ~<Template Def> ~'{' <Struct Def> ~'}'  ~';' ")]
-        public UnionDeclaration(Modifier mod, Identifier id, StructDefinition sdef)
+        TemplateDefinition _tdef;
+        [Rule(@"<Union Decl>  ::= <Mod> ~union Id <Template Def> ~'{' <Struct Def> ~'}'  ~';' ")]
+        public UnionDeclaration(Modifier mod, Identifier id, TemplateDefinition tdef, StructDefinition sdef)
         {
+            _tdef = tdef;
             _mod = mod;
             _name = id;
             _def = sdef;
             Size = 0;
         }
-        [Rule(@"<Union Decl>  ::= <Mod> ~typedef ~union ~<Template Def>  ~'{' <Struct Def> ~'}' Id ~';' ")]
-        public UnionDeclaration(Modifier mod, StructDefinition sdef, Identifier id)
+        [Rule(@"<Union Decl>  ::= <Mod> ~typedef ~union <Template Def>  ~'{' <Struct Def> ~'}' Id ~';' ")]
+        public UnionDeclaration(Modifier mod, TemplateDefinition tdef, StructDefinition sdef, Identifier id)
         {
+            _tdef = tdef;
             istypedef = true;
             _mod = mod;
             _name = id;
@@ -37,9 +40,20 @@ namespace VTC.Core
             return _def.Resolve(rc);
         }
  public override SimpleToken DoResolve(ResolveContext rc)
-        {
-            _mod = (Modifier)_mod.DoResolve(rc);
-            TypeName = new UnionTypeSpec(rc.CurrentNamespace, _name.Name, new List<TypeMemberSpec>(), loc);
+       {
+           List<TemplateTypeSpec> templates = new List<TemplateTypeSpec>();
+           _mod = (Modifier)_mod.DoResolve(rc);
+           if (_tdef != null && _tdef._tid != null)
+           {
+               _tdef = (TemplateDefinition)_tdef.DoResolve(rc);
+               templates.AddRange(_tdef.Templates);
+               foreach (TemplateTypeSpec tts in _tdef.Templates)
+                   rc.KnowType(tts);
+           }
+           else _tdef = null;
+
+
+           TypeName = new UnionTypeSpec(rc.CurrentNamespace, _name.Name, new List<TypeMemberSpec>(), templates, loc);
             rc.KnowType(TypeName);
             _def = (StructDefinition)_def.DoResolve(rc);
             if (_def != null)
@@ -59,13 +73,18 @@ namespace VTC.Core
                 i++;
             }
 
-            UnionTypeSpec NewType = new UnionTypeSpec(rc.CurrentNamespace, _name.Name, _def.Members, loc);
+            UnionTypeSpec NewType = new UnionTypeSpec(rc.CurrentNamespace, _name.Name, _def.Members, templates, loc);
             NewType.Modifiers = _mod.ModifierList;
             foreach (int id in tobeupdated)
                 _def.Members[id].MemberType.MakeBase(ref _def.Members[id].memberType, NewType);
 
             rc.UpdateType(TypeName, NewType);
 
+            if (templates.Count > 0)
+            {
+                foreach (TemplateTypeSpec tts in templates)
+                    rc.Resolver.KnownTypes.Remove(tts);
+            }
 
 
             return this;
