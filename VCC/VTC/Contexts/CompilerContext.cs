@@ -94,6 +94,7 @@ namespace VTC
             ec.ag.OLevel = Options.OptimizeLevel;
             ec.ag.IsVTExec = Options.Target == Target.vexe;
             ec.ag.IsLibrary = Options.Target == Target.obj;
+            ec.ag.IsBootLoader = Options.BootLoader;
         }
      
       
@@ -208,11 +209,12 @@ namespace VTC
         public bool ResolveDependency(CompiledSource src,int idx)
         {
             DependencyParsing dep = DependencyCache[idx];
-            if (dep.Parsed)
+            if (dep.Parsed )
             {
                 // transfer
-                src.DefaultDependency.RootCtx.FillKnownByKnown(dep.RootCtx.Resolver);
-                src.DefaultDependency.DependsOn.Add(dep);
+               src.DefaultDependency.RootCtx.FillKnownByKnown(dep.RootCtx.Resolver);
+                if(!src.DefaultDependency.DependsOn.Contains(dep))
+                    src.DefaultDependency.DependsOn.Add(dep);
                // ressources
                 foreach (KeyValuePair<FieldSpec, byte[]> p in dep.RessourcesSpecs)
                     src.DefaultDependency.RessourcesSpecs.Add(p.Key, p.Value);

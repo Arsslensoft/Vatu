@@ -216,12 +216,13 @@
     <Compile Include="Core\Constants\PointerConstant.cs" />
     <Compile Include="Core\Constants\FloatConstant.cs" />
     <Compile Include="Core\Constants\IntConstant.cs" />
-    <Compile Include="Core\Declarations\TemplateDeclaration.cs" />
     <Compile Include="Core\Declarations\RessourceDeclaration.cs" />
+    <Compile Include="Core\Declarations\TemplateDeclaration.cs" />
     <Compile Include="Core\Definitions\TemplateDefinition.cs" />
     <Compile Include="Core\Definitions\VariableInitDefinition.cs" />
     <Compile Include="Core\Definitions\InheritanceDefinition.cs" />
     <Compile Include="Core\Expressions\CheckedExpressions.cs" />
+    <Compile Include="Core\Expressions\TypedExpressions.cs" />
     <Compile Include="Core\Expressions\DeclaredExpression.cs" />
     <Compile Include="Core\Expressions\InstanceExpression.cs" />
     <Compile Include="Core\Expressions\ParamsExpression.cs" />

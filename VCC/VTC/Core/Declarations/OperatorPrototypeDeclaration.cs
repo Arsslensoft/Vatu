@@ -63,7 +63,7 @@ namespace VTC.Core
         {
             int i = 0;
             foreach (TypeSpec p in par)
-                Parameters.Add(new ParameterSpec("Param_oper_" + i.ToString(), host, p, Location.Null, 4, Modifiers.NoModifier));
+                Parameters.Add(new ParameterSpec("Param_oper_" + i.ToString(), host, p, p.Signature.Location, 4, Modifiers.NoModifier));
 
 
         }
@@ -261,7 +261,7 @@ namespace VTC.Core
 
                 tp.Add(_casttype.Type);
             }
-            method = new MethodSpec(rc.CurrentNamespace, OpName, mods, _mtype.Type, CallingConventions.StdCall, tp.ToArray(), this.loc);
+            method = new MethodSpec(rc.CurrentNamespace, OpName, mods, _mtype.Type, CallingConventions.StdCall, tp.ToArray(), this.Location);
             DefaultParams(method, tp.ToArray());
             method.Parameters = Parameters;
             method.IsOperator = true;

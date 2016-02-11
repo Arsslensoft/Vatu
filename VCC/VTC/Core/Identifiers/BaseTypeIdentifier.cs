@@ -71,14 +71,18 @@ namespace VTC.Core
                 else
                 {
                     _tidl = (TypeIdentifierListDefinition)_tidl.DoResolve(rc);
-              
+                    bool alltemplates = _tidl.Types[0] is TemplateTypeSpec;
                     // check if all non templates
                     foreach (TypeSpec t in _tidl.Types)
                     {
-                        if (t is TemplateTypeSpec)
+                        if ( !alltemplates && t is TemplateTypeSpec  || (alltemplates && !(t is TemplateTypeSpec)) )
                             ResolveContext.Report.Error(0, Location, t.Name + " is a template, a template can't define a template");
                     }
-
+                    if (alltemplates)
+                    {
+                        rc.Resolver.TryResolveType(_ident.Name, ref _ts);
+                        return this;
+                    }
                     MemberSignature msig = new MemberSignature(rc.CurrentNamespace, _ident.Name, _tidl.Types.ToArray(), Location);
                     rc.Resolver.TryResolveType(_ident.Name, ref _ts,msig.NoNamespaceSignature); // the type signature with template is found
                     if (_ts == null)
@@ -126,8 +130,11 @@ namespace VTC.Core
                 }
             }
             if (_tident != null)
-                rc.Resolver.TryResolveType(_tident.Name, ref _ts);
-
+            {
+                if (rc.CurrentMethodName != null)
+                    rc.Resolver.TryResolveType(rc.CurrentMethodName+"_"+_tident.Name, ref _ts);
+                else rc.Resolver.TryResolveType(_tident.Name, ref _ts);
+            }
 
             if (exp != null)
             {

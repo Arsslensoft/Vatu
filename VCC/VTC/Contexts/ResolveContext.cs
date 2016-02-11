@@ -153,6 +153,7 @@ namespace VTC
         public int LocalStackIndex { get; set; }
 
       
+        public string CurrentMethodName{get;set;}
         public MethodSpec CurrentMethod { get { return Resolver.CurrentMethod; } set { Resolver.CurrentMethod = value; } }
 
         TypeSpec current_type;
@@ -172,6 +173,7 @@ namespace VTC
             Resolver.KnowType(BuiltinTypeSpec.Pointer);
             Resolver.KnowType(BuiltinTypeSpec.Void);
             Resolver.KnowType(BuiltinTypeSpec.Float);
+            Resolver.KnowType(BuiltinTypeSpec.Type);
         }
         void Init()
         {

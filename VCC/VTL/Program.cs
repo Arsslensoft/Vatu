@@ -14,10 +14,12 @@ namespace VTL
              {
                  try
                  {
-                     if (options.Target == Target.flat)
+                     if (options.Target == Target.flat && !options.IsBootloader)
                          lnk = new FlatLinker(options);
                      else if (options.Target == Target.tiny)
                          lnk = new TinyDosLinker(options);
+                     else if (options.Target == Target.flat && options.IsBootloader)
+                         lnk = new BootloaderLinker(options);
                      else
                          lnk = new VatuExecutableLinker(options);
 

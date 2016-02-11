@@ -116,7 +116,7 @@ namespace VTC.Core
                 }
 
                 if (Method == null)
-                    msig = new MemberSignature(rc.CurrentNamespace, _id.Name, tp.ToArray(), loc);
+                    msig = new MemberSignature(rc.CurrentNamespace, _id.Name, tp.ToArray(), Location);
 
             }
             else
@@ -129,7 +129,7 @@ namespace VTC.Core
                     return this;
                 }
                 if (Method == null)
-                    msig = new MemberSignature(rc.CurrentNamespace, _id.Name, tp.ToArray(), loc);
+                    msig = new MemberSignature(rc.CurrentNamespace, _id.Name, tp.ToArray(), Location);
             }
             if ((rc.CurrentScope & ResolveScopes.AccessOperation) == ResolveScopes.AccessOperation && rc.CurrentExtensionLookup != null)
             {
@@ -157,14 +157,14 @@ namespace VTC.Core
         bool MatchParameterTypes(ResolveContext rc)
         {
             for (int i = 0; i < Method.Parameters.Count; i++)
-                if (!TypeChecker.CompatibleTypes(Parameters[i].Type, Method.Parameters[i].MemberType))
+                if (!TypeChecker.CompatibleTypes(Method.Parameters[i].MemberType,Parameters[i].Type))
                     return false;
                 else if (Method.Parameters[i].IsReference)
                 {
                     LoadEffectiveAddressOp lea = new LoadEffectiveAddressOp();
-                    lea.loc = Parameters[i].loc;
+                    lea.position = Parameters[i].position;
                     Parameters[i] = new UnaryOperation(Parameters[i], lea);
-                    Parameters[i].loc = lea.loc;
+                    Parameters[i].position = lea.position;
                     Parameters[i] = (Expr)Parameters[i].DoResolve(rc);
 
                 }

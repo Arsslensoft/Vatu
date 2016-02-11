@@ -55,7 +55,7 @@ namespace VTC.Core
         public override SimpleToken DoResolve(ResolveContext rc)
         {
        
-                    ConstVar = new FieldSpec(rc.CurrentNamespace, "STRC_" + id, Modifiers.Const, Type, loc);
+                    ConstVar = new FieldSpec(rc.CurrentNamespace, "STRC_" + id, Modifiers.Const, Type, Location);
                     id++;
              
      

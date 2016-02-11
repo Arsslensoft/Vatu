@@ -255,7 +255,7 @@ namespace VTC.Core
             if(_mtype != null)
              method = new MethodSpec(rc.CurrentNamespace, OpName, mods, _mtype.Type, CallingConventions.StdCall, _fbd.ParamTypes.ToArray(), this.Location);
             else
-                method = new MethodSpec(rc.CurrentNamespace, OpName, mods, _casttype.Type, CallingConventions.StdCall, _fbd.ParamTypes.ToArray(), this.loc);
+                method = new MethodSpec(rc.CurrentNamespace, OpName, mods, _casttype.Type, CallingConventions.StdCall, _fbd.ParamTypes.ToArray(), this.Location);
 
             method.Parameters = Params.ToList<ParameterSpec>();
             if (!hasproto)

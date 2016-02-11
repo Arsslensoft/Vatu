@@ -48,7 +48,11 @@ namespace VTC.Core
             _def = edef;
 
         }
-
+        void UpdateTypes(List<EnumMemberSpec> mem,TypeSpec tp)
+        {
+            foreach (EnumMemberSpec em in _def.Members)
+                em.memberType = tp;
+        }
         void GetValues(List<ushort> UsedValues, List<EnumMemberSpec> mem)
         {
             // Get Values
@@ -134,16 +138,16 @@ namespace VTC.Core
 
             if (_def != null)
                 Size = _def.Size;
-            if (_def.Members.Count > 8)
+            if (IsFlags && _def.Members.Count > 8)
                 Size = 2;
-            else if (_def.Members.Count > 16)
+            else if (IsFlags && _def.Members.Count > 16)
                 ResolveContext.Report.Error(10, Location, "Flags based enum cannot hold more than 16 values");
             if (IsFlags)
                 GetValuesFlags(UsedValues, mem);
             else
                 GetValues(UsedValues, mem);
-
-            TypeName = new EnumTypeSpec(rc.CurrentNamespace, _name.Name, Size, mem, loc);
+            UpdateTypes(mem, Size == 2 ? BuiltinTypeSpec.UInt : BuiltinTypeSpec.Byte);
+            TypeName = new EnumTypeSpec(rc.CurrentNamespace, _name.Name, Size, mem, Location);
             TypeName.IsFlags = IsFlags;
             TypeName.Modifiers = _mod.ModifierList;
             if (TypeName.Members.Count >= 65536)

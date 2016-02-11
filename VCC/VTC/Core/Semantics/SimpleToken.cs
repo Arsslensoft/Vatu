@@ -6,6 +6,7 @@ using System.Text;
 
 namespace VTC.Core
 {
+    
     [Terminal("template")]
     [Terminal("throw")]
     [Terminal("ressource")]
@@ -97,8 +98,8 @@ namespace VTC.Core
     [Terminal("unchecked")]
     public class SimpleToken : SemanticToken, IResolve
     {
-        public Location loc;
-        public Location Location { get { loc = CompilerContext.TranslateLocation(position); return loc; } }
+        private Location _loc;
+        public Location Location { get { _loc = CompilerContext.TranslateLocation(position); return _loc; } }
 
         public virtual string Name { get { return symbol.Name; } }
 

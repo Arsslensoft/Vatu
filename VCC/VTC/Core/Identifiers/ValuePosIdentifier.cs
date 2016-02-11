@@ -18,7 +18,7 @@ namespace VTC.Core
          [Rule(@"<VALUE POS> ::= LOW")]
         public ValuePosIdentifier(SimpleToken vid)
         {
-            loc = vid.loc;
+         //   Location = vid.Location;
             _idName = vid.Name;
         }
 

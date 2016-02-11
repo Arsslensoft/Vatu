@@ -62,7 +62,7 @@ namespace VTC.Core
            if (!CompilerContext.CompilerOptions.FloatingPointEnabled)
                ResolveContext.Report.Error(0, Location, "Floating points are disabled by default use --float or -f to enable them");
          
-                   ConstVar = new FieldSpec(rc.CurrentNamespace, "FL_" + id, Modifiers.Const, Type, loc);
+                   ConstVar = new FieldSpec(rc.CurrentNamespace, "FL_" + id, Modifiers.Const, Type, Location);
 
                    id++;
        

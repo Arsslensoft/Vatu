@@ -30,7 +30,10 @@ namespace VTC
         }
  public override SimpleToken DoResolve(ResolveContext rc)
         {
-     
+            if (Left.Type == null)
+            {
+
+            }
             rc.Resolver.TryResolveMethod(Left.Type.NormalizedName + "_IndexedAccess", ref OvlrdOp, new TypeSpec[2] { Left.Type, BuiltinTypeSpec.UInt });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;

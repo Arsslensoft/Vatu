@@ -96,6 +96,7 @@
     <Compile Include="ComandLine\Extensions\CharExtensions.cs" />
     <Compile Include="ComandLine\Extensions\StringExtensions.cs" />
     <Compile Include="ComandLine\GlobalSuppressions.cs" />
+    <Compile Include="Linkers\BootloaderLinker.cs" />
     <Compile Include="Linkers\FlatLinker.cs" />
     <Compile Include="Base\IExecutableHeader.cs" />
     <Compile Include="ComandLine\Infrastructure\Assumes.cs" />

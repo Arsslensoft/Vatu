@@ -70,7 +70,7 @@ namespace VTC.Core
         [Rule(@"<INSTRUCTION> ::= StringLiteral ~';'")]
         public AsmInstruction(StringLiteral opc)
         {
-            loc = CompilerContext.TranslateLocation(position);
+          //  Location = CompilerContext.TranslateLocation(position);
             Value = opc.Value.GetValue().ToString();
         }
   
@@ -88,14 +88,14 @@ namespace VTC.Core
         [Rule(@"<INSTRUCTIONS> ::= <INSTRUCTION> <INSTRUCTIONS>")]
         public AsmInstructions(AsmInstruction a, AsmInstructions ains)
         {
-            loc = CompilerContext.TranslateLocation(position);
+           // Location = CompilerContext.TranslateLocation(position);
             nxt = ains;
             ins = a;
         }
         [Rule(@"<INSTRUCTIONS>  ::=  <INSTRUCTION> ")]
         public AsmInstructions(AsmInstruction a)
         {
-            loc = CompilerContext.TranslateLocation(position);
+          //  Location = CompilerContext.TranslateLocation(position);
             ins = a;
             nxt = null;
          

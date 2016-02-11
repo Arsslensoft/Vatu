@@ -17,7 +17,7 @@ namespace VTC
         }
         public static bool Equals(TypeSpec a, TypeSpec b)
         {
-            return a == b;
+            return a.Equals(b);
         }
         static bool IsPointerHolder(TypeSpec a, TypeSpec b)
         {
@@ -39,6 +39,8 @@ namespace VTC
                 return true;
             else if ((a.IsForeignType && !a.IsPointer) || (b.IsForeignType && !b.IsPointer))
                 return false;
+            else if (a.IsPointer && !a.IsArray && b.IsArray)
+                return true;
             else if (a.IsArray || b.IsArray)
                 return b.Equals(a);
 

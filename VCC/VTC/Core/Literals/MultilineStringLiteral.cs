@@ -20,7 +20,7 @@ namespace VTC.Core
            : base("")
        {
            string val = sl.Value.GetValue().ToString() + msl.Value.GetValue().ToString();
-           _value = new StringConstant(val, sl.loc);
+           _value = new StringConstant(val, sl.Location);
 
        }
 

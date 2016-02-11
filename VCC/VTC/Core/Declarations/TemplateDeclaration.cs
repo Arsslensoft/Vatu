@@ -1,4 +1,4 @@
-using VTC.Base.GoldParser.Semantic;
+﻿using VTC.Base.GoldParser.Semantic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,10 +16,10 @@ namespace VTC.Core.Declarations
         [Rule(@"<Template Decl>  ::=  <Mod> <Template Def> ~';' ")]
         public TemplateDeclaration(Modifier mod, TemplateDefinition def)
         {
-          
+
             _tdl = def;
             _mod = mod;
-     
+
         }
         [Rule(@"<Template Decl>  ::=  <Mod> <Template Def> ~sizeof <Integral Const> ~';' ")]
         public TemplateDeclaration(Modifier mod, TemplateDefinition def, Literal lit)
@@ -30,20 +30,20 @@ namespace VTC.Core.Declarations
             size = ushort.Parse(lit.Value.GetValue().ToString());
         }
 
-       public override bool Resolve(ResolveContext rc)
+        public override bool Resolve(ResolveContext rc)
         {
 
 
             return true;
 
         }
- public override SimpleToken DoResolve(ResolveContext rc)
+        public override SimpleToken DoResolve(ResolveContext rc)
         {
             _mod = (Modifier)_mod.DoResolve(rc);
             _tdl = (TemplateDefinition)_tdl.DoResolve(rc);
             foreach (TemplateTypeSpec ts in _tdl.Templates)
             {
-                TemplateTypeSpec tt = new TemplateTypeSpec(rc.CurrentNamespace, ts.Name, null, true, Location,(int)size);
+                TemplateTypeSpec tt = new TemplateTypeSpec(rc.CurrentNamespace, ts.Name, ts.Name[0], null, true, Location, (int)size);
                 tt.Modifiers = _mod.ModifierList;
 
                 rc.KnowType(tt);
@@ -54,7 +54,7 @@ namespace VTC.Core.Declarations
         }
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
-        
+
             return base.DoFlowAnalysis(fc);
         }
         public override bool Emit(EmitContext ec)

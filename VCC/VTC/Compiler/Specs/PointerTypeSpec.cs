@@ -23,13 +23,19 @@ namespace VTC
         {
             _size = 2;
         }
+
+        public PointerTypeSpec(Namespace ns, TypeSpec _basetype, TypeFlags _flags,int size)
+            : base(ns, _basetype.Name + "*"+size.ToString(), _basetype.Size, _basetype.BuiltinType, _basetype.Flags | TypeFlags.Pointer | _flags, _basetype.Modifiers, _basetype.Signature.Location, _basetype)
+        {
+            _size = 2;
+        }
         public static TypeSpec MakePointer(TypeSpec tp, int count)
         {
             if (count == 0)
                 return tp;
             else return new PointerTypeSpec(tp.NS, MakePointer(tp, count - 1));
         }
-
+       
         public bool Equals(PointerTypeSpec pt)
         {
             TypeSpec a=null, b=null;

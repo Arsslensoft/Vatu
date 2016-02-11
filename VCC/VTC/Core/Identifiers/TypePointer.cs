@@ -17,13 +17,13 @@ namespace VTC.Core
         [Rule(@"<Pointers> ::= ~'*' <Pointers>")]
         public TypePointer(TypePointer ptr)
         {
-            loc = CompilerContext.TranslateLocation(position);
+          //  Location = CompilerContext.TranslateLocation(position);
             _next = ptr;
         }
         [Rule(@"<Pointers> ::=  ")]
         public TypePointer()
         {
-            loc = CompilerContext.TranslateLocation(position);
+         //   Location = CompilerContext.TranslateLocation(position);
             _next = null;
         }
 

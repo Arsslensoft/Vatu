@@ -16,7 +16,7 @@ namespace VTC.Core
 
         public TemplateIdentifier(string idName)
         {
-            loc = CompilerContext.TranslateLocation(position);
+          //  Location = CompilerContext.TranslateLocation(position);
             _idName = idName.Remove(0,1);
         }
 

@@ -12,7 +12,7 @@ namespace VTC.Core
     {
         internal List<byte> _value;
         public ArrayConstant(byte[] b, Location loc)
-            : base(BuiltinTypeSpec.Byte.MakeArray(), loc)
+            : base(BuiltinTypeSpec.Byte.MakeArray(b.Length), loc)
         {
             _value = new List<byte>();
             _value .AddRange(b);

@@ -173,7 +173,7 @@ Comment Line  = '//'
     
          
 <Func ID>    ::= <Mod> <CallCV> <Type> ID
-              | <CallCV> <Type> ID
+              |  <CallCV> <Type> ID
               | <Type> ID
               | <Mod> <Type> ID
               ! Function Specs Support
@@ -236,9 +236,7 @@ Comment Line  = '//'
                   | <Mod> typedef <CallCV> delegate <Type> '(' ')' ID ';'   
                   
 <Template Decl> ::= <Mod> <Template Def> ';'
-                | <Mod> <Template Def> sizeof <Integral Const> ';'
-
-                            
+                | <Mod> <Template Def> sizeof <Integral Const> ';'                           
 <Inheritance> ::= extends <Types>
               | 
 ! ===================================================================
@@ -254,7 +252,7 @@ Comment Line  = '//'
 
 <Enum Val>     ::= Id
                  | Id '=' <Integral Const>
-   
+                 
 <Template Def> ::=   template '<' <Templates> '>'  
                 |   
 <Templates>    ::=  TemplateId ',' <Templates>
@@ -301,6 +299,7 @@ Comment Line  = '//'
              | TemplateId  
              | typeof Id
              | typeof '(' <Expression> ')'
+            
              
 <Scalar>   ::= byte
              | int
@@ -311,7 +310,7 @@ Comment Line  = '//'
              | string
              | pointer
              | float
-
+             | type
              
              
 <Pointers> ::= '*' <Pointers>
@@ -483,7 +482,7 @@ Comment Line  = '//'
                | new <Type> '(' <Expression> ')'
                | checked '(' <Expression> ')'
                | unchecked '(' <Expression> ')'
- 
+               | type '(' <Type> ')'
                
 
 <Declared Expression> ::=<Method Expr>     
@@ -493,7 +492,7 @@ Comment Line  = '//'
                 | this
                 | params
 <Method Expr>  ::= Id '(' <PARAM EXPR> ')' 
-                
+                !| Id '<' <Types> '>' '(' <PARAM EXPR> ')' 
                 
 <CONSTANT>    ::= <Integral Const> 
                | BooleanLiteral

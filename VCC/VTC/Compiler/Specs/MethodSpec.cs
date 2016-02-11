@@ -42,6 +42,7 @@ namespace VTC
        public virtual string Name
        {
            get { return _name; }
+          internal set { _name=value; }
        }
        public Namespace NS { get; set; }
        /// <summary>

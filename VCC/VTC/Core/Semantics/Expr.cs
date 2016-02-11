@@ -15,7 +15,7 @@ namespace VTC.Core
         [Rule("<Expression> ::= <Op Assign>")]
         public Expr(Expr expr)
         {
-            loc = expr.Location;
+          
             current = expr;
 
         }
@@ -42,12 +42,12 @@ namespace VTC.Core
         public Expr(TypeSpec tp, Location lc)
         {
             type = tp;
-            loc = lc;
+          //  Location = lc;
         }
         public Expr(Location lc)
         {
             type = null;
-            loc = lc;
+        //    Location = lc;
         }
         public Expr()
             : this(Location.Null)

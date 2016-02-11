@@ -71,7 +71,7 @@ namespace VTC.Core
             // reserve first param for extension
             if (_fbd._ext != null && !_fbd._ext.Static)
             {
-                ParameterSpec thisps = new ParameterSpec("this", method, _fbd._ext.ExtendedType, loc, 4, Modifiers.Ref);
+                ParameterSpec thisps = new ParameterSpec("this", method, _fbd._ext.ExtendedType, Location, 4, Modifiers.Ref);
                 Parameters.Insert(0, thisps);
             }
 
@@ -133,6 +133,7 @@ namespace VTC.Core
                 _fbd._b = (Block)_fbd._b.DoResolve(rc);
 
 
+         
             return this;
         }
          int GetNextIndex(ParameterSpec p)

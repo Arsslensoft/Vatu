@@ -16,7 +16,7 @@ namespace VTC.Core
 
         public Identifier(string idName)
         {
-            loc = CompilerContext.TranslateLocation(position);
+          
             _idName = idName;
         }
 

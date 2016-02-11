@@ -18,6 +18,7 @@ namespace VTL
         public string EntryPoint { get; set; }
         public uint Size { get; private set; }
         public uint Align { get; set; }
+        public bool Bootloader { get; set; }
         public List<Relocation<uint>> Relocations { get; private set; }
         public List<SymbolEntry<uint>> Interrupts { get; private set; }
 
@@ -45,6 +46,7 @@ namespace VTL
             EntryPoint = opt.EntryPoint;
             Origin = opt.Origin;
             interrupt_enabled = opt.IsInterrupt;
+            Bootloader = opt.IsBootloader;
             Align = opt.Align;
             // Map Object Files
             LoadObjectsAndMap(opt.Libraries);
@@ -325,6 +327,7 @@ namespace VTL
         }
         public virtual void WriteFooter()
         {
+            
             return;
         }
         public void FillWithByte(int off, byte b, int size)

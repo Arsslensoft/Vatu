@@ -15,7 +15,7 @@ namespace VTC.Core
         [Rule(@"<QualifiedName> ::= <Name> ~'::' Id")]
         public QualifiedNameIdentifier(NameIdentifier nid,Identifier idName)
         {
-            loc = CompilerContext.TranslateLocation(position);
+           // Location = CompilerContext.TranslateLocation(position);
             _idName = nid.Name + "::"+idName.Name ;
         }
       

@@ -70,7 +70,7 @@ namespace VTC.Core
 
         public Operator()
         {
-            loc = CompilerContext.TranslateLocation(position);
+            //Location = CompilerContext.TranslateLocation(position);
         }
        
         public virtual bool Emit(EmitContext ec)

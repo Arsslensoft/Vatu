@@ -12,12 +12,12 @@ namespace VTC.Core
 
         public DeclarationToken(Location lc)
         {
-            loc = lc;
+          //  Location = lc;
         }
         public DeclarationToken()
             : this(Location.Null)
         {
-            loc = CompilerContext.TranslateLocation(position);
+          
         }
 
 

@@ -32,13 +32,15 @@ namespace VTC.Core
         if(_tid != null){
             _tid = (TemplateSequence)_tid.DoResolve(rc);
             Templates = new List<TemplateTypeSpec>();
+           
             foreach (TemplateIdentifier t in _tid.Templates)
             {
+                             
                 TypeSpec ts = null;
                 rc.Resolver.TryResolveType(t.Name, ref ts);
                 if (ts != null)
                     ResolveContext.Report.Error(0, Location, "Duplicate template definition or type conflict");
-                else Templates.Add(new TemplateTypeSpec(rc.CurrentNamespace, t.Name, rc.CurrentType, rc.CurrentType == null, Location));
+                else Templates.Add(new TemplateTypeSpec(rc.CurrentNamespace, t.Name,t.Name[0], rc.CurrentType, rc.CurrentType == null, Location));
             }
         }
             return this;

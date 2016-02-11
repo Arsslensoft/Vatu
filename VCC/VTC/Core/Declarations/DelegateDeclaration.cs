@@ -54,7 +54,7 @@ namespace VTC.Core.Declarations
  public override SimpleToken DoResolve(ResolveContext rc)
         {
             _mod = (Modifier)_mod.DoResolve(rc);
-            TypeName = new DelegateTypeSpec(rc.CurrentNamespace, _name.Name, _ret.Type, new List<TypeSpec>(), _ccv.CallingConvention, _mod.ModifierList, loc);
+            TypeName = new DelegateTypeSpec(rc.CurrentNamespace, _name.Name, _ret.Type, new List<TypeSpec>(), _ccv.CallingConvention, _mod.ModifierList, Location);
        
             rc.KnowType(TypeName);
 
@@ -82,7 +82,7 @@ namespace VTC.Core.Declarations
             }
             if (_ccv != null && _ccv.CallingConvention == CallingConventions.VatuSysCall)
                 ResolveContext.Report.Error(0, Location, "Vatu system call can't be implemented using delegates");
-            DelegateTypeSpec NT = new DelegateTypeSpec(rc.CurrentNamespace, _name.Name, _ret.Type, tp, _ccv.CallingConvention, _mod.ModifierList, loc);
+            DelegateTypeSpec NT = new DelegateTypeSpec(rc.CurrentNamespace, _name.Name, _ret.Type, tp, _ccv.CallingConvention, _mod.ModifierList, Location);
 
             rc.UpdateType(TypeName, NT);
 

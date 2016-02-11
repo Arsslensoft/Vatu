@@ -67,7 +67,7 @@ namespace VTC.Core
             else
             {
                 cv = true;
-                return ConstantExpression.CreateConstantFromValueExplicitly(type, this.GetValue(), loc);
+                return ConstantExpression.CreateConstantFromValueExplicitly(type, this.GetValue(), Location);
             }
         }
         public void ConvertArrays(byte[] src, ref byte[] dst, int typesize)
@@ -114,7 +114,7 @@ namespace VTC.Core
             else
             {
                 cv = true;
-                return ConstantExpression.CreateConstantFromValue(type, this.GetValue(), loc);
+                return ConstantExpression.CreateConstantFromValue(type, this.GetValue(), Location);
             }
         }
         public static bool CanConvert(TypeSpec src, TypeSpec dst)
@@ -177,6 +177,8 @@ namespace VTC.Core
                     return new BoolConstant(bool.Parse(v.ToString()), loc);
                 case BuiltinTypes.Pointer:
                     return new PointerConstant(ushort.Parse(v.ToString()), loc);
+                case BuiltinTypes.Type:
+                    return new UIntConstant(ushort.Parse(v.ToString()), loc);
                 case BuiltinTypes.Float:
                     return new FloatConstant(float.Parse(v.ToString()), loc);
             }
@@ -196,6 +198,8 @@ namespace VTC.Core
                 case BuiltinTypes.Int:
                     return new IntConstant((short)l, loc);
                 case BuiltinTypes.Pointer:
+                    return new PointerConstant((ushort)l, loc);
+                case BuiltinTypes.Type:
                 case BuiltinTypes.UInt:
                     return new UIntConstant((ushort)l, loc);
                 case BuiltinTypes.SByte:

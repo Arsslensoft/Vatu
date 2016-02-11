@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>-a 4 --int -o "C:\Users\Arsslen Idadi\Desktop\OSTEST\LINKERTEST.com" -t tiny --origin 256 -l "C:\Users\Arsslen Idadi\Desktop\OSTEST\main.o" "C:\Users\Arsslen Idadi\Desktop\OSTEST\std.o" "C:\Users\Arsslen Idadi\Desktop\OSTEST\ArraysTest.o" "C:\Users\Arsslen Idadi\Desktop\OSTEST\BitAccessTest.o" "C:\Users\Arsslen Idadi\Desktop\OSTEST\OperatorsTest.o" "C:\Users\Arsslen Idadi\Desktop\OSTEST\AccessTest.o" "C:\Users\Arsslen Idadi\Desktop\OSTEST\UnitTest.o" "C:\Users\Arsslen Idadi\Desktop\OSTEST\MatrixTest.o" "C:\Users\Arsslen Idadi\Desktop\OSTEST\MatrixData.o" "C:\Users\Arsslen Idadi\Desktop\OSTEST\VariadicTest.o" "C:\Users\Arsslen Idadi\Desktop\OSTEST\FloatingPointTest.o" "C:\Users\Arsslen Idadi\Desktop\OSTEST\CCVTest.o" --int</StartArguments>
+    <StartArguments>-a 4 --int -o "C:\Users\Arsslen Idadi\Documents\Projects\Bootloader\Bootloader\bin\Debug\Bootloader.bin" -t flat --origin 0 -l "C:\Users\Arsslen Idadi\Documents\Projects\Bootloader\Bootloader\bin\Debug\bootloader.o" "C:\Users\Arsslen Idadi\Documents\Projects\Bootloader\Bootloader\bin\Debug\std.o" --boot --origin 0</StartArguments>
   </PropertyGroup>
 </Project>

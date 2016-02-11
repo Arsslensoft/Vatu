@@ -72,7 +72,7 @@ namespace VTC.Core
         void ResolveField(ResolveContext rc, VariableDefinition vadef)
         {
             
-            vadef.FieldOrLocal = new FieldSpec(rc.CurrentNamespace, vadef._id.Name, mods, Type, loc);
+            vadef.FieldOrLocal = new FieldSpec(rc.CurrentNamespace, vadef._id.Name, mods, Type, Location);
             // Childs
 
 
@@ -133,7 +133,7 @@ namespace VTC.Core
         {
          
 
-            vadef.FieldOrLocal = new VarSpec(rc.CurrentNamespace, vadef._id.Name, rc.CurrentMethod, Type, loc, rc.Resolver.KnownLocalVars.Count, mods);
+            vadef.FieldOrLocal = new VarSpec(rc.CurrentNamespace, vadef._id.Name, rc.CurrentMethod, Type, Location, rc.Resolver.KnownLocalVars.Count, mods);
             ((VarSpec)vadef.FieldOrLocal).Initialized = (vadef.expr != null);
 
            
@@ -156,7 +156,7 @@ namespace VTC.Core
        
 
 
-            vadef.Member = new TypeMemberSpec(rc.CurrentNamespace, vadef._id.Name, rc.CurrentType, Type, loc, 0);
+            vadef.Member = new TypeMemberSpec(rc.CurrentNamespace, vadef._id.Name, rc.CurrentType, Type, Location, 0);
 
             // value
             if (vadef.expr is ConstantExpression)

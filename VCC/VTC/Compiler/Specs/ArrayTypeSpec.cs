@@ -13,10 +13,11 @@ namespace VTC
     public class ArrayTypeSpec : PointerTypeSpec, IEquatable<TypeSpec>
     {
         public int ArrayCount { get; set; }
-        public ArrayTypeSpec(Namespace ns, TypeSpec _basetype, int size = 0)
-            : base(ns,_basetype, TypeFlags.Array)
+        public ArrayTypeSpec(Namespace ns, TypeSpec _basetype, int size)
+            : base(ns,_basetype, TypeFlags.Array, size)
         {
             ArrayCount = size;
+         
             _size = _basetype.Size;
         }
         public bool Equals(TypeSpec ar)

@@ -99,7 +99,7 @@ namespace VTC.Core
                 {
                     if (par._id != null)
                     {
-                        ParameterSpec p = new ParameterSpec("param_" + paid, method, par._id.Type, par.loc, 4);
+                        ParameterSpec p = new ParameterSpec("param_" + paid, method, par._id.Type, par.Location, 4);
                         Parameters.Add(p);
                         Params.Push(p);
                         tp.Add(p.MemberType);
@@ -140,7 +140,7 @@ namespace VTC.Core
                 if (!ext.Static)
                 {
                    
-                    ParameterSpec thisps = new ParameterSpec("this", method, ext.ExtendedType, loc, 4);
+                    ParameterSpec thisps = new ParameterSpec("this", method, ext.ExtendedType, Location, 4);
                     Parameters.Insert(0, thisps);
                     method.Parameters = Parameters;
                 }
@@ -150,7 +150,6 @@ namespace VTC.Core
             
             }
             else rc.KnowMethod(method);
-
 
             return this;
         }

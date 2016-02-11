@@ -62,7 +62,7 @@ namespace VTC
         else if (Name == name)
         {
             if (param == null)
-                return false;
+                return true;
             else
             {
                 if (param.Length != Parameters.Count)

@@ -10,7 +10,7 @@ namespace VTC.Core
 
         public Definition()
         {
-            loc = CompilerContext.TranslateLocation(position);
+           
         }
    
         public virtual bool Emit(EmitContext ec)

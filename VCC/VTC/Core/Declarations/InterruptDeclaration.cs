@@ -23,7 +23,7 @@ namespace VTC.Core
         [Rule(@"<Inter Decl> ::= ~interrupt <Integral Const> <Block>")]
         public InterruptDeclaration(Literal hlit, Block b)
         {
-            loc = hlit.Location;
+          //  Location = hlit.Location;
             interrupt = ushort.Parse(hlit.Value.GetValue().ToString());
             _b = b;
             ItName = "INTERRUPT_" + interrupt.ToString("X2") + "H";
@@ -49,7 +49,7 @@ namespace VTC.Core
 
             if (!CompilerContext.CompilerOptions.IsInterrupt)
                 ResolveContext.Report.Error(0, Location, "Interrupt definition disabled, check interrupt option");
-            method = new MethodSpec(rc.CurrentNamespace, ItName, mods, BuiltinTypeSpec.Void, CallingConventions.StdCall, null, this.loc);
+            method = new MethodSpec(rc.CurrentNamespace, ItName, mods, BuiltinTypeSpec.Void, CallingConventions.StdCall, null, this.Location);
 
             rc.KnowMethod(method);
             rc.CurrentMethod = method;

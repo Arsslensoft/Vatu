@@ -52,11 +52,14 @@ namespace VTC
             Reset(String);
             Reset(Pointer);
             Reset(Float);
+            Reset(Type);
         }
         public static BuiltinTypeSpec Byte = new BuiltinTypeSpec("byte", BuiltinTypes.Byte);
         public static BuiltinTypeSpec SByte = new BuiltinTypeSpec("sbyte", BuiltinTypes.SByte);
         public static BuiltinTypeSpec Int = new BuiltinTypeSpec("int", BuiltinTypes.Int);
         public static BuiltinTypeSpec UInt = new BuiltinTypeSpec("uint", BuiltinTypes.UInt);
+        public static BuiltinTypeSpec Type = new BuiltinTypeSpec("type", BuiltinTypes.Type);
+
 
         public static BuiltinTypeSpec Pointer = new BuiltinTypeSpec("pointer", BuiltinTypes.Pointer, TypeFlags.Pointer);
         public static BuiltinTypeSpec Bool = new BuiltinTypeSpec("bool", BuiltinTypes.Bool);

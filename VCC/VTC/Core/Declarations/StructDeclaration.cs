@@ -62,9 +62,9 @@ namespace VTC.Core
             if (_ihd != null)
             {
                 _ihd = (InheritanceDefinition)_ihd.DoResolve(rc);
-                TypeName = new StructTypeSpec(rc.CurrentNamespace, _name.Name, new List<TypeMemberSpec>(), _ihd.Inherited, templates, loc);
+                TypeName = new StructTypeSpec(rc.CurrentNamespace, _name.Name, new List<TypeMemberSpec>(), _ihd.Inherited, templates, Location);
             }
-            else TypeName = new StructTypeSpec(rc.CurrentNamespace, _name.Name, new List<TypeMemberSpec>(), new List<StructTypeSpec>(), templates, loc);
+            else TypeName = new StructTypeSpec(rc.CurrentNamespace, _name.Name, new List<TypeMemberSpec>(), new List<StructTypeSpec>(), templates, Location);
             rc.KnowType(TypeName);
             _def = (StructDefinition)_def.DoResolve(rc);
             if (_def != null)
@@ -80,7 +80,7 @@ namespace VTC.Core
                     foreach (TypeMemberSpec m in st.Members)
                     {
                        
-                        TypeMemberSpec newm = new TypeMemberSpec(TypeName.NS, m.Name, TypeName, m.memberType, loc, idx);
+                        TypeMemberSpec newm = new TypeMemberSpec(TypeName.NS, m.Name, TypeName, m.memberType, Location, idx);
                         newm.Index = idx;
                         idx += newm.MemberType.GetSize(newm.MemberType);
                         if (members.Contains(newm))
@@ -114,8 +114,8 @@ namespace VTC.Core
 
        
             if(_ihd != null)
-             NewType = new StructTypeSpec(rc.CurrentNamespace, _name.Name, _def.Members, _ihd.Inherited,templates, loc);
-            else NewType = new StructTypeSpec(rc.CurrentNamespace, _name.Name, _def.Members, new List<StructTypeSpec>(), templates, loc);
+             NewType = new StructTypeSpec(rc.CurrentNamespace, _name.Name, _def.Members, _ihd.Inherited,templates, Location);
+            else NewType = new StructTypeSpec(rc.CurrentNamespace, _name.Name, _def.Members, new List<StructTypeSpec>(), templates, Location);
            
             NewType.Modifiers = _mod.ModifierList;
             foreach (int id in tobeupdated)

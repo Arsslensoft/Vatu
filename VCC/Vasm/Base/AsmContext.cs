@@ -13,6 +13,7 @@ namespace Vasm
        public bool IsLibrary { get; set; }
        public bool IsFloat { get; set; }
        public bool IsVTExec { get; set; }
+       public bool IsBootLoader { get; set; }
        public int OLevel { get; set; }
        private static AsmContext mCurrentInstance;
        Stack<RegistersEnum> rg = new Stack<RegistersEnum>();
@@ -506,8 +507,17 @@ namespace Vasm
        }
        public virtual void EmitFinalize(AssemblyWriter writer)
        {
+       
+
+           if (IsBootLoader)
+           {
+               writer.WriteLine("________________VATU__BOOTLOADER_SIGNATURE:");
+               writer.WriteLine("times 510 - ($-$$) db 0");
+               writer.WriteLine("dw 0xaa55");
+           }
+
            if (!IsLibrary)
-           writer.WriteLine("PROGRAM_END:");
+               writer.WriteLine("PROGRAM_END:");
        }
     
        public virtual void Emit(AssemblyWriter writer)

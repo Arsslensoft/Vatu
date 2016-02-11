@@ -53,7 +53,7 @@ namespace VTC.Core
            else _tdef = null;
 
 
-           TypeName = new UnionTypeSpec(rc.CurrentNamespace, _name.Name, new List<TypeMemberSpec>(), templates, loc);
+           TypeName = new UnionTypeSpec(rc.CurrentNamespace, _name.Name, new List<TypeMemberSpec>(), templates, Location);
             rc.KnowType(TypeName);
             _def = (StructDefinition)_def.DoResolve(rc);
             if (_def != null)
@@ -73,7 +73,7 @@ namespace VTC.Core
                 i++;
             }
 
-            UnionTypeSpec NewType = new UnionTypeSpec(rc.CurrentNamespace, _name.Name, _def.Members, templates, loc);
+            UnionTypeSpec NewType = new UnionTypeSpec(rc.CurrentNamespace, _name.Name, _def.Members, templates, Location);
             NewType.Modifiers = _mod.ModifierList;
             foreach (int id in tobeupdated)
                 _def.Members[id].MemberType.MakeBase(ref _def.Members[id].memberType, NewType);

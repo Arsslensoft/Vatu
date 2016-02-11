@@ -7,8 +7,8 @@ using System.Text;
 
 namespace VTC.Core
 {
-	
-	public class MethodIdentifier : Identifier
+
+    public class MethodIdentifier : Identifier
     {
         public Identifier Id { get; set; }
         public TypeToken TType { get; set; }
@@ -35,7 +35,7 @@ namespace VTC.Core
             CCV = ccv;
         }
         [Rule(@"<Func ID> ::= <Type> Id")]
-        public MethodIdentifier( TypeToken type, Identifier id)
+        public MethodIdentifier(TypeToken type, Identifier id)
             : base(id.Name)
         {
             Id = id;
@@ -44,7 +44,7 @@ namespace VTC.Core
         }
 
         [Rule(@"<Func ID> ::= <Mod> <CallCV> <Type> Id")]
-        public MethodIdentifier(Modifier mod,CallingCV ccv, TypeToken type, Identifier id)
+        public MethodIdentifier(Modifier mod, CallingCV ccv, TypeToken type, Identifier id)
             : base(id.Name)
         {
             Id = id;
@@ -64,7 +64,7 @@ namespace VTC.Core
 
         // Function Specs
         [Rule(@"<Func ID> ::= <Func Specs> <CallCV> <Type> Id")]
-        public MethodIdentifier(FunctionSpecifierSequence fs,CallingCV ccv, TypeToken type, Identifier id)
+        public MethodIdentifier(FunctionSpecifierSequence fs, CallingCV ccv, TypeToken type, Identifier id)
             : base(id.Name)
         {
             Id = id;
@@ -73,7 +73,7 @@ namespace VTC.Core
             _fsp = fs;
         }
         [Rule(@"<Func ID> ::= <Func Specs> <Type> Id")]
-        public MethodIdentifier(FunctionSpecifierSequence fs,TypeToken type, Identifier id)
+        public MethodIdentifier(FunctionSpecifierSequence fs, TypeToken type, Identifier id)
             : base(id.Name)
         {
             Id = id;
@@ -93,7 +93,7 @@ namespace VTC.Core
             _fsp = fs;
         }
         [Rule(@"<Func ID> ::= <Mod> <Func Specs> <Type> Id")]
-        public MethodIdentifier(Modifier mod,FunctionSpecifierSequence fs, TypeToken type, Identifier id)
+        public MethodIdentifier(Modifier mod, FunctionSpecifierSequence fs, TypeToken type, Identifier id)
             : base(id.Name)
         {
             Id = id;
@@ -103,13 +103,13 @@ namespace VTC.Core
             _fsp = fs;
         }
 
-       public override bool Resolve(ResolveContext rc)
+        public override bool Resolve(ResolveContext rc)
         {
             TType.Resolve(rc);
 
             return base.Resolve(rc);
         }
- public override SimpleToken DoResolve(ResolveContext rc)
+        public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (_mod != null)
             {
@@ -128,12 +128,12 @@ namespace VTC.Core
             base.Type = TType.Type;
             if (CCV != null)
                 CCV = (CallingCV)CCV.DoResolve(rc);
-         
+
             return this;
         }
-       
+
     }
 
-	
-	
+
+
 }

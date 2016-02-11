@@ -159,7 +159,7 @@ namespace VTC
                     if (!float_to_int)
                     {
                         LoadEffectiveAddressOp lea = new LoadEffectiveAddressOp();
-                        lea.loc = FloatAdr.loc;
+                        lea.position = FloatAdr.position;
                         _target = new UnaryOperation(_target, lea);
 
                         _target = (Expr)_target.DoResolve(rc);
@@ -464,13 +464,13 @@ namespace VTC
                 nofix = true;
                 return true;
             }
-            else if (Type.IsForeignType && _target.Type.IsTemplate && Type.Size ==_target.Type.Size)
+            else if ( _target.Type.IsTemplate && Type.Size ==_target.Type.Size)
             {
                 _target.Type = Type;
                 nofix = true;
                 return true;
             }
-            else if (_target.Type.IsForeignType && Type.IsTemplate && Type.Size == _target.Type.Size)
+            else if (Type.IsTemplate && Type.Size == _target.Type.Size)
             {
                 _target.Type = Type;
                 nofix = true;

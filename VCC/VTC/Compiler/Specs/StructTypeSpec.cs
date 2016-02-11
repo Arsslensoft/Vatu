@@ -87,6 +87,9 @@ namespace VTC
             List<TypeMemberSpec> tmp = new List<TypeMemberSpec>();
             StructTypeSpec newsts = new StructTypeSpec(NS,Name, new List<TypeMemberSpec>(), Inherited,new List<TemplateTypeSpec>(), Signature.Location);
             newsts.Signature = new MemberSignature(NS, Name,type.ToArray(),Signature.Location);
+            newsts.ExtendedMethods = this.ExtendedMethods;
+            newsts.ExtendedFields = this.ExtendedFields;
+            newsts.Name = newsts.Signature.NoNamespaceSignature;
             int midx = 0;
             foreach (TypeMemberSpec m in Members)
             {
@@ -98,6 +101,14 @@ namespace VTC
                         return null;
                     else mt = type[idx];
                 }
+                else if (mt.IsStruct && (mt.IsPointer || mt.IsArray))
+                    mt = mt.CloneBase(mt, newsts, this);
+                else if (mt.IsStruct)
+                    mt = (mt as StructTypeSpec).CopyWithTemplate(type);
+                else if (mt.IsUnion)
+                    mt = (mt as UnionTypeSpec).CopyWithTemplate(type);
+
+
                 TypeMemberSpec nm = new TypeMemberSpec(m.NS, m.Name, newsts, mt, m.Signature.Location, m.Index);
                 nm.Index = midx;
                 midx += nm.MemberType.GetSize(nm.MemberType);

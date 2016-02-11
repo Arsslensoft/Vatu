@@ -13,7 +13,7 @@ namespace VTC.Core
     {
        TypeToken _type;
 
-      
+        [Rule(@"<Scalar>   ::= type")]
         [Rule(@"<Scalar>   ::= byte")]
         [Rule(@"<Scalar>   ::= int")]
         [Rule(@"<Scalar>   ::= uint")]

@@ -12,6 +12,9 @@ namespace VTC
     /// </summary>
     public class TypeSpec : MemberSpec, IEquatable<TypeSpec>
     {
+     
+        public static int TypeKind = 0;
+        public static Dictionary<string, ushort> KindsCache = new Dictionary<string, ushort>();
         BuiltinTypes _bt;
         TypeSpec _base;
         TypeFlags _flags;
@@ -23,8 +26,12 @@ namespace VTC
             {
                 return GetTypeName(this);
             }
+            internal set
+            {
+                _name = value;
+            }
         }
-      
+        public ushort TypeDescriptor { get; private set; }
         public byte FloatSizeBits
         {
             get
@@ -183,6 +190,13 @@ namespace VTC
             }
 
         }
+        public bool IsType
+        {
+            get
+            {
+                return _bt == BuiltinTypes.Type;
+            }
+        }
         public bool IsUnknown
         {
             get
@@ -256,6 +270,7 @@ namespace VTC
                     case BuiltinTypes.UInt:
                     case  BuiltinTypes.String:
                     case BuiltinTypes.Pointer:
+                    case BuiltinTypes.Type:
                         return 2;
 
 
@@ -284,6 +299,7 @@ namespace VTC
                     case BuiltinTypes.UInt:
                     case BuiltinTypes.String:
                     case BuiltinTypes.Pointer:
+                    case BuiltinTypes.Type:
                         return 2;
 
 
@@ -306,7 +322,14 @@ namespace VTC
             _flags = flags;
             _base = basetype;
             _size = GetSizeBt(this);
+            if (KindsCache.ContainsKey(Signature.Signature))
+                TypeDescriptor = KindsCache[Signature.Signature];
+            else
+            {
 
+                TypeDescriptor = (ushort)TypeKind++;
+                KindsCache.Add(Signature.Signature, TypeDescriptor);
+            }
             StaticExtendedMethods = new List<MethodSpec>();
             ExtendedFields = new List<FieldSpec>();
             ExtendedMethods = new List<MethodSpec>();
@@ -321,7 +344,14 @@ namespace VTC
             _flags = flags;
             _base = basetype;
             _size = GetSizeBt(this);
-         
+            if (KindsCache.ContainsKey(Signature.Signature))
+                TypeDescriptor = KindsCache[Signature.Signature];
+            else
+            {
+
+                TypeDescriptor = (ushort)TypeKind++;
+                KindsCache.Add(Signature.Signature, TypeDescriptor);
+            }
             StaticExtendedMethods = new List<MethodSpec>();
             ExtendedFields = new List<FieldSpec>();
             ExtendedMethods = new List<MethodSpec>();
@@ -334,7 +364,14 @@ namespace VTC
             _flags = flags;
             _base = basetype;
             _size = size;
-   
+            if (KindsCache.ContainsKey(Signature.Signature))
+                TypeDescriptor = KindsCache[Signature.Signature];
+            else
+            {
+
+                TypeDescriptor = (ushort)TypeKind++;
+                KindsCache.Add(Signature.Signature, TypeDescriptor);
+            }
             StaticExtendedMethods = new List<MethodSpec>();
             ExtendedFields = new List<FieldSpec>();
             ExtendedMethods = new List<MethodSpec>();
@@ -344,9 +381,9 @@ namespace VTC
         {
             return new PointerTypeSpec(NS, this);
         }
-        public TypeSpec MakeArray()
+        public TypeSpec MakeArray(int size)
         {
-            return new TypeSpec(NS, Name, _bt, _flags | TypeFlags.Pointer | TypeFlags.Array, Modifiers, _sig.Location);
+            return new ArrayTypeSpec(NS, this, size);
         }
         public string GetTypeName(TypeSpec tp)
         {
@@ -370,6 +407,19 @@ namespace VTC
             else  if (ts.BaseType != null)
                 MakeBase(ref ts._base, tp);
             else tp = ts;
+        }
+        public TypeSpec CloneBase(TypeSpec t, TypeSpec dst, TypeSpec src)
+        {
+            if (t.BaseType == null && src.Equals(t))
+                return dst;
+            else if (t.BaseType == null && !src.Equals(t))
+                return t;
+            else if (t is PointerTypeSpec)
+                return CloneBase(t.BaseType, dst, src).MakePointer();
+            else if (t is ArrayTypeSpec)
+                return CloneBase(t.BaseType, dst, src).MakeArray((t as ArrayTypeSpec).ArrayCount);
+            else return CloneBase(t.BaseType, dst, src);
+
         }
         public void GetBase(TypeSpec ts, ref TypeSpec tp)
         {

@@ -58,7 +58,9 @@ HelpText = "Origin")]
        [Option("int", Required = false, DefaultValue = false,
 HelpText = "Interrupts install before entry point")]
        public bool IsInterrupt { get; set; }
-
+       [Option("boot", Required = false, DefaultValue = false,
+HelpText = "Bootloader")]
+       public bool IsBootloader { get; set; }
    
        [Option('o', "out", Required = true, DefaultValue = "",
 HelpText = "Output file")]

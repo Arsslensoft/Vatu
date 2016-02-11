@@ -45,7 +45,7 @@ namespace VTC.Core.Declarations
             if (opdef.IsBinary)
                 val = opdef.Binary.Value.GetValue().ToString();
             else val = opdef.Unary.Value.GetValue().ToString();
-            ops = new OperatorSpec(rc.CurrentNamespace, _name, val, _mod.ModifierList, loc);
+            ops = new OperatorSpec(rc.CurrentNamespace, _name, val, _mod.ModifierList, Location);
             ops.IsBinary = opdef.IsBinary;
             ops.IsLogic = islogic;
             rc.Resolver.KnowOperator(ops);

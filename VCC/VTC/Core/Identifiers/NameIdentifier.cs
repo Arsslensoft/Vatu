@@ -15,19 +15,19 @@ namespace VTC.Core
         [Rule(@"<Name> ::= Id")]
         public NameIdentifier(Identifier idName)
         {
-            loc = CompilerContext.TranslateLocation(position);
+           // Location = CompilerContext.TranslateLocation(position);
             _idName = idName.Name;
         }
         [Rule(@"<Name> ::= ~global")]
         public NameIdentifier()
         {
-            loc = CompilerContext.TranslateLocation(position);
+         //   Location = CompilerContext.TranslateLocation(position);
             _idName = "global";
         }
         [Rule(@"<Name> ::= <QualifiedName>")]
         public NameIdentifier(QualifiedNameIdentifier idName)
         {
-            loc = CompilerContext.TranslateLocation(position);
+            //Location = CompilerContext.TranslateLocation(position);
             _idName = idName.Name;
         }
 

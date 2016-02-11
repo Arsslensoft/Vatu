@@ -18,6 +18,7 @@ namespace VTC.Core
     [Terminal("bool")]
     [Terminal("pointer")]
     [Terminal("float")]
+    [Terminal("type")]
     public class TypeToken : SimpleToken
     {
        protected TypeSpec _ts;
@@ -36,7 +37,7 @@ namespace VTC.Core
         }
         public TypeToken()
         {
-            loc = CompilerContext.TranslateLocation(position);
+          //  Location = CompilerContext.TranslateLocation(position);
 
         }
 
@@ -54,7 +55,7 @@ namespace VTC.Core
         {
              rc.Resolver.TryResolveType(this.symbol.Name,ref _ts);
              if (_ts == null)
-                 ResolveContext.Report.Error(0, loc, "Unresolved type");
+                 ResolveContext.Report.Error(0, Location, "Unresolved type");
             return this;
         }
     }

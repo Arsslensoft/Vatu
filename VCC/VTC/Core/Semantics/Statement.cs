@@ -11,7 +11,7 @@ namespace VTC.Core
 
         public Statement()
         {
-            loc = CompilerContext.TranslateLocation(position);
+          
         }
 
    

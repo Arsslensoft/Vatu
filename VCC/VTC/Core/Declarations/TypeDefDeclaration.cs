@@ -35,7 +35,7 @@ namespace VTC.Core
         {
             _mod = (Modifier)_mod.DoResolve(rc);
             _typedef = (TypeIdentifier)_typedef.DoResolve(rc);
-            TypeName = new TypeSpec(rc.CurrentNamespace, _name.Name, _typedef.Type.Size, BuiltinTypes.Unknown, TypeFlags.TypeDef, Modifiers.NoModifier, loc, _typedef.Type);
+            TypeName = new TypeSpec(rc.CurrentNamespace, _name.Name, _typedef.Type.Size, BuiltinTypes.Unknown, TypeFlags.TypeDef, Modifiers.NoModifier, Location, _typedef.Type);
             TypeName.Modifiers = _mod.ModifierList;
             rc.KnowType(TypeName);
             return this;

@@ -12,7 +12,7 @@ namespace VTC.Core
         [Rule("<Namespace> ::= ~namespace <Name> ")]
         public NamespaceDeclaration(NameIdentifier id)
         {
-            Namespace = new Namespace(id.Name, id.loc);
+            Namespace = new Namespace(id.Name, id.Location);
 
         }
       
