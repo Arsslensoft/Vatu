@@ -16,6 +16,7 @@ namespace VTC
         public List<TypeMemberSpec> Members { get; set; }
         public List<StructTypeSpec> Inherited { get; private set; }
         public List<TemplateTypeSpec> Templates { get; set; }
+        public StructTypeSpec Primitive { get; set; }
 
         public StructTypeSpec(Namespace ns,string name, List<TypeMemberSpec> mem,List<StructTypeSpec> ihd,List<TemplateTypeSpec> templates, Location loc)
             : base(ns,name, BuiltinTypes.Unknown, TypeFlags.Struct, Modifiers.NoModifier, loc)
@@ -24,7 +25,7 @@ namespace VTC
             Size = 0;
             Templates = templates;
             Inherited = ihd;
-
+            IsTemplateBased = templates.Count > 0;
             foreach (TypeMemberSpec m in mem)
                 Size += GetSize( m.MemberType);
 
@@ -87,9 +88,8 @@ namespace VTC
             List<TypeMemberSpec> tmp = new List<TypeMemberSpec>();
             StructTypeSpec newsts = new StructTypeSpec(NS,Name, new List<TypeMemberSpec>(), Inherited,new List<TemplateTypeSpec>(), Signature.Location);
             newsts.Signature = new MemberSignature(NS, Name,type.ToArray(),Signature.Location);
-            newsts.ExtendedMethods = this.ExtendedMethods;
-            newsts.ExtendedFields = this.ExtendedFields;
-            newsts.Name = newsts.Signature.NoNamespaceSignature;
+            newsts.Name = newsts.Signature.NoNamespaceTypeSignature;
+            newsts.Primitive = this;
             int midx = 0;
             foreach (TypeMemberSpec m in Members)
             {
@@ -119,6 +119,9 @@ namespace VTC
             newsts = new StructTypeSpec(NS, Name, tmp, Inherited, new List<TemplateTypeSpec>(),Signature.Location);
             newsts.Signature = new MemberSignature(NS, Name, type.ToArray(), Signature.Location);
             newsts.UpdateSize();
+            newsts.Name = newsts.Signature.NoNamespaceTypeSignature;
+            newsts.Primitive = this;
+            newsts.ExtendedFields = ExtendedFields;
 
             return newsts;
         }

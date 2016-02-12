@@ -27,22 +27,23 @@ namespace VTC
                     ResolveContext.Report.Error("Failed to resolve type");
                 else
                 {
-                    // back up 
-                    TypeSpec oldext = rc.CurrentExtensionLookup;
-                    bool staticext = rc.StaticExtensionLookup;
-                    rc.ResolverStack.Push(new ResolveState(rc.CurrentNamespace, rc.CurrentExtensionLookup, rc.StaticExtensionLookup));
+                    TypeSpec oldext = rc.HighPriorityExtensionLookup;
+                    bool staticext = rc.HighPriorityStaticExtensionLookup;
 
-                    rc.CurrentExtensionLookup = LeftType.Type;
-                    rc.StaticExtensionLookup = true;
+
+                    rc.HighPriorityExtensionLookup = LeftType.Type;
+                    rc.HighPriorityStaticExtensionLookup = true;
+
                     Right = (Expr)Right.DoResolve(rc);
                     if (Right is VariableExpression && (Right as VariableExpression).variable == null)
                         ResolveContext.Report.Error(0, Location, "Unresolved extended field");
                     else if (Right is MethodExpression && (Right as MethodExpression).Method == null)
                         ResolveContext.Report.Error(0, Location, "Unresolved extended method");
+
                     // restore
-                    rc.CurrentExtensionLookup = oldext;
-                    rc.StaticExtensionLookup = staticext;
-                    rc.ResolverStack.Pop();
+                    rc.HighPriorityExtensionLookup = oldext;
+                    rc.HighPriorityStaticExtensionLookup = staticext;
+                
 
                     rc.CurrentScope &= ~ResolveScopes.AccessOperation;
                     return Right;
@@ -51,15 +52,16 @@ namespace VTC
             else if (Namespace != null) // NS::Value
             {
                 Namespace lastns = rc.CurrentNamespace;
-                rc.ResolverStack.Push(new ResolveState(rc.CurrentNamespace, rc.CurrentExtensionLookup, rc.StaticExtensionLookup));
-
-                rc.CurrentNamespace = Namespace;
+               
+                rc.CurrentScope |= ResolveScopes.ByNameAccess;
+                rc.HighPriorityNamespace = Namespace;
 
                 Right = (Expr)Right.DoResolve(rc);
 
-                rc.ResolverStack.Pop();
-                rc.CurrentNamespace = lastns;
+               
+                rc.HighPriorityNamespace = lastns;
                 rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+                rc.CurrentScope &= ~ResolveScopes.ByNameAccess;
                 return Right;
             }
 

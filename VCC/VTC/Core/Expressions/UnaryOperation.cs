@@ -13,7 +13,7 @@ namespace VTC.Core
     public class UnaryOperation : Expr
     {
 
-        private Operator _op;
+        internal Operator _op;
 
         [Rule(@"<Op Unary>   ::= '!'    <Op Unary>")]
         [Rule(@"<Op Unary>   ::= '~'    <Op Unary>")]
@@ -70,11 +70,17 @@ namespace VTC.Core
             bool adrop = _op is LoadEffectiveAddressOp || _op is ValueOfOp;
             bool idecop = _op is IncrementOperator || _op is DecrementOperator;
             _op.Right = (Expr)_op.Right.DoResolve(rc);
-            _op = (Operator)_op.DoResolve(rc);
+            SimpleToken t =  _op.DoResolve(rc);
+            if (t is Operator)
+                _op = (Operator)t;
+            else if (t is Expr )
+                return t;
+
            AcceptStatement =  (_op is IncrementOperator || _op is DecrementOperator) ;
             if ((idecop && !_op.Right.Type.IsPointer && !_op.Right.Type.IsNumeric) && !adrop && !TypeChecker.ArtihmeticsAllowed(_op.Right.Type, _op.Right.Type))
                 ResolveContext.Report.Error(46, Location, "Unary operations are not allowed for this type");
             Type = _op.CommonType;
+     
             return this;
         }
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)

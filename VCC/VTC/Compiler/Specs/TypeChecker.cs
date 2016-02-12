@@ -31,11 +31,20 @@ namespace VTC
                 return true;
             else return false;
         }
+
+   public   static  bool TemplateImplicitCast(TypeSpec a, TypeSpec b)
+        {
+            if (a.IsForeignType && b.IsForeignType && (a.IsTemplateBased || b.IsTemplateBased) && a.Size == b.Size)
+                return true;
+            else return false;
+        }
         public static bool CompatibleTypes(TypeSpec a, TypeSpec b)
         {
             if (a.Equals(b))
                 return true;
             else if (IsPointerHolder(a, b))
+                return true;
+            else if (TemplateImplicitCast(a, b))
                 return true;
             else if ((a.IsForeignType && !a.IsPointer) || (b.IsForeignType && !b.IsPointer))
                 return false;

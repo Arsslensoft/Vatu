@@ -103,17 +103,18 @@ namespace VTC.Core
                     Expr extvar = rc.ExtensionVar;
                     bool staticext = rc.StaticExtensionLookup;
 
-
-                    rc.CurrentExtensionLookup = _op.Left.Type;
-                    rc.StaticExtensionLookup = false;
-                    rc.ExtensionVar = _op.Left;
+                    if(_op is ByValueOperator)
+                    rc.HighPriorityExtensionLookup = _op.Left.Type;
+                    else rc.HighPriorityExtensionLookup = _op.Left.Type.BaseType;
+                    rc.HighPriorityStaticExtensionLookup = false;
+                    rc.HighPriorityExtensionVar = _op.Left;
 
                     _op.Right = (Expr)_op.Right.DoResolve(rc);
 
                     // restore
-                    rc.StaticExtensionLookup = staticext;
-                    rc.ExtensionVar = extvar;
-                    rc.CurrentExtensionLookup = oldext;
+                    rc.HighPriorityStaticExtensionLookup = staticext;
+                    rc.HighPriorityExtensionVar = extvar;
+                    rc.HighPriorityExtensionLookup = oldext;
 
 
                     rc.CurrentScope &= ~ResolveScopes.AccessOperation;

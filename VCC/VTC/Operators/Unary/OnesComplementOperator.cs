@@ -30,8 +30,7 @@ namespace VTC
                 ResolveContext.Report.Error(25, Location, "OnesComplement must be used with non boolean, pointer types, use ! instead");
             CommonType = Right.Type;
 
-            if (Right is RegisterExpression)
-                RegisterOperation = true;
+         
             rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), ref OvlrdOp, new TypeSpec[1] { Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
@@ -42,12 +41,7 @@ namespace VTC
         {
             if (OvlrdOp != null)
                 return base.EmitOverrideOperator(ec);
-            if (RegisterOperation)
-            {
-                ec.EmitComment("~" + Right.CommentString());
-                RegisterExpression.EmitUnaryOperation(ec, new Not(), ((RegisterExpression)Right).Register);
-                return true;
-            }
+            
             Right.EmitToStack(ec);
             ec.EmitComment("~" + Right.CommentString());
             ec.EmitPop(Register.Value);

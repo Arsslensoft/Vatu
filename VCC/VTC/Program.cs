@@ -73,6 +73,7 @@ namespace VTC
                   {
                       Location loc = new Location(int.Parse(m.Groups["line"].Value), 0, 0);
                       loc.FullPath = m.Groups["file"].Value;
+                      ResolveContext.Report.FilePath = loc.FullPath;
                       if (m.Groups["kind"].Value == " error")
                           ResolveContext.Report.Error(0, loc, m.Groups["message"].Value);
                       else ResolveContext.Report.Warning(loc, m.Groups["message"].Value);

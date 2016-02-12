@@ -29,8 +29,12 @@ namespace VTC.Core
         bool ResolveDelegate(ResolveContext rc)
         {
             MemberSpec r = rc.Resolver.TryResolveName(_id.Name);
+            rc.UnsetHighPriorityAsCurrent();
             if (r is MethodSpec)
+            {
+                rc.SetHighPriorityAsCurrent();
                 return false;
+            }
             else if (r != null)
             {
                 if (!r.MemberType.IsDelegate)
@@ -41,11 +45,15 @@ namespace VTC.Core
                     if (MatchParameterTypes(r.MemberType as DelegateTypeSpec))
                     {
                         DelegateVar = r;
+                        rc.SetHighPriorityAsCurrent();
                         return true;
                     }
-                    else { ResolveContext.Report.Error(0, Location, "Delegate parameters mismatch"); return false; }
+                    else { ResolveContext.Report.Error(0, Location, "Delegate parameters mismatch");
+                    rc.SetHighPriorityAsCurrent();
+                        return false; }
                 }
             }
+            rc.SetHighPriorityAsCurrent();
             return false;
         }
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
@@ -76,12 +84,9 @@ namespace VTC.Core
         }
          public override SimpleToken DoResolve(ResolveContext rc)
         {
-            ResolveState rs = null;
-            if (rc.ResolverStack.Count > 0)
-            {
-                 rs = rc.ResolverStack.Pop();
-                rs.Copy(rc);
-            }
+
+            ResolveScopes old = rc.CurrentScope;
+            rc.CurrentScope &= ~ResolveScopes.AccessOperation;
 
             ccvh = new CallingConventionsHandler();
             List<TypeSpec> tp = new List<TypeSpec>();
@@ -98,12 +103,9 @@ namespace VTC.Core
                 }
 
             }
-            if (rc.ResolverStack.Count > 0 && rs != null) 
-            {
-                rs.Restore(rc);
-                rc.ResolverStack.Push(rs);
-                
-            }
+
+            rc.CurrentScope = old;
+            rc.SetHighPriorityAsCurrent();
             MemberSignature msig = new MemberSignature();
             if (tp.Count > 0)
             {
@@ -131,16 +133,33 @@ namespace VTC.Core
                 if (Method == null)
                     msig = new MemberSignature(rc.CurrentNamespace, _id.Name, tp.ToArray(), Location);
             }
+
+            
             if ((rc.CurrentScope & ResolveScopes.AccessOperation) == ResolveScopes.AccessOperation && rc.CurrentExtensionLookup != null)
             {
                 if (Method == null)
                     ResolveContext.Report.Error(46, Location, "Unresolved extension method");
                 else if (rc.ExtensionVar != null && Parameters.Count < Method.Parameters.Count)
-                    Parameters.Insert(0,rc.ExtensionVar);
+                {
+                    if (rc.ExtensionVar.Type.Equals(rc.CurrentExtensionLookup))
+                        Parameters.Insert(0, rc.ExtensionVar);
+                    else
+                    {
+                        
+                        ValueOfOp op = new ValueOfOp();
+                        op.Right = rc.ExtensionVar;
+                        op.CommonType = op.Right.Type.BaseType;
+                        op.Right.Type = op.CommonType;
+                        UnaryOperation uop = new UnaryOperation(rc.ExtensionVar, op);
+                        uop.Type = op.CommonType;
+                        Parameters.Insert(0,uop);
+                    }
+                }
                 else if (!rc.StaticExtensionLookup)
                     ResolveContext.Report.Error(46, Location, "Extension methods must be called with less parameters by 1, the first is reserved for the extended type");
             }
-      
+            rc.UnsetHighPriorityAsCurrent();
+
                 if (Method == null)
                     ResolveContext.Report.Error(46, Location, "Unknown method " + msig.NormalSignature + " ");
               

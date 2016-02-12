@@ -24,30 +24,46 @@ namespace VTC
 
         string _nns;
         public string NoNamespaceSignature { get { return _nns; } }
+
+        string _nnts;
+        public string NoNamespaceTypeSignature { get { return _nnts; } }
+
         public MemberSignature(Namespace ns, string name,TypeSpec[] param, Location loc)
         {
             _nsig = name;
             _signature = name;
             _extsig = name;
             _nns = name;
+            _nnts = name;
             if (!ns.IsDefault)
             {
                 _signature = ns.Normalize() + "_" + _signature;
                 _nsig = ns.Normalize() + "." + _nsig;
             }
+            string types = "";
+            
             if (param != null)
             {
                 if (param.Length > 0)
+                {
                     _nsig += "(";
+                    types += "<";
+                }
                 foreach (TypeSpec p in param)
                 {
-                    _extsig += "_" + p.GetTypeName(p).Replace("*", "P"); 
-                    _signature += "_" + p.GetTypeName(p).Replace("*", "P");
+                 
+                    _extsig += "_" + p.GetTypeName(p).Replace("*", "P").Replace("<","$T_").Replace(">","_T$");
+                    _signature += "_" + p.GetTypeName(p).Replace("*", "P").Replace("<", "$T_").Replace(">", "_T$");
                     _nsig +=  p.GetTypeName(p) + ",";
                     _nns += "_" + p.GetTypeName(p).Replace("*", "P");
+                    types += p.GetTypeName(p) + ",";
                 }
                 if (param.Length > 0)
-                    _nsig = _nsig.Remove(_nsig.Length - 1,1) +")";
+                {
+                    types = types.Remove(types.Length - 1, 1) + ">";
+                    _nsig = _nsig.Remove(_nsig.Length - 1, 1) + ")";
+                }
+                _nnts += types;
             }
       
             _loc = loc;
@@ -59,6 +75,7 @@ namespace VTC
             _signature = name;
             _extsig = name;
             _nns = name;
+            _nnts = name;
             if (!ns.IsDefault)
             {
                 _signature = ns.Normalize() + "_" + _signature;

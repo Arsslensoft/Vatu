@@ -234,11 +234,15 @@ namespace VTC
             }
             else
             {
-                foreach (FieldSpec kt in CurrentExtensionLookup.ExtendedFields)
+                TypeSpec original = KnownTypes[KnownTypes.IndexOf(CurrentExtensionLookup)];
+                List<FieldSpec> ml = original.ExtendedFields;
+                foreach (FieldSpec kt in ml)
                 {
                     if (kt.Name == name && !(kt.IsPrivate))
                         return kt;
                 }
+                
+
             }
             return null;
         }
@@ -280,7 +284,9 @@ namespace VTC
             }
             else
             {
-                List<MethodSpec> ml = CurrentExtensionLookup.ExtendedMethods;
+                TypeSpec original = KnownTypes[KnownTypes.IndexOf(CurrentExtensionLookup)];
+                List<MethodSpec> ml = original.ExtendedMethods;
+                //List<MethodSpec> ml = CurrentExtensionLookup.ExtendedMethods;
                 if (IsExtensionStatic)
                     ml = CurrentExtensionLookup.StaticExtendedMethods;
                 if (par != null && !IsExtensionStatic)
@@ -320,6 +326,46 @@ namespace VTC
                             return;
 
                         }
+                    }
+                }
+            }
+
+        }
+        void ResolveExtensionMethod(List<MethodSpec> ml,Namespace ns, string name, ref MethodSpec mtd, TypeSpec[] par = null)
+        {
+            bool hastemplate = false;
+            if (par != null)
+            {
+                MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
+                for (int i = 0; i < ml.Count; i++)
+                {
+                    //if (ml[i].Signature.ExtensionSignature == msig.ExtensionSignature && ((!ml[i].IsPrivate || CurrentNamespace == ns)))
+                    //{
+                    //    mtd = ml[i];
+                    //    return;
+
+                    //}
+
+
+                    if (ml[i].MatchExtSignature( msig, name,par, ref hastemplate) && ((!ml[i].IsPrivate || CurrentNamespace == ns)))
+                    {
+                        mtd = ml[i];
+                        return;
+
+                    }
+                }
+            }
+            else
+            {
+                MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
+                for (int i = 0; i < ml.Count; i++)
+                {
+
+                    if (ml[i].Signature.ExtensionSignature == msig.ExtensionSignature && ((!ml[i].IsPrivate || CurrentNamespace == ns)))
+                    {
+                        mtd = ml[i];
+                        return;
+
                     }
                 }
             }
@@ -368,7 +414,8 @@ namespace VTC
             }
             else
             {
-                List<MethodSpec> ml = CurrentExtensionLookup.ExtendedMethods;
+                TypeSpec original = KnownTypes[KnownTypes.IndexOf(CurrentExtensionLookup)];
+                List<MethodSpec> ml = original.ExtendedMethods;
                 if(IsExtensionStatic)
                     ml = CurrentExtensionLookup.StaticExtendedMethods;
                 if (par != null && !IsExtensionStatic)
@@ -381,35 +428,31 @@ namespace VTC
                 else if(!IsExtensionStatic)
                     par = new TypeSpec[1] { CurrentExtensionLookup };
 
-                if (par != null)
+                ResolveExtensionMethod(ml, ns, name, ref mtd, par);
+                if (mtd == null && original is StructTypeSpec && (original as StructTypeSpec).Primitive != null && original.Size == (original as StructTypeSpec).Primitive.Size) // implicit cast primitive
                 {
-                    MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
-                    for (int i = 0; i < ml.Count; i++)
+                
+                    original = KnownTypes[KnownTypes.IndexOf((original as StructTypeSpec).Primitive)];
+                    ml = original.ExtendedMethods;
+                    if (IsExtensionStatic)
+                        ml = CurrentExtensionLookup.StaticExtendedMethods;
+                    if (par != null && !IsExtensionStatic)
                     {
-                        if (ml[i].Signature.ExtensionSignature == msig.ExtensionSignature && ((!ml[i].IsPrivate || CurrentNamespace == ns))){
-                            mtd = ml[i];
-                                 return;
-                        
-                        }
+                        List<TypeSpec> ts = new List<TypeSpec>();
+                        ts.AddRange(par);
+                        ts.RemoveAt(0);
+                        ts.Insert(0, original);
+                        par = ts.ToArray();
                     }
-                }
-                else
-                {
-                    MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
-                    for (int i = 0; i < ml.Count; i++)
-                    {
+                    else if (!IsExtensionStatic)
+                        par = new TypeSpec[1] { original  };
 
-                        if (ml[i].Signature.ExtensionSignature == msig.ExtensionSignature && ((!ml[i].IsPrivate || CurrentNamespace == ns)))
-                        {
-                            mtd = ml[i];
-                                 return;
-                        
-                        }
-                    }
+                    ResolveExtensionMethod(ml, ns, name, ref mtd, par);
                 }
             }
          
         }
+
         public VarSpec ResolveVar(Namespace ns, string name)
         {
             foreach (VarSpec kt in KnownLocalVars)

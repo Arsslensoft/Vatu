@@ -34,6 +34,38 @@ namespace VTC
 
 
 
+        public bool ResolveExtension(ResolveContext rc)
+        {
+            // back up 
+            TypeSpec oldext = rc.CurrentExtensionLookup;
+            Expr extvar = rc.ExtensionVar;
+
+
+            rc.HighPriorityExtensionLookup = Left.Type.BaseType;
+            rc.HighPriorityStaticExtensionLookup = false;
+            rc.HighPriorityExtensionVar = Left;
+
+            Right = (Expr)Right.DoResolve(rc);
+            if (Right is VariableExpression && (Right as VariableExpression).variable == null)
+            {
+
+                ResolveContext.Report.Error(0, Location, "Unresolved extended field");
+
+                rc.HighPriorityExtensionVar = extvar;
+                rc.HighPriorityExtensionLookup = oldext;
+                return false;
+            }
+            else if (Right is MethodExpression && (Right as MethodExpression).Method == null)
+            {
+                rc.HighPriorityExtensionVar = extvar;
+                rc.HighPriorityExtensionLookup = oldext;
+                return false;
+            }
+            rc.HighPriorityExtensionVar = extvar;
+            rc.HighPriorityExtensionLookup = oldext;
+
+            return true;
+        }
 
         // Struct
         MemberSpec struct_var;
@@ -93,7 +125,14 @@ namespace VTC
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             // Check if left is type
-            if (Left is VariableExpression && Right is VariableExpression)
+            if (Left is VariableExpression && Right is MethodExpression)
+            {
+                if (!ResolveExtension(rc))
+                    ResolveContext.Report.Error(0, Location, "Unresolved extended method");
+                else return Right;
+
+            }
+            else if (Left is VariableExpression && Right is VariableExpression)
             {
 
 
@@ -112,6 +151,17 @@ namespace VTC
                     {
                         ok = ResolveStructOrUnionMember(rc, struct_var, ref tmp, lv, rv);
                         rv.variable = tmp;
+                        if (!ok)
+                        {
+
+                            // field extension
+                            if (!ResolveExtension(rc))
+                                ResolveContext.Report.Error(0, Location, "Unresolved extended field or member");
+                            else return Right;
+
+
+
+                        }
                         CommonType = tmp.MemberType;
                         if (struct_var is VarSpec)
                         {

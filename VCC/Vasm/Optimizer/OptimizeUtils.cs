@@ -15,6 +15,13 @@ namespace Vasm.Optimizer
               return a.DestinationReg.Value == b.DestinationReg.Value;
      
       }
+      public static bool IsSegment(InstructionWithDestinationAndSize ins)
+      {
+          if (ins.DestinationReg.HasValue && Registers.IsSegment(ins.DestinationReg.Value))
+              return true;
+          else return false;
+
+      }
       public static bool BothIndirect(InstructionWithDestinationAndSourceAndSize a, InstructionWithDestinationAndSourceAndSize b,bool src)
       {
           if (src)
@@ -200,12 +207,12 @@ namespace Vasm.Optimizer
       {
           bool ok = false;
           if (ins != null)
-              ok = IsDestinationRegister(ins) || IsDestinationValue(ins) || IsDestinationField(ins);
+              ok = (IsDestinationRegister(ins) && !IsSegment(ins)) || IsDestinationValue(ins) || IsDestinationField(ins) ;
           else return false;
 
 
           if (ins2 != null)
-              ok &= IsDestinationRegister(ins2) || IsDestinationValue(ins2) || IsDestinationField(ins2);
+              ok &= (IsDestinationRegister(ins2) && !IsSegment(ins2)) || IsDestinationValue(ins2) || IsDestinationField(ins2);
 
           return ok;
           

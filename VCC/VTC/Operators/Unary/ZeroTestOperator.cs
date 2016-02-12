@@ -30,8 +30,7 @@ namespace VTC
             CommonType = BuiltinTypeSpec.Bool;
             UnaryCheck(rc);
 
-            if (Right is RegisterExpression)
-                RegisterOperation = true;
+       
             rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), ref OvlrdOp, new TypeSpec[1] { Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;

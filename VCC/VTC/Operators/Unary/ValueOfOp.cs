@@ -25,6 +25,12 @@ namespace VTC
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
+            if (Right is UnaryOperation && (Right as UnaryOperation)._op is LoadEffectiveAddressOp)
+            {
+                ReturnExpression = true;
+                return (Right as UnaryOperation)._op.Right;
+            }
+
             if (!Right.Type.IsPointer)
                 ResolveContext.Report.Error(53, Location, "Value of operator cannot be used with non pointer types");
             // VOF

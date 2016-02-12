@@ -7,32 +7,30 @@ using VTC.Core;
 
 namespace VTC
 {
-   public class ResolveState
+    public class ResolverState
     {
-       public TypeSpec CurrentExtension;
-        public Namespace CurrentNS;
-       public bool StaticLookup;
-        public ResolveState(Namespace ns, TypeSpec ts, bool st)
+        public Namespace CurrentNamespace { get; set; }
+        public TypeSpec CurrentTypeLookup { get; set; }
+        public bool IsStatic { get; set; }
+        public Expr ExtVar { get; set; }
+        public ResolverState(Namespace current, Expr extvar, bool staticlookup, TypeSpec currenttp)
         {
-            CurrentExtension = ts;
-            CurrentNS = ns;
-            StaticLookup = st;
+            ExtVar = extvar;
+            CurrentNamespace = current;
+            IsStatic = staticlookup;
+            CurrentTypeLookup = currenttp;
         }
-        public void Copy(ResolveContext rc)
-        {
-            rc.ResolverStack.Push(new ResolveState(rc.CurrentNamespace, rc.CurrentExtensionLookup, rc.StaticExtensionLookup));
-            rc.CurrentNamespace = CurrentNS;
-            rc.CurrentExtensionLookup = CurrentExtension;
-            rc.StaticExtensionLookup = StaticLookup;
 
-          
-        }
         public void Restore(ResolveContext rc)
         {
-            ResolveState rs = rc.ResolverStack.Pop();
-            rc.CurrentNamespace = rs.CurrentNS;
-            rc.CurrentExtensionLookup = rs.CurrentExtension;
-            rc.StaticExtensionLookup = rs.StaticLookup;
+            rc.CurrentExtensionLookup = CurrentTypeLookup;
+            rc.CurrentNamespace = CurrentNamespace;
+            rc.StaticExtensionLookup = IsStatic;
+            rc.ExtensionVar = ExtVar;
+        }
+        public static ResolverState Create(ResolveContext rc)
+        {
+            return new ResolverState(rc.CurrentNamespace, rc.ExtensionVar, rc.StaticExtensionLookup, rc.CurrentExtensionLookup);
         }
     }
     public interface ILoop
@@ -94,7 +92,8 @@ namespace VTC
         If = 1 << 3,
         Case = 1 << 4,
         Try = 1 << 5,
-        CheckedArithmetics = 1 << 6
+        CheckedArithmetics = 1 << 6,
+        ByNameAccess = 1 << 7
        
     }
     public class ResolveContext : IDisposable
@@ -125,7 +124,7 @@ namespace VTC
         {
             Report = new ConsoleReporter();
         }
-        public Stack<ResolveState> ResolverStack { get; set; }
+ 
 
         public List<ResolveContext> ChildContexts { get; set; }
         public bool IsInTypeDef { get; set; }
@@ -133,6 +132,7 @@ namespace VTC
         public bool IsInUnion { get; set; }
         public bool IsInEnum { get; set; }
         public bool IsInVarDeclaration { get; set; }
+        
         public TypeSpec CurrentExtensionLookup
         {
             get { return Resolver.CurrentExtensionLookup; }
@@ -144,8 +144,23 @@ namespace VTC
             set { Resolver.IsExtensionStatic = value; }
         }
         public Expr ExtensionVar { get; set; }
+
+        public TypeSpec HighPriorityExtensionLookup
+        {
+            get;
+            set;
+        }
+        public bool HighPriorityStaticExtensionLookup
+        {
+            get;
+            set;
+        }
+        public Expr HighPriorityExtensionVar { get; set; }
+
         public Namespace CurrentNamespace  { get { return Resolver.CurrentNamespace; }
+          
             set { Resolver.CurrentNamespace = value; } }
+        public Namespace HighPriorityNamespace { get; set; }
         public List<Namespace> Imports { get { return Resolver.Imports; } set { Resolver.Imports = value; } }
 
         public ResolveScopes CurrentScope { get; set; }
@@ -160,10 +175,35 @@ namespace VTC
         public TypeSpec CurrentType { get { return current_type; } set { current_type = value; } }
 
         public Resolver Resolver{get;set;}
+
+
+        Stack<ResolverState> states = new Stack<ResolverState>();
+        public void SetHighPriorityAsCurrent()
+        {
+            if ((CurrentScope & ResolveScopes.AccessOperation) == ResolveScopes.AccessOperation)
+            {
+                states.Push(ResolverState.Create(this));
+                if(HighPriorityNamespace.Name != null)
+                     CurrentNamespace = HighPriorityNamespace;
+
+                ExtensionVar = HighPriorityExtensionVar;
+                StaticExtensionLookup = HighPriorityStaticExtensionLookup;
+                CurrentExtensionLookup = HighPriorityExtensionLookup;
+            
+            }
+        }
+        public void UnsetHighPriorityAsCurrent()
+        {
+            if ((CurrentScope & ResolveScopes.AccessOperation) == ResolveScopes.AccessOperation)
+            {
+                ResolverState rs = states.Pop();
+                rs.Restore(this);
+            }
+        }
         void FillKnown()
         {
             CurrentScope = ResolveScopes.Normal;
-            ResolverStack = new Stack<ResolveState>();
+    
             Resolver.KnowType(BuiltinTypeSpec.Bool);
             Resolver.KnowType(BuiltinTypeSpec.Byte);
             Resolver.KnowType(BuiltinTypeSpec.SByte);

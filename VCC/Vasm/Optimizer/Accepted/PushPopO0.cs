@@ -85,6 +85,8 @@ namespace Vasm.Optimizer
                               return false;
                           if (OptimizeUtils.CrossUsage(Left, RightPop) || OptimizeUtils.CrossUsage(Right, LeftPop))
                               return false;
+                          if (OptimizeUtils.IsSegment(Left) || OptimizeUtils.IsSegment(LeftPop) || OptimizeUtils.IsSegment(Right) || OptimizeUtils.IsSegment(RightPop))
+                              return false;
                           // optimize
                           src[LeftIdx].Emit = false;
                           src[RightIdx].Emit = false;

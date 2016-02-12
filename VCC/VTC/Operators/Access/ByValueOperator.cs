@@ -50,34 +50,30 @@ namespace VTC
             // back up 
             TypeSpec oldext = rc.CurrentExtensionLookup;
             Expr extvar = rc.ExtensionVar;
-            rc.ResolverStack.Push(new ResolveState(rc.CurrentNamespace, rc.CurrentExtensionLookup, rc.StaticExtensionLookup));
+           
 
-
-            rc.CurrentExtensionLookup = Left.Type;
-            rc.StaticExtensionLookup = false;
-            rc.ExtensionVar = Left;
+            rc.HighPriorityExtensionLookup = Left.Type;
+            rc.HighPriorityStaticExtensionLookup = false;
+            rc.HighPriorityExtensionVar = Left;
 
             Right = (Expr)Right.DoResolve(rc);
             if (Right is VariableExpression && (Right as VariableExpression).variable == null)
             {
 
                 ResolveContext.Report.Error(0, Location, "Unresolved extended field");
-                rc.ResolverStack.Pop();
-                rc.ExtensionVar = extvar;
-                rc.CurrentExtensionLookup = oldext;
+              
+                rc.HighPriorityExtensionVar = extvar;
+                rc.HighPriorityExtensionLookup = oldext;
                 return false;
             }
             else if (Right is MethodExpression && (Right as MethodExpression).Method == null)
             {
-                rc.ResolverStack.Pop();
-                rc.ExtensionVar = extvar;
-                rc.CurrentExtensionLookup = oldext;
+                rc.HighPriorityExtensionVar = extvar;
+                rc.HighPriorityExtensionLookup = oldext;
                 return false;
             }
-            rc.ResolverStack.Pop();
-            rc.ExtensionVar = extvar;
-            rc.CurrentExtensionLookup = oldext;
-
+            rc.HighPriorityExtensionVar = extvar;
+            rc.HighPriorityExtensionLookup = oldext;
 
             return true;
         }

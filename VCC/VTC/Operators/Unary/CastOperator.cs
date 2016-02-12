@@ -476,6 +476,15 @@ namespace VTC
                 nofix = true;
                 return true;
             }
+            else if (_target.Type.IsForeignType && Type.IsForeignType && (Type.IsTemplateBased || _target.Type.IsTemplateBased) && Type.Size == _target.Type.Size)
+            {
+                _target.Type = Type;
+                nofix = true;
+                return true;
+            }
+            
+            
+
             return false;
         }
         bool ispointer = false;

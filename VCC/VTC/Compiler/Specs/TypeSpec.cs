@@ -142,6 +142,12 @@ namespace VTC
             }
 
         }
+        bool _template = false;
+        public bool IsTemplateBased
+        {
+            get { return _template; }
+            set { _template = value; }
+        }
         public bool IsArray
         {
             get

@@ -33,11 +33,20 @@ namespace VTC
             //    ms = null;
             //}
             //else
+
+            if (Right is UnaryOperation && (Right as UnaryOperation)._op is ValueOfOp)
+            {
+                ReturnExpression = true;
+                return (Right as UnaryOperation)._op.Right;
+            }
+
          if (!(Right is VariableExpression))
               //  ms = (Right as VariableExpression).variable;
               //else
                 ResolveContext.Report.Error(54, Location, "Address Of Operator does not support non variable nor access expressions");
-                CommonType = Right.Type.MakePointer();
+
+       
+     CommonType = Right.Type.MakePointer();
                 return this;
          
         }

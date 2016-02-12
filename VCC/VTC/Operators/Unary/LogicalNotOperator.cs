@@ -30,21 +30,14 @@ namespace VTC
 
             CommonType = BuiltinTypeSpec.Bool;
 
-            if (Right is RegisterExpression)
-                RegisterOperation = true;
+           
 
             return this;
         }
       
         public override bool Emit(EmitContext ec)
         {
-            if (RegisterOperation)
-            {
-                ec.EmitComment("!" + Right.CommentString());
-                RegisterExpression.EmitUnaryOperation(ec, new Not(), ((RegisterExpression)Right).Register);
-                return true;
-            }
-
+            
          
             Right.EmitToStack(ec);
             ec.EmitComment("!" + Right.CommentString());

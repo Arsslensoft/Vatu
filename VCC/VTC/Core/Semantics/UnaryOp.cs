@@ -14,7 +14,7 @@ namespace VTC.Core
     public class UnaryOp : Operator
     {
         public MethodSpec OvlrdOp;
-        protected bool RegisterOperation = false;
+        internal bool ReturnExpression = false;
         public RegistersEnum? Register { get; set; }
         public UnaryOperator Operator { get; set; }
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
