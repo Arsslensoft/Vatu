@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using VTC.Base.GoldParser.Parser;
 using VTC.Base.GoldParser.Semantic;
 
 namespace VTC.Core
@@ -15,7 +16,13 @@ namespace VTC.Core
            position = t.position;
        
        }
+       public ThisExpression(LineInfo t)
+           : base("this")
+       {
+           position = t;
+           
 
+       }
        public override SimpleToken DoResolve(ResolveContext rc)
        {
 

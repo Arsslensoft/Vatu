@@ -25,7 +25,9 @@ namespace VTC
         Register = 1 << 9,
         Union = 1 << 10,
         Delegate = 1 << 11,
-        Template = 1 << 12
+        Template = 1 << 12,
+        Class = 1 <<13,
+        Interface = 1 << 14
     }
     
 	

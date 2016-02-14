@@ -165,6 +165,7 @@
     <Compile Include="Compiler\CallingConventions.cs" />
     <Compile Include="Compiler\Emitter\ArrayEmitter.cs" />
     <Compile Include="Compiler\Emitter\ByteEmitter.cs" />
+    <Compile Include="Compiler\Emitter\ClassEmitter.cs" />
     <Compile Include="Compiler\Emitter\FloatEmitter.cs" />
     <Compile Include="Compiler\Emitter\SByteEmitter.cs" />
     <Compile Include="Compiler\Emitter\HostedMatrixEmitter.cs" />
@@ -177,6 +178,7 @@
     <Compile Include="Compiler\Specs\ArrayTypeSpec.cs" />
     <Compile Include="Compiler\Specs\BuiltinTypes.cs" />
     <Compile Include="Compiler\Specs\BuiltinTypeSpec.cs" />
+    <Compile Include="Compiler\Specs\ClassTypeSpec.cs" />
     <Compile Include="Compiler\Specs\TemplateTypeSpec.cs" />
     <Compile Include="Compiler\Specs\DelegateTypeSpec.cs" />
     <Compile Include="Compiler\Specs\EnumMemberSpec.cs" />
@@ -216,12 +218,19 @@
     <Compile Include="Core\Constants\PointerConstant.cs" />
     <Compile Include="Core\Constants\FloatConstant.cs" />
     <Compile Include="Core\Constants\IntConstant.cs" />
+    <Compile Include="Core\Declarations\OOP\ConstructorDeclaration.cs" />
+    <Compile Include="Core\Declarations\OOP\ClassDeclaration.cs" />
+    <Compile Include="Core\Declarations\OOP\ConstructorPrototypeDeclaration.cs" />
+    <Compile Include="Core\Declarations\OOP\DestructorPrototypeDeclaration.cs" />
+    <Compile Include="Core\Declarations\OOP\DestructorDeclaration.cs" />
     <Compile Include="Core\Declarations\RessourceDeclaration.cs" />
     <Compile Include="Core\Declarations\TemplateDeclaration.cs" />
     <Compile Include="Core\Definitions\TemplateDefinition.cs" />
     <Compile Include="Core\Definitions\VariableInitDefinition.cs" />
     <Compile Include="Core\Definitions\InheritanceDefinition.cs" />
     <Compile Include="Core\Expressions\CheckedExpressions.cs" />
+    <Compile Include="Core\Expressions\PolymorphicClassExpression.cs" />
+    <Compile Include="Core\Expressions\SuperExpression.cs" />
     <Compile Include="Core\Expressions\TypedExpressions.cs" />
     <Compile Include="Core\Expressions\DeclaredExpression.cs" />
     <Compile Include="Core\Expressions\InstanceExpression.cs" />

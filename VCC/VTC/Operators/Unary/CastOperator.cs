@@ -68,6 +68,51 @@ namespace VTC
             _type = id;
 
         }
+        PolymorphicClassExpression GetClassInheritancePolymorphicExpr()
+        {
+            MemberSpec struct_var = null;
+
+            if (_target is VariableExpression)
+                struct_var = (_target as VariableExpression).variable;
+            else return null;
+
+            if (struct_var is VarSpec)
+            {
+                VarSpec v = (VarSpec)struct_var;
+
+                VarSpec dst = new VarSpec(v.NS, v.Name, v.MethodHost, Type, Location, v.FlowIndex, v.Modifiers, true);
+                dst.StackIdx = v.StackIdx + CastOffset;
+                return new PolymorphicClassExpression(dst, CastOffset,Type, _target.position);
+
+            }
+            else if (struct_var is RegisterSpec)
+            {
+                RegisterSpec v = (RegisterSpec)struct_var;
+
+                RegisterSpec dst = new RegisterSpec(Type, v.Register, Location, 0, true);
+                dst.RegisterIndex = v.RegisterIndex + CastOffset;
+                return new PolymorphicClassExpression(dst, CastOffset, Type, _target.position);
+            }
+            else if (struct_var is FieldSpec)
+            {
+                FieldSpec v = (FieldSpec)struct_var;
+
+                FieldSpec dst = new FieldSpec(v.NS, v.Name, v.Modifiers, Type, Location, true);
+                dst.FieldOffset = v.FieldOffset + CastOffset;
+                return new PolymorphicClassExpression(dst, CastOffset, Type, _target.position);
+            }
+            else if (struct_var is ParameterSpec)
+            {
+                ParameterSpec v = (ParameterSpec)struct_var;
+
+                ParameterSpec dst = new ParameterSpec(v.NS, v.Name, v.MethodHost, Type, Location, v.InitialStackIndex, v.Modifiers, true);
+
+                dst.StackIdx = v.StackIdx + CastOffset;
+
+                return new PolymorphicClassExpression(dst, CastOffset, Type, _target.position);
+            }
+            return null;
+        }
         AccessExpression GetInheritanceAccessExpr()
         {
             MemberSpec struct_var = null;
@@ -106,7 +151,7 @@ namespace VTC
             {
                 ParameterSpec v = (ParameterSpec)struct_var;
 
-                ParameterSpec dst = new ParameterSpec(v.Name, v.MethodHost, Type, Location, v.InitialStackIndex, v.Modifiers, true);
+                ParameterSpec dst = new ParameterSpec(v.NS, v.Name, v.MethodHost, Type, Location, v.InitialStackIndex, v.Modifiers, true);
 
                 dst.StackIdx = v.StackIdx + CastOffset;
 
@@ -139,19 +184,29 @@ namespace VTC
                     _target.Type = Type;
                     return Target;
                 }
+                else if (PointerFix())
+                    return Target;
                 else if (InheritanceFix())
                 {
-                    AccessExpression ae = GetInheritanceAccessExpr();
-                    if (ae == null)
-                        ResolveContext.Report.Error(0, Location, "Can't cast to inherited struct");
-                    else return ae;
-
+                    if (Type.IsClass)
+                    {
+                        PolymorphicClassExpression pe = GetClassInheritancePolymorphicExpr();
+                        if (pe == null)
+                            ResolveContext.Report.Error(0, Location, "Can't cast to inherited class");
+                        else return pe;
+                    }
+                    else
+                    {
+                        AccessExpression ae = GetInheritanceAccessExpr();
+                        if (ae == null)
+                            ResolveContext.Report.Error(0, Location, "Can't cast to inherited struct");
+                        else return ae;
+                    }
                     return this;
                 }
                 else if (Type.Equals(_target.Type))
                     return _target;
-                else if (PointerFix())
-                    return Target;
+             
                 else if (TemplateFix())
                     return Target;
                 else if (FloatFix())
@@ -511,10 +566,39 @@ namespace VTC
             }
             return false;
         }
+
+        bool GetInheritedClassIndex(ClassTypeSpec st, TypeSpec cmp, ref int off)
+        {
+
+            foreach (TypeSpec s in st.Inherited)
+            {
+                if (s.Equals(cmp))
+                    return true;
+                else
+                {
+                    // check child inheritance
+                    int rel = 0; // relative offset for child struct
+
+                    if (s is ClassTypeSpec && GetInheritedClassIndex(s as ClassTypeSpec, cmp, ref rel))
+                    {
+                        off += rel;
+                        return true;
+                    }
+                    else off += s.GetAllocSize(s);
+
+                }
+            }
+            return false;
+        }
         bool InheritanceFix()
         {
             CastOffset = 0;
             if ( _target is VariableExpression && _target.Type.IsStruct && Type.IsStruct && GetInheritedStructIndex(_target.Type as StructTypeSpec, Type as StructTypeSpec, ref CastOffset))
+            {
+                ispointer = _target.Type.IsPointer;
+                return true;
+            }
+            else if (_target is VariableExpression && _target.Type.IsClass && Type.IsClass && GetInheritedClassIndex(_target.Type as ClassTypeSpec, Type as ClassTypeSpec, ref CastOffset))
             {
                 ispointer = _target.Type.IsPointer;
                 return true;

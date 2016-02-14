@@ -29,12 +29,19 @@ namespace VTC
         public Namespace(string name,bool def=false)
         {
             _name = name;
+            if (string.IsNullOrEmpty(name))
+                _name = "global";
+
+ 
             l = Location.Null; 
             _def = def;
         }
         public Namespace(string name, Location loc, bool def = false)
         {
             _name = name;
+            if (string.IsNullOrEmpty(name))
+                _name = "global";
+         
             if(loc == null)
                 l = Location.Null;
             else
@@ -44,6 +51,9 @@ namespace VTC
         }
         public string Normalize()
         {
+            if (string.IsNullOrEmpty(_name))
+                _name = "global";
+
             return Name.Replace("::", "_");
         }
         public override string ToString()

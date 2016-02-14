@@ -119,6 +119,33 @@ namespace VTC
 
 
         }
+        public bool ResolveClassMember(ResolveContext rc, MemberSpec mem, ref TypeMemberSpec tmp, VariableExpression lv, VariableExpression rv)
+        {
+
+            if (!mem.MemberType.IsPointer)
+            {
+                if (!mem.MemberType.IsClass)
+                    return false;
+                else 
+                {
+                    ClassTypeSpec stp = (ClassTypeSpec)mem.MemberType;
+                    tmp = stp.ResolveMember(rv.Name);
+                    if (tmp == null)
+                        return false;
+                    else
+                    {
+                        // Resolve
+                        index = tmp.Index;
+                        return true;
+                    }
+
+                }
+                
+            }
+            else return false;
+
+
+        }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             // Check if left is type
@@ -156,6 +183,42 @@ namespace VTC
                     if (struct_var != null)
                     {
                         ok = ResolveStructOrUnionMember(rc, struct_var, ref tmp, lv, rv);
+
+                        // class member
+                        if (!ok)
+                        {
+                            ok = ResolveClassMember(rc, struct_var, ref tmp, lv, rv);
+                            if (ok)
+                            {
+                                this.CommonType = tmp.MemberType;
+                                if (struct_var is VarSpec)
+                                {
+                                    VarSpec dst = (VarSpec)struct_var;
+                                    return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, lv.position, true, index, tmp.MemberType);
+
+                                }
+                                else if (struct_var is RegisterSpec)
+                                {
+                                    RegisterSpec dst = (RegisterSpec)struct_var;
+                                    return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, lv.position, true, index, tmp.MemberType);
+
+                                }
+                                else if (struct_var is FieldSpec)
+                                {
+                                    FieldSpec dst = (FieldSpec)struct_var;
+
+
+                                    return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, lv.position, true, index, tmp.MemberType);
+                                }
+                                else if (struct_var is ParameterSpec)
+                                {
+                                    ParameterSpec dst = (ParameterSpec)struct_var;
+
+
+                                    return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, lv.position, true, index, tmp.MemberType);
+                                }
+                            }
+                        }
                         rv.variable = tmp;
                         if (!ok)
                         {
@@ -198,7 +261,7 @@ namespace VTC
                         {
                             ParameterSpec v = (ParameterSpec)struct_var;
 
-                            ParameterSpec dst = new ParameterSpec(v.Name, v.MethodHost, tmp.MemberType, Location, v.InitialStackIndex, v.Modifiers,true);
+                            ParameterSpec dst = new ParameterSpec(v.NS,v.Name, v.MethodHost, tmp.MemberType, Location, v.InitialStackIndex, v.Modifiers,true);
 
                             dst.StackIdx = v.StackIdx + index;
 

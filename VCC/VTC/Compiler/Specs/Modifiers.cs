@@ -23,7 +23,9 @@ namespace VTC
         Const = 1 << 3,
         Private = 1 << 4,
         Ref = 1 << 5,
-        Public = 1 << 6
+        Public = 1 << 6,
+        Internal = 1 << 7,
+        Protected = 1 << 8
     }
 
 	

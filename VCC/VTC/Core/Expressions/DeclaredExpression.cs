@@ -45,6 +45,7 @@ namespace VTC.Core
        {
            return Expression.Resolve(rc);
        }
+
  public override SimpleToken DoResolve(ResolveContext rc)
        {
            return Expression.DoResolve(rc);

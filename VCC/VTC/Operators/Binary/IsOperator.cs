@@ -43,10 +43,14 @@ namespace VTC
             return false;
 
         }
+        bool isclass = false;
+
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-            isval = IsInherited(Left.Type, RightType.Type) || IsExtendedByTypeDef(Left.Type,RightType.Type);
-
+            isclass = Left.Type.IsClass && RightType.Type.IsClass && !Left.Type.IsPointer && !RightType.Type.IsPointer && Left is VariableExpression;
+            if(!isclass)
+                isval = IsInherited(Left.Type, RightType.Type) || IsExtendedByTypeDef(Left.Type,RightType.Type);
+          
             CommonType = BuiltinTypeSpec.Bool;
 
             return this;
@@ -54,16 +58,30 @@ namespace VTC
         public override bool Emit(EmitContext ec)
         {
             ec.EmitComment(Left.CommentString() + " is " + RightType.Name);
-            ec.EmitPush(isval);
+            if (!isclass)
+                ec.EmitPush(isval);
+            else
+            {
+                (Left as VariableExpression).variable.ValueOf(ec);
+                ec.EmitPop(RegistersEnum.AX);
+                ec.EmitInstruction(new Compare() { DestinationReg = RegistersEnum.AX, SourceValue = RightType.Type.TypeDescriptor });
+                ec.EmitBoolean(RegistersEnum.AX, ConditionalTestEnum.Equal, ConditionalTestEnum.NotEqual);
+            }
             return true;
         }
         public override bool EmitBranchable(EmitContext ec, Label truecase,bool v)
         {
           
             ec.EmitComment(Left.CommentString() + " is " + RightType.Name);
-            if (isval == v)
+            if (!isclass && isval == v)
                 ec.EmitInstruction(new Jump() { DestinationLabel = truecase.Name });
-
+            else if (isclass)
+            {
+                (Left as VariableExpression).variable.ValueOf(ec);
+                ec.EmitPop(RegistersEnum.AX);
+                ec.EmitInstruction(new Compare() { DestinationReg = RegistersEnum.AX, SourceValue = RightType.Type.TypeDescriptor });
+                ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.Equal, ConditionalTestEnum.NotEqual);
+            }
             return true;
         }
     }

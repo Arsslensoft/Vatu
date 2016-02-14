@@ -91,6 +91,7 @@ namespace VTC.Core
 
         #endregion
     }
+
     public class GlobalSequence<T> : SimpleToken, IEnumerable<T> where T : SimpleToken
     {
         private readonly T item;
@@ -221,48 +222,7 @@ namespace VTC.Core
 
         #endregion
     }
-    public class IntegralConstSequence<T> : SimpleToken, IEnumerable<T> where T : SimpleToken
-    {
-        private readonly T item;
-        private readonly IntegralConstSequence<T> next;
-
-
-
-
-
-        [Rule("<Integral Const List> ::= <Integral Const>", typeof(IntegralConst))]
-        public IntegralConstSequence(T item)
-            : this(item, null)
-        {
-        }
-
-        [Rule("<Integral Const List> ::= <Integral Const> ~',' <Integral Const List> ", typeof(IntegralConst))]
-        public IntegralConstSequence(T item, IntegralConstSequence<T> next)
-        {
-            this.item = item;
-            this.next = next;
-        }
-
-        #region IEnumerable<T> Members
-
-        public IEnumerator<T> GetEnumerator()
-        {
-            for (IntegralConstSequence<T> sequence = this; sequence != null; sequence = sequence.next)
-            {
-                if (sequence.item != null)
-                {
-                    yield return sequence.item;
-                }
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        #endregion
-    }
+   
     public class CaseSequence<T> : SimpleToken, IEnumerable<T> where T : SimpleToken
     {
         private readonly T item;
@@ -417,6 +377,53 @@ namespace VTC.Core
         }
 
     }
+    public class ClassElementSequence : DeclarationSequence<Declaration>
+    {
+         [Rule("<Class Element Decl> ::= <Func Proto>")]
+            [Rule("<Class Element Decl> ::= <Constructor Proto>")]
+            [Rule("<Class Element Decl> ::= <Destructor Proto>")]
+          [Rule("<Class Element Decl> ::= <Method Decl>")]
+          [Rule("<Class Element Decl> ::= <Var Decl>")]
+          [Rule("<Class Element Decl> ::= <Constructor Decl>")]
+          [Rule("<Class Element Decl> ::= <Destructor Decl>")]
+        public ClassElementSequence(Declaration item)
+            : base(item, null)
+        {
+        }
+          [Rule("<Class Element Decl> ::= <Func Proto> <Class Element Decl>")]
+          [Rule("<Class Element Decl> ::= <Constructor Proto> <Class Element Decl>")]
+          [Rule("<Class Element Decl> ::= <Destructor Proto> <Class Element Decl>")]
+          [Rule("<Class Element Decl> ::= <Method Decl> <Class Element Decl>")]
+          [Rule("<Class Element Decl> ::= <Var Decl> <Class Element Decl>")]
+          [Rule("<Class Element Decl> ::= <Constructor Decl> <Class Element Decl>")]
+          [Rule("<Class Element Decl> ::= <Destructor Decl> <Class Element Decl>")]
+        public ClassElementSequence(Declaration item, ClassElementSequence next)
+            : base(item, next)
+        {
+
+        }
+
+          public List<Declaration> Declarations { get; set; }
+          public List<VariableDeclaration> VarDecls { get; set; }
+        public override SimpleToken DoResolve(ResolveContext rc)
+        {Declarations=new List<Declaration>()            ;
+        VarDecls = new List<VariableDeclaration>();
+            foreach (Declaration d in this)
+            {
+                if (d != null && d is VariableDeclaration)
+                {
+                    VariableDeclaration decl = (VariableDeclaration)d.DoResolve(rc);
+                    VarDecls.Add(decl);
+                    
+                }
+                else if(d != null)
+                    Declarations.Add(d);
+            }
+            return this;
+        }
+
+    }
+
     public class FunctionSpecifierSequence: Sequence<FunctionSpecifier>
     {
 

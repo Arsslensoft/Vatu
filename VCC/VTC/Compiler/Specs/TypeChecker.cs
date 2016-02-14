@@ -40,10 +40,21 @@ namespace VTC
         }
         public static bool CompatibleTypes(TypeSpec a, TypeSpec b)
         {
+           
             if (a.Equals(b))
                 return true;
             else if (IsPointerHolder(a, b))
                 return true;
+            else if (a.IsClass && b.IsClass && !a.IsPointer && !b.IsPointer)
+            {
+                ClassTypeSpec A = a as ClassTypeSpec;
+                ClassTypeSpec B = b as ClassTypeSpec;
+                if (IsGeneralisationOf(A, B) || IsSpecialisationOf(A, B))
+                    return true;
+          
+                else return false;
+
+            }
             else if (TemplateImplicitCast(a, b))
                 return true;
             else if ((a.IsForeignType && !a.IsPointer) || (b.IsForeignType && !b.IsPointer))
@@ -61,6 +72,24 @@ namespace VTC
        
 
           
+        }
+        public static bool IsGeneralisationOf(ClassTypeSpec a, ClassTypeSpec b)
+        {
+            // a < b 
+            if (b.Inherited.Contains(a))
+                return true;
+            else return false;
+
+
+        }
+        public static bool IsSpecialisationOf(ClassTypeSpec a, ClassTypeSpec b)
+        {
+            // a > b 
+            if (a.Inherited.Contains(b))
+                return true;
+            else return false;
+
+
         }
         public static bool BitAccessible(TypeSpec a)
         {

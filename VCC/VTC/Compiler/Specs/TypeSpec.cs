@@ -65,6 +65,7 @@ namespace VTC
             }
             set { _size = value; }
         }
+
         public bool IsNumeric
         {
             get
@@ -107,6 +108,30 @@ namespace VTC
             get
             {
                 return _bt == BuiltinTypes.Unknown && (IsStruct || IsUnion);
+            }
+
+        }
+        public bool IsReferenceType
+        {
+            get
+            {
+                return _bt == BuiltinTypes.Unknown && (IsClass || IsInterface);
+            }
+
+        }
+        public bool IsInterface
+        {
+            get
+            {
+                return _bt == BuiltinTypes.Unknown && ((_flags & TypeFlags.Interface) == TypeFlags.Interface);
+            }
+
+        }
+        public bool IsClass
+        {
+            get
+            {
+                return _bt == BuiltinTypes.Unknown && ((_flags & TypeFlags.Class) == TypeFlags.Class);
             }
 
         }
@@ -287,7 +312,37 @@ namespace VTC
          
             return type.Size;
         }
+        internal int GetAllocSize(TypeSpec type)
+        {
+            if (type.IsArray)
+                return (type as ArrayTypeSpec).ArrayCount * GetSize(type.BaseType);
+            else if (type.IsBuiltinType)
+            {
+                switch (type.BuiltinType)
+                {
+                    case BuiltinTypes.Bool:
+                    case BuiltinTypes.SByte:
+                    case BuiltinTypes.Byte:
+                        return 1;
+                    case BuiltinTypes.Float:
+                        return 4;
+                    case BuiltinTypes.Int:
+                    case BuiltinTypes.UInt:
+                    case BuiltinTypes.String:
+                    case BuiltinTypes.Pointer:
+                    case BuiltinTypes.Type:
+                        return 2;
 
+
+                    default:
+                        return 0;
+                }
+            }
+            else if (type.IsClass && !type.IsPointer)
+                return (type as ClassTypeSpec).ClassSize;
+
+            return type.Size;
+        }
         protected int GetSizeBt(TypeSpec type)
         {
           

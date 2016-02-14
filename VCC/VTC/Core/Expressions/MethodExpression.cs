@@ -16,7 +16,10 @@ namespace VTC.Core
         public MethodSpec Method;
         public List<Expr> Parameters { get; set; }
         bool isdelegate = false;
+        bool isclass = false;
         protected Identifier _id;
+        bool issuper = false;
+        bool isthis = false;
         protected ParameterSequence<Expr> _param;
         [Rule(@"<Method Expr>       ::= Id ~'(' <PARAM EXPR> ~')'")]
         public MethodExpression(Identifier id, ParameterSequence<Expr> expr)
@@ -24,8 +27,106 @@ namespace VTC.Core
             _id = id;
             _param = expr;
         }
-   
+
+
+        [Rule(@"<Method Expr>       ::= this ~'(' <PARAM EXPR> ~')'")]
+        [Rule(@"<Method Expr>       ::= super ~'(' <PARAM EXPR> ~')'")]
+        public MethodExpression(SimpleToken id, ParameterSequence<Expr> expr)
+        {
+            issuper = (id.Name == "super");
+            isthis = (id.Name == "this");
+            _param = expr;
+        }
+
+
         MemberSpec DelegateVar;
+        TypeMemberSpec tmp = null;
+        int index = 0;
+        AccessExpression classae = null;
+        public bool ResolveClassMember(ResolveContext rc, MemberSpec mem, ref TypeMemberSpec tmp,ref int index)
+        {
+      
+
+            if (!mem.MemberType.IsPointer)
+            {
+                if (!mem.MemberType.IsClass)
+                    return false;
+                else
+                {
+                    ClassTypeSpec stp = (ClassTypeSpec)mem.MemberType;
+                    tmp = stp.ResolveMember(_id.Name);
+                    if (tmp == null)
+                        return false;
+                    else
+                    {
+                        // Resolve
+                        index = tmp.Index;
+                        return true;
+                    }
+
+                }
+
+            }
+            else return false;
+
+
+        }
+        bool ResolveClassMethod(ResolveContext rc)
+        {
+            if (!(rc.CurrentExtensionLookup != null && rc.CurrentExtensionLookup is ClassTypeSpec && rc.ExtensionVar != null && !( rc.ExtensionVar is PolymorphicClassExpression)))
+                return false;
+            Expr left = rc.ExtensionVar;
+            if (left is VariableExpression)
+            {
+                VariableExpression lv = (VariableExpression)left;
+                bool ok = ResolveClassMember(rc, lv.variable, ref tmp,ref index);
+                if (ok)
+                {
+                    if (!tmp.MemberType.IsDelegate)
+                        ResolveContext.Report.Error(0, Location, "Only delegate or class members can be called with parameters");
+                    else
+                    {
+                        isclass = true;
+                        Parameters.Add(left);
+                        if (!MatchParameterTypes(tmp.MemberType as DelegateTypeSpec))
+                        {
+                            ResolveContext.Report.Error(0, Location, "Member parameters mismatch");
+                            return false;
+                        }
+                    }
+
+                    if (lv.variable is VarSpec)
+                    {
+                        VarSpec dst = (VarSpec)lv.variable;
+                        classae = new AccessExpression(dst, (left is AccessExpression) ? (left as AccessExpression) : null, lv.position, true, index, tmp.MemberType);
+                        return true;
+                    }
+                    else if (lv.variable is RegisterSpec)
+                    {
+                        RegisterSpec dst = (RegisterSpec)lv.variable;
+                        classae = new AccessExpression(dst, (left is AccessExpression) ? (left as AccessExpression) : null, lv.position, true, index, tmp.MemberType);
+                        return true;
+                    }
+                    else if (lv.variable is FieldSpec)
+                    {
+                        FieldSpec dst = (FieldSpec)lv.variable;
+
+
+                        classae = new AccessExpression(dst, (left is AccessExpression) ? (left as AccessExpression) : null, lv.position, true, index, tmp.MemberType);
+                        return true;
+                    }
+                    else if (lv.variable is ParameterSpec)
+                    {
+                        ParameterSpec dst = (ParameterSpec)lv.variable;
+                        classae = new AccessExpression(dst, (left is AccessExpression) ? (left as AccessExpression) : null, lv.position, true, index, tmp.MemberType);
+                        return true;
+                    }
+                    else return false;
+                }
+            }
+            else return false;
+            return false;
+        }
         bool ResolveDelegate(ResolveContext rc)
         {
             MemberSpec r = rc.Resolver.TryResolveName(_id.Name);
@@ -73,7 +174,10 @@ namespace VTC.Core
                 fc.MarkAsUsed(DelegateVar);
             return base.DoFlowAnalysis(fc);
         }
-       
+
+     
+      
+
        public override bool Resolve(ResolveContext rc)
         {
 
@@ -82,21 +186,26 @@ namespace VTC.Core
                 ok &= _param.Resolve(rc);
             return true;
         }
-         public override SimpleToken DoResolve(ResolveContext rc)
+       TypeSpec InheritedType = null;
+        public override SimpleToken DoResolve(ResolveContext rc)
         {
 
             ResolveScopes old = rc.CurrentScope;
             rc.CurrentScope &= ~ResolveScopes.AccessOperation;
-
-            ccvh = new CallingConventionsHandler();
+            if (isthis || issuper && !rc.IsInClass)
+                ResolveContext.Report.Error(0, Location, "This and super can be only used inside a class member declaration");
+          
+             ccvh = new CallingConventionsHandler();
             List<TypeSpec> tp = new List<TypeSpec>();
             Parameters = new List<Expr>();
             AcceptStatement = true;
             if (_param != null)
             {
+
                 foreach (Expr p in _param)
                 {
                     Expr e = (Expr)p.DoResolve(rc);
+               
                     Parameters.Add(e);
                     tp.Add(e.Type);
 
@@ -106,37 +215,61 @@ namespace VTC.Core
 
             rc.CurrentScope = old;
             rc.SetHighPriorityAsCurrent();
+
             MemberSignature msig = new MemberSignature();
-            if (tp.Count > 0)
+            if (isthis)
             {
-                if (!ResolveDelegate(rc))
-                    rc.Resolver.TryResolveMethod(_id.Name,ref Method, tp.ToArray());
-                else
-                {
-                    Type = (DelegateVar.MemberType as DelegateTypeSpec).ReturnType;
-                    return this;
-                }
+                msig = new MemberSignature(rc.CurrentNamespace,rc.CurrentType.NormalizedName + "_$ctor",tp.ToArray(),Location);
+                tp.Insert(0, rc.CurrentType);
+                Parameters.Insert(0, (Expr)(new ThisExpression(position).DoResolve(rc)));
+                InheritedType = rc.CurrentType;
+                rc.CurrentScope |= ResolveScopes.ThisAcces;
+                rc.Resolver.TryResolveMethod(rc.CurrentType.NormalizedName + "_$ctor", ref Method, tp.ToArray());
+                rc.CurrentScope &= ~ResolveScopes.ThisAcces;
+            }
+            else if (issuper)
+            {
+               
+               
+               if ((rc.CurrentType as ClassTypeSpec).ParentClass == null)
+                    ResolveContext.Report.Error(0, Location, "Can't use super without having inheritance");
 
-                if (Method == null)
-                    msig = new MemberSignature(rc.CurrentNamespace, _id.Name, tp.ToArray(), Location);
+               InheritedType = (rc.CurrentType as ClassTypeSpec).ParentClass;
+                tp.Insert(0, InheritedType);
+                rc.CurrentExtensionLookup = InheritedType;
+                Parameters.Insert(0, (Expr)(new SuperExpression(position).DoResolve(rc)));
+                msig = new MemberSignature(rc.CurrentNamespace, InheritedType.NormalizedName + "_$ctor", tp.ToArray(), Location);
+                rc.CurrentExtensionLookup = null;
 
+                rc.CurrentScope |= ResolveScopes.SuperAccess;
+                rc.Resolver.TryResolveMethod(InheritedType.NormalizedName + "_$ctor", ref Method, tp.ToArray());
+                rc.CurrentScope &= ~ResolveScopes.SuperAccess;
             }
             else
             {
-                if (!ResolveDelegate(rc))
-                 rc.Resolver.TryResolveMethod(_id.Name,ref Method);
+                if (!ResolveClassMethod(rc) && !ResolveDelegate(rc))
+                    rc.Resolver.TryResolveMethod(_id.Name, ref Method, tp.ToArray());
+                else if (classae != null)
+                {
+                    isclass = true;
+                    Type = (classae.Type as DelegateTypeSpec).ReturnType;
+                    rc.UnsetHighPriorityAsCurrent();
+                    return this;
+                }
                 else
                 {
                     Type = (DelegateVar.MemberType as DelegateTypeSpec).ReturnType;
+                    rc.UnsetHighPriorityAsCurrent();
                     return this;
                 }
                 if (Method == null)
                     msig = new MemberSignature(rc.CurrentNamespace, _id.Name, tp.ToArray(), Location);
-            }
 
+            }
             
             if ((rc.CurrentScope & ResolveScopes.AccessOperation) == ResolveScopes.AccessOperation && rc.CurrentExtensionLookup != null)
             {
+             
                 if (Method == null)
                     ResolveContext.Report.Error(46, Location, "Unresolved extension method");
                 else if (rc.ExtensionVar != null && Parameters.Count < Method.Parameters.Count)
@@ -171,6 +304,8 @@ namespace VTC.Core
             
             if (Method != null)
                 Type = Method.MemberType;
+
+           
             return this;
         }
         bool MatchParameterTypes(ResolveContext rc)
@@ -200,23 +335,36 @@ namespace VTC.Core
             return true;
         }
         CallingConventionsHandler ccvh;
+
+  
         public override bool Emit(EmitContext ec)
         {
             if (isdelegate && DelegateVar != null)
             {
                 DelegateVar.EmitToStack(ec);
-                ec.EmitPop(RegistersEnum.BX);
-                ccvh.EmitCall(ec, Parameters, DelegateVar, RegistersEnum.BX, (DelegateVar.MemberType as DelegateTypeSpec).CCV);
+
+                ccvh.EmitCall(ec, Parameters, DelegateVar,  (DelegateVar.MemberType as DelegateTypeSpec).CCV);
 
                 if ((DelegateVar.MemberType as DelegateTypeSpec).ReturnType.IsFloat && !(DelegateVar.MemberType as DelegateTypeSpec).ReturnType.IsPointer) // pop floating point
                     ec.EmitInstruction(new Vasm.x86.x87.FloatFree() { DestinationReg = RegistersEnum.ST0 });
 
             }
+            else if (isclass && classae != null)
+            {
+
+                ccvh.EmitCall(ec, Parameters, classae, (tmp.MemberType as DelegateTypeSpec).CCV);
+
+                if ((tmp.MemberType as DelegateTypeSpec).ReturnType.IsFloat && !(tmp.MemberType as DelegateTypeSpec).ReturnType.IsPointer) // pop floating point
+                    ec.EmitInstruction(new Vasm.x86.x87.FloatFree() { DestinationReg = RegistersEnum.ST0 });
+            }
+
             else
             {
+
                 ccvh.EmitCall(ec, Parameters, Method);
                 if (Method.MemberType.IsFloat && !Method.MemberType.IsPointer) // pop floating point
                     ec.EmitInstruction(new Vasm.x86.x87.FloatFree() { DestinationReg = RegistersEnum.ST0 });
+
             }
 
             return true;
@@ -225,20 +373,28 @@ namespace VTC.Core
         {
             if (isdelegate && DelegateVar != null)
             {
-                DelegateVar.EmitToStack(ec);
-                ec.EmitPop(RegistersEnum.BX);
-                ccvh.EmitCall(ec, Parameters, DelegateVar, RegistersEnum.BX, (DelegateVar.MemberType as DelegateTypeSpec).CCV);
+        
+                ccvh.EmitCall(ec, Parameters, DelegateVar, (DelegateVar.MemberType as DelegateTypeSpec).CCV);
 
                 if (!((DelegateVar.MemberType as DelegateTypeSpec).ReturnType.IsFloat && !(DelegateVar.MemberType as DelegateTypeSpec).ReturnType.IsPointer)) // pop floating point
                     ec.EmitPush(EmitContext.A);
                
 
             }
+            else if (isclass)
+            {
+                ccvh.EmitCall(ec, Parameters, classae, (classae.Type as DelegateTypeSpec).CCV);
+
+                if (!((tmp.MemberType as DelegateTypeSpec).ReturnType.IsFloat && !(tmp.MemberType as DelegateTypeSpec).ReturnType.IsPointer)) // pop floating point
+                    ec.EmitPush(EmitContext.A);
+            }
             else
             {
+
                 ccvh.EmitCall(ec, Parameters, Method);
                 if (!(Method.MemberType.IsFloat && !Method.MemberType.IsPointer)) // pop floating point
                     ec.EmitPush(EmitContext.A);
+
             }
 
             return true;

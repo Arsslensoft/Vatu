@@ -14,6 +14,7 @@ namespace VTC
        public Resolver Parent { get; set; }
        public Namespace CurrentNamespace { get; set; }
        public TypeSpec CurrentExtensionLookup { get; set; }
+       public TypeSpec CurrentClassLookup{ get; set; }
        public bool IsExtensionStatic { get; set; }
        public List<Namespace> Imports { get; set; }
        public MethodSpec CurrentMethod { get; set; }
@@ -25,15 +26,16 @@ namespace VTC
         public List<VarSpec> KnownLocalVars { get; set; }
         public List<VarSpec> GloballyKnownLocals { get; set; }
         public List<Namespace> KnownNamespaces { get; set; }
-
-        public Resolver(Resolver parent, Namespace ns, List<Namespace> imports, MethodSpec mtd = null)
-            : this(ns,imports,mtd)
+        public ResolveContext CurrentContext { get; set; }
+        public Resolver(Resolver parent, Namespace ns, List<Namespace> imports,ResolveContext rc, MethodSpec mtd = null)
+            : this(ns,imports,rc,mtd)
         {
             Parent = parent;
      
         }
-        public Resolver(Namespace ns, List<Namespace> imports, MethodSpec mtd = null)
+        public Resolver(Namespace ns, List<Namespace> imports,ResolveContext rc, MethodSpec mtd = null)
         {
+            CurrentContext = rc;
             CurrentMethod = mtd;
             Parent = null;
             CurrentNamespace = ns;
@@ -176,6 +178,43 @@ namespace VTC
 
 
         #region Resolve Members
+        protected bool CheckAccessModifier(MemberSpec ms)
+        {
+            if (CurrentContext.IsInClass)
+            {
+                if ((CurrentContext.CurrentScope & ResolveScopes.SuperAccess) == ResolveScopes.SuperAccess && ((ms.Modifiers & Modifiers.Private) == Modifiers.Private)) // private member of super
+                    return false;
+                else if ((CurrentContext.CurrentScope & ResolveScopes.ThisAcces) == ResolveScopes.ThisAcces)
+                    return true;
+                else return (((ms.Modifiers & Modifiers.Private) != Modifiers.Private) || CurrentContext.CurrentNamespace == ms.NS); // otherwise everything is accepted
+            }
+            else
+            {
+                // outside class
+                if (CurrentContext.CurrentExtensionLookup != null) // class member
+                {
+                    if ((ms.Modifiers & Modifiers.Internal) == Modifiers.Internal && ms.NS == CurrentContext.CurrentNamespace)
+                        return true;
+                    else if ((ms.Modifiers & Modifiers.Public) == Modifiers.Public)
+                        return true;
+                    else
+                        return false; // private & protected restricted
+                }
+              
+                else // general
+                {
+                    // public or private
+                    if ((ms.Modifiers & Modifiers.Public) == Modifiers.Public)
+                        return true;
+                    else if (CurrentClassLookup != null && ((ms.Modifiers & Modifiers.Protected) == Modifiers.Protected || (ms.Modifiers & Modifiers.Private) == Modifiers.Private))
+                        return false;
+                    else return ((((ms.Modifiers & Modifiers.Private) != Modifiers.Private) && ((ms.Modifiers & Modifiers.Protected) != Modifiers.Protected)) || CurrentContext.CurrentNamespace == ms.NS); // otherwise everything is accepted
+
+                }
+            }
+
+        }
+
         public MemberSpec TryResolveName(Namespace ns, string name)
         {
             MemberSpec m = ResolveVar(ns, name);
@@ -202,13 +241,13 @@ namespace VTC
                 if (KnownTypes[i].NS.Name != ns.Name)
                     continue;
 
-                if (sig == null && KnownTypes[i].Name == name && ((!KnownTypes[i].IsPrivate || CurrentNamespace == ns)))
+                if (sig == null && KnownTypes[i].Name == name)
                 {
                     tp = KnownTypes[i];
                     return true;
 
                 }
-                else if (KnownTypes[i].Signature.NoNamespaceSignature == sig && ((!KnownTypes[i].IsPrivate || CurrentNamespace == ns)))
+                else if (KnownTypes[i].Signature.NoNamespaceSignature == sig)
                 {
                     tp = KnownTypes[i];
                     return true;
@@ -219,6 +258,7 @@ namespace VTC
            
             return false;
         }
+       
         public FieldSpec ResolveField(Namespace ns, string name)
         {
             if (CurrentExtensionLookup == null)
@@ -228,8 +268,12 @@ namespace VTC
 
                     if (kt.NS.Name != ns.Name)
                         continue;
-                    if (kt.Name == name && !(kt.IsPrivate && kt.NS != CurrentNamespace))
+                    if (kt.Name == name)
+                    {
+                        if (!CheckAccessModifier(kt))
+                            ResolveContext.Report.Error(0, kt.Signature.Location, kt.Signature.NormalSignature + " is inaccessible due to its protection level");
                         return kt;
+                    }
                 }
             }
             else
@@ -239,7 +283,10 @@ namespace VTC
                 foreach (FieldSpec kt in ml)
                 {
                     if (kt.Name == name && !(kt.IsPrivate))
+                    {
+                        CheckAccessModifier(kt);
                         return kt;
+                    }
                 }
                 
 
@@ -250,37 +297,22 @@ namespace VTC
         {
             if (CurrentExtensionLookup == null)
             {
-                if (par != null)
-                {
+               
                     MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
                     for (int i = 0; i < KnownMethods.Count; i++)
                     {
                         if (KnownMethods[i].NS.Name != ns.Name)
                             continue;
-                        if (msig.Signature.StartsWith(KnownMethods[i].Signature.Signature) && ((!KnownMethods[i].IsPrivate || CurrentNamespace == ns)))
+                        if (msig.Signature.StartsWith(KnownMethods[i].Signature.Signature))
                         {
                             // Variadic Signature Match
                             mtd = KnownMethods[i];
-                            return;
-
-                        }
-                    }
-                }
-                else
-                {
-                    MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
-                    for (int i = 0; i < KnownMethods.Count; i++)
-                    {
-                        if (KnownMethods[i].NS.Name != ns.Name)
-                            continue;
-                        if (msig.Signature.StartsWith(KnownMethods[i].Signature.Signature) && ((!KnownMethods[i].IsPrivate || CurrentNamespace == ns)))
-                        {
-                            // Variadic Signature Match
-                            mtd = KnownMethods[i];
+                            if (!CheckAccessModifier(mtd))
+                                ResolveContext.Report.Error(0, mtd.Signature.Location, mtd.Signature.NormalSignature + " is inaccessible due to its protection level");
                             return;
                         }
                     }
-                }
+                
             }
             else
             {
@@ -304,10 +336,12 @@ namespace VTC
                     MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
                     for (int i = 0; i < ml.Count; i++)
                     {
-                        if (msig.ExtensionSignature.StartsWith(ml[i].Signature.ExtensionSignature) && ((!ml[i].IsPrivate || CurrentNamespace == ns)))
+                        if (msig.ExtensionSignature.StartsWith(ml[i].Signature.ExtensionSignature) )
                         {
                             // Variadic Signature Match
                             mtd = ml[i];
+                            if (!CheckAccessModifier(mtd))
+                                ResolveContext.Report.Error(0, mtd.Signature.Location, mtd.Signature.NormalSignature + " is inaccessible due to its protection level");
                             return;
 
                         }
@@ -319,10 +353,12 @@ namespace VTC
                     for (int i = 0; i < ml.Count; i++)
                     {
 
-                        if (msig.ExtensionSignature.StartsWith(ml[i].Signature.ExtensionSignature) && ((!ml[i].IsPrivate || CurrentNamespace == ns)))
+                        if (msig.ExtensionSignature.StartsWith(ml[i].Signature.ExtensionSignature))
                         {
                             // Variadic Signature Match
                             mtd = ml[i];
+                            if (!CheckAccessModifier(mtd))
+                                ResolveContext.Report.Error(0, mtd.Signature.Location, mtd.Signature.NormalSignature + " is inaccessible due to its protection level");
                             return;
 
                         }
@@ -331,93 +367,52 @@ namespace VTC
             }
 
         }
-        void ResolveExtensionMethod(List<MethodSpec> ml,Namespace ns, string name, ref MethodSpec mtd, TypeSpec[] par = null)
+        void ResolveExtensionMethod(Namespace ns, string name,TypeSpec ext, ref MethodSpec mtd, TypeSpec[] par = null)
         {
             bool hastemplate = false;
-            if (par != null)
-            {
-                MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
-                for (int i = 0; i < ml.Count; i++)
-                {
-                    //if (ml[i].Signature.ExtensionSignature == msig.ExtensionSignature && ((!ml[i].IsPrivate || CurrentNamespace == ns)))
-                    //{
-                    //    mtd = ml[i];
-                    //    return;
-
-                    //}
-
-
-                    if (ml[i].MatchExtSignature( msig, name,par, ref hastemplate) && ((!ml[i].IsPrivate || CurrentNamespace == ns)))
-                    {
-                        mtd = ml[i];
-                        return;
-
-                    }
-                }
-            }
-            else
-            {
-                MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
-                for (int i = 0; i < ml.Count; i++)
+    
+                MemberSignature msig = new MemberSignature(ns,ext.Name + "$_"+ name, par, Location.Null);
+                for (int i = 0; i < KnownMethods.Count; i++)
                 {
 
-                    if (ml[i].Signature.ExtensionSignature == msig.ExtensionSignature && ((!ml[i].IsPrivate || CurrentNamespace == ns)))
+                    if (KnownMethods[i].MatchExtSignature(msig, ext.Name + "$_" + name, par, ref hastemplate))
                     {
-                        mtd = ml[i];
+                        mtd = KnownMethods[i];
+                        if (!CheckAccessModifier(mtd))
+                            ResolveContext.Report.Error(0, mtd.Signature.Location, mtd.Signature.NormalSignature + " is inaccessible due to its protection level");
                         return;
-
                     }
                 }
-            }
-
+       
         }
         public void ResolveMethod(Namespace ns, string name, ref MethodSpec mtd,TypeSpec[] par=null)
         {
             bool hastemplate = false;
             if (CurrentExtensionLookup == null)
             {
-              //  if (par != null)
-              //  {
+         
                     MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
                     for (int i = 0; i < KnownMethods.Count; i++)
                     {
                         if (KnownMethods[i].NS.Name != ns.Name)
                             continue;
-                        //if (KnownMethods[i].Signature == msig && ((!KnownMethods[i].IsPrivate || CurrentNamespace == ns)))
-                        //{
-                        //    mtd = KnownMethods[i];
-                        //       return;
-                        
-                        //}
-                        if (KnownMethods[i].MatchSignature(msig, name, par,ref hastemplate) && ((!KnownMethods[i].IsPrivate || CurrentNamespace == ns)))
+                      
+                        if (KnownMethods[i].MatchSignature(msig, name, par,ref hastemplate))
                         {
                             mtd = KnownMethods[i];
+                            if (!CheckAccessModifier(mtd))
+                                ResolveContext.Report.Error(0, mtd.Signature.Location, mtd.Signature.NormalSignature + " is inaccessible due to its protection level");
                             return;
 
                         }
                     }
-             //   }
-                //else
-                //{
-                //    MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
-                //    for (int i = 0; i < KnownMethods.Count; i++)
-                //    {
-                //        if (KnownMethods[i].NS.Name != ns.Name)
-                //            continue;
-                //        if (KnownMethods[i].Signature == msig && ((!KnownMethods[i].IsPrivate || CurrentNamespace == ns)))
-                //        {
-                //            mtd = KnownMethods[i];
-                //            return;
-                //        }
-                //    }
-                //}
+           
             }
             else
             {
                 TypeSpec original = KnownTypes[KnownTypes.IndexOf(CurrentExtensionLookup)];
-                List<MethodSpec> ml = original.ExtendedMethods;
-                if(IsExtensionStatic)
-                    ml = CurrentExtensionLookup.StaticExtendedMethods;
+       
+            
                 if (par != null && !IsExtensionStatic)
                 {
                     List<TypeSpec> ts = new List<TypeSpec>();
@@ -428,14 +423,13 @@ namespace VTC
                 else if(!IsExtensionStatic)
                     par = new TypeSpec[1] { CurrentExtensionLookup };
 
-                ResolveExtensionMethod(ml, ns, name, ref mtd, par);
+                ResolveExtensionMethod( ns, name, CurrentExtensionLookup, ref mtd, par);
                 if (mtd == null && original is StructTypeSpec && (original as StructTypeSpec).Primitive != null && original.Size == (original as StructTypeSpec).Primitive.Size) // implicit cast primitive
                 {
                 
                     original = KnownTypes[KnownTypes.IndexOf((original as StructTypeSpec).Primitive)];
-                    ml = original.ExtendedMethods;
-                    if (IsExtensionStatic)
-                        ml = CurrentExtensionLookup.StaticExtendedMethods;
+        
+
                     if (par != null && !IsExtensionStatic)
                     {
                         List<TypeSpec> ts = new List<TypeSpec>();
@@ -447,7 +441,7 @@ namespace VTC
                     else if (!IsExtensionStatic)
                         par = new TypeSpec[1] { original  };
 
-                    ResolveExtensionMethod(ml, ns, name, ref mtd, par);
+                    ResolveExtensionMethod( ns, name, original, ref mtd, par);
                 }
             }
          
@@ -460,7 +454,11 @@ namespace VTC
                 if (kt.NS.Name != ns.Name)
                     continue;
                 if (kt.Name == name)
+                {
+                    if (!CheckAccessModifier(kt))
+                        ResolveContext.Report.Error(0, kt.Signature.Location, kt.Signature.NormalSignature + " is inaccessible due to its protection level");
                     return kt;
+                }
             }
             return null;
         }
@@ -480,8 +478,12 @@ namespace VTC
             {
                 if (kt.NS.Name != ns.Name)
                     continue;
-                if (kt.Symbol == symb && ((!kt.IsPrivate || CurrentNamespace == ns)))
+                if (kt.Symbol == symb )
+                {
+                    if (!CheckAccessModifier(kt))
+                        ResolveContext.Report.Error(0, kt.Signature.Location, kt.Signature.NormalSignature + " is inaccessible due to its protection level");
                     return kt;
+                }
             }
             return null;
         }
@@ -493,7 +495,11 @@ namespace VTC
             {
 
                 if (kt.Name == name)
+                {
+                    if (!CheckAccessModifier(kt))
+                        ResolveContext.Report.Error(0, kt.Signature.Location, kt.Signature.NormalSignature + " is inaccessible due to its protection level");
                     return kt;
+                }
             }
             return null;
         }
@@ -503,13 +509,17 @@ namespace VTC
             {
                 if (kt.NS.Name != ns.Name)
                     continue;
-                if (kt is EnumTypeSpec &&  ((!kt.IsPrivate || CurrentNamespace == ns)))
+                if (kt is EnumTypeSpec)
                 {
 
                     EnumTypeSpec ets = (EnumTypeSpec)kt;
                     foreach (EnumMemberSpec em in ets.Members)
                         if (em.Name == name)
+                        {
+                            if (!CheckAccessModifier(ets))
+                                ResolveContext.Report.Error(0, ets.Signature.Location, ets.Signature.NormalSignature + " is inaccessible due to its protection level");
                             return em;
+                        }
                 }
             }
 

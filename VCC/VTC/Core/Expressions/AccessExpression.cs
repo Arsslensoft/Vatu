@@ -27,7 +27,7 @@ namespace VTC.Core
         internal AccessExpression Parent = null;
         internal AccessExpression Child = null;
         public bool IsByIndex { get; set; }
-
+        public bool IsClass = false;
   
         public override string ToString()
         {

@@ -96,6 +96,13 @@ namespace VTC.Core
     [Terminal("private")]
     [Terminal("checked")]
     [Terminal("unchecked")]
+
+    [Terminal("protected")]
+    [Terminal("internal")]
+
+    [Terminal("class")]
+    [Terminal("super")]
+
     public class SimpleToken : SemanticToken, IResolve
     {
         private Location _loc;
@@ -103,6 +110,8 @@ namespace VTC.Core
 
         public virtual string Name { get { return symbol.Name; } }
 
+
+   
         public virtual FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             return FlowState.Valid;

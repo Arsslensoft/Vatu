@@ -80,7 +80,8 @@ namespace VTC
         IF_EXPR,
         FLOAT_REM,
         TRY_CATCH,
-        CHECKED_EXPR
+        CHECKED_EXPR,
+        PolymorphicCall
 
     }
     [Flags]
@@ -93,7 +94,9 @@ namespace VTC
         Case = 1 << 4,
         Try = 1 << 5,
         CheckedArithmetics = 1 << 6,
-        ByNameAccess = 1 << 7
+        ByNameAccess = 1 << 7,
+        ThisAcces = 1 << 8,
+        SuperAccess = 1 << 9 
        
     }
     public class ResolveContext : IDisposable
@@ -130,6 +133,7 @@ namespace VTC
         public bool IsInTypeDef { get; set; }
         public bool IsInStruct { get; set; }
         public bool IsInUnion { get; set; }
+        public bool IsInClass { get; set; }
         public bool IsInEnum { get; set; }
         public bool IsInVarDeclaration { get; set; }
         
@@ -240,7 +244,7 @@ namespace VTC
         {
      
        
-            Resolver = new Resolver(ns, imp,cm);
+            Resolver = new Resolver(ns, imp,this,cm);
             current_block = b;
             CurrentNamespace = ns;
             FillKnown();
@@ -251,7 +255,7 @@ namespace VTC
 
 
             Init();
-            Resolver = new Resolver(Namespace.Default, new List<Namespace>(), new MethodSpec(Namespace.Default, "<root-decl-list>", Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
+            Resolver = new Resolver(Namespace.Default, new List<Namespace>(), this, new MethodSpec(Namespace.Default, "<root-decl-list>", Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
 
             FillKnown();
             ChildContexts = new List<ResolveContext>();
@@ -262,7 +266,7 @@ namespace VTC
        
 
             Init();
-            Resolver = new Resolver(ns,imp,new MethodSpec(ns, "<root-decl-list>", Modifiers.NoModifier, null, CallingConventions.StdCall,null, Location.Null));
+            Resolver = new Resolver(ns, imp, this, new MethodSpec(ns, "<root-decl-list>", Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
           
             FillKnown();
             ChildContexts = new List<ResolveContext>();
@@ -273,7 +277,7 @@ namespace VTC
       
 
             Init();
-            Resolver = new Resolver(ns, imp, new MethodSpec(ns, decl.ItName, Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
+            Resolver = new Resolver(ns, imp, this,  new MethodSpec(ns, decl.ItName, Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
 
             FillKnown();
             ChildContexts = new List<ResolveContext>();
@@ -285,7 +289,7 @@ namespace VTC
       
 
             Init();
-            Resolver = new Resolver(ns, imp, new MethodSpec(ns, decl.OpName, Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
+            Resolver = new Resolver(ns, imp, this, new MethodSpec(ns, decl.OpName, Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
 
             FillKnown();
             ChildContexts = new List<ResolveContext>();
@@ -297,7 +301,7 @@ namespace VTC
          
  
             Init();
-            Resolver = new Resolver(ns, imp, new MethodSpec(ns, decl.Identifier.Name, Modifiers.NoModifier, null, CallingConventions.StdCall,null, Location.Null));
+            Resolver = new Resolver(ns, imp, this, new MethodSpec(ns, decl.Identifier.Name, Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
      
             FillKnown();
             ChildContexts = new List<ResolveContext>();
@@ -309,19 +313,31 @@ namespace VTC
           
             
             Init();
-            Resolver = new Resolver(ns, imp, new MethodSpec(ns, "<struct-decl>", Modifiers.NoModifier, null, CallingConventions.StdCall,null, Location.Null));
+            Resolver = new Resolver(ns, imp, this, new MethodSpec(ns, "<struct-decl>", Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
             current_type = new TypeSpec(CurrentNamespace, decl.Identifier.Name, 0, BuiltinTypes.Unknown, TypeFlags.Struct, Modifiers.NoModifier, Location.Null);
             FillKnown();
             ChildContexts = new List<ResolveContext>();
 
             IsInStruct = true;
         }
+        public ResolveContext(List<Namespace> imp, Namespace ns, ClassDeclaration decl)
+        {
+
+
+            Init();
+            Resolver = new Resolver(ns, imp, this, new MethodSpec(ns, "<class-decl>", Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
+            current_type = new TypeSpec(CurrentNamespace, decl.Identifier.Name, 0, BuiltinTypes.Unknown, TypeFlags.Class, Modifiers.NoModifier, Location.Null);
+            FillKnown();
+            ChildContexts = new List<ResolveContext>();
+
+            IsInClass = true;
+        }
         public ResolveContext(List<Namespace> imp, Namespace ns, UnionDeclaration decl)
         {
        
 
             Init();
-            Resolver = new Resolver(ns, imp, new MethodSpec(ns, "<union-decl>", Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
+            Resolver = new Resolver(ns, imp, this, new MethodSpec(ns, "<union-decl>", Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
             current_type = new TypeSpec(CurrentNamespace, decl.Identifier.Name, 0, BuiltinTypes.Unknown, TypeFlags.Union, Modifiers.NoModifier, Location.Null);
             FillKnown();
             ChildContexts = new List<ResolveContext>();
@@ -333,7 +349,7 @@ namespace VTC
           
         
             Init();
-            Resolver = new Resolver(ns, imp,new MethodSpec(ns, "<enum-decl>", Modifiers.NoModifier, null,CallingConventions.StdCall,null, Location.Null));
+            Resolver = new Resolver(ns, imp, this, new MethodSpec(ns, "<enum-decl>", Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
        
             current_type = new TypeSpec(CurrentNamespace, decl.Identifier.Name, 0, BuiltinTypes.Unknown, TypeFlags.Struct, Modifiers.NoModifier, Location.Null);
             FillKnown();
@@ -408,6 +424,19 @@ namespace VTC
             else return null;
         }
         public ResolveContext CreateAsChild(List<Namespace> imp, Namespace ns, StructDeclaration md)
+        {
+            if (ChildContexts != null)
+            {
+                ResolveContext rc = new ResolveContext(imp, ns, md);
+                rc.FillKnownByKnown(Resolver);
+                ChildContexts.Add(rc);
+                return rc;
+
+            }
+            else return null;
+        }
+
+        public ResolveContext CreateAsChild(List<Namespace> imp, Namespace ns, ClassDeclaration md)
         {
             if (ChildContexts != null)
             {

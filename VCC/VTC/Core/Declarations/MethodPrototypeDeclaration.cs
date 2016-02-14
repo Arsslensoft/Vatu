@@ -9,7 +9,7 @@ namespace VTC.Core
     public class MethodPrototypeDeclaration : Declaration
     {
         FunctionExtensionDefinition ext;
-        MethodSpec method;
+        internal MethodSpec method;
         CallingConventions ccv = CallingConventions.StdCall;
         Modifiers mods = Modifiers.Private;
         Specifiers specs = Specifiers.NoSpec;
@@ -64,7 +64,8 @@ namespace VTC.Core
             mods |= Modifiers.Prototype;
    
             base._type = _id.TType;
-            method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, null, this._id.Location);
+
+
             Params = new Stack<ParameterSpec>();
             Parameters = new List<ParameterSpec>();
             List<TypeSpec> tp = new List<TypeSpec>();
@@ -72,6 +73,17 @@ namespace VTC.Core
             if (ext != null && ext.IsExtended)
                 ext = (FunctionExtensionDefinition)ext.DoResolve(rc);
             else ext = null;
+
+            if (ext != null && !ext.Static)
+                method = new MethodSpec(rc.CurrentNamespace, ext.ExtendedType.NormalizedName + "$_" + _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, null, this._id.Location);
+            else if (rc.IsInClass)
+                method = new MethodSpec(rc.CurrentNamespace, rc.CurrentType.NormalizedName + "$_" + _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, null, this._id.Location);
+
+            else
+                method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, null, this._id.Location);
+          
+
+
             if (_pal != null)
             {
                
@@ -99,7 +111,7 @@ namespace VTC.Core
                 {
                     if (par._id != null)
                     {
-                        ParameterSpec p = new ParameterSpec("param_" + paid, method, par._id.Type, par.Location, 4);
+                        ParameterSpec p = new ParameterSpec(rc.CurrentNamespace, "param_" + paid, method, par._id.Type, par.Location, 4);
                         Parameters.Add(p);
                         Params.Push(p);
                         tp.Add(p.MemberType);
@@ -122,7 +134,17 @@ namespace VTC.Core
           
             if (ext != null && !ext.Static)
                 tp.Insert(0, ext.ExtendedType);
-            method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, tp.ToArray(), this.Location);
+            else if (rc.IsInClass)
+                tp.Insert(0, rc.CurrentType);
+
+            if (ext != null && !ext.Static)
+                method = new MethodSpec(rc.CurrentNamespace, ext.ExtendedType.NormalizedName + "$_" + _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, tp.ToArray(), this.Location);
+            else if(rc.IsInClass)
+                method = new MethodSpec(rc.CurrentNamespace, rc.CurrentType.NormalizedName + "$_" + _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, tp.ToArray(), this.Location);
+            else
+                method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, tp.ToArray(), this.Location);
+
+
             method.IsVariadic = (specs & Specifiers.Variadic) == Specifiers.Variadic;
             method.Parameters = Parameters;
 
@@ -134,22 +156,23 @@ namespace VTC.Core
                 }
             rc.CurrentMethod = method;
             // extension
-            if (ext != null)
-            {
                 // insert this
-                if (!ext.Static)
+                if (ext != null && !ext.Static)
                 {
-                   
-                    ParameterSpec thisps = new ParameterSpec("this", method, ext.ExtendedType, Location, 4);
+
+                    ParameterSpec thisps = new ParameterSpec(rc.CurrentNamespace, "this", method, ext.ExtendedType, Location, 4, Modifiers.Ref);
                     Parameters.Insert(0, thisps);
                     method.Parameters = Parameters;
                 }
+                else if(rc.IsInClass)
+                {
 
-            if (!rc.Extend(ext.ExtendedType, method, ext.Static))
-                    ResolveContext.Report.Error(45, Location, "Another method with same signature has already extended this type.");
-            
-            }
-            else rc.KnowMethod(method);
+                    ParameterSpec thisps = new ParameterSpec(rc.CurrentNamespace, "this", method, rc.CurrentType, Location, 4);
+                    Parameters.Insert(0, thisps);
+                    method.Parameters = Parameters;
+                }
+        //    if(rc.CurrentType == null || (rc.CurrentType != null && !(rc.CurrentType is ClassTypeSpec)))
+                rc.KnowMethod(method);
 
             return this;
         }

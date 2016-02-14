@@ -48,7 +48,7 @@ namespace VTC
                 else Emitter = new HostedArrayEmitter(this, 0, ReferenceKind.Field);
             }
 
-            else if (memberType.IsBuiltinType || memberType.IsDelegate || memberType.IsTemplate)
+            else if (memberType.IsBuiltinType || memberType.IsDelegate || memberType.IsTemplate )
             {
                 if (memberType.IsFloat && !memberType.IsPointer)
                     Emitter = new FloatEmitter(this, 0, ReferenceKind.Field);
@@ -62,6 +62,8 @@ namespace VTC
                 else if(memberType.IsTemplate && memberType.Size > 2)
                     Emitter = new StructEmitter(this, 0, ReferenceKind.Field);
             }
+            else if (memberType.IsClass)
+                Emitter = new ClassEmitter(this, 0, ReferenceKind.Field);
             else if (memberType.IsForeignType)
                 Emitter = new StructEmitter(this, 0, ReferenceKind.Field);
         }

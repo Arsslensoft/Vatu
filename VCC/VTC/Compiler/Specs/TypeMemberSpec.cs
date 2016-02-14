@@ -13,7 +13,8 @@ namespace VTC
     /// </summary>
     public class TypeMemberSpec : MemberSpec, IEquatable<TypeMemberSpec>
     {
-
+        public bool IsMethod { get; set; }
+        public MethodSpec DefaultMethod { get; set; }
         TypeSpec th;
         public int Index { get; set; }
      

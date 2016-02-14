@@ -112,6 +112,8 @@ Comment Line  = '//'
                 | <Typedef Decl> 
                 | <Delegate Decl>
                 | <Template Decl>
+                | <Class Decl> 
+  
                 
 <Prototypes Decl> ::=  <Func Proto>
           | <Oper Proto>
@@ -133,8 +135,14 @@ Comment Line  = '//'
                | <Func ID> '(' <Params> ')' <Func Ext> ';'   
                | <Func ID> '('  ')' <Func Ext> ';'   
         
-               
+ <Constructor Proto> ::= <Mod> ID '(' <Types>  ')' ';'
+                            | <Mod> ID '(' <Params> ')'  ';'   
+                            | <Mod> ID '('  ')' ';'         
 
+ <Destructor Proto> ::= <Mod>  '~' ID '(' <Types>  ')' ';'
+                            | <Mod>  '~' ID '(' <Params> ')'  ';'   
+                            | <Mod>  '~' ID '('  ')' ';'   
+                            
 <Operator Definition Decl> ::= <Mod> define Id operator <Operator Def> ';'
                  | <Mod> define bool Id operator <Operator Def> ';'
 
@@ -149,6 +157,9 @@ Comment Line  = '//'
 ! Method  Declaration
 ! ===================================================================  
 <Func Decl>  ::= <Func ID> <Func Body>
+
+<Constructor Decl> ::= <Mod> ID <Func Body>
+<Destructor Decl>  ::= <Mod> '~' ID <Func Body>                     
 
 <Oper Decl>  ::= <Mod> override <Type> operator <Operator> <Func Body>
                | <Mod> override <Type> operator <Cast Kind> <Func Body> ! source type to dest type
@@ -181,6 +192,8 @@ Comment Line  = '//'
               | <Func Specs> <CallCV> <Type> ID
               | <Func Specs> <Type> ID
               | <Mod> <Func Specs> <Type> ID
+
+              
               
 
 <Func Specs> ::= <Func Spec> <Func Specs> 
@@ -221,6 +234,9 @@ Comment Line  = '//'
 <Struct Decl>  ::= <Mod> struct Id <Template Def> <Inheritance>  '{' <Struct Def> '}'  ';' 
                 | <Mod> typedef struct <Template Def> <Inheritance>  '{' <Struct Def> '}'  Id ';' 
                 
+<Class Decl>   ::= <Mod> class Id <Template Def> <Inheritance> '{' <Class Element Decl> '}' ';'
+               | <Mod> typedef class <Template Def> <Inheritance>  '{' <Class Element Decl> '}'  Id ';' 
+      
 
 <Union Decl>   ::= <Mod> union Id <Template Def> '{' <Struct Def> '}'  ';' 
                 | <Mod> typedef union <Template Def> '{' <Struct Def> '}' Id ';' 
@@ -235,6 +251,7 @@ Comment Line  = '//'
                   | <Mod> <CallCV> delegate <Type> ID '(' ')' ';'
                   | <Mod> typedef <CallCV> delegate <Type> '(' ')' ID ';'   
                   
+                  
 <Template Decl> ::= <Mod> <Template Def> ';'
                 | <Mod> <Template Def> sizeof <Integral Const> ';'                           
 <Inheritance> ::= extends <Types>
@@ -244,8 +261,24 @@ Comment Line  = '//'
 ! ===================================================================
 
 <Struct Def>   ::= <Struct Var Decl> <Struct Def>
-                 | <Struct Var Decl>  
-      
+                 | <Struct Var Decl>
+                  
+                
+<Class Element Decl> ::= <Method Decl>
+                    | <Var Decl>
+                    | <Constructor Decl>
+                    | <Destructor Decl>
+                    |  <Func Proto>
+                    | <Constructor Proto>
+                    | <Destructor Proto>
+                    
+                    | <Method Decl> <Class Element Decl> 
+                    | <Var Decl> <Class Element Decl> 
+                    | <Constructor Decl> <Class Element Decl> 
+                    | <Destructor Decl> <Class Element Decl> 
+                    | <Constructor Proto> <Class Element Decl>
+                    | <Destructor Proto> <Class Element Decl>
+                    | <Func Proto> <Class Element Decl>       
 ! Enumerations & Flags definition               
 <Enum Def>     ::= <Enum Val> ',' <Enum Def>
                  | <Enum Val>
@@ -355,12 +388,13 @@ Comment Line  = '//'
                | interrupt <Integral Const> '(' <PARAM EXPR> ')' ';'
                | return <Expression> ';'
                | return ';'
-               | delete <Value> ';'
+               | delete <Var Expr> '(' <PARAM EXPR> ')' ';'
+               | delete <Var Expr> ';'
                | <ASM Statement>
                | ';'              !Null statement          
                            
 
-<Case Stm> ::=  case <Integral Const List> ':' <Stm List>
+<Case Stm> ::=  case <Expression> ':' <Stm List>
               | default ':' <Stm List>   
 <Case Stms> ::= <Case Stm> <Case Stms>
               | <Case Stm>                
@@ -479,11 +513,11 @@ Comment Line  = '//'
 <Value>      ::= <CONSTANT>
                | '(' <Expression> ')'
                | <Declared Expression> 
-               | new <Type> '(' <Expression> ')'
+               | new <Type> '(' <PARAM EXPR> ')'
                | checked '(' <Expression> ')'
                | unchecked '(' <Expression> ')'
                | type '(' <Type> ')'
-               
+              
 
 <Declared Expression> ::=<Method Expr>     
                | <Var Expr>
@@ -491,8 +525,11 @@ Comment Line  = '//'
 <Var Expr>     ::= Id
                 | this
                 | params
+                | super
+                
 <Method Expr>  ::= Id '(' <PARAM EXPR> ')' 
-                !| Id '<' <Types> '>' '(' <PARAM EXPR> ')' 
+                  | super '(' <PARAM EXPR> ')' 
+                  | this '(' <PARAM EXPR> ')' 
                 
 <CONSTANT>    ::= <Integral Const> 
                | BooleanLiteral
@@ -521,8 +558,8 @@ Comment Line  = '//'
                    | CharLiteral
                  
                    
-<Integral Const List> ::= <Integral Const>
-                     | <Integral Const> ',' <Integral Const List> 
+!<Integral Const List> ::= <Integral Const>
+!                     | <Integral Const> ',' <Integral Const List> 
  
                   
 <PARAM EXPR>  ::= <Expression> ',' <PARAM EXPR>
@@ -582,8 +619,8 @@ Comment Line  = '//'
              | const   
              | private
              | public
-      
-
+             | internal
+             | protected
 
 <INSTRUCTION> ::= StringLiteral ';'
 <INSTRUCTIONS> ::= <INSTRUCTION>  <INSTRUCTIONS> 

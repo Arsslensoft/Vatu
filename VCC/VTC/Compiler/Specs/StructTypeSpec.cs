@@ -101,12 +101,14 @@ namespace VTC
                         return null;
                     else mt = type[idx];
                 }
-                else if (mt.IsStruct && (mt.IsPointer || mt.IsArray))
+                else if ((mt.IsStruct || mt.IsClass || mt.IsUnion) && (mt.IsPointer || mt.IsArray))
                     mt = mt.CloneBase(mt, newsts, this);
                 else if (mt.IsStruct)
                     mt = (mt as StructTypeSpec).CopyWithTemplate(type);
                 else if (mt.IsUnion)
                     mt = (mt as UnionTypeSpec).CopyWithTemplate(type);
+                else if (mt.IsClass)
+                    mt = (mt as ClassTypeSpec).CopyWithTemplate(type);
 
 
                 TypeMemberSpec nm = new TypeMemberSpec(m.NS, m.Name, newsts, mt, m.Signature.Location, m.Index);

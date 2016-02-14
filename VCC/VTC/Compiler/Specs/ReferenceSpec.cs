@@ -10,6 +10,7 @@ namespace VTC
 	
 	 public abstract class ReferenceSpec : IEmitter
      {
+      
          public RegistersEnum Register { get; set; }
          public ParameterSpec ReferenceParameter { get; set; }
          public int InitialStackIndex { get; set; }

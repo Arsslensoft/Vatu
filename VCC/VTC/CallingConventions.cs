@@ -265,7 +265,7 @@ namespace VTC
            
 
       }
-      public void EmitCall(EmitContext ec, List<Expr> exp, MemberSpec  method, RegistersEnum rg, CallingConventions ccv)
+      public void EmitCall(EmitContext ec, List<Expr> exp, MemberSpec  method, CallingConventions ccv)
       {
           int size = 0;
           if (ccv == CallingConventions.Pascal || ccv == CallingConventions.Default)
@@ -339,7 +339,92 @@ namespace VTC
           }
         
           // call
-          ec.EmitInstruction(new Call() { DestinationReg = rg });
+          method.EmitToStack(ec);
+          ec.EmitPop(RegistersEnum.AX);
+          ec.EmitInstruction(new Call() { DestinationReg =  RegistersEnum.AX });
+
+          if (ccv == CallingConventions.Cdecl || ccv == CallingConventions.VatuSysCall && size > 0)
+              ec.EmitInstruction(new Add() { DestinationReg = EmitContext.SP, SourceValue = (ushort)size, Size = 80 });
+
+
+      }
+      public void EmitCall(EmitContext ec, List<Expr> exp, Expr ms, CallingConventions ccv)
+      {
+          int size = 0;
+          if (ccv == CallingConventions.Pascal || ccv == CallingConventions.Default)
+          {
+              foreach (Expr e in exp)
+              {
+                  e.EmitToStack(ec);
+                  if (e.Type.IsFloat && !e.Type.IsPointer) // store floating point to stack
+                  {
+                      ec.EmitInstruction(new Sub() { DestinationReg = RegistersEnum.SP, SourceValue = (ushort)e.Type.Size });
+                      ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, SourceReg = EmitContext.SP });
+                      ec.EmitStoreFloat(RegistersEnum.SI, e.Type.FloatSizeBits, true);
+                  }
+              }
+          }
+          else if (ccv == CallingConventions.StdCall || ccv == CallingConventions.Cdecl)
+          {
+
+              for (int i = exp.Count - 1; i >= 0; i--)
+              {
+                  exp[i].EmitToStack(ec);
+                  //if (exp[i].Type.Size > 1)
+                  //{
+                  //    size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
+                  //    if (exp[i].Type.Size % 2 != 0)
+                  //        size++;
+                  //}
+                  //else size += 2;
+                  size += GetParameterSize(exp[i].Type, false);
+
+
+                  if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
+                  {
+                      ec.EmitInstruction(new Sub() { DestinationReg = RegistersEnum.SP, SourceValue = (ushort)exp[i].Type.Size });
+                      ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, SourceReg = EmitContext.SP });
+                      ec.EmitStoreFloat(RegistersEnum.SI, exp[i].Type.FloatSizeBits, true);
+                  }
+              }
+
+          }
+          else if (ccv == CallingConventions.FastCall)
+          {
+              for (int i = exp.Count - 1; i >= 0; i--)
+              {
+
+                  exp[i].EmitToStack(ec);
+                  //if (exp[i].Type.Size > 1)
+                  //{
+                  //    size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
+                  //    if (exp[i].Type.Size % 2 != 0)
+                  //        size++;
+                  //}
+                  //else size += 2;
+                  size += GetParameterSize(exp[i].Type, false);
+
+                  if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
+                  {
+                      ec.EmitInstruction(new Sub() { DestinationReg = RegistersEnum.SP, SourceValue = (ushort)exp[i].Type.Size });
+                      ec.EmitInstruction(new Mov() { DestinationReg = RegistersEnum.SI, SourceReg = EmitContext.SP });
+                      ec.EmitStoreFloat(RegistersEnum.SI, exp[i].Type.FloatSizeBits, true);
+                  }
+              }
+              if (exp.Count >= 2)
+              {
+                  ec.EmitPop(EmitContext.C);
+                  ec.EmitPop(EmitContext.D);
+              }
+              else if (exp.Count == 1)
+                  ec.EmitPop(EmitContext.C);
+
+          }
+
+          // call
+          ms.EmitToStack(ec);
+          ec.EmitPop(RegistersEnum.AX);
+          ec.EmitInstruction(new Call() { DestinationReg = RegistersEnum.AX });
 
           if (ccv == CallingConventions.Cdecl || ccv == CallingConventions.VatuSysCall && size > 0)
               ec.EmitInstruction(new Add() { DestinationReg = EmitContext.SP, SourceValue = (ushort)size, Size = 80 });

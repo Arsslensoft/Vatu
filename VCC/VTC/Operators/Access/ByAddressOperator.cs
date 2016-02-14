@@ -78,7 +78,7 @@ namespace VTC
 
             if (mem.MemberType.IsPointer)
             {
-                if (!mem.MemberType.IsForeignType)
+                if (!mem.MemberType.IsForeignType && !mem.MemberType.IsClass)
                     ResolveContext.Report.Error(15, Location, "'->' operator allowed only with struct union based types");
                 else if (mem.MemberType.IsStruct)
                 {
@@ -122,6 +122,38 @@ namespace VTC
 
             return false;
         }
+        public bool ResolveClassMember(ResolveContext rc, MemberSpec mem, ref TypeMemberSpec tmp, VariableExpression lv, VariableExpression rv)
+        {
+
+            if (mem.MemberType.IsPointer)
+            {
+                if (!mem.MemberType.IsClass && !mem.memberType.IsForeignType)
+                    ResolveContext.Report.Error(15, Location, "'->' operator allowed only with class based types");
+                else
+                {
+                    ClassTypeSpec stp = null;
+                    if (Left is AccessExpression && (Left as AccessExpression).IsByIndex)
+                        stp = (ClassTypeSpec)mem.MemberType.BaseType.BaseType;
+                    else stp = (ClassTypeSpec)mem.MemberType.BaseType;
+
+                    tmp = stp.ResolveMember(rv.Name);
+                    if (tmp == null)
+                        ResolveContext.Report.Error(16, Location, rv.Name + " is not defined in class " + stp.Name);
+                    else
+                    {
+                        // Resolve
+                        index = tmp.Index;
+                        return true;
+                    }
+
+                }
+              
+            }
+            else ResolveContext.Report.Error(17, Location, "Cannot use '->' operator with non pointer types use '.' instead");
+
+
+            return false;
+        }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             // Check if left is type
@@ -150,6 +182,52 @@ namespace VTC
                     if (struct_var != null)
                     {
                         ok = ResolveStructOrUnionMember(rc, struct_var, ref tmp, lv, rv);
+
+                        // class member
+                        if(!ok)
+                        {
+                            ok = ResolveClassMember(rc, struct_var, ref tmp, lv, rv);
+                            if (ok)
+                            {
+                                CommonType = tmp.MemberType;
+                                if (struct_var is VarSpec)
+                                {
+                                    VarSpec dst = (VarSpec)struct_var;
+                                    AccessExpression classind = new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, lv.position, true, 0, Left.Type);
+                                    AccessExpression atmp = new AccessExpression(classind.variable, classind, lv.position, true, index, tmp.MemberType);
+                      
+                                    return atmp;
+                                }
+                                else if (struct_var is RegisterSpec)
+                                {
+                                    RegisterSpec dst = (RegisterSpec)struct_var;
+                                    AccessExpression classind = new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, lv.position, true, 0, Left.Type);
+                                    AccessExpression atmp = new AccessExpression(classind.variable, classind, lv.position, true, index, tmp.MemberType);
+
+                                    return atmp;
+                                }
+                                else if (struct_var is FieldSpec)
+                                {
+                                    FieldSpec dst = (FieldSpec)struct_var;
+
+
+                                    AccessExpression classind = new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, lv.position, true, 0, Left.Type);
+                                    AccessExpression atmp = new AccessExpression(classind.variable, classind, lv.position, true, index, tmp.MemberType);
+
+                                    return atmp;
+                                }
+                                else if (struct_var is ParameterSpec)
+                                {
+                                    ParameterSpec dst = (ParameterSpec)struct_var;
+
+                                    AccessExpression classind = new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, lv.position, true, 0, Left.Type);
+                                    AccessExpression atmp = new AccessExpression(classind.variable, classind, lv.position, true, index, tmp.MemberType);
+
+                                    return atmp;
+                                }
+                            }
+                        }
+
                         rv.variable = tmp;
                         if (!ok)
                         {

@@ -17,17 +17,10 @@ namespace VTC.Core
         public int CaseIndex { get; set; }
         Label IdentifyChildCase(int id)
         {
-            if (ResolvedConstants == null)
-                return null;
 
-            int i = 0;
-            foreach (ConstantExpression ic in ResolvedConstants)
-            {
-                if (int.Parse(ic.GetValue().ToString()) == id)
-                    return CodeLabel;
+            if (id == CaseIndex)
+                return CodeLabel;
 
-                i++;
-            }
             return null;
         }
         public Label IdentifyCase(int id,bool def)
@@ -37,9 +30,9 @@ namespace VTC.Core
             else if (IsDefault && def)
                 return CaseLabel;
 
-            else return CaseLabel;
+            else return null;
         }
-      
+        Expr _expr;
         public List<BinaryOperation> CompareOperations { get; set; }
    
 
@@ -50,9 +43,7 @@ namespace VTC.Core
         public bool IsDefault = false;
         private Statement _statements;
         private Block b;
-        private IntegralConstSequence<IntegralConst> _val;
-        public List<ConstantExpression> ResolvedConstants { get; set; }
-        public List<Label> ChildCases { get; set; }
+   
 
         public int Index { get; set; }
         public Label CodeLabel { get; set; }
@@ -65,24 +56,18 @@ namespace VTC.Core
                 return false;
             CodeLabel = new Label(lb.Name + "_CASE_BODY_" + i.ToString());
            if(!IsDefault)
-              CaseIndex = int.Parse( ResolvedConstants[0].GetValue().ToString());
+              CaseIndex = sw.CaseLabels.Count;
 
             SwitchLabel = lb;
 
             if (!IsDefault)
             {
 
-                foreach (ConstantExpression ic in ResolvedConstants)
-                {
-                    CaseLabel = new Label(lb.Name + "_CASE_" + int.Parse(ic.GetValue().ToString()).ToString());
-                    ChildCases.Add(CaseLabel);
-                    if (sw.RedundantCaseValue(CaseLabel))
-                                     ResolveContext.Report.Error(0, Location, "Multiple case definition with same value");
-                    
-                    sw.CaseLabels.Add(CaseLabel);
-                }
-                CaseLabel = ChildCases[0];
-                i = i + ChildCases.Count;
+                CaseLabel = new Label(lb.Name + "_CASE_" + i.ToString());
+                if (sw.RedundantCaseValue(CaseLabel))
+                    ResolveContext.Report.Error(0, Location, "Multiple case definition with same value");
+                i++;
+                sw.CaseLabels.Add(CaseLabel);
             }
             else
             {
@@ -100,33 +85,22 @@ namespace VTC.Core
         {
             if (!IsDefault)
             {
-                foreach (ConstantExpression ct in ResolvedConstants)
-                {
-                    if (ct != null)
-                    {
-                        CompareOperations.Add(new BinaryOperation(expr, new EqualOperator(), ct));
-                        CompareOperations[CompareOperations.Count - 1] = (BinaryOperation)CompareOperations[CompareOperations.Count - 1].DoResolve(rc);
-                    }
-                   
-                }
+                CompareOperations.Add(new BinaryOperation(expr, new EqualOperator(), _expr));
+                CompareOperations[CompareOperations.Count - 1] = (BinaryOperation)CompareOperations[CompareOperations.Count - 1].DoResolve(rc);
              
             }
         }
-        [Rule("<Case Stm> ::= ~case <Integral Const List>  ~':' <Stm List>")]
-        public Case(IntegralConstSequence<IntegralConst> val, Statement stmt)
+      
+        [Rule("<Case Stm> ::= ~case <Expression>  ~':' <Stm List>")]
+        public Case(Expr val, Statement stmt)
         {
             b = new Block((NormalStatment)stmt);
             _statements = stmt;
-            _val = val;
-            ChildCases = new List<Label>();
-            ResolvedConstants = new List<ConstantExpression>();
-            foreach (IntegralConst ct in _val)
-            {
-                if (ct != null)
-                    ResolvedConstants.Add(ct.Value);
-            }
+
+            _expr = val;
+          
             CompareOperations = new List<BinaryOperation>();
-  
+
         }
 
         // default
@@ -136,7 +110,7 @@ namespace VTC.Core
             b = new Block((NormalStatment)stmt);
             IsDefault = true;
             _statements = stmt;
-            _val = null;
+            _expr = null;
       
         }
 
@@ -149,12 +123,13 @@ namespace VTC.Core
         {
             if (b == null)
                 return null;
-
+     if(_expr != null)
+            _expr = (Expr)_expr.DoResolve(rc);
             Label next_c = null;
             if (IsDefault)
                 Else = SwitchExit;
             else
-                Else = rc.EnclosingSwitch.GetNextCaseLabel(Index + ChildCases.Count - 1);
+                Else = rc.EnclosingSwitch.GetNextCaseLabel(Index );
           
           
             ExitIf = SwitchExit;
@@ -162,21 +137,7 @@ namespace VTC.Core
             rc.EnclosingIf = this;
             rc.CurrentScope |= ResolveScopes.Case;
             // enter case
-            if (!IsDefault)
-            {
-                for (int i = 0; i < ResolvedConstants.Count; i++)
-                {
-
-
-                    ResolvedConstants[i] = (ConstantExpression)ResolvedConstants[i].DoResolve(rc);
-                    if (!ResolvedConstants[i].Type.IsNumeric)
-                        ResolveContext.Report.Error(39, Location, "Could not use switch with non numeric types");
-
-
-
-
-                }
-            }
+          
             b = (Block)b.DoResolve(rc);
       
 
@@ -194,26 +155,12 @@ namespace VTC.Core
             // compare if not default
             if (!IsDefault)
             {
-                if (CompareOperations.Count == 1)
-                {
+      
                     ec.EmitComment("Case " + CaseIndex.ToString());
                     ec.MarkLabel(CaseLabel);// case lb
                     CompareOperations[0].EmitBranchable(ec, Else, false);
-                }
-                else
-                {
-
-                    for (int i = 0; i < ChildCases.Count - 1; i++)
-                    {
-                        ec.EmitComment("Case " + ChildCases[i].ToString());
-                        ec.MarkLabel(ChildCases[i]);// case lb
-                        CompareOperations[i].EmitBranchable(ec, ChildCases[i + 1], false);
-                        ec.EmitInstruction(new ConditionalJump() { Condition = ConditionalTestEnum.Equal, DestinationLabel = CodeLabel.Name });
-                    }
-                    ec.EmitComment("Case " + ChildCases[ChildCases.Count - 1].ToString());
-                    ec.MarkLabel(ChildCases[ChildCases.Count - 1]);// case lb
-                    CompareOperations[CompareOperations.Count - 1].EmitBranchable(ec, Else, false);
-                }
+               
+               
 
             }
             else
@@ -245,7 +192,8 @@ namespace VTC.Core
           
 
             FlowState ok = b.DoFlowAnalysis(fc);
-     
+            if(_expr != null)
+            _expr.DoFlowAnalysis(fc);
             return ok;
         }
 

@@ -192,8 +192,12 @@ namespace VTC.Core
             if (!IsVarAssign)
             {
                 ec.EmitComment(LeftExpr.CommentString() + " := " + RR.ToString());
-                LeftExpr.EmitMoveToRegister(ec, RR, size);
-
+                if (Registers.IsSegment(RR))
+                {
+                    LeftExpr.EmitMoveToRegister(ec, RegistersEnum.AX, size);
+                    ec.EmitMovToRegister(RegistersEnum.DS, RegistersEnum.AX);
+                }
+                else LeftExpr.EmitMoveToRegister(ec, RR, size);
             }
             else
             {

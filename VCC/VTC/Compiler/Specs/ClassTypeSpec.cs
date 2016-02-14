@@ -8,26 +8,42 @@ using Vasm.x86;
 namespace VTC
 {
 	
-	 /// <summary>
-    ///  Struct Type Spec
+    /// <summary>
+    ///  Class Type Spec
     /// </summary>
-    public class UnionTypeSpec : TypeSpec
+    public class ClassTypeSpec : TypeSpec
     {
+        public ClassTypeSpec ParentClass { get; set; }
+        public int ClassSize { get; set; }
         public List<TypeMemberSpec> Members { get; set; }
+        public List<TypeSpec> Inherited { get; private set; }
         public List<TemplateTypeSpec> Templates { get; set; }
-        public UnionTypeSpec Primitive { get; set; }
-        public UnionTypeSpec(Namespace ns, string name, List<TypeMemberSpec> mem,List<TemplateTypeSpec> templates, Location loc)
-            : base(ns, name, BuiltinTypes.Unknown, TypeFlags.Union, Modifiers.NoModifier, loc)
+        public ClassTypeSpec Primitive { get; set; }
+        public List<MethodSpec> Methods { get; private set; }
+        public ClassTypeSpec(Namespace ns, string name, List<TypeMemberSpec> mem,ClassTypeSpec parent, List<MethodSpec> met, List<TypeSpec> ihd, List<TemplateTypeSpec> templates, Location loc)
+            : base(ns,name, BuiltinTypes.Unknown, TypeFlags.Class, Modifiers.NoModifier, loc)
         {
+            ParentClass = parent;
             Members = mem;
-            Size = 0;
+            Size =2;
+            ClassSize = 0;
             Templates = templates;
+            Inherited = ihd;
+            IsTemplateBased = templates.Count > 0;
             foreach (TypeMemberSpec m in mem)
-                if (Size < GetSize(m.MemberType))
-                    Size = GetSize(m.MemberType);
-
+                ClassSize += GetSize(m.MemberType);
+            Methods = met;
+          
         }
 
+       
+        public void UpdateSize()
+        {
+            ClassSize = 0;
+            foreach (TypeMemberSpec m in Members)
+                ClassSize += GetSize(m.MemberType);
+        }
+      
         public TypeMemberSpec ResolveMember(string name)
         {
             foreach (TypeMemberSpec kt in Members)
@@ -40,13 +56,7 @@ namespace VTC
         {
             return Signature.ToString();
         }
-        public void UpdateSize()
-        {
-            Size = 0;
-            foreach (TypeMemberSpec m in Members)
-                if (Size < GetSize(m.MemberType))
-                    Size = GetSize(m.MemberType);
-        }
+
         public TypeMemberSpec GetMemberAt(int offset)
         {
             int off = 0;
@@ -59,6 +69,17 @@ namespace VTC
             }
             return null;
         }
+        public TypeSpec ResolveMemberHost(TypeMemberSpec m)
+        {
+            int start = 0;
+            foreach (TypeSpec inh in Inherited)
+            {
+                if (m.Index >= start&& m.Index < start + inh.Size)
+                    return inh;
+            }
+
+            return this;
+        }
         int GetTemplateIdx(TemplateTypeSpec tts)
         {
             for (int i = 0; i < Templates.Count; i++)
@@ -67,11 +88,12 @@ namespace VTC
 
             return -1;
         }
-        public UnionTypeSpec CopyWithTemplate(List<TypeSpec> type)
+     
+        public ClassTypeSpec CopyWithTemplate(List<TypeSpec> type)
         {
             List<TypeMemberSpec> tmp = new List<TypeMemberSpec>();
-            UnionTypeSpec newsts = new UnionTypeSpec(NS, Name, new List<TypeMemberSpec>(),  new List<TemplateTypeSpec>(), Signature.Location);
-            newsts.Signature = new MemberSignature(NS, Name, type.ToArray(), Signature.Location);
+            ClassTypeSpec newsts = new ClassTypeSpec(NS, Name, new List<TypeMemberSpec>(),ParentClass, Methods, Inherited, new List<TemplateTypeSpec>(), Signature.Location);
+            newsts.Signature = new MemberSignature(NS, Name,type.ToArray(),Signature.Location);
             newsts.Name = newsts.Signature.NoNamespaceTypeSignature;
             newsts.Primitive = this;
             int midx = 0;
@@ -94,7 +116,6 @@ namespace VTC
                 else if (mt.IsClass)
                     mt = (mt as ClassTypeSpec).CopyWithTemplate(type);
 
-
                 TypeMemberSpec nm = new TypeMemberSpec(m.NS, m.Name, newsts, mt, m.Signature.Location, m.Index);
                 nm.Index = midx;
                 midx += nm.MemberType.GetSize(nm.MemberType);
@@ -102,16 +123,21 @@ namespace VTC
             }
 
             // new sts update
-            newsts = new UnionTypeSpec(NS, Name, tmp,  new List<TemplateTypeSpec>(), Signature.Location);
+            newsts = new ClassTypeSpec(NS, Name, tmp, ParentClass, Methods, Inherited, new List<TemplateTypeSpec>(), Signature.Location);
             newsts.Signature = new MemberSignature(NS, Name, type.ToArray(), Signature.Location);
             newsts.UpdateSize();
             newsts.Name = newsts.Signature.NoNamespaceTypeSignature;
             newsts.Primitive = this;
             newsts.ExtendedFields = ExtendedFields;
-
+            newsts.ParentClass = ParentClass;
+            newsts.Methods = Methods;
+            newsts.Modifiers = Modifiers;
             return newsts;
         }
+
+
     }
-   
+
+	
 	
 }

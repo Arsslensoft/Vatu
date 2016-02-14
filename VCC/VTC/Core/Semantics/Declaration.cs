@@ -29,6 +29,7 @@ namespace VTC.Core
         public bool IsTypeDef { get { return (BaseDeclaration is StructDeclaration) || (BaseDeclaration is TypeDefDeclaration) || (BaseDeclaration is EnumDeclaration); } }
         public bool IsStruct { get { return (BaseDeclaration is StructDeclaration); } }
         public bool IsUnion { get { return (BaseDeclaration is UnionDeclaration); } }
+        public bool IsInClass { get { return (BaseDeclaration is ClassDeclaration); } }
         public TypeToken TypeTok
         {
             get { return _type; }

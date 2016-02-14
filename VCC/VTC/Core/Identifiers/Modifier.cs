@@ -24,6 +24,8 @@ namespace VTC.Core
         [Rule(@"<Modifier>      ::= const")]
         [Rule(@"<Modifier>      ::= private")]
         [Rule(@"<Modifier>      ::= public")]
+       [Rule(@"<Modifier>      ::= protected")]
+       [Rule(@"<Modifier>      ::= internal")]
         public Modifier(SimpleToken mod)
         {
             _mod = mod;
@@ -52,6 +54,25 @@ namespace VTC.Core
         {
             return base.Resolve(rc);
         }
+
+       bool DuplicateModifiers(Modifiers mod, bool setm)
+       {
+           if (setm)
+           {
+               if (((mod & Modifiers.Private) == Modifiers.Private) || ((mod & Modifiers.Protected) == Modifiers.Protected) || ((mod & Modifiers.Public) == Modifiers.Public) || ((mod & Modifiers.Internal) == Modifiers.Internal))
+                   return true;
+               else return false;
+           }
+           else if ((mod & Modifiers.Private) == Modifiers.Private)
+               return DuplicateModifiers(mod & ~Modifiers.Private, true);
+           else if ((mod & Modifiers.Public) == Modifiers.Public)
+               return DuplicateModifiers(mod & ~Modifiers.Public, true);
+           else if ((mod & Modifiers.Internal) == Modifiers.Internal)
+               return DuplicateModifiers(mod & ~Modifiers.Internal, true);
+           else if ((mod & Modifiers.Protected) == Modifiers.Protected)
+               return DuplicateModifiers(mod & ~Modifiers.Protected, true);
+           else return false;
+       }
  public override SimpleToken DoResolve(ResolveContext rc)
         {
             ModifierList = 0;
@@ -86,11 +107,16 @@ namespace VTC.Core
                 ModifierList |= Modifiers.Private;
             else if (_mod.Name == "public")
                 ModifierList |= Modifiers.Public;
+            else if (_mod.Name == "protected")
+                ModifierList |= Modifiers.Protected;
+            else if (_mod.Name == "internal")
+                ModifierList |= Modifiers.Internal;
+
 
             if ((ModifierList & Modifiers.Private) == Modifiers.Private && (ModifierList & Modifiers.Extern) == Modifiers.Extern)
                 ResolveContext.Report.Error(0, Location, "A member cannot be private and extern at the same time");
-            else if ((ModifierList & Modifiers.Private) == Modifiers.Private && (ModifierList & Modifiers.Public) == Modifiers.Public)
-                ResolveContext.Report.Error(0, Location, "A member cannot be private and public at the same time");
+            else if (DuplicateModifiers(ModifierList,false))
+                ResolveContext.Report.Error(0, Location, "A member cannot have multiple access modifiers at the same time");
 
             return this;
         }

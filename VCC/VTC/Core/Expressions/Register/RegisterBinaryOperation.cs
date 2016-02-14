@@ -59,7 +59,8 @@ namespace VTC.Core
         public override bool Emit(EmitContext ec)
         {
             ec.EmitComment(LR.ToString()+ "=" +LR.ToString() + Operator.Name + RR.ToString());
-            ec.EmitPush(RR);
+            if(LR != RR)
+                ec.EmitPush(RR);
             if (require_mov)
             {
               
@@ -128,7 +129,7 @@ namespace VTC.Core
 
 
             }
-
+            if (LR != RR)
             ec.EmitPop(RR);
             return true;
         }

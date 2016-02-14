@@ -50,6 +50,8 @@ namespace VTC
                 else if (memberType.IsTemplate && memberType.Size > 2)
                     Emitter = new StructEmitter(this, 0, ReferenceKind.Register);
             }
+            else if (memberType.IsClass)
+                Emitter = new ClassEmitter(this, 0, ReferenceKind.Register);
             else if (memberType.IsForeignType)
                 Emitter = new StructEmitter(this, index, ReferenceKind.Register);
 

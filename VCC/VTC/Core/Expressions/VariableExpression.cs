@@ -63,10 +63,10 @@ namespace VTC.Core
                     Type = variable.memberType;
                                 bool isaccess = ((rc.CurrentScope & ResolveScopes.AccessOperation) == ResolveScopes.AccessOperation) ;
 
-                bool isbyname = isaccess &&  ((rc.CurrentScope & ResolveScopes.ByNameAccess) == ResolveScopes.ByNameAccess);
                 if (variable == null && !isaccess)
                     ResolveContext.Report.Error(14, Location, "Unresolved variable '" + Name + "'");
-                
+              
+                  //  ResolveContext.Report.Error(0, Location, variable.Signature.NormalSignature + " is inaccessible due to its protection level");
             }
             else Type = variable.memberType;
             base.DoResolve(rc);

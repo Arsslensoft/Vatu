@@ -55,11 +55,11 @@ namespace VTC.Core
 
 
 
-            if (rc.IsInGlobal() && !rc.IsInTypeDef && !rc.IsInEnum && !rc.IsInStruct && !rc.IsInUnion) // field def
+            if (rc.IsInGlobal() && !rc.IsInTypeDef && !rc.IsInEnum && !rc.IsInStruct && !rc.IsInUnion && !rc.IsInClass) // field def
                 ResolveField(rc, vadef);
-            else if (!rc.IsInTypeDef && !rc.IsInEnum && !rc.IsInStruct && !rc.IsInUnion) // local var definition
+            else if (!rc.IsInTypeDef && !rc.IsInEnum && !rc.IsInStruct && !rc.IsInUnion && !rc.IsInClass) // local var definition
                 ResolveLocalVariable(rc, vadef);
-            else if (rc.IsInStruct || rc.IsInUnion) // struct, union member def
+            else if (rc.IsInStruct || rc.IsInUnion || rc.IsInClass ) // struct, union member def
             {
                 ResolveStructMember(rc, vadef);
                 Members.Add(vadef.Member);
@@ -157,13 +157,14 @@ namespace VTC.Core
 
 
             vadef.Member = new TypeMemberSpec(rc.CurrentNamespace, vadef._id.Name, rc.CurrentType, Type, Location, 0);
+            vadef.Member.Modifiers = mods;
 
             // value
-            if (vadef.expr is ConstantExpression)
-                ResolveContext.Report.Error(6, Location, "Struct and Union members cannot have initial values");
+            if (vadef.expr != null)
+                ResolveContext.Report.Error(6, Location, "Structs, Classes and Union members cannot have initial values");
             // modifiers
-            if (mods != Modifiers.NoModifier)
-                ResolveContext.Report.Error(7, Location, "Struct and Union members cannot have modifiers");
+            if (mods != Modifiers.NoModifier && !rc.IsInClass)
+                ResolveContext.Report.Error(7, Location, "Structs and Unions members cannot have modifiers");
 
         }
        public override bool Resolve(ResolveContext rc)

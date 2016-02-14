@@ -70,8 +70,8 @@ namespace VTC
             }
         }
     
-        public ParameterSpec(string name, MethodSpec host, TypeSpec type, Location loc,int initstackidx, Modifiers mods = VTC.Modifiers.NoModifier, bool access = false)
-            : base(name, new MemberSignature(Namespace.Default, host.Name + "_param_" + name, loc), mods,ReferenceKind.Parameter)
+        public ParameterSpec(Namespace ns,string name, MethodSpec host, TypeSpec type, Location loc,int initstackidx, Modifiers mods = VTC.Modifiers.NoModifier, bool access = false)
+            : base(name, new MemberSignature(ns, host.Name + "_param_" + name, loc), mods,ReferenceKind.Parameter)
         {
             method = host;
             memberType = type;
@@ -83,9 +83,9 @@ namespace VTC
 
                 Emitter = new ReferenceEmitter(this, 4, ReferenceKind.Parameter);
                 if (!type.IsMultiDimensionArray)
-                    ReferenceParameter = new ParameterSpec(name, host, type.MakePointer(), loc, initstackidx, VTC.Modifiers.NoModifier, access);
+                    ReferenceParameter = new ParameterSpec(ns,name, host, type.MakePointer(), loc, initstackidx, VTC.Modifiers.NoModifier, access);
                 else
-                      ReferenceParameter = new ParameterSpec(name, host, type, loc, initstackidx, VTC.Modifiers.NoModifier, access);
+                      ReferenceParameter = new ParameterSpec(ns,name, host, type, loc, initstackidx, VTC.Modifiers.NoModifier, access);
             }
             else if (memberType.IsMultiDimensionArray)
             {
@@ -115,6 +115,8 @@ namespace VTC
                 else if (memberType.IsTemplate && memberType.Size > 2)
                     Emitter = new StructEmitter(this, 0, ReferenceKind.Parameter);
             }
+            else if (memberType.IsClass)
+                Emitter = new ClassEmitter(this, 0, ReferenceKind.Parameter);
             else if (memberType.IsForeignType)
                 Emitter = new StructEmitter(this, 4, ReferenceKind.Parameter);
        

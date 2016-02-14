@@ -431,6 +431,17 @@ namespace VTC
                             Resolved.Add(d);
                             ResolveCtx.Add(childctx);
                         }
+                        else if (vstmt is ClassDeclaration)
+                        {
+                            ClassDeclaration md = (ClassDeclaration)vstmt;
+                            ResolveContext childctx = RootCtx.CreateAsChild(stmts.Used, stmts.Namespace, md);
+                            md.Resolve(childctx);
+                            ClassDeclaration d = (ClassDeclaration)md.DoResolve(childctx);
+                            // RootCtx.UpdateChildContext("<method-decl>", childctx);
+                            RootCtx.UpdateFather(childctx);
+                            Resolved.Add(d);
+                            ResolveCtx.Add(childctx);
+                        }
                         else if (vstmt is UnionDeclaration)
                         {
                             UnionDeclaration md = (UnionDeclaration)vstmt;
@@ -458,6 +469,7 @@ namespace VTC
                             RootCtx.IsInTypeDef = vstmt.IsTypeDef;
                             RootCtx.IsInStruct = vstmt.IsStruct;
                             RootCtx.IsInUnion = vstmt.IsUnion;
+                            RootCtx.IsInClass = vstmt.IsInClass;
                             vstmt.Resolve(RootCtx);
                             ResolveCtx.Add(RootCtx);
                             Declaration d = (Declaration)vstmt.DoResolve(RootCtx);

@@ -63,7 +63,7 @@ namespace VTC.Core
         {
             int i = 0;
             foreach (TypeSpec p in par)
-                Parameters.Add(new ParameterSpec("Param_oper_" + i.ToString(), host, p, p.Signature.Location, 4, Modifiers.NoModifier));
+                Parameters.Add(new ParameterSpec(host.NS,"Param_oper_" + i.ToString(), host, p, p.Signature.Location, 4, Modifiers.NoModifier));
 
 
         }
