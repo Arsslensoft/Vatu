@@ -96,7 +96,8 @@ namespace VTC
         CheckedArithmetics = 1 << 6,
         ByNameAccess = 1 << 7,
         ThisAcces = 1 << 8,
-        SuperAccess = 1 << 9 
+        SuperAccess = 1 << 9 ,
+        ExtensionAccess = 1 << 10
        
     }
     public class ResolveContext : IDisposable

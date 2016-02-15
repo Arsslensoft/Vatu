@@ -40,7 +40,7 @@ namespace VTC
             TypeSpec oldext = rc.CurrentExtensionLookup;
             Expr extvar = rc.ExtensionVar;
 
-
+            rc.CurrentScope |= ResolveScopes.ExtensionAccess;
             rc.HighPriorityExtensionLookup = Left.Type.BaseType;
             rc.HighPriorityStaticExtensionLookup = false;
             rc.HighPriorityExtensionVar = Left;
@@ -50,7 +50,7 @@ namespace VTC
             {
 
                 ResolveContext.Report.Error(0, Location, "Unresolved extended field");
-
+                rc.CurrentScope &= ~ResolveScopes.ExtensionAccess;
                 rc.HighPriorityExtensionVar = extvar;
                 rc.HighPriorityExtensionLookup = oldext;
                 return false;
@@ -58,12 +58,13 @@ namespace VTC
             else if (Right is MethodExpression && (Right as MethodExpression).Method == null)
             {
                 rc.HighPriorityExtensionVar = extvar;
+                rc.CurrentScope &= ~ResolveScopes.ExtensionAccess;
                 rc.HighPriorityExtensionLookup = oldext;
                 return false;
             }
             rc.HighPriorityExtensionVar = extvar;
             rc.HighPriorityExtensionLookup = oldext;
-
+            rc.CurrentScope &= ~ResolveScopes.ExtensionAccess;
             return true;
         }
 

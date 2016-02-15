@@ -51,7 +51,8 @@ namespace VTC
                 }
                 foreach (TypeSpec p in param)
                 {
-                 
+
+               
                     _extsig += "_" + p.GetTypeName(p).Replace("*", "P").Replace("<","$T_").Replace(">","_T$");
                     _signature += "_" + p.GetTypeName(p).Replace("*", "P").Replace("<", "$T_").Replace(">", "_T$");
                     _nsig +=  p.GetTypeName(p) + ",";

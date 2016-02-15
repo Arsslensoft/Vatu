@@ -73,6 +73,7 @@ namespace VTC
         {
             if (!KnownNamespaces.Contains(tp))
             {
+          
                 KnownNamespaces.Add(tp);
                 return true;
 

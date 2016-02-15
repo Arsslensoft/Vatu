@@ -45,10 +45,10 @@ namespace VTC.Core
         }
  public override SimpleToken DoResolve(ResolveContext rc)
         {
-     
+          
             if (variable == null)
             {
-
+                rc.SetHighPriorityAsCurrent();
                 variable = rc.Resolver.TryResolveVar(Name);
                 if (variable == null)
                     variable = rc.Resolver.TryResolveEnumValue(Name);
@@ -61,11 +61,11 @@ namespace VTC.Core
 
                 if (variable != null)
                     Type = variable.memberType;
-                                bool isaccess = ((rc.CurrentScope & ResolveScopes.AccessOperation) == ResolveScopes.AccessOperation) ;
+                bool isaccess = ((rc.CurrentScope & ResolveScopes.ExtensionAccess) == ResolveScopes.ExtensionAccess);
 
                 if (variable == null && !isaccess)
                     ResolveContext.Report.Error(14, Location, "Unresolved variable '" + Name + "'");
-              
+                rc.UnsetHighPriorityAsCurrent();
                   //  ResolveContext.Report.Error(0, Location, variable.Signature.NormalSignature + " is inaccessible due to its protection level");
             }
             else Type = variable.memberType;

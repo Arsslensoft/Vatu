@@ -192,12 +192,8 @@ namespace VTC.Core
             if (!IsVarAssign)
             {
                 ec.EmitComment(LeftExpr.CommentString() + " := " + RR.ToString());
-                if (Registers.IsSegment(RR))
-                {
-                    LeftExpr.EmitMoveToRegister(ec, RegistersEnum.AX, size);
-                    ec.EmitMovToRegister(RegistersEnum.DS, RegistersEnum.AX);
-                }
-                else LeftExpr.EmitMoveToRegister(ec, RR, size);
+                LeftExpr.EmitMoveToRegister(ec, RR, size);
+
             }
             else
             {
@@ -286,6 +282,12 @@ namespace VTC.Core
             }
             else
             {
+                if (Registers.IsSegment(dst))
+                {
+                    LeftExpr.EmitToStack(ec);
+                    ec.EmitPop(dst);
+                    return;
+                }
                 if (LeftExpr.variable is FieldSpec)
                     ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceRef = ElementReference.New(LeftExpr.variable.Signature.ToString()), SourceIsIndirect = true, Size = size });
                 else if (LeftExpr.variable is VarSpec)
