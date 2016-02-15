@@ -329,12 +329,14 @@ namespace VTC
 
 
                 RootCtx = ResolveContext.CreateRootContext(gb.Used, gb.Namespace, gb.Declarations);
-                Global stmts = (Global)gb.DoResolve(RootCtx);
+           
             
 
                 if (isdef)
                     src.DefaultDependency.RootCtx = RootCtx;
                 else RootCtx.FillKnownByKnown(src.DefaultDependency.RootCtx.Resolver);
+
+                Global stmts = (Global)gb.DoResolve(RootCtx);
 
                 // includes
                 // includes

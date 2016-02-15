@@ -69,16 +69,33 @@ namespace VTC
             }
             return false;
         }
+        public bool ForceKnowNamespace(Namespace tp)
+        {
+            if (!KnownNamespaces.Contains(tp))
+            {
+
+                KnownNamespaces.Add(tp);
+                return true;
+
+            }
+            else
+            {
+                KnownNamespaces[KnownNamespaces.IndexOf(tp)] = tp;
+                return true;
+            }
+
+        }
         public bool KnowNamespace(Namespace tp)
         {
             if (!KnownNamespaces.Contains(tp))
             {
-          
+
                 KnownNamespaces.Add(tp);
                 return true;
 
             }
             return false;
+         
         }
         public bool KnowField(FieldSpec f)
         {
@@ -216,24 +233,7 @@ namespace VTC
 
         }
 
-        public MemberSpec TryResolveName(Namespace ns, string name)
-        {
-            MemberSpec m = ResolveVar(ns, name);
-            if (m == null)
-            {
-                m = ResolveParameter(name);
-                if (m == null)
-                {
-                    m = ResolveField(ns, name);
-                    if (m == null)
-                        return null;
-
-                    else return m;
-                }
-                else return m;
-            }
-            else return m;
-        }
+    
         public bool ResolveType(Namespace ns, string name,ref TypeSpec tp,string sig = null)
         {
             tp = null;
@@ -256,10 +256,11 @@ namespace VTC
                 }
 
             }
+            if (ns.HasParent)
+                return ResolveType(ns.GetParent(this), name,ref tp,sig);
            
             return false;
         }
-       
         public FieldSpec ResolveField(Namespace ns, string name)
         {
             if (CurrentExtensionLookup == null)
@@ -276,6 +277,8 @@ namespace VTC
                         return kt;
                     }
                 }
+
+         
             }
             else
             {
@@ -292,6 +295,10 @@ namespace VTC
                 
 
             }
+
+            if (ns.HasParent)
+                return ResolveField(ns.GetParent(this), name);
+
             return null;
         }
         public void ResolveVariadicMethod(Namespace ns, string name, ref MethodSpec mtd, TypeSpec[] par = null)
@@ -313,7 +320,8 @@ namespace VTC
                             return;
                         }
                     }
-                
+                    if (ns.HasParent && mtd == null)
+                        ResolveVariadicMethod(ns.GetParent(this), name, ref mtd, par);
             }
             else
             {
@@ -365,6 +373,9 @@ namespace VTC
                         }
                     }
                 }
+
+                if (ns.HasParent && mtd == null)
+                    ResolveVariadicMethod(ns.GetParent(this), name, ref mtd, par);
             }
 
         }
@@ -407,6 +418,9 @@ namespace VTC
 
                         }
                     }
+
+                    if (ns.HasParent && mtd == null)
+                         ResolveMethod(ns.GetParent(this), name,ref mtd, par);
            
             }
             else
@@ -425,6 +439,7 @@ namespace VTC
                     par = new TypeSpec[1] { CurrentExtensionLookup };
 
                 ResolveExtensionMethod( ns, name, CurrentExtensionLookup, ref mtd, par);
+
                 if (mtd == null && original is StructTypeSpec && (original as StructTypeSpec).Primitive != null && original.Size == (original as StructTypeSpec).Primitive.Size) // implicit cast primitive
                 {
                 
@@ -443,11 +458,15 @@ namespace VTC
                         par = new TypeSpec[1] { original  };
 
                     ResolveExtensionMethod( ns, name, original, ref mtd, par);
+
+            
                 }
+
+                if (ns.HasParent && mtd == null)
+                    ResolveMethod(ns.GetParent(this), name, ref mtd, par);
             }
          
         }
-
         public VarSpec ResolveVar(Namespace ns, string name)
         {
             foreach (VarSpec kt in KnownLocalVars)
@@ -461,17 +480,25 @@ namespace VTC
                     return kt;
                 }
             }
+            if (ns.HasParent)
+                return ResolveVar(ns.GetParent(this), name);
             return null;
         }
-        public Namespace ResolveNS(string name)
-        {
-            foreach (Namespace kt in KnownNamespaces)
+        public Namespace ResolveNSRecursive(List<Namespace> ns, string name)
+        { Namespace n = Namespace.Default;
+            foreach (Namespace kt in ns)
             {
                 if (kt.Name == name)
                     return kt;
-             
+                else if( (n = ResolveNSRecursive(kt.ChildNamespaces, name)) != Namespace.Default)
+                    return n;
             }
-            return Namespace.Default;
+
+            return n;
+        }
+        public Namespace ResolveNS(string name)
+        {
+            return ResolveNSRecursive(KnownNamespaces,name);
         }
         public OperatorSpec ResolveOperator(Namespace ns, string symb)
         {
@@ -486,6 +513,8 @@ namespace VTC
                     return kt;
                 }
             }
+            if (ns.HasParent)
+                return ResolveOperator(ns.GetParent(this), symb);
             return null;
         }
         public ParameterSpec ResolveParameter(string name)
@@ -502,6 +531,7 @@ namespace VTC
                     return kt;
                 }
             }
+
             return null;
         }
         public EnumMemberSpec ResolveEnumValue(Namespace ns, string name)
@@ -523,10 +553,31 @@ namespace VTC
                         }
                 }
             }
+            if (ns.HasParent)
+                return ResolveEnumValue(ns.GetParent(this), name);
 
             return null;
         }
 
+
+        public MemberSpec TryResolveName(Namespace ns, string name)
+        {
+            MemberSpec m = ResolveVar(ns, name);
+            if (m == null)
+            {
+                m = ResolveParameter(name);
+                if (m == null)
+                {
+                    m = ResolveField(ns, name);
+                    if (m == null)
+                        return null;
+
+                    else return m;
+                }
+                else return m;
+            }
+            else return m;
+        }
         public void TryResolveVariadicMethod(string name, ref MethodSpec ms, TypeSpec[] param = null)
         {
             ResolveVariadicMethod(CurrentNamespace, name, ref ms, param);

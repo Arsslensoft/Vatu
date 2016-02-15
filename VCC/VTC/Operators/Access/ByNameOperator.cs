@@ -51,7 +51,21 @@ namespace VTC
             }
             else if (Namespace != null) // NS::Value
             {
-                Namespace lastns = rc.CurrentNamespace;
+                Namespace ns = rc.Resolver.ResolveNS(Namespace.Name);
+
+                if (Namespace.Default == ns && Namespace.Name != "global")
+                {
+                    // check child
+                     ns = rc.Resolver.ResolveNS(rc.CurrentNamespace.Name+"::"+Namespace.Name);
+                     if (Namespace.Default == ns)
+                         ResolveContext.Report.Error(0, Location, "Global namespace cannot be used for access");
+
+                     else Namespace = ns;
+
+                }
+
+
+                Namespace lastns = rc.HighPriorityNamespace;
                
                 rc.CurrentScope |= ResolveScopes.ByNameAccess;
                 rc.HighPriorityNamespace = Namespace;
