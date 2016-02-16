@@ -10,6 +10,7 @@ namespace VTC.Core
     {
         public Namespace Import { get; set; }
     
+
         [Rule("<Import>   ::= ~use <Name> ~';'")]
         public ImportDeclaration(NameIdentifier id)
         {
@@ -23,14 +24,19 @@ namespace VTC.Core
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-        
+            if (Import.Name == "global")
+                ResolveContext.Report.Error(0, Location, "Global namespace cannot be used for access");
                 Namespace ns = rc.Resolver.ResolveNS(Import.Name);
 
-                if (Namespace.Default == Import)
-                    ResolveContext.Report.Error(0, Location, "Global namespace cannot be imported");
+                if (Namespace.Default == ns)
+                {
 
+                    ns = rc.Resolver.ResolveNS(rc.CurrentNamespace.Name + "::" + Import.Name);
+                     Import = ns;
+                }
+                
 
-                if (ns != Import)
+              if (Namespace.Default == Import)
                     ResolveContext.Report.Error(0, Location, "Unknown namespace");
             
             return this;

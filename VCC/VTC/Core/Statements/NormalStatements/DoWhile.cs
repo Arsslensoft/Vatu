@@ -32,8 +32,10 @@ namespace VTC.Core
         }
  public override SimpleToken DoResolve(ResolveContext rc)
         {
-          
-            rc.CurrentScope |= ResolveScopes.Loop;
+            // save current state
+            rc.CreateNewState();
+     
+            rc.CurrentGlobalScope |= ResolveScopes.Loop;
             Label lb = rc.DefineLabel(LabelType.WHILE);
             ExitLoop = rc.DefineLabel(lb.Name + "_EXIT");
             LoopCondition = rc.DefineLabel(lb.Name + "_COND");
@@ -50,7 +52,7 @@ namespace VTC.Core
 
             _stmt = (Statement)_stmt.DoResolve(rc);
 
-            rc.CurrentScope &= ~ResolveScopes.Loop;
+            rc.RestoreOldState();
             // exit current loop
             rc.EnclosingLoop = ParentLoop;
     

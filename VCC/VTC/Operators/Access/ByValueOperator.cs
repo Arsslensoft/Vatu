@@ -45,39 +45,37 @@ namespace VTC
             return false;
 
         }
-        public bool ResolveExtension(ResolveContext rc)
+         public bool ResolveExtension(ResolveContext rc)
         {
             // back up 
-            TypeSpec oldext = rc.CurrentExtensionLookup;
-            Expr extvar = rc.ExtensionVar;
+            rc.CreateNewState();
 
-            rc.CurrentScope |= ResolveScopes.ExtensionAccess;
-            rc.HighPriorityExtensionLookup = Left.Type;
-            rc.HighPriorityStaticExtensionLookup = false;
-            rc.HighPriorityExtensionVar = Left;
+            rc.CurrentExtensionLookup = Left.Type;
+            rc.StaticExtensionLookup = false;
+            rc.ExtensionVar = Left;
+            if((Right is VariableExpression) || (Right is DeclaredExpression && (Right as DeclaredExpression).Expression is VariableExpression))
+                rc.CurrentGlobalScope |= ResolveScopes.VariableExtensionAccess;
+            else 
+                rc.CurrentGlobalScope |= ResolveScopes.MethodExtensionAccess;
 
             Right = (Expr)Right.DoResolve(rc);
             if (Right is VariableExpression && (Right as VariableExpression).variable == null)
             {
 
                 ResolveContext.Report.Error(0, Location, "Unresolved extended field");
-                rc.CurrentScope &= ~ResolveScopes.ExtensionAccess;
-                rc.HighPriorityExtensionVar = extvar;
-                rc.HighPriorityExtensionLookup = oldext;
+                rc.RestoreOldState();
                 return false;
             }
             else if (Right is MethodExpression && (Right as MethodExpression).Method == null)
             {
-                rc.HighPriorityExtensionVar = extvar;
-                rc.HighPriorityExtensionLookup = oldext;
-                rc.CurrentScope &= ~ResolveScopes.ExtensionAccess;
+            
+            rc.RestoreOldState();
                 return false;
             }
-            rc.HighPriorityExtensionVar = extvar;
-            rc.HighPriorityExtensionLookup = oldext;
-            rc.CurrentScope &= ~ResolveScopes.ExtensionAccess;
+            rc.RestoreOldState();
             return true;
         }
+
         TypeMemberSpec tmp = null;
         public bool ResolveStructOrUnionMember(ResolveContext rc, MemberSpec mem, ref TypeMemberSpec tmp, VariableExpression lv, VariableExpression rv)
         {
@@ -88,7 +86,8 @@ namespace VTC
                     return false;
                 else if (mem.MemberType.IsStruct)
                 {
-                    StructTypeSpec stp = (StructTypeSpec)mem.MemberType;
+                    StructTypeSpec stp  = (StructTypeSpec)mem.MemberType;
+
                     tmp = stp.ResolveMember(rv.Name);
                     if (tmp == null)
                         return false;
@@ -102,7 +101,9 @@ namespace VTC
                 }
                 else
                 {
-                    UnionTypeSpec stp = (UnionTypeSpec)mem.MemberType;
+                    UnionTypeSpec stp  = (UnionTypeSpec)mem.MemberType;
+
+
                     tmp = stp.ResolveMember(rv.Name);
                     if (tmp == null)
                         return false;
@@ -111,6 +112,7 @@ namespace VTC
                         // Resolve
 
                         index = 0;
+                       
                         return true;
                     }
 
@@ -137,6 +139,7 @@ namespace VTC
                     {
                         // Resolve
                         index = tmp.Index;
+                  
                         return true;
                     }
 
@@ -155,7 +158,9 @@ namespace VTC
                 VariableExpression lv = (VariableExpression)Left;
                 if (Left.Type.Size == 2)
                     return new ByteAccessExpression(lv.variable, Right);
-                else ResolveContext.Report.Error(0, Location, "Cannot perform HIGH or LOW operation on non 16 bits types");
+                else if (Left.Type.Size == 4 && Left.Type is ReferenceTypeSpec)
+                    return new WordAccessExpression(lv.variable, Right);
+                else ResolveContext.Report.Error(0, Location, "Cannot perform (HIGH, LOW) or (SEGMENT, POINTER) operations on non 16 bits , reference types");
 
             }
             else if (Left is VariableExpression && Right is MethodExpression)
@@ -237,7 +242,8 @@ namespace VTC
                             VarSpec v = (VarSpec)struct_var;
 
                             VarSpec dst = new VarSpec(v.NS, v.Name, v.MethodHost, tmp.MemberType, Location,v.FlowIndex, v.Modifiers,true);
-                            dst.StackIdx = v.StackIdx + index;
+                            dst.VariableStackIndex = v.VariableStackIndex + index;
+                            dst.InitialStackIndex = v.InitialStackIndex;
                             return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, Left.position);
 
                         }
@@ -247,6 +253,7 @@ namespace VTC
 
                             RegisterSpec dst = new RegisterSpec(tmp.MemberType, v.Register, Location, 0,true);
                             dst.RegisterIndex = v.RegisterIndex + index;
+                            dst.InitialRegisterIndex = v.InitialRegisterIndex;
                             return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, Left.position);
 
                         }
@@ -256,6 +263,8 @@ namespace VTC
 
                             FieldSpec dst = new FieldSpec(v.NS, v.Name, v.Modifiers, tmp.MemberType, Location,true);
                             dst.FieldOffset = v.FieldOffset + index;
+                            dst.InitialFieldIndex = v.InitialFieldIndex;
+
                             return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, Left.position);
                         }
                         else if (struct_var is ParameterSpec)
@@ -265,7 +274,7 @@ namespace VTC
                             ParameterSpec dst = new ParameterSpec(v.NS,v.Name, v.MethodHost, tmp.MemberType, Location, v.InitialStackIndex, v.Modifiers,true);
 
                             dst.StackIdx = v.StackIdx + index;
-
+                      
                             return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, Left.position);
                         }
                         this.CommonType = tmp.MemberType;

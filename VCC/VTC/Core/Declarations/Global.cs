@@ -22,7 +22,7 @@ namespace VTC.Core
 
             Declarations = ds;
             Namespace = ndcl.Namespace;
-            Used = imp.Used;
+            Used = new List<Namespace>();
 
         }
         [Rule("<GLOBAL> ::=  <Decl> ")]
@@ -52,8 +52,12 @@ namespace VTC.Core
         {
             if (ncd != null)
                 ncd.DoResolve(rc);
+
             if (im != null)
+            {
                 im.DoResolve(rc);
+                Used.AddRange(im.Used);
+            }
             return this;
         }
     }

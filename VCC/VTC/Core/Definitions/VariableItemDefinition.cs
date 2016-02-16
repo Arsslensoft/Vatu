@@ -21,6 +21,13 @@ namespace VTC.Core
             _vardef = var;
             _ptr = ptr;
         }
+        [Rule(@"<Var Item> ::= <Var>")]
+        public VariableItemDefinition(VariableDefinition var)
+        {
+
+            _vardef = var;
+            _ptr = null;
+        }
        public override bool Resolve(ResolveContext rc)
         {
            return _vardef.Resolve(rc);
@@ -29,7 +36,9 @@ namespace VTC.Core
         {
             _vardef.IsAbstract = IsAbstract;
             _vardef = (VariableDefinition)_vardef.DoResolve(rc);
+     if(_ptr != null)
             _ptr = (TypePointer)_ptr.DoResolve(rc);
+     _vardef._ptr = _ptr;
             return this;
         }
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)

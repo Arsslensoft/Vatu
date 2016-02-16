@@ -86,11 +86,13 @@ namespace VTC.Base.GoldParser.Xml {
 			nametable = transform.NameTable;
 		}
 
-		public ProcessResult TryProcess(TextReader input, XmlWriter output) {
+        public ProcessResult TryProcess(ParserReader input, XmlWriter output)
+        {
 			return TryProcess(input, output, null);
 		}
 
-		public ProcessResult TryProcess(TextReader input, XmlWriter output, XmlResolver resolver) {
+        public ProcessResult TryProcess(ParserReader input, XmlWriter output, XmlResolver resolver)
+        {
 			if (input == null) {
 				throw new ArgumentNullException("input");
 			}

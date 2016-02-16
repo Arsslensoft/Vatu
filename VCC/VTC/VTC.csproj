@@ -121,6 +121,7 @@
     <Compile Include="Base\GoldParser\Grammar\Rule.cs" />
     <Compile Include="Base\GoldParser\Grammar\Symbol.cs" />
     <Compile Include="Base\GoldParser\Grammar\SymbolKind.cs" />
+    <Compile Include="Base\GoldParser\ParserReader.cs" />
     <Compile Include="Base\GoldParser\Parser\DummyGroup.cs" />
     <Compile Include="Base\GoldParser\Parser\IToken.cs" />
     <Compile Include="Base\GoldParser\Parser\ITokenizer.cs" />
@@ -163,6 +164,9 @@
     <Compile Include="CallingConventions.cs" />
     <Compile Include="Cast\Explicit\BasicCasts.cs" />
     <Compile Include="Compiler\CallingConventions.cs" />
+    <Compile Include="Compiler\Emitter\AddressableEmitter.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Compiler\Emitter\ArrayEmitter.cs" />
     <Compile Include="Compiler\Emitter\ByteEmitter.cs" />
     <Compile Include="Compiler\Emitter\ClassEmitter.cs" />
@@ -179,6 +183,7 @@
     <Compile Include="Compiler\Specs\BuiltinTypes.cs" />
     <Compile Include="Compiler\Specs\BuiltinTypeSpec.cs" />
     <Compile Include="Compiler\Specs\ClassTypeSpec.cs" />
+    <Compile Include="Compiler\Specs\ReferenceTypeSpec.cs" />
     <Compile Include="Compiler\Specs\TemplateTypeSpec.cs" />
     <Compile Include="Compiler\Specs\DelegateTypeSpec.cs" />
     <Compile Include="Compiler\Specs\EnumMemberSpec.cs" />
@@ -225,6 +230,7 @@
     <Compile Include="Core\Declarations\OOP\DestructorDeclaration.cs" />
     <Compile Include="Core\Declarations\RessourceDeclaration.cs" />
     <Compile Include="Core\Declarations\TemplateDeclaration.cs" />
+    <Compile Include="Core\Declarations\WordAccessExpression.cs" />
     <Compile Include="Core\Definitions\TemplateDefinition.cs" />
     <Compile Include="Core\Definitions\VariableInitDefinition.cs" />
     <Compile Include="Core\Definitions\InheritanceDefinition.cs" />

@@ -130,11 +130,10 @@ namespace VTC.Core
         bool ResolveDelegate(ResolveContext rc)
         {
             MemberSpec r = rc.Resolver.TryResolveName(_id.Name);
-            rc.UnsetHighPriorityAsCurrent();
+         
             if (r is MethodSpec)
             {
-                rc.SetHighPriorityAsCurrent();
-                return false;
+                        return false;
             }
             else if (r != null)
             {
@@ -146,16 +145,15 @@ namespace VTC.Core
                     if (MatchParameterTypes(r.MemberType as DelegateTypeSpec))
                     {
                         DelegateVar = r;
-                        rc.SetHighPriorityAsCurrent();
+         
                         return true;
                     }
                     else { ResolveContext.Report.Error(0, Location, "Delegate parameters mismatch");
-                    rc.SetHighPriorityAsCurrent();
+         
                         return false; }
                 }
             }
-            rc.SetHighPriorityAsCurrent();
-            return false;
+                     return false;
         }
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
@@ -190,8 +188,9 @@ namespace VTC.Core
         public override SimpleToken DoResolve(ResolveContext rc)
         {
 
-            ResolveScopes old = rc.CurrentScope;
-            rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+            // restore old state temporarly
+            rc.BackupCurrentAndSetStatement();
+
             if (isthis || issuper && !rc.IsInClass)
                 ResolveContext.Report.Error(0, Location, "This and super can be only used inside a class member declaration");
           
@@ -213,8 +212,8 @@ namespace VTC.Core
 
             }
 
-            rc.CurrentScope = old;
-            rc.SetHighPriorityAsCurrent();
+            // set back current state
+            rc.RestoreOldState();
 
             MemberSignature msig = new MemberSignature();
             if (isthis)
@@ -223,9 +222,10 @@ namespace VTC.Core
                 tp.Insert(0, rc.CurrentType);
                 Parameters.Insert(0, (Expr)(new ThisExpression(position).DoResolve(rc)));
                 InheritedType = rc.CurrentType;
-                rc.CurrentScope |= ResolveScopes.ThisAcces;
+                rc.CreateNewState();
+                rc.CurrentGlobalScope |= ResolveScopes.ThisAcces;
                 rc.Resolver.TryResolveMethod(rc.CurrentType.NormalizedName + "_$ctor", ref Method, tp.ToArray());
-                rc.CurrentScope &= ~ResolveScopes.ThisAcces;
+                rc.RestoreOldState();
             }
             else if (issuper)
             {
@@ -241,9 +241,10 @@ namespace VTC.Core
                 msig = new MemberSignature(rc.CurrentNamespace, InheritedType.NormalizedName + "_$ctor", tp.ToArray(), Location);
                 rc.CurrentExtensionLookup = null;
 
-                rc.CurrentScope |= ResolveScopes.SuperAccess;
+                rc.CreateNewState();
+                rc.CurrentGlobalScope |= ResolveScopes.SuperAccess;
                 rc.Resolver.TryResolveMethod(InheritedType.NormalizedName + "_$ctor", ref Method, tp.ToArray());
-                rc.CurrentScope &= ~ResolveScopes.SuperAccess;
+                rc.RestoreOldState();
             }
             else
             {
@@ -253,13 +254,13 @@ namespace VTC.Core
                 {
                     isclass = true;
                     Type = (classae.Type as DelegateTypeSpec).ReturnType;
-                    rc.UnsetHighPriorityAsCurrent();
+                    
                     return this;
                 }
                 else
                 {
                     Type = (DelegateVar.MemberType as DelegateTypeSpec).ReturnType;
-                    rc.UnsetHighPriorityAsCurrent();
+                    
                     return this;
                 }
                 if (Method == null)
@@ -267,7 +268,7 @@ namespace VTC.Core
 
             }
             
-            if ((rc.CurrentScope & ResolveScopes.AccessOperation) == ResolveScopes.AccessOperation && rc.CurrentExtensionLookup != null)
+            if ((rc.CurrentGlobalScope & ResolveScopes.MethodExtensionAccess) == ResolveScopes.MethodExtensionAccess && rc.CurrentExtensionLookup != null)
             {
              
                 if (Method == null)
@@ -291,7 +292,7 @@ namespace VTC.Core
                 else if (!rc.StaticExtensionLookup)
                     ResolveContext.Report.Error(46, Location, "Extension methods must be called with less parameters by 1, the first is reserved for the extended type");
             }
-            rc.UnsetHighPriorityAsCurrent();
+            
 
                 if (Method == null)
                     ResolveContext.Report.Error(46, Location, "Unknown method " + msig.NormalSignature + " ");
@@ -311,18 +312,24 @@ namespace VTC.Core
         bool MatchParameterTypes(ResolveContext rc)
         {
             for (int i = 0; i < Method.Parameters.Count; i++)
-                if (!TypeChecker.CompatibleTypes(Method.Parameters[i].MemberType,Parameters[i].Type))
+            {
+                if (!TypeChecker.CompatibleTypes(Method.Parameters[i].MemberType, Parameters[i].Type))
                     return false;
                 else if (Method.Parameters[i].IsReference)
                 {
+                    // restore old state temporarly
+                    rc.BackupCurrentAndSetStatement();
+
                     LoadEffectiveAddressOp lea = new LoadEffectiveAddressOp();
                     lea.position = Parameters[i].position;
                     Parameters[i] = new UnaryOperation(Parameters[i], lea);
                     Parameters[i].position = lea.position;
                     Parameters[i] = (Expr)Parameters[i].DoResolve(rc);
 
+                    rc.RestoreOldState();
                 }
-
+               
+            }
             return true;
         }
 

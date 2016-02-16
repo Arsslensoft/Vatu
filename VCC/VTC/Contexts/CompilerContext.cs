@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using Vasm;
 using VTC.Core;
+using VTC.Base.GoldParser;
 
 namespace VTC
 {
@@ -150,7 +151,7 @@ namespace VTC
             DependencyParsing dep = new DependencyParsing();
             dep.File = file;
 
-            dep.File =FixInclude(dep.File, Path.GetDirectoryName(ResolveContext.Report.FilePath));
+            dep.File =FixInclude(dep.File, Path.GetDirectoryName(csrc.DefaultDependency.File));
             string path = Path.GetDirectoryName(dep.File);
             if (!Paths.Contains(path))
                 Paths.Add(path);
@@ -163,7 +164,8 @@ namespace VTC
                 }
                 else
                 {
-                    dep.InputStream = new StreamReader(File.OpenRead(dep.File));
+                    dep.InputStream = new ParserReader(File.OpenRead(dep.File));
+                    dep.InputStream.Filename = dep.File;
                     DependencyCache.Add(dep);
                     return ResolveDependency(csrc, DependencyCache.Count - 1);
                 }
@@ -176,7 +178,7 @@ namespace VTC
                 MemberSpec ms = ctx.Resolver.TryResolveName(rsx.NS, rsx.Name);
                 if (ms != null)
                     return false;
-                string file = FixInclude(rsx.IncludeFile, Path.GetDirectoryName(ResolveContext.Report.FilePath));
+                string file = FixInclude(rsx.IncludeFile, Path.GetDirectoryName(src.DefaultDependency.File));
                 string path = Path.GetDirectoryName(file);
                 if (!Paths.Contains(path))
                     Paths.Add(path);
@@ -225,13 +227,12 @@ namespace VTC
             {
 
                 src.DefaultDependency.DependsOn.Add(dep);
-                string oldf = ResolveContext.Report.FilePath;
-                ResolveContext.Report.FilePath = dep.File;
+            
                 bool ok = true;
                 try
                 {
 
-
+                
 
                     var processor = new SemanticProcessor<SimpleToken>(dep.InputStream, actions);
 
@@ -287,7 +288,7 @@ namespace VTC
                     Console.WriteLine(ex.StackTrace);
                 }
                 dep.Parsed = ok;
-                ResolveContext.Report.FilePath = oldf;
+          
 
                 return ok;
             }
@@ -329,17 +330,16 @@ namespace VTC
 
 
                 RootCtx = ResolveContext.CreateRootContext(gb.Used, gb.Namespace, gb.Declarations);
-           
-            
+          
 
                 if (isdef)
                     src.DefaultDependency.RootCtx = RootCtx;
                 else RootCtx.FillKnownByKnown(src.DefaultDependency.RootCtx.Resolver);
-
-                Global stmts = (Global)gb.DoResolve(RootCtx);
-
+                
+           
+            
                 // includes
-                // includes
+                
                 foreach (IncludeDeclaration incl in cunit.Includes)
                 {
                     if (incl is RessourceDeclaration)
@@ -351,7 +351,7 @@ namespace VTC
                 if (old_ctx != null)
                     RootCtx.FillKnownByKnown(old_ctx.Resolver);
 
-
+                Global stmts = (Global)gb.DoResolve(RootCtx);
                 if (stmts != null)
                 {
 
@@ -486,7 +486,7 @@ namespace VTC
             }
       
 
-            return (ResolveContext.Report.ErrorCount == 0);
+            return (src.DefaultDependency.Report.ErrorCount == 0);
         }
         public bool PreprocessSources()
         {
@@ -516,7 +516,8 @@ namespace VTC
 
                     if (!CompiledSources.Contains(csrc))
                     {
-                        csrc.DefaultDependency.InputStream = new StreamReader(File.OpenRead(dep.File));
+                        csrc.DefaultDependency.InputStream = new ParserReader(File.OpenRead(dep.File));
+                        csrc.DefaultDependency.InputStream.Filename = dep.File;
                         if (Options.AssemblyOutput != null && Options.AssemblyOutput.Length > 0)
                            csrc.Asmw = new AssemblyWriter(Options.AssemblyOutput[i]);
 
@@ -617,7 +618,7 @@ namespace VTC
             bool ok = true;
               pc.Time.Reset();
               pc.Time.Start();
-                    ResolveContext.Report.FilePath = pc.Source.DefaultDependency.File;
+                
 
                     var processor = new SemanticProcessor<SimpleToken>(pc.Source.DefaultDependency.InputStream, actions);
 
@@ -700,7 +701,7 @@ namespace VTC
                 {
                     st.Reset();
                     st.Start();
-                    ResolveContext.Report.FilePath = csrc.DefaultDependency.File;
+          
                     var processor = new SemanticProcessor<SimpleToken>(csrc.DefaultDependency.InputStream, actions);
 
                     ParseMessage parseMessage = processor.ParseAll();
@@ -765,8 +766,8 @@ namespace VTC
         public static Location TranslateLocation(VTC.Base.GoldParser.Parser.LineInfo li)
         {
             Location loc = new Location(li.Line, li.Column, li.Index);
-            if (ResolveContext.Report != null)
-                loc.FullPath = ResolveContext.Report.FilePath;
+     
+                loc.FullPath = li.SourceFile;
         
             
             return loc;

@@ -51,6 +51,7 @@ namespace VTC
             Reset(Void);
             Reset(String);
             Reset(Pointer);
+            Reset(DPointer);
             Reset(Float);
             Reset(Type);
         }
@@ -59,7 +60,7 @@ namespace VTC
         public static BuiltinTypeSpec Int = new BuiltinTypeSpec("int", BuiltinTypes.Int);
         public static BuiltinTypeSpec UInt = new BuiltinTypeSpec("uint", BuiltinTypes.UInt);
         public static BuiltinTypeSpec Type = new BuiltinTypeSpec("type", BuiltinTypes.Type);
-
+        public static BuiltinTypeSpec DPointer = new BuiltinTypeSpec("dpointer", BuiltinTypes.DPointer);
 
         public static BuiltinTypeSpec Pointer = new BuiltinTypeSpec("pointer", BuiltinTypes.Pointer, TypeFlags.Pointer);
         public static BuiltinTypeSpec Bool = new BuiltinTypeSpec("bool", BuiltinTypes.Bool);

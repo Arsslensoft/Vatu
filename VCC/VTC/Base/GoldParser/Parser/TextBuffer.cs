@@ -35,7 +35,7 @@ namespace VTC.Base.GoldParser.Parser {
 	public class TextBuffer {
 		private const int BufferSize = 2048;
 
-		private readonly TextReader reader;
+		private readonly ParserReader reader;
 		private char[] buffer = new char[BufferSize];
 		private int bufferLength;
 		private int bufferOffset;
@@ -50,7 +50,8 @@ namespace VTC.Base.GoldParser.Parser {
 		private int rollbackLine;
 		private char rollbackPrevious;
 
-		public TextBuffer(TextReader reader) {
+        public TextBuffer(ParserReader reader)
+        {
 			if (reader == null) {
 				throw new ArgumentNullException("reader");
 			}
@@ -75,14 +76,15 @@ namespace VTC.Base.GoldParser.Parser {
 			}
 		}
 
-		public TextReader TextReader {
+        public ParserReader TextReader
+        {
 			get {
 				return reader;
 			}
 		}
 
 		public string Read(int count, out LineInfo position) {
-			position = new LineInfo(bufferPosition+bufferOffset, line, column);
+			position = new LineInfo(bufferPosition+bufferOffset, line, column,reader.Filename);
 			if (count == 0) {
 				return string.Empty;
 			}

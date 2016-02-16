@@ -50,6 +50,7 @@ namespace VTC.Base.GoldParser.Parser {
 		/// <param name="tokenizer">The tokenizer.</param>
 		/// <param name="trim">if set to <c>true</c> [trim].</param>
 		protected LalrProcessor(ITokenizer<T> tokenizer) {
+       
 			if (tokenizer == null) {
 				throw new ArgumentNullException("tokenizer");
 			}

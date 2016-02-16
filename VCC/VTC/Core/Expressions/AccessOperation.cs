@@ -89,7 +89,7 @@ namespace VTC.Core
         }
  public override SimpleToken DoResolve(ResolveContext rc)
         {
-            rc.CurrentScope |= ResolveScopes.AccessOperation;
+           
             AcceptStatement = (_op._op == AccessOperator.ByName);
             if (_op._op != AccessOperator.ByName)
             {
@@ -97,44 +97,40 @@ namespace VTC.Core
                 if ((_op.Right is DeclaredExpression) && (_op.Right  as DeclaredExpression).Expression is MethodExpression)
                 {
                     _op.Left = (Expr)_op.Left.DoResolve(rc);
-                    rc.CurrentScope |= ResolveScopes.AccessOperation;
                     // back up 
-                    TypeSpec oldext = rc.CurrentExtensionLookup;
-                    Expr extvar = rc.ExtensionVar;
-                    bool staticext = rc.StaticExtensionLookup;
+                    rc.CreateNewState();
+                    rc.CurrentGlobalScope |= ResolveScopes.MethodExtensionAccess;
 
                     if(_op is ByValueOperator)
-                    rc.HighPriorityExtensionLookup = _op.Left.Type;
-                    else rc.HighPriorityExtensionLookup = _op.Left.Type.BaseType;
-                    rc.HighPriorityStaticExtensionLookup = false;
-                    rc.HighPriorityExtensionVar = _op.Left;
+                    rc.CurrentExtensionLookup = _op.Left.Type;
+                    else rc.CurrentExtensionLookup = _op.Left.Type.BaseType;
+
+                    rc.StaticExtensionLookup = false;
+                    rc.ExtensionVar = _op.Left;
 
                     _op.Right = (Expr)_op.Right.DoResolve(rc);
 
                     // restore
-                    rc.HighPriorityStaticExtensionLookup = staticext;
-                    rc.HighPriorityExtensionVar = extvar;
-                    rc.HighPriorityExtensionLookup = oldext;
-
-
-                    rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+                    rc.RestoreOldState();
                     return _op.Right;
                 }
                 else
                 {
+                    rc.CreateNewState();
+                    rc.CurrentGlobalScope |= ResolveScopes.VariableExtensionAccess; // disable false variable resolve errors
                     _op.Right = (Expr)_op.Right.DoResolve(rc);
                     _op.Left = (Expr)_op.Left.DoResolve(rc);
-
+                    rc.RestoreOldState();
 
                     SimpleToken s = _op.DoResolve(rc);
-                    rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+                    
                     return s;
                 }
             }
             else
             {
                 SimpleToken s = _op.DoResolve(rc);
-                rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+               
                 return s;
             }
 

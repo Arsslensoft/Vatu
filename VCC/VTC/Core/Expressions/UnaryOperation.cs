@@ -23,7 +23,7 @@ namespace VTC.Core
         [Rule(@"<Op Unary>   ::= '--'   <Op Unary>")]
         [Rule(@"<Op Unary>   ::= '++'   <Op Unary>")]
         [Rule(@"<Op Unary>   ::= '??'   <Op Unary>")]
-        [Rule(@"<Op Unary>   ::= '¤'   <Op Unary>")]
+        [Rule(@"<Op Unary>   ::= '?!'   <Op Unary>")]
         public UnaryOperation(Operator op, Expr target)
         {
             _op = op;

@@ -44,7 +44,8 @@ namespace VTC.Core
         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-            rc.CurrentScope |= ResolveScopes.Try;
+            rc.CreateNewState();
+            rc.CurrentGlobalScope |= ResolveScopes.Try;
             Label lb = rc.DefineLabel(LabelType.TRY_CATCH);
             ExitTry = rc.DefineLabel(lb.Name + "_EXIT");
             TryCatch = rc.DefineLabel(lb.Name + "_CATCH");
@@ -65,7 +66,7 @@ namespace VTC.Core
             else
                 enclosing_return = rc.EnclosingTry.TryReturn;
 
-            rc.CurrentScope &= ~ResolveScopes.Try;
+            rc.RestoreOldState();
             // exit current loop
 
             rc.EnclosingTry = ParentTry;

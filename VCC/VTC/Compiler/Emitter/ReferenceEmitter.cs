@@ -27,32 +27,32 @@ namespace VTC
         public override bool EmitFromStack(EmitContext ec)
         {
             ec.EmitComment("Pop Reference Parameter @BP " + Offset);
-            if (InitialStackIndex != Offset)
+            if (InitialIndex != Offset)
             {
-                ReferenceParameter.StackIdx = InitialStackIndex;
-                return ReferenceParameter.ValueOfStackAccess(ec, Offset - InitialStackIndex, memberType);
+                BaseEmitter.Offset = InitialIndex;
+                return BaseEmitter.ValueOfStackAccess(ec, Offset - InitialIndex, memberType);
             }
             else
             {
-                ReferenceParameter.StackIdx = Offset;
-                return ReferenceParameter.ValueOfStack(ec);
+                BaseEmitter.Offset = Offset;
+                return BaseEmitter.ValueOfStack(ec);
             }
 
         }
         public override bool EmitToStack(EmitContext ec)
         {
-            ec.EmitComment("Push Reference Parameter @ "+ReferenceParameter.Emitter.ToString() +" "+InitialStackIndex .ToString() +"  " + Offset);
-       
+            ec.EmitComment("Push Reference Parameter @ " + BaseEmitter.ToString() + " " + InitialIndex.ToString() + "  " + Offset);
 
-            if (InitialStackIndex != Offset)
+
+            if (InitialIndex != Offset)
             {
-                ReferenceParameter.StackIdx = InitialStackIndex;
-                return ReferenceParameter.ValueOfAccess(ec, Offset - InitialStackIndex, memberType);
+                BaseEmitter.Offset = InitialIndex;
+                return BaseEmitter.ValueOfAccess(ec, Offset - InitialIndex, memberType);
             }
             else
             {
-                ReferenceParameter.StackIdx = Offset;
-                return ReferenceParameter.ValueOf(ec);
+                BaseEmitter.Offset = Offset;
+                return BaseEmitter.ValueOf(ec);
             }
 
 

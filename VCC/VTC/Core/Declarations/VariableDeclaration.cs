@@ -71,8 +71,8 @@ namespace VTC.Core
         }
         void ResolveField(ResolveContext rc, VariableDefinition vadef)
         {
-            
-            vadef.FieldOrLocal = new FieldSpec(rc.CurrentNamespace, vadef._id.Name, mods, Type, Location);
+            TypeSpec mt = vadef.CreateType(Type);
+            vadef.FieldOrLocal = new FieldSpec(rc.CurrentNamespace, vadef._id.Name, mods, mt, Location);
             // Childs
 
 
@@ -86,21 +86,21 @@ namespace VTC.Core
             }
 
             // initial value
-            if (!Type.IsBuiltinType && !Type.IsPointer && vadef.expr != null && vadef.expr is ConstantExpression)
+            if (!mt.IsBuiltinType && !mt.IsPointer && vadef.expr != null && vadef.expr is ConstantExpression)
                 ResolveContext.Report.Error(2, Location, "Only builtin types and pointers can have initial value");
             // const
-            if ((mods & Modifiers.Const) == Modifiers.Const && !Type.IsBuiltinType && !Type.IsPointer)
+            if ((mods & Modifiers.Const) == Modifiers.Const && !mt.IsBuiltinType && !mt.IsPointer)
                 ResolveContext.Report.Error(3, Location, "Only builtin types and pointers can have constant value");
             else if ((mods & Modifiers.Const) == Modifiers.Const && vadef.expr == null)
                 ResolveContext.Report.Error(4, Location, "Constant fields must be initialized");
 
-            if ((vadef.expr is ArrayConstant) && !(Type is PointerTypeSpec))
+            if ((vadef.expr is ArrayConstant) && !(mt is PointerTypeSpec))
                 ResolveContext.Report.Error(49, Location, "Array value cannot be used without the array specifier,  ex : (type[] k = 65a;)");
             // emit init priority to string
-            if (Type.Equals(BuiltinTypeSpec.String) && vadef.expr != null && vadef.expr is ConstantExpression) // conert string to const
+            if (mt.Equals(BuiltinTypeSpec.String) && vadef.expr != null && vadef.expr is ConstantExpression) // conert string to const
                 vadef.expr = ConstantExpression.CreateConstantFromValue(BuiltinTypeSpec.String, ((ConstantExpression)(vadef.expr)).GetValue(), vadef.expr.Location);
 
-            else if (Type.IsPointer && vadef.expr != null && vadef.expr is ConstantExpression) // convert constant to uint (pointers)
+            else if (mt.IsPointer && vadef.expr != null && vadef.expr is ConstantExpression) // convert constant to uint (pointers)
             {
                 if (vadef.expr is StringConstant)
                 {
@@ -110,19 +110,19 @@ namespace VTC.Core
                 if (!(vadef.expr is ArrayConstant))
                     vadef.expr = ConstantExpression.CreateConstantFromValue(BuiltinTypeSpec.UInt, ((ConstantExpression)(vadef.expr)).GetValue(), vadef.expr.Location);
             }
-            else if (Type.IsBuiltinType && vadef.expr != null && vadef.expr is ConstantExpression) // convert constant to type (builtin)
+            else if (mt.IsBuiltinType && vadef.expr != null && vadef.expr is ConstantExpression) // convert constant to type (builtin)
             {
                 if (vadef.expr is StringConstant)
                 {
-                    ResolveContext.Report.Error(5, Location, "Cannot convert string to " + Type.ToString());
+                    ResolveContext.Report.Error(5, Location, "Cannot convert string to " + mt.ToString());
                     return;
                 }
                 if (!(vadef.expr is ArrayConstant))
-                    vadef.expr = ConstantExpression.CreateConstantFromValue(Type, ((ConstantExpression)(vadef.expr)).GetValue(), vadef.expr.Location);
+                    vadef.expr = ConstantExpression.CreateConstantFromValue(mt, ((ConstantExpression)(vadef.expr)).GetValue(), vadef.expr.Location);
             }
-            else if (vadef.expr is InitializerConstant && !(vadef.expr as InitializerConstant).MatchType(Type))
+            else if (vadef.expr is InitializerConstant && !(vadef.expr as InitializerConstant).MatchType(mt))
                  ResolveContext.Report.Error(0, Location, "Initializers mismatch");
-            else if (vadef.expr is MultiDimInitializerConstant && !(vadef.expr as MultiDimInitializerConstant).MatchType(Type))
+            else if (vadef.expr is MultiDimInitializerConstant && !(vadef.expr as MultiDimInitializerConstant).MatchType(mt))
                 ResolveContext.Report.Error(0, Location, "Multi-Dim initializers mismatch");
 
 
@@ -131,9 +131,16 @@ namespace VTC.Core
         }
         void ResolveLocalVariable(ResolveContext rc, VariableDefinition vadef)
         {
-         
+            TypeSpec mt = vadef.CreateType(Type);
+           
+            if (mt is ReferenceTypeSpec && vadef.expr == null)
+                ResolveContext.Report.Error(0, Location, "Reference variables must be initialized");
+            else if (mt is ReferenceTypeSpec && ( !(vadef.expr is VariableExpression) || vadef.expr.Type != mt.BaseType))
+                ResolveContext.Report.Error(0, Location, "Reference variables must be initialized with a non reference variable");
 
-            vadef.FieldOrLocal = new VarSpec(rc.CurrentNamespace, vadef._id.Name, rc.CurrentMethod, Type, Location, rc.Resolver.KnownLocalVars.Count, mods);
+
+
+            vadef.FieldOrLocal = new VarSpec(rc.CurrentNamespace, vadef._id.Name, rc.CurrentMethod, mt, Location, rc.Resolver.KnownLocalVars.Count, mods);
             ((VarSpec)vadef.FieldOrLocal).Initialized = (vadef.expr != null);
 
            
@@ -144,7 +151,7 @@ namespace VTC.Core
             else
                 ResolveContext.Report.Error(0, Location, vadef.Name + " is already defined in the current context");
 
-            if (Type.IsForeignType || Type.IsArray)
+            if (mt.IsForeignType || mt.IsArray)
                 vadef.IsAssigned = true;
 
            if(vadef.expr is InitializerConstant || vadef.expr is MultiDimInitializerConstant)
@@ -153,10 +160,10 @@ namespace VTC.Core
 
         void ResolveStructMember(ResolveContext rc, VariableDefinition vadef)
         {
-       
+            TypeSpec mt = vadef.CreateType(Type);
 
-
-            vadef.Member = new TypeMemberSpec(rc.CurrentNamespace, vadef._id.Name, rc.CurrentType, Type, Location, 0);
+           
+            vadef.Member = new TypeMemberSpec(rc.CurrentNamespace, vadef._id.Name, rc.CurrentType, mt, Location, 0);
             vadef.Member.Modifiers = mods;
 
             // value
@@ -268,7 +275,16 @@ namespace VTC.Core
                 if (vadef.expr != null)
                 {
 
-                    ec.EmitComment("Var decl assign '" + v.Name + "' @BP" + v.StackIdx);
+                    if (v.MemberType.IsReference && (vadef.expr is VariableExpression))
+                    {
+                        ec.EmitComment("Var decl assign [reference] '" + v.Name + "' @BP" + v.VariableStackIndex);
+                        ec.EmitPush(RegistersEnum.DS);
+                        (vadef.expr as VariableExpression).LoadEffectiveAddress(ec);
+                        ec.EmitPop(RegistersEnum.BP, 16, true, 2 + v.VariableStackIndex);
+                        ec.EmitPop(RegistersEnum.BP, 16, true, v.VariableStackIndex);
+                        return true;
+                    }
+                    ec.EmitComment("Var decl assign '" + v.Name + "' @BP" + v.VariableStackIndex);
                     // push const
                     vadef.expr.EmitToStack(ec);
                     v.EmitFromStack(ec);

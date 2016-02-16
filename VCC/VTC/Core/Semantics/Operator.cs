@@ -17,7 +17,7 @@ namespace VTC.Core
         public bool FixConstant(ResolveContext rc)
         {
             bool conv = false;
-            CheckOverlflow = (rc.CurrentScope & ResolveScopes.CheckedArithmetics) == ResolveScopes.CheckedArithmetics;
+            CheckOverlflow = (rc.CurrentGlobalScope & ResolveScopes.CheckedArithmetics) == ResolveScopes.CheckedArithmetics;
             if (Left.Type.IsFloat && !FloatingPointSupported && CompilerContext.CompilerOptions.FloatingPointEnabled)
             {
                 ResolveContext.Report.Error(0, Left.Location, "Floating Point not supported for this kind of operators");

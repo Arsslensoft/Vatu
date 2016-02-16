@@ -10,7 +10,7 @@ using VTC.Core;
 
 namespace VTC
 {
-	[Terminal("¤")]
+	[Terminal("?!")]
     public class ParityTestOperator : UnaryOp
     {
         public ParityTestOperator()
@@ -44,7 +44,7 @@ namespace VTC
                 return base.EmitOverrideOperator(ec);
            
             Right.EmitToStack(ec);
-            ec.EmitComment("¤" + Right.CommentString());
+            ec.EmitComment("?!" + Right.CommentString());
             ec.EmitPop(Register.Value);
 
             ec.EmitInstruction(new Test() { DestinationReg = Register.Value, SourceValue = 1, Size = 80 });
@@ -65,7 +65,7 @@ namespace VTC
                 return base.EmitOverrideOperatorBranchable(ec,truecase,v, ConditionalTestEnum.ParityEven, ConditionalTestEnum.ParityOdd);
            
             Right.EmitToStack(ec);
-            ec.EmitComment("¤" + Right.CommentString());
+            ec.EmitComment("?!" + Right.CommentString());
             ec.EmitPop(Register.Value);
 
             ec.EmitInstruction(new Test() { DestinationReg = Register.Value, SourceValue = 1, Size = 80 });

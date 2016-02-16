@@ -55,7 +55,7 @@ namespace VTC.Base.GoldParser.Parser {
 		/// </summary>
 		/// <param name="textReader"><see cref="TextReader"/> instance to read data from.</param>
 		/// <param name="grammar">The grammar used for the DFA states</param>
-		protected Tokenizer(TextReader textReader, CompiledGrammar grammar): this(new TextBuffer(textReader), grammar) {}
+        protected Tokenizer(ParserReader textReader, CompiledGrammar grammar) : this(new TextBuffer(textReader), grammar) { }
 
 		/// <summary>
 		/// Initializes new instance of Parser class.
@@ -117,7 +117,8 @@ namespace VTC.Base.GoldParser.Parser {
 		/// <summary>
 		/// Gets source of parsed data.
 		/// </summary>
-		public TextReader TextReader {
+        public ParserReader TextReader
+        {
 			get {
 				return buffer.TextReader;
 			}
@@ -257,7 +258,7 @@ namespace VTC.Base.GoldParser.Parser {
 		/// </summary>
 		/// <param name="textReader"><see cref="TextReader"/> instance to read data from.</param>
 		/// <param name="grammar">The grammar used for the DFA states</param>
-		public Tokenizer(TextReader textReader, CompiledGrammar grammar): base(textReader, grammar) {}
+        public Tokenizer(ParserReader textReader, CompiledGrammar grammar) : base(textReader, grammar) { }
 
 		protected override Token CreateToken(Symbol tokenSymbol, LineInfo tokenPosition, string text) {
 			return new TextToken(tokenSymbol, tokenPosition, text);

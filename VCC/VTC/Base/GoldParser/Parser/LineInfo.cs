@@ -38,6 +38,8 @@ namespace VTC.Base.GoldParser.Parser {
 		private readonly int column;
 		private readonly long index;
 		private readonly int line;
+        private readonly string file;
+
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LineInfo"/> struct.
@@ -45,10 +47,11 @@ namespace VTC.Base.GoldParser.Parser {
 		/// <param name="index">The character index.</param>
 		/// <param name="line">The line.</param>
 		/// <param name="column">The column.</param>
-		public LineInfo(long index, int line, int column) {
+		public LineInfo(long index, int line, int column,string file) {
 			this.line = line;
 			this.index = index;
 			this.column = column;
+            this.file = file;
 		}
 
 		/// <summary>
@@ -80,7 +83,13 @@ namespace VTC.Base.GoldParser.Parser {
 				return line;
 			}
 		}
-
+        public string SourceFile
+        {
+            get
+            {
+                return file;
+            }
+        }
 		public override bool Equals(object obj) {
 			if (ReferenceEquals(null, obj)) {
 				return false;

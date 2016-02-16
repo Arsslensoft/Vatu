@@ -20,10 +20,8 @@ namespace VTC.Core
 
 
         [Rule(@"<Op Or>      ::= <Op Or> '||' <Op And>")]
-        [Rule(@"<Op And>     ::= <Op And> '&&' <Op BinOR>")]
-        [Rule(@"<Op BinOR>   ::= <Op BinOR> '|' <Op BinXOR>")]
-        [Rule(@"<Op BinXOR>  ::= <Op BinXOR> '^' <Op BinAND>")]
-        [Rule(@"<Op BinAND>  ::= <Op BinAND> '&' <Op Equate>")]
+        [Rule(@"<Op And>     ::= <Op And> '&&' <Op Equate>")]
+
         [Rule(@"<Op Equate>  ::= <Op Equate> '==' <Op Compare>")]
         [Rule(@"<Op Equate>  ::= <Op Equate> '!=' <Op Compare>")]
 
@@ -35,8 +33,13 @@ namespace VTC.Core
         [Rule(@"<Op Shift>   ::= <Op Shift> '>>' <Op Add>")]
         [Rule(@"<Op Shift>   ::= <Op Shift> '<~' <Op Add>")]
         [Rule(@"<Op Shift>   ::= <Op Shift> '~>' <Op Add>")]
-        [Rule(@"<Op Add>     ::= <Op Add> '+' <Op Mult>")]
-        [Rule(@"<Op Add>     ::= <Op Add> '-' <Op Mult>")]
+        [Rule(@"<Op Add>     ::= <Op Add> '+' <Op BinOR>")]
+        [Rule(@"<Op Add>     ::= <Op Add> '-' <Op BinOR>")]
+
+        [Rule(@"<Op BinOR>   ::= <Op BinOR> '|' <Op BinXOR>")]
+        [Rule(@"<Op BinXOR>  ::= <Op BinXOR> '^' <Op BinAND>")]
+        [Rule(@"<Op BinAND>  ::= <Op BinAND> '&' <Op Mult>")]
+
         [Rule(@"<Op Mult>    ::= <Op Mult> '*' <Op Unary>")]
         [Rule(@"<Op Mult>    ::= <Op Mult> '/' <Op Unary>")]
         [Rule(@"<Op Mult>    ::= <Op Mult> '%' <Op Unary>")]

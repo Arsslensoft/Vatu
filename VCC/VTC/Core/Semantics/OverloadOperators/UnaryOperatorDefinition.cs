@@ -14,7 +14,7 @@ namespace VTC.Core
        [Rule(@"<Unary Operator> ::= '--'")]
        [Rule(@"<Unary Operator> ::= '[]'")]
        [Rule(@"<Unary Operator> ::= '~'")]
-       [Rule(@"<Unary Operator> ::= '¤'")]
+       [Rule(@"<Unary Operator> ::= '?!'")]
        [Rule(@"<Unary Operator> ::= '??'")]
        [Rule(@"<Unary Operator> ::= new")]
        [Rule(@"<Unary Operator> ::= delete")]

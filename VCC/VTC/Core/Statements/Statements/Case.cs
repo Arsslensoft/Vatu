@@ -134,15 +134,17 @@ namespace VTC.Core
           
             ExitIf = SwitchExit;
             ParentIf = rc.EnclosingIf;
+
             rc.EnclosingIf = this;
-            rc.CurrentScope |= ResolveScopes.Case;
+            rc.CreateNewState();
+            rc.CurrentGlobalScope |= ResolveScopes.Case;
             // enter case
           
             b = (Block)b.DoResolve(rc);
       
 
             // exit case
-            rc.CurrentScope &= ~ResolveScopes.Case;
+            rc.RestoreOldState();
             rc.EnclosingIf = ParentIf;
             return this;
         }

@@ -83,11 +83,11 @@ namespace VTC
                     {
                         VarSpec v = (VarSpec)ve.variable;
                         VarSpec vr = new VarSpec(v.NS, v.Name, v.MethodHost, v.MemberType.BaseType, Location, v.FlowIndex, v.Modifiers);
-                        vr.StackIdx = v.StackIdx;
+                        vr.VariableStackIndex = v.VariableStackIndex;
+                
+                        vr.VariableStackIndex += Left.Type.BaseType.GetSize(Left.Type.BaseType) * Index;
 
-                        vr.StackIdx += Left.Type.BaseType.GetSize(Left.Type.BaseType) * Index;
-
-
+                        vr.InitialStackIndex = vr.VariableStackIndex;
                         return new AccessExpression(vr, (Left is AccessExpression) ? (Left as AccessExpression) : null,Left.position);
                     }
                     else if (ve.variable is FieldSpec)
@@ -95,9 +95,11 @@ namespace VTC
                         FieldSpec v = (FieldSpec)ve.variable;
                         FieldSpec vr = new FieldSpec(v.NS, v.Name, v.Modifiers, v.MemberType.BaseType, Location);
                         vr.FieldOffset = v.FieldOffset;
+                    
                         vr.IsIndexed = true;
+                    
                         vr.FieldOffset += Left.Type.BaseType.GetSize(Left.Type.BaseType) * Index;
-
+                        vr.InitialFieldIndex = vr.FieldOffset;
                         return new AccessExpression(vr, (Left is AccessExpression) ? (Left as AccessExpression) : null, Left.position);
                     }
 

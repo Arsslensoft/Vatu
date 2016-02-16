@@ -41,7 +41,8 @@ namespace VTC.Core
             Else = rc.DefineLabel(lb.Name + "_ELSE");
             ParentIf = rc.EnclosingIf;
             rc.EnclosingIf = this;
-            rc.CurrentScope |= ResolveScopes.If;
+            rc.CreateNewState();
+            rc.CurrentGlobalScope |= ResolveScopes.If;
     
             // enter if
             _expr = (Expr)_expr.DoResolve(rc);
@@ -52,7 +53,7 @@ namespace VTC.Core
             if (_expr.Type != BuiltinTypeSpec.Bool)
                 ResolveContext.Report.Error(30, Location, "If condition must be a boolean expression");
 
-            rc.CurrentScope &= ~ResolveScopes.If;
+            rc.RestoreOldState();
             // exit current if
             rc.EnclosingIf = ParentIf;
     

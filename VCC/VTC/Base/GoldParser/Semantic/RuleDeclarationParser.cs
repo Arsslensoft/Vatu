@@ -161,7 +161,8 @@ namespace VTC.Base.GoldParser.Semantic {
 		}
 
 		internal static bool TryParse(string ruleString, out Reduction ruleToken) {
-			using (StringReader reader = new StringReader(ruleString)) {
+            using (ParserStringReader reader = new ParserStringReader(ruleString))
+            {
 				Tokenizer tokenizer = new Tokenizer(reader, ruleGrammar);
 				LalrProcessor processor = new LalrProcessor(tokenizer);
 				ParseMessage message;

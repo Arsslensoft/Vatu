@@ -81,7 +81,8 @@ namespace VTC
                 VarSpec v = (VarSpec)struct_var;
 
                 VarSpec dst = new VarSpec(v.NS, v.Name, v.MethodHost, Type, Location, v.FlowIndex, v.Modifiers, true);
-                dst.StackIdx = v.StackIdx + CastOffset;
+                dst.VariableStackIndex = v.VariableStackIndex + CastOffset;
+                dst.InitialStackIndex = dst.VariableStackIndex;
                 return new PolymorphicClassExpression(dst, CastOffset,Type, _target.position);
 
             }
@@ -91,6 +92,7 @@ namespace VTC
 
                 RegisterSpec dst = new RegisterSpec(Type, v.Register, Location, 0, true);
                 dst.RegisterIndex = v.RegisterIndex + CastOffset;
+                dst.InitialRegisterIndex = dst.RegisterIndex;
                 return new PolymorphicClassExpression(dst, CastOffset, Type, _target.position);
             }
             else if (struct_var is FieldSpec)
@@ -99,6 +101,7 @@ namespace VTC
 
                 FieldSpec dst = new FieldSpec(v.NS, v.Name, v.Modifiers, Type, Location, true);
                 dst.FieldOffset = v.FieldOffset + CastOffset;
+                dst.InitialFieldIndex = dst.FieldOffset;
                 return new PolymorphicClassExpression(dst, CastOffset, Type, _target.position);
             }
             else if (struct_var is ParameterSpec)
@@ -126,7 +129,8 @@ namespace VTC
                 VarSpec v = (VarSpec)struct_var;
 
                 VarSpec dst = new VarSpec(v.NS, v.Name, v.MethodHost, Type, Location, v.FlowIndex, v.Modifiers, true);
-                dst.StackIdx = v.StackIdx + CastOffset;
+                dst.VariableStackIndex = v.VariableStackIndex + CastOffset;
+                dst.InitialStackIndex = dst.VariableStackIndex;
                 return new AccessExpression(dst, (_target is AccessExpression) ? (_target as AccessExpression) : null, _target.position);
 
             }
@@ -136,6 +140,7 @@ namespace VTC
 
                 RegisterSpec dst = new RegisterSpec(Type, v.Register, Location, 0, true);
                 dst.RegisterIndex = v.RegisterIndex + CastOffset;
+                dst.InitialRegisterIndex = dst.RegisterIndex;
                 return new AccessExpression(dst, (_target is AccessExpression) ? (_target as AccessExpression) : null, _target.position);
 
             }
@@ -145,6 +150,7 @@ namespace VTC
 
                 FieldSpec dst = new FieldSpec(v.NS, v.Name, v.Modifiers, Type, Location, true);
                 dst.FieldOffset = v.FieldOffset + CastOffset;
+                dst.InitialFieldIndex = dst.FieldOffset;
                 return new AccessExpression(dst, (_target is AccessExpression) ? (_target as AccessExpression) : null, _target.position);
             }
             else if (struct_var is ParameterSpec)
@@ -184,7 +190,7 @@ namespace VTC
                     _target.Type = Type;
                     return Target;
                 }
-                else if (PointerFix())
+                else if (PointerFix() || ReferenceFix() || TemplateFix())
                     return Target;
                 else if (InheritanceFix())
                 {
@@ -206,9 +212,7 @@ namespace VTC
                 }
                 else if (Type.Equals(_target.Type))
                     return _target;
-             
-                else if (TemplateFix())
-                    return Target;
+       
                 else if (FloatFix())
                 {
                     if (!float_to_int)
@@ -451,6 +455,16 @@ namespace VTC
                 else return true;
             }
             return false;
+        }
+        bool ReferenceFix()
+        {
+            if (_target.Type is ReferenceTypeSpec && Type.Equals(_target.Type.BaseType))
+            {
+                _target.Type = Type;
+                nofix = true;
+                return true;
+            }
+            else return false;
         }
         bool PointerFix()
         {

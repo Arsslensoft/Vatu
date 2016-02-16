@@ -6,20 +6,20 @@ using System.Threading.Tasks;
 
 namespace VTC
 {
-   /// <summary>
-   /// Type & members resolver
-   /// </summary>
-   public class Resolver
+    /// <summary>
+    /// Type & members resolver
+    /// </summary>
+    public class Resolver
     {
-       public Resolver Parent { get; set; }
-       public Namespace CurrentNamespace { get; set; }
-       public TypeSpec CurrentExtensionLookup { get; set; }
-       public TypeSpec CurrentClassLookup{ get; set; }
-       public bool IsExtensionStatic { get; set; }
-       public List<Namespace> Imports { get; set; }
-       public MethodSpec CurrentMethod { get; set; }
+        public Resolver Parent { get; set; }
+        public Namespace CurrentNamespace { get; set; }
+        public TypeSpec CurrentExtensionLookup { get; set; }
+        public TypeSpec CurrentClassLookup { get; set; }
+        public bool IsExtensionStatic { get; set; }
+        public List<Namespace> Imports { get; set; }
+        public MethodSpec CurrentMethod { get; set; }
 
-       public List<OperatorSpec> KnownOperators { get; set; }
+        public List<OperatorSpec> KnownOperators { get; set; }
         public List<TypeSpec> KnownTypes { get; set; }
         public List<FieldSpec> KnownGlobals { get; set; }
         public List<MethodSpec> KnownMethods { get; set; }
@@ -27,13 +27,13 @@ namespace VTC
         public List<VarSpec> GloballyKnownLocals { get; set; }
         public List<Namespace> KnownNamespaces { get; set; }
         public ResolveContext CurrentContext { get; set; }
-        public Resolver(Resolver parent, Namespace ns, List<Namespace> imports,ResolveContext rc, MethodSpec mtd = null)
-            : this(ns,imports,rc,mtd)
+        public Resolver(Resolver parent, Namespace ns, List<Namespace> imports, ResolveContext rc, MethodSpec mtd = null)
+            : this(ns, imports, rc, mtd)
         {
             Parent = parent;
-     
+
         }
-        public Resolver(Namespace ns, List<Namespace> imports,ResolveContext rc, MethodSpec mtd = null)
+        public Resolver(Namespace ns, List<Namespace> imports, ResolveContext rc, MethodSpec mtd = null)
         {
             CurrentContext = rc;
             CurrentMethod = mtd;
@@ -95,7 +95,7 @@ namespace VTC
 
             }
             return false;
-         
+
         }
         public bool KnowField(FieldSpec f)
         {
@@ -144,7 +144,7 @@ namespace VTC
         {
             if (KnownTypes.Contains(tp))
             {
-                for(int i = 0; i < KnownTypes.Count;i++)
+                for (int i = 0; i < KnownTypes.Count; i++)
                     if (KnownTypes[i] == tp)
                     {
                         for (int j = 0; j < KnownTypes[i].ExtendedMethods.Count; j++)
@@ -152,7 +152,7 @@ namespace VTC
                                 return false;
                             else if (KnownTypes[i].ExtendedMethods[j].Signature.ExtensionSignature == ms.Signature.ExtensionSignature)
                                 return true;
-                            KnownTypes[i].ExtendedMethods.Add(ms);
+                        KnownTypes[i].ExtendedMethods.Add(ms);
 
                     }
             }
@@ -169,12 +169,12 @@ namespace VTC
                         for (int j = 0; j < KnownTypes[i].ExtendedFields.Count; j++)
                             if (KnownTypes[i].ExtendedFields[j].Signature.ExtensionSignature == ms.Signature.ExtensionSignature)
                                 return false;
-                     
-                            KnownTypes[i].ExtendedFields.Add(ms);
+
+                        KnownTypes[i].ExtendedFields.Add(ms);
 
                     }
             }
-            return true                ;
+            return true;
         }
         public bool ExtendStatic(TypeSpec tp, MethodSpec ms)
         {
@@ -200,9 +200,9 @@ namespace VTC
         {
             if (CurrentContext.IsInClass)
             {
-                if ((CurrentContext.CurrentScope & ResolveScopes.SuperAccess) == ResolveScopes.SuperAccess && ((ms.Modifiers & Modifiers.Private) == Modifiers.Private)) // private member of super
+                if ((CurrentContext.CurrentGlobalScope & ResolveScopes.SuperAccess) == ResolveScopes.SuperAccess && ((ms.Modifiers & Modifiers.Private) == Modifiers.Private)) // private member of super
                     return false;
-                else if ((CurrentContext.CurrentScope & ResolveScopes.ThisAcces) == ResolveScopes.ThisAcces)
+                else if ((CurrentContext.CurrentGlobalScope & ResolveScopes.ThisAcces) == ResolveScopes.ThisAcces)
                     return true;
                 else return (((ms.Modifiers & Modifiers.Private) != Modifiers.Private) || CurrentContext.CurrentNamespace == ms.NS); // otherwise everything is accepted
             }
@@ -218,7 +218,7 @@ namespace VTC
                     else
                         return false; // private & protected restricted
                 }
-              
+
                 else // general
                 {
                     // public or private
@@ -233,8 +233,8 @@ namespace VTC
 
         }
 
-    
-        public bool ResolveType(Namespace ns, string name,ref TypeSpec tp,string sig = null)
+
+        public bool ResolveType(Namespace ns, string name, ref TypeSpec tp, string sig = null)
         {
             tp = null;
             for (int i = 0; i < KnownTypes.Count; i++)
@@ -257,8 +257,8 @@ namespace VTC
 
             }
             if (ns.HasParent)
-                return ResolveType(ns.GetParent(this), name,ref tp,sig);
-           
+                return ResolveType(ns.GetParent(this), name, ref tp, sig);
+
             return false;
         }
         public FieldSpec ResolveField(Namespace ns, string name)
@@ -278,7 +278,7 @@ namespace VTC
                     }
                 }
 
-         
+
             }
             else
             {
@@ -292,7 +292,7 @@ namespace VTC
                         return kt;
                     }
                 }
-                
+
 
             }
 
@@ -305,23 +305,23 @@ namespace VTC
         {
             if (CurrentExtensionLookup == null)
             {
-               
-                    MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
-                    for (int i = 0; i < KnownMethods.Count; i++)
+
+                MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
+                for (int i = 0; i < KnownMethods.Count; i++)
+                {
+                    if (KnownMethods[i].NS.Name != ns.Name)
+                        continue;
+                    if (msig.Signature.StartsWith(KnownMethods[i].Signature.Signature))
                     {
-                        if (KnownMethods[i].NS.Name != ns.Name)
-                            continue;
-                        if (msig.Signature.StartsWith(KnownMethods[i].Signature.Signature))
-                        {
-                            // Variadic Signature Match
-                            mtd = KnownMethods[i];
-                            if (!CheckAccessModifier(mtd))
-                                ResolveContext.Report.Error(0, mtd.Signature.Location, mtd.Signature.NormalSignature + " is inaccessible due to its protection level");
-                            return;
-                        }
+                        // Variadic Signature Match
+                        mtd = KnownMethods[i];
+                        if (!CheckAccessModifier(mtd))
+                            ResolveContext.Report.Error(0, mtd.Signature.Location, mtd.Signature.NormalSignature + " is inaccessible due to its protection level");
+                        return;
                     }
-                    if (ns.HasParent && mtd == null)
-                        ResolveVariadicMethod(ns.GetParent(this), name, ref mtd, par);
+                }
+                if (ns.HasParent && mtd == null)
+                    ResolveVariadicMethod(ns.GetParent(this), name, ref mtd, par);
             }
             else
             {
@@ -345,7 +345,7 @@ namespace VTC
                     MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
                     for (int i = 0; i < ml.Count; i++)
                     {
-                        if (msig.ExtensionSignature.StartsWith(ml[i].Signature.ExtensionSignature) )
+                        if (msig.ExtensionSignature.StartsWith(ml[i].Signature.ExtensionSignature))
                         {
                             // Variadic Signature Match
                             mtd = ml[i];
@@ -379,55 +379,55 @@ namespace VTC
             }
 
         }
-        void ResolveExtensionMethod(Namespace ns, string name,TypeSpec ext, ref MethodSpec mtd, TypeSpec[] par = null)
+        void ResolveExtensionMethod(Namespace ns, string name, TypeSpec ext, ref MethodSpec mtd, TypeSpec[] par = null)
         {
             bool hastemplate = false;
-    
-                MemberSignature msig = new MemberSignature(ns,ext.Name + "$_"+ name, par, Location.Null);
+
+            MemberSignature msig = new MemberSignature(ns, ext.Name + "$_" + name, par, Location.Null);
+            for (int i = 0; i < KnownMethods.Count; i++)
+            {
+
+                if (KnownMethods[i].MatchExtSignature(msig, ext.Name + "$_" + name, par, ref hastemplate))
+                {
+                    mtd = KnownMethods[i];
+                    if (!CheckAccessModifier(mtd))
+                        ResolveContext.Report.Error(0, mtd.Signature.Location, mtd.Signature.NormalSignature + " is inaccessible due to its protection level");
+                    return;
+                }
+            }
+
+        }
+        public void ResolveMethod(Namespace ns, string name, ref MethodSpec mtd, TypeSpec[] par = null)
+        {
+            bool hastemplate = false;
+            if (CurrentExtensionLookup == null)
+            {
+
+                MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
                 for (int i = 0; i < KnownMethods.Count; i++)
                 {
+                    if (KnownMethods[i].NS.Name != ns.Name)
+                        continue;
 
-                    if (KnownMethods[i].MatchExtSignature(msig, ext.Name + "$_" + name, par, ref hastemplate))
+                    if (KnownMethods[i].MatchSignature(msig, name, par, ref hastemplate))
                     {
                         mtd = KnownMethods[i];
                         if (!CheckAccessModifier(mtd))
                             ResolveContext.Report.Error(0, mtd.Signature.Location, mtd.Signature.NormalSignature + " is inaccessible due to its protection level");
                         return;
+
                     }
                 }
-       
-        }
-        public void ResolveMethod(Namespace ns, string name, ref MethodSpec mtd,TypeSpec[] par=null)
-        {
-            bool hastemplate = false;
-            if (CurrentExtensionLookup == null)
-            {
-         
-                    MemberSignature msig = new MemberSignature(ns, name, par, Location.Null);
-                    for (int i = 0; i < KnownMethods.Count; i++)
-                    {
-                        if (KnownMethods[i].NS.Name != ns.Name)
-                            continue;
-                      
-                        if (KnownMethods[i].MatchSignature(msig, name, par,ref hastemplate))
-                        {
-                            mtd = KnownMethods[i];
-                            if (!CheckAccessModifier(mtd))
-                                ResolveContext.Report.Error(0, mtd.Signature.Location, mtd.Signature.NormalSignature + " is inaccessible due to its protection level");
-                            return;
 
-                        }
-                    }
+                if (ns.HasParent && mtd == null)
+                    ResolveMethod(ns.GetParent(this), name, ref mtd, par);
 
-                    if (ns.HasParent && mtd == null)
-                         ResolveMethod(ns.GetParent(this), name,ref mtd, par);
-           
             }
             else
             {
                 TypeSpec original = KnownTypes[KnownTypes.IndexOf(CurrentExtensionLookup)];
-       
-            
+
+
                 if (par != null && !IsExtensionStatic)
                 {
                     List<TypeSpec> ts = new List<TypeSpec>();
@@ -435,16 +435,16 @@ namespace VTC
                     ts.Insert(0, CurrentExtensionLookup);
                     par = ts.ToArray();
                 }
-                else if(!IsExtensionStatic)
+                else if (!IsExtensionStatic)
                     par = new TypeSpec[1] { CurrentExtensionLookup };
 
-                ResolveExtensionMethod( ns, name, CurrentExtensionLookup, ref mtd, par);
+                ResolveExtensionMethod(ns, name, CurrentExtensionLookup, ref mtd, par);
 
                 if (mtd == null && original is StructTypeSpec && (original as StructTypeSpec).Primitive != null && original.Size == (original as StructTypeSpec).Primitive.Size) // implicit cast primitive
                 {
-                
+
                     original = KnownTypes[KnownTypes.IndexOf((original as StructTypeSpec).Primitive)];
-        
+
 
                     if (par != null && !IsExtensionStatic)
                     {
@@ -455,17 +455,17 @@ namespace VTC
                         par = ts.ToArray();
                     }
                     else if (!IsExtensionStatic)
-                        par = new TypeSpec[1] { original  };
+                        par = new TypeSpec[1] { original };
 
-                    ResolveExtensionMethod( ns, name, original, ref mtd, par);
+                    ResolveExtensionMethod(ns, name, original, ref mtd, par);
 
-            
+
                 }
 
                 if (ns.HasParent && mtd == null)
                     ResolveMethod(ns.GetParent(this), name, ref mtd, par);
             }
-         
+
         }
         public VarSpec ResolveVar(Namespace ns, string name)
         {
@@ -485,12 +485,13 @@ namespace VTC
             return null;
         }
         public Namespace ResolveNSRecursive(List<Namespace> ns, string name)
-        { Namespace n = Namespace.Default;
+        {
+            Namespace n = Namespace.Default;
             foreach (Namespace kt in ns)
             {
                 if (kt.Name == name)
                     return kt;
-                else if( (n = ResolveNSRecursive(kt.ChildNamespaces, name)) != Namespace.Default)
+                else if ((n = ResolveNSRecursive(kt.ChildNamespaces, name)) != Namespace.Default)
                     return n;
             }
 
@@ -498,7 +499,7 @@ namespace VTC
         }
         public Namespace ResolveNS(string name)
         {
-            return ResolveNSRecursive(KnownNamespaces,name);
+            return ResolveNSRecursive(KnownNamespaces, name);
         }
         public OperatorSpec ResolveOperator(Namespace ns, string symb)
         {
@@ -506,7 +507,7 @@ namespace VTC
             {
                 if (kt.NS.Name != ns.Name)
                     continue;
-                if (kt.Symbol == symb )
+                if (kt.Symbol == symb)
                 {
                     if (!CheckAccessModifier(kt))
                         ResolveContext.Report.Error(0, kt.Signature.Location, kt.Signature.NormalSignature + " is inaccessible due to its protection level");
@@ -598,12 +599,12 @@ namespace VTC
             }
             return;
         }
-        public void TryResolveMethod(string name,ref MethodSpec ms, TypeSpec[] param = null)
+        public void TryResolveMethod(string name, ref MethodSpec ms, TypeSpec[] param = null)
         {
-            ResolveMethod(CurrentNamespace, name, ref ms,param);
+            ResolveMethod(CurrentNamespace, name, ref ms, param);
             if (ms == null)
             {
-            ResolveMethod(Namespace.Default, name, ref ms, param);
+                ResolveMethod(Namespace.Default, name, ref ms, param);
 
 
                 if (ms == null)
@@ -616,9 +617,9 @@ namespace VTC
                     }
                 }
             }
-         
-           if(ms == null)
-            TryResolveVariadicMethod(name, ref ms, param);
+
+            if (ms == null)
+                TryResolveVariadicMethod(name, ref ms, param);
         }
         public VarSpec TryResolveVar(string name)
         {
@@ -692,12 +693,12 @@ namespace VTC
             }
             else return m;
         }
-        public bool TryResolveType(string name, ref TypeSpec type,string sig = null)
+        public bool TryResolveType(string name, ref TypeSpec type, string sig = null)
         {
             bool ok = ResolveType(CurrentNamespace, name, ref type, sig);
             if (!ok)
             {
-                ok = ResolveType(Namespace.Default, name, ref type,sig);
+                ok = ResolveType(Namespace.Default, name, ref type, sig);
                 if (!ok)
                 {
                     foreach (Namespace ns in Imports)
@@ -730,7 +731,7 @@ namespace VTC
         }
 
         #endregion
-        
+
 
     }
 }

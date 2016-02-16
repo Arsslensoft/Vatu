@@ -42,6 +42,35 @@ namespace VTC.Core
             _pointers = pointers;
             _avd = avd;
         }
+
+        [Rule(@"<Type>     ::= <Base>")]
+        public TypeIdentifier(BaseTypeIdentifier tbase)
+        {
+            _base = tbase;
+
+        }
+        [Rule(@"<Type>     ::= <Name> ~'::' <Base>")]
+        public TypeIdentifier(NameIdentifier ns, BaseTypeIdentifier tbase)
+        {
+            ni = ns;
+            _base = tbase;
+
+        }
+        [Rule(@"<Type>     ::= <Base> <Array>")]
+        public TypeIdentifier(BaseTypeIdentifier tbase, ArrayVariableDefinition avd)
+        {
+            _base = tbase;
+
+            _avd = avd;
+        }
+        [Rule(@"<Type>     ::= <Name> ~'::' <Base> <Array>")]
+        public TypeIdentifier(NameIdentifier ns, BaseTypeIdentifier tbase, ArrayVariableDefinition avd)
+        {
+            ni = ns;
+            _base = tbase;
+
+            _avd = avd;
+        }
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
             return base.DoFlowAnalysis(fc);
@@ -63,23 +92,36 @@ namespace VTC.Core
          
             if (ni != null)
             {
-                Namespace ns = new Namespace(ni.Name);
-                rc.CurrentScope |= ResolveScopes.AccessOperation;
-                Namespace lastns = rc.CurrentNamespace;
+
+                if (ni.Name == "global")
+                    ResolveContext.Report.Error(0, Location, "Global namespace cannot be used for access");
+
+                Namespace ns = rc.Resolver.ResolveNS(ni.Name);
+
+                if (Namespace.Default == ns)
+            
+                    // check child
+                    ns = rc.Resolver.ResolveNS(rc.CurrentNamespace.Name + "::" + ni.Name);
+
+
+                if (Namespace.Default == ns)
+                    ResolveContext.Report.Error(0, Location, "Unknown namespace");
+               
+
+                
+
+                rc.CreateNewState();
                 rc.CurrentNamespace = ns;
+
                 _base = (BaseTypeIdentifier)_base.DoResolve(rc);
-                rc.CurrentNamespace = lastns;
-                rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+                
+                rc.RestoreOldState();
             }
             else _base = (BaseTypeIdentifier)_base.DoResolve(rc);
             Type = _base.Type;
             if (_pointers != null)
-            {
-          
-                for (int i = 0; i < _pointers.PointerCount; i++)
-                    Type = Type.MakePointer();
-            }
-
+                Type = _pointers.CreateType(Type, _pointers);
+            
             if (_avd != null)
                 Type = _avd.CreateArrayType(Type);
             return this;

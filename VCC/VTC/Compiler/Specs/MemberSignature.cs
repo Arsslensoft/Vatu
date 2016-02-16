@@ -51,12 +51,15 @@ namespace VTC
                 }
                 foreach (TypeSpec p in param)
                 {
+                    if (p == null)
+                    {
 
-               
-                    _extsig += "_" + p.GetTypeName(p).Replace("*", "P").Replace("<","$T_").Replace(">","_T$");
-                    _signature += "_" + p.GetTypeName(p).Replace("*", "P").Replace("<", "$T_").Replace(">", "_T$");
+                    }
+
+                    _extsig += "_" + p.GetTypeName(p).Replace("*", "P").Replace("&", "R").Replace("<", "$T_").Replace(">", "_T$");
+                    _signature += "_" + p.GetTypeName(p).Replace("*", "P").Replace("&", "R").Replace("<", "$T_").Replace(">", "_T$");
                     _nsig +=  p.GetTypeName(p) + ",";
-                    _nns += "_" + p.GetTypeName(p).Replace("*", "P");
+                    _nns += "_" + p.GetTypeName(p).Replace("*", "P").Replace("&", "R");
                     types += p.GetTypeName(p) + ",";
                 }
                 if (param.Length > 0)

@@ -142,7 +142,7 @@ namespace VTC.Core
             {
                 ec.EmitComment("Local Vars Definitions");
                 foreach (VarSpec v in locals)
-                    ec.EmitComment("Local " + v.Name + " @BP" + v.StackIdx);
+                    ec.EmitComment("Local " + v.Name + " @BP" + v.VariableStackIndex);
             }
             ec.EmitComment("Block");
             // Emit Code

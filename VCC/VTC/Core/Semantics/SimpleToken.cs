@@ -102,7 +102,7 @@ namespace VTC.Core
 
     [Terminal("class")]
     [Terminal("super")]
-
+    [Terminal("segment")]
     public class SimpleToken : SemanticToken, IResolve
     {
         private Location _loc;

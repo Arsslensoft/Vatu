@@ -11,13 +11,21 @@ namespace VTC.Core
 
 	public class VariableDefinition : Definition
     {
+       internal TypePointer _ptr;
         public MemberSpec FieldOrLocal { get; set; }
+        public TypeSpec Type { get; set; }
         public TypeMemberSpec Member { get; set; }
         public int FlowVarIndex = 0;
         public bool IsAssigned = false;
         public bool IsAbstract = false;
- 
- 
+
+        public TypeSpec CreateType(TypeSpec t)
+        {
+            if (_ptr == null)
+                return t;
+            else
+                return _ptr.CreateType(t, _ptr);
+        }
         public Identifier _id;
         public Expr expr;
 

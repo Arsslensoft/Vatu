@@ -13,12 +13,15 @@ namespace VTC
         public TypeSpec CurrentTypeLookup { get; set; }
         public bool IsStatic { get; set; }
         public Expr ExtVar { get; set; }
-        public ResolverState(Namespace current, Expr extvar, bool staticlookup, TypeSpec currenttp)
+        public ResolveScopes CurrentScopes { get; set; }
+
+        public ResolverState(Namespace current, Expr extvar, bool staticlookup, TypeSpec currenttp, ResolveScopes c)
         {
             ExtVar = extvar;
             CurrentNamespace = current;
             IsStatic = staticlookup;
             CurrentTypeLookup = currenttp;
+            CurrentScopes = c;
         }
 
         public void Restore(ResolveContext rc)
@@ -27,10 +30,11 @@ namespace VTC
             rc.CurrentNamespace = CurrentNamespace;
             rc.StaticExtensionLookup = IsStatic;
             rc.ExtensionVar = ExtVar;
+            rc.CurrentGlobalScope = CurrentScopes;
         }
         public static ResolverState Create(ResolveContext rc)
         {
-            return new ResolverState(rc.CurrentNamespace, rc.ExtensionVar, rc.StaticExtensionLookup, rc.CurrentExtensionLookup);
+            return new ResolverState(rc.CurrentNamespace, rc.ExtensionVar, rc.StaticExtensionLookup, rc.CurrentExtensionLookup,rc.CurrentGlobalScope);
         }
     }
     public interface ILoop
@@ -87,7 +91,7 @@ namespace VTC
     [Flags]
     public enum ResolveScopes
     {
-        AccessOperation = 1 << 1,
+        MethodExtensionAccess = 1 << 1,
         Normal = 1,
         Loop = 1 << 2,
         If = 1 << 3,
@@ -97,8 +101,8 @@ namespace VTC
         ByNameAccess = 1 << 7,
         ThisAcces = 1 << 8,
         SuperAccess = 1 << 9 ,
-        ExtensionAccess = 1 << 10
-       
+       VariableExtensionAccess = 1 << 10,
+        StateChange = 1 << 11
     }
     public class ResolveContext : IDisposable
     {
@@ -124,11 +128,11 @@ namespace VTC
         static Report rp;
 
         public static Report Report { get { return rp; } set { rp = value; } }
+
         static ResolveContext()
         {
-            Report = new ConsoleReporter();
+            rp = new ConsoleReporter();
         }
- 
 
         public List<ResolveContext> ChildContexts { get; set; }
         public bool IsInTypeDef { get; set; }
@@ -137,7 +141,13 @@ namespace VTC
         public bool IsInClass { get; set; }
         public bool IsInEnum { get; set; }
         public bool IsInVarDeclaration { get; set; }
-        
+
+        public Namespace CurrentNamespace
+        {
+            get { return Resolver.CurrentNamespace; }
+
+            set { Resolver.CurrentNamespace = value; }
+        }
         public TypeSpec CurrentExtensionLookup
         {
             get { return Resolver.CurrentExtensionLookup; }
@@ -149,27 +159,16 @@ namespace VTC
             set { Resolver.IsExtensionStatic = value; }
         }
         public Expr ExtensionVar { get; set; }
+        public ResolveScopes CurrentGlobalScope { get; set; }
 
-        public TypeSpec HighPriorityExtensionLookup
-        {
-            get;
-            set;
-        }
-        public bool HighPriorityStaticExtensionLookup
-        {
-            get;
-            set;
-        }
-        public Expr HighPriorityExtensionVar { get; set; }
+        public ResolverState CurrentStatementState {get;set;}
 
-        public Namespace CurrentNamespace  { get { return Resolver.CurrentNamespace; }
-          
-            set { Resolver.CurrentNamespace = value; } }
-        public Namespace HighPriorityNamespace { get; set; }
+       
+      
+        
         public List<Namespace> Imports { get { return Resolver.Imports; } set { Resolver.Imports = value; } }
-
-        public ResolveScopes CurrentScope { get; set; }
-
+        
+      
         public int LocalStackIndex { get; set; }
 
       
@@ -183,31 +182,29 @@ namespace VTC
 
 
         Stack<ResolverState> states = new Stack<ResolverState>();
-        public void SetHighPriorityAsCurrent()
+        public void CreateNewState()
         {
-            if ((CurrentScope & ResolveScopes.AccessOperation) == ResolveScopes.AccessOperation)
-            {
-                states.Push(ResolverState.Create(this));
-                if(HighPriorityNamespace.Name != null)
-                     CurrentNamespace = HighPriorityNamespace;
-
-                ExtensionVar = HighPriorityExtensionVar;
-                StaticExtensionLookup = HighPriorityStaticExtensionLookup;
-                CurrentExtensionLookup = HighPriorityExtensionLookup;
             
-            }
+                states.Push(ResolverState.Create(this));
+           
+            
         }
-        public void UnsetHighPriorityAsCurrent()
+        public void RestoreOldState()
         {
-            if ((CurrentScope & ResolveScopes.AccessOperation) == ResolveScopes.AccessOperation)
+            if (states.Count > 0)
             {
                 ResolverState rs = states.Pop();
                 rs.Restore(this);
             }
         }
+        public void BackupCurrentAndSetStatement()
+        {
+            CreateNewState();
+            CurrentStatementState.Restore(this);
+        }
         void FillKnown()
         {
-            CurrentScope = ResolveScopes.Normal;
+            CurrentGlobalScope = ResolveScopes.Normal;
     
             Resolver.KnowType(BuiltinTypeSpec.Bool);
             Resolver.KnowType(BuiltinTypeSpec.Byte);
@@ -549,7 +546,8 @@ namespace VTC
             if (!Exist((MemberSpec)mtd, Resolver.KnownLocalVars.Cast<MemberSpec>().ToList<MemberSpec>()))
             {
                 LocalStackIndex -= mtd.memberType.IsArray ? mtd.memberType.GetSize(mtd.memberType) : mtd.MemberType.Size;
-                mtd.StackIdx = LocalStackIndex;
+                mtd.VariableStackIndex = LocalStackIndex;
+                mtd.InitialStackIndex = LocalStackIndex;
                 Resolver.KnowVar(mtd);
                 return true;
             }

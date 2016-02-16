@@ -282,23 +282,11 @@ namespace VTC.Core
             }
             else
             {
-                if (Registers.IsSegment(dst))
-                {
+             
                     LeftExpr.EmitToStack(ec);
                     ec.EmitPop(dst);
                     return;
-                }
-                if (LeftExpr.variable is FieldSpec)
-                    ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceRef = ElementReference.New(LeftExpr.variable.Signature.ToString()), SourceIsIndirect = true, Size = size });
-                else if (LeftExpr.variable is VarSpec)
-                    ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceReg = EmitContext.BP, SourceDisplacement = (LeftExpr.variable as VarSpec).StackIdx, SourceIsIndirect = true, Size = size });
-                else if (LeftExpr.variable is ParameterSpec)
-                    ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceReg = EmitContext.BP, SourceDisplacement = (LeftExpr.variable as ParameterSpec).StackIdx, SourceIsIndirect = true, Size = size });
-                else if (LeftExpr.variable is EnumMemberSpec)
-                {
-                    (LeftExpr.variable as EnumMemberSpec).EmitToStack(ec);//AM sign
-                    ec.EmitPop(dst);
-                }
+               
 
             }
         }
@@ -320,7 +308,7 @@ namespace VTC.Core
                 if (LeftExpr.variable is FieldSpec)
                     ec.EmitInstruction(new ConditionalMove() { DestinationReg = dst, SourceRef = ElementReference.New(LeftExpr.variable.Signature.ToString()), SourceIsIndirect = true, Condition = cnd, Size = 80 });
                 else if (LeftExpr.variable is VarSpec)
-                    ec.EmitInstruction(new ConditionalMove() { DestinationReg = dst, SourceReg = EmitContext.BP, SourceDisplacement = (LeftExpr.variable as VarSpec).StackIdx, SourceIsIndirect = true, Condition = cnd, Size = 80 });
+                    ec.EmitInstruction(new ConditionalMove() { DestinationReg = dst, SourceReg = EmitContext.BP, SourceDisplacement = (LeftExpr.variable as VarSpec).VariableStackIndex, SourceIsIndirect = true, Condition = cnd, Size = 80 });
                 else if (LeftExpr.variable is ParameterSpec)
                     ec.EmitInstruction(new ConditionalMove() { DestinationReg = dst, SourceReg = EmitContext.BP, SourceDisplacement = (LeftExpr.variable as ParameterSpec).StackIdx, SourceIsIndirect = true, Condition = cnd, Size = 80 });
 

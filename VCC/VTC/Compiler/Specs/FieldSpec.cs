@@ -27,7 +27,19 @@ namespace VTC
                 Emitter.Offset = value;
             }
         }
+        public int InitialFieldIndex
+        {
+            get
+            {
+                return Emitter.InitialIndex;
 
+            }
+            set
+            {
+
+                Emitter.InitialIndex = value;
+            }
+        }
         public FieldSpec(Namespace ns,string name, Modifiers mods, TypeSpec type, Location loc,bool access =false)
             : base(name, new MemberSignature(ns,name, loc), mods,ReferenceKind.Field)
         {
@@ -35,37 +47,9 @@ namespace VTC
             NS = ns;
             IsIndexed = false;
             memberType = type;
-            if (memberType.IsMultiDimensionArray)
-            {
-                if (!access)
-                    Emitter = new MatrixEmitter(this, 0, ReferenceKind.Field);
-                else Emitter = new HostedMatrixEmitter(this, 0, ReferenceKind.Field);
-            }
-            else if (memberType.IsArray)
-            {
-                if(!access)
-                       Emitter = new ArrayEmitter(this, 0, ReferenceKind.Field);
-                else Emitter = new HostedArrayEmitter(this, 0, ReferenceKind.Field);
-            }
 
-            else if (memberType.IsBuiltinType || memberType.IsDelegate || memberType.IsTemplate )
-            {
-                if (memberType.IsFloat && !memberType.IsPointer)
-                    Emitter = new FloatEmitter(this, 0, ReferenceKind.Field);
-                else if (memberType.IsSigned && memberType.Size == 1)
-                    Emitter = new SByteEmitter(this, 0, ReferenceKind.Field);
-
-                else  if (memberType.Size == 2)
-                    Emitter = new WordEmitter(this, 0, ReferenceKind.Field);
-                else if (memberType.Size == 1)
-                    Emitter = new ByteEmitter(this, 0, ReferenceKind.Field);
-                else if(memberType.IsTemplate && memberType.Size > 2)
-                    Emitter = new StructEmitter(this, 0, ReferenceKind.Field);
-            }
-            else if (memberType.IsClass)
-                Emitter = new ClassEmitter(this, 0, ReferenceKind.Field);
-            else if (memberType.IsForeignType)
-                Emitter = new StructEmitter(this, 0, ReferenceKind.Field);
+            Emitter = ReferenceSpec.GetEmitter(this, memberType, 0, ReferenceKind.Field, access);
+            InitialFieldIndex = 0;
         }
 
         public override bool EmitToStack(EmitContext ec)

@@ -113,6 +113,7 @@
     <Compile Include="Base\Link.cs" />
     <Compile Include="Base\Linker.cs" />
     <Compile Include="Base\LinkerSymbol.cs" />
+    <Compile Include="Linkers\KernelLinker.cs" />
     <Compile Include="MiscUtil\BigEndianBitConverter.cs" />
     <Compile Include="MiscUtil\EndianBinaryReader.cs" />
     <Compile Include="MiscUtil\EndianBinaryWriter.cs" />

@@ -40,10 +40,12 @@ namespace VTC
         }
         public static bool CompatibleTypes(TypeSpec a, TypeSpec b)
         {
-           
+
             if (a.Equals(b))
                 return true;
             else if (IsPointerHolder(a, b))
+                return true;
+            else if (IsReferenceOfOrFor(a, b))
                 return true;
             else if (a.IsClass && b.IsClass && !a.IsPointer && !b.IsPointer)
             {
@@ -51,7 +53,7 @@ namespace VTC
                 ClassTypeSpec B = b as ClassTypeSpec;
                 if (IsGeneralisationOf(A, B) || IsSpecialisationOf(A, B))
                     return true;
-          
+
                 else return false;
 
             }
@@ -64,8 +66,8 @@ namespace VTC
             else if (a.IsArray || b.IsArray)
                 return b.Equals(a);
 
-            else if (a.Size > b.Size)
-                return true;
+            //else if (a.Size > b.Size)
+            //    return true;
             else
                 return a.Size == b.Size;
 
@@ -86,6 +88,14 @@ namespace VTC
         {
             // a > b 
             if (a.Inherited.Contains(b))
+                return true;
+            else return false;
+
+
+        }
+        public static bool IsReferenceOfOrFor(TypeSpec a, TypeSpec b)
+        {
+            if ((a is ReferenceTypeSpec && b == a.BaseType) || (b is ReferenceTypeSpec && b.BaseType == a))
                 return true;
             else return false;
 

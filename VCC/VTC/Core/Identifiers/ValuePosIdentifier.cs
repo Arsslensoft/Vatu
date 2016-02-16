@@ -13,7 +13,8 @@ namespace VTC.Core
         protected readonly string _idName;
         public override string Name { get { return _idName; } }
 
-    
+        [Rule(@"<VALUE POS> ::= pointer")]
+        [Rule(@"<VALUE POS> ::= segment")]
         [Rule(@"<VALUE POS> ::= HIGH")]
          [Rule(@"<VALUE POS> ::= LOW")]
         public ValuePosIdentifier(SimpleToken vid)

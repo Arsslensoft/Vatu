@@ -13,18 +13,7 @@ namespace VTC
     /// </summary>
     public class ParameterSpec : MemberSpec, IEquatable<ParameterSpec>
     {
-        public ParameterSpec ReferenceParameter
-        {
-            get
-            {
-                return Emitter.ReferenceParameter;
-
-            }
-            set
-            {
-                Emitter.ReferenceParameter = value;
-            }
-        }
+     
      
         MethodSpec method;
 
@@ -44,12 +33,16 @@ namespace VTC
         {
             get
             {
-                return Emitter.InitialStackIndex;
+                return Emitter.InitialIndex;
 
             }
             set
             {
-                Emitter.InitialStackIndex = value;
+                if (Emitter == null)
+                {
+
+                }
+                Emitter.InitialIndex = value;
             }
         }
         public ReferenceSpec Emitter { get; set; }
@@ -77,48 +70,8 @@ namespace VTC
             memberType = type;
 
 
-
-            if (IsReference)
-            {
-
-                Emitter = new ReferenceEmitter(this, 4, ReferenceKind.Parameter);
-                if (!type.IsMultiDimensionArray)
-                    ReferenceParameter = new ParameterSpec(ns,name, host, type.MakePointer(), loc, initstackidx, VTC.Modifiers.NoModifier, access);
-                else
-                      ReferenceParameter = new ParameterSpec(ns,name, host, type, loc, initstackidx, VTC.Modifiers.NoModifier, access);
-            }
-            else if (memberType.IsMultiDimensionArray)
-            {
-                if (!access)
-                    Emitter = new MatrixEmitter(this, 4, ReferenceKind.Parameter);
-                else
-                    Emitter = new HostedMatrixEmitter(this, 4, ReferenceKind.Parameter);
-            }
-            else if (memberType.IsArray)
-            {
-                if (!access)
-                    Emitter = new ArrayEmitter(this, 4, ReferenceKind.Parameter);
-                else
-                    Emitter = new HostedArrayEmitter(this, 4, ReferenceKind.Parameter);
-            }
-            else if (memberType.IsBuiltinType || memberType.IsDelegate || memberType.IsTemplate)
-            {
-                if (memberType.IsFloat && !memberType.IsPointer)
-                    Emitter = new FloatEmitter(this, 4, ReferenceKind.Parameter);
-                else if (memberType.IsSigned && memberType.Size == 1)
-                    Emitter = new SByteEmitter(this, 4, ReferenceKind.Parameter);
-
-                else if (memberType.Size == 2)
-                    Emitter = new WordEmitter(this, 4, ReferenceKind.Parameter);
-                else if (memberType.Size == 1)
-                    Emitter = new ByteEmitter(this, 4, ReferenceKind.Parameter);
-                else if (memberType.IsTemplate && memberType.Size > 2)
-                    Emitter = new StructEmitter(this, 0, ReferenceKind.Parameter);
-            }
-            else if (memberType.IsClass)
-                Emitter = new ClassEmitter(this, 0, ReferenceKind.Parameter);
-            else if (memberType.IsForeignType)
-                Emitter = new StructEmitter(this, 4, ReferenceKind.Parameter);
+            Emitter = ReferenceSpec.GetEmitter(this, memberType, 4, ReferenceKind.Parameter, access,IsReference);
+         
        
             InitialStackIndex = initstackidx;
         }

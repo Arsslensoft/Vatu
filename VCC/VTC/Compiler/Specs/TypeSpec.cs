@@ -60,6 +60,7 @@ namespace VTC
                
                 if (IsTypeDef)
                     return GetTypeDefBase(this).Size;
+        
                 return _size;
 
             }
@@ -115,15 +116,15 @@ namespace VTC
         {
             get
             {
-                return _bt == BuiltinTypes.Unknown && (IsClass || IsInterface);
+                return _bt == BuiltinTypes.Unknown && (IsClass);
             }
 
         }
-        public bool IsInterface
+        public bool IsReference
         {
             get
             {
-                return _bt == BuiltinTypes.Unknown && ((_flags & TypeFlags.Interface) == TypeFlags.Interface);
+                return ((_flags & TypeFlags.Reference) == TypeFlags.Reference);
             }
 
         }
@@ -197,6 +198,7 @@ namespace VTC
             }
 
         }
+      
         public bool IsPointer
         {
             get
@@ -275,6 +277,7 @@ namespace VTC
         public TypeFlags Flags
         {
             get { return _flags; }
+            set { _flags = value; }
         }
 
 
@@ -284,9 +287,10 @@ namespace VTC
         // Returns the size of type if known, otherwise, 0
         //
         internal int GetSize(TypeSpec type)
-        {   
+        {
             if (type.IsArray)
-                return (type as ArrayTypeSpec).ArrayCount * GetSize( type.BaseType);
+                return (type as ArrayTypeSpec).ArrayCount * GetSize(type.BaseType);
+       
             else if (type.IsBuiltinType)
             {
                 switch (type.BuiltinType)
@@ -299,11 +303,12 @@ namespace VTC
                         return 4;
                     case BuiltinTypes.Int:
                     case BuiltinTypes.UInt:
-                    case  BuiltinTypes.String:
+                    case BuiltinTypes.String:
                     case BuiltinTypes.Pointer:
                     case BuiltinTypes.Type:
                         return 2;
-
+                    case BuiltinTypes.DPointer:
+                        return 4;
 
                     default:
                         return 0;
@@ -332,7 +337,8 @@ namespace VTC
                     case BuiltinTypes.Pointer:
                     case BuiltinTypes.Type:
                         return 2;
-
+                    case BuiltinTypes.DPointer:
+                        return 4;
 
                     default:
                         return 0;
@@ -362,7 +368,8 @@ namespace VTC
                     case BuiltinTypes.Pointer:
                     case BuiltinTypes.Type:
                         return 2;
-
+                    case BuiltinTypes.DPointer:
+                        return 4;
 
                     default:
                         return 0;
@@ -442,6 +449,10 @@ namespace VTC
         {
             return new PointerTypeSpec(NS, this);
         }
+        public TypeSpec MakeReference()
+        {
+            return new ReferenceTypeSpec(NS, this);
+        }
         public TypeSpec MakeArray(int size)
         {
             return new ArrayTypeSpec(NS, this, size);
@@ -450,8 +461,10 @@ namespace VTC
         {
             if (tp.BaseType != null && tp.BaseType == BuiltinTypeSpec.Byte && tp.IsPointer)
                 return "string";
-            else if (tp.BaseType != null  && tp.IsPointer)
+            else if (tp.BaseType != null  && tp is PointerTypeSpec)
                 return GetTypeName(tp.BaseType) + "*";
+            else if (tp.BaseType != null && tp is ReferenceTypeSpec)
+                return GetTypeName(tp.BaseType) + "&";
             else return tp._name;
         }
 

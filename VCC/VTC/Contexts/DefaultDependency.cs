@@ -3,15 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using VTC.Base.GoldParser;
 using VTC.Core;
 
 namespace VTC
 {
     public class DependencyParsing : IEquatable<DependencyParsing>
     {
+        public Report Report { get; set; }
         public DependencyParsing()
         {
- 
+            Report = new ConsoleReporter();
             RessourcesSpecs = new Dictionary<FieldSpec, byte[]>(new MemberSpecEqualityComparer());
         }
         public ResolveContext RootCtx { get; set; }
@@ -23,7 +25,7 @@ namespace VTC
         public bool Parsed { get; set; }
         public string File { get; set; }
         public List<DependencyParsing> DependsOn = new List<DependencyParsing>();
-        public StreamReader InputStream { get; set; }
+        public ParserReader InputStream { get; set; }
         public override string ToString()
         {
             return File;

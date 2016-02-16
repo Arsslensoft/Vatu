@@ -19,7 +19,7 @@ namespace VTC.Core
 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
-            if ((rc.CurrentScope & ResolveScopes.Case) == ResolveScopes.Case)
+            if ((rc.CurrentGlobalScope & ResolveScopes.Case) == ResolveScopes.Case)
             {
                 if (rc.EnclosingIf == null)
                     ResolveContext.Report.Error(37, Location, "Continue must be used inside a case statement");

@@ -25,7 +25,8 @@ namespace VTC
         Pointer = 7,
         Float = 8,
         Type = 9,
-        Unknown = 10
+        DPointer = 10,
+        Unknown = 11
     }
     
 	

@@ -43,7 +43,9 @@ namespace VTC.Base.GoldParser.Semantic {
 		private class SemanticTokenizer: Tokenizer<T> {
 			private readonly SemanticActions<T> actions;
 
-			public SemanticTokenizer(TextReader textReader, SemanticActions<T> actions): base(textReader, actions.Grammar) {
+            public SemanticTokenizer(ParserReader textReader, SemanticActions<T> actions)
+                : base(textReader, actions.Grammar)
+            {
 				this.actions = actions;
 			}
 
@@ -151,7 +153,8 @@ namespace VTC.Base.GoldParser.Semantic {
 			return terminalFactories.TryGetValue(symbol, out factory);
 		}
 
-		protected internal virtual ITokenizer<T> CreateTokenizer(TextReader reader) {
+        protected internal virtual ITokenizer<T> CreateTokenizer(ParserReader reader)
+        {
 			Initialize();
 			return new SemanticTokenizer(reader, this);
 		}

@@ -20,18 +20,16 @@ namespace VTC
 
         private TypeIdentifier _type;
         private Identifier _id;
-        private TypePointer _ptr;
-
+   
 
         [Rule(@"<Op Unary> ::= ~sizeof ~'(' <Type> ~')'")]
         public SizeOfOperator(TypeIdentifier type)
         {
             _type = type;
         }
-        [Rule(@"<Op Unary> ::= ~sizeof ~'(' Id <Pointers> ~')'")]
-        public SizeOfOperator(Identifier type, TypePointer tp)
+        [Rule(@"<Op Unary> ::= ~sizeof ~'(' Id ~')'")]
+        public SizeOfOperator(Identifier type)
         {
-            _ptr = tp;
             _id = type;
 
         }
@@ -51,14 +49,13 @@ namespace VTC
                 Size = (ushort)Type.Size;
             }
 
-            if (_id != null && _ptr != null)
+            if (_id != null )
             {
                 Type = rc.Resolver.TryResolveVar(_id.Name).MemberType;
-                _ptr = (TypePointer)_ptr.DoResolve(rc);
+              
                 Size = (ushort)Type.Size;
-                if (_ptr.PointerCount > 0)
-                    Size = 2;
-                Type = PointerTypeSpec.MakePointer(Type, _ptr.PointerCount);
+          
+            
 
             }
 

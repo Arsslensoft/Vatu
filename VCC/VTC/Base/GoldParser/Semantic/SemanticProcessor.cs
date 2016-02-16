@@ -39,10 +39,11 @@ namespace VTC.Base.GoldParser.Semantic {
 	public class SemanticProcessor<T>: LalrProcessor<T> where T: SemanticToken {
 		private readonly SemanticActions<T> actions;
 
-		public SemanticProcessor(TextReader reader, SemanticActions<T> actions): this(actions.CreateTokenizer(reader), actions) {}
+        public SemanticProcessor(ParserReader reader, SemanticActions<T> actions) : this(actions.CreateTokenizer(reader), actions) { }
 
 		public SemanticProcessor(ITokenizer<T> tokenizer, SemanticActions<T> actions): base(tokenizer) {
-			if (actions == null) {
+			
+            if (actions == null) {
 				throw new ArgumentNullException("actions");
 			}
 			if (tokenizer.Grammar != actions.Grammar) {

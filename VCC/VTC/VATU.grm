@@ -315,8 +315,8 @@ Comment Line  = '//'
 <Var List> ::=  ',' <Var Item> <Var List>
              | 
 
-<Var Item> ::= <Pointers> <Var>
-
+<Var Item> ::= <Var>
+           |<Pointers>  <Var>
 ! ===================================================================
 ! Types
 ! ===================================================================
@@ -325,7 +325,12 @@ Comment Line  = '//'
              | <Name> '::' <Base> <Pointers>
              | <Base> <Pointers> <Array>
              | <Name> '::' <Base> <Pointers> <Array>     
-                  
+             ! Reference
+             | <Base> 
+             | <Name> '::' <Base>
+             | <Base> <Array>
+             | <Name> '::' <Base> <Array>  
+             
 <Base>     ::= <Scalar>
              | '@'Id
              | '@'Id '<' <Types> '>'
@@ -347,7 +352,10 @@ Comment Line  = '//'
              
              
 <Pointers> ::= '*' <Pointers>
-              |         
+              | '&' <Pointers>
+              |  '*'
+              | '&'
+                            
     
 ! ===================================================================
 ! Statements
@@ -435,17 +443,10 @@ Comment Line  = '//'
                | <Op And>
 
 
-<Op And>     ::= <Op And> '&&' <Op BinOR>
-               | <Op BinOR>
-
-<Op BinOR>   ::= <Op BinOr> '|' <Op BinXOR>
-               | <Op BinXOR>
-
-<Op BinXOR>  ::= <Op BinXOR> '^' <Op BinAND>
-               | <Op BinAND>
-
-<Op BinAND>  ::= <Op BinAND> '&' <Op Equate>
+<Op And>     ::= <Op And> '&&' <Op Equate>
                | <Op Equate>
+
+
 
 <Op Equate>  ::= <Op Equate> '==' <Op Compare>
                | <Op Equate> '!=' <Op Compare>
@@ -465,10 +466,17 @@ Comment Line  = '//'
                | <Op Shift> '<~' <Op Add>
                | <Op Add>
 
-<Op Add>     ::= <Op Add> '+' <Op Mult>
-               | <Op Add> '-' <Op Mult>
+<Op Add>     ::= <Op Add> '+' <Op BinOR>
+               | <Op Add> '-' <Op BinOR>
+               | <Op BinOR>
+ ! Raised priorty
+<Op BinOR>   ::= <Op BinOr> '|' <Op BinXOR>
+               | <Op BinXOR>
+<Op BinXOR>  ::= <Op BinXOR> '^' <Op BinAND>
+               | <Op BinAND>
+<Op BinAND>  ::= <Op BinAND> '&' <Op Mult>
                | <Op Mult>
-
+               
 <Op Mult>    ::= <Op Mult> '*' <Op Unary>
                | <Op Mult> '/' <Op Unary>
                | <Op Mult> '%' <Op Unary>
@@ -483,19 +491,21 @@ Comment Line  = '//'
                | '--'   <Op Unary>
                | '??'   <Op Unary>
                | OperatorLiteralUnary <Op Unary>
-               | '¤'   <Op Unary>
+               | '?!'   <Op Unary>
                | <Op Pointer> '++'
                | <Op Pointer> '--'
                | '(' <Type> ')' <Op Unary>   !CAST
                | sizeof '(' <Type> ')'
-               | sizeof '(' ID <Pointers> ')'
+               | sizeof '(' ID ')'
                | addressof '(' ID ')'
                | nameof  '(' ID ')'
                | <Op Pointer>     
+               
 
  <VALUE POS> ::= HIGH
              | LOW         
-             
+             | pointer
+             | segment
 
 
 <Op Pointer> ::= <Op Pointer> '.' <Declared Expression> 
@@ -657,7 +667,7 @@ Comment Line  = '//'
                   | '--'
                   | '[]'
                   | '~'
-                  | '¤'
+                  | '?!'
                   | '??'
                   | new
                   | delete           

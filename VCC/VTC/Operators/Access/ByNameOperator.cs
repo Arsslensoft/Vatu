@@ -27,59 +27,61 @@ namespace VTC
                     ResolveContext.Report.Error("Failed to resolve type");
                 else
                 {
-                    TypeSpec oldext = rc.HighPriorityExtensionLookup;
-                    bool staticext = rc.HighPriorityStaticExtensionLookup;
+                   
+                  
+                    // backup
+                    rc.CreateNewState();
 
 
-                    rc.HighPriorityExtensionLookup = LeftType.Type;
-                    rc.HighPriorityStaticExtensionLookup = true;
+                    if ((Right is VariableExpression) || (Right is DeclaredExpression && (Right as DeclaredExpression).Expression is VariableExpression))
+                        rc.CurrentGlobalScope |= ResolveScopes.VariableExtensionAccess;
+                    else
+                        rc.CurrentGlobalScope |= ResolveScopes.MethodExtensionAccess;
+
+                    rc.CurrentExtensionLookup = LeftType.Type;
+                    rc.StaticExtensionLookup = true;
 
                     Right = (Expr)Right.DoResolve(rc);
-                    if (Right is VariableExpression && (Right as VariableExpression).variable == null)
-                        ResolveContext.Report.Error(0, Location, "Unresolved extended field");
-                    else if (Right is MethodExpression && (Right as MethodExpression).Method == null)
-                        ResolveContext.Report.Error(0, Location, "Unresolved extended method");
-
+                   
                     // restore
-                    rc.HighPriorityExtensionLookup = oldext;
-                    rc.HighPriorityStaticExtensionLookup = staticext;
-                
+                    rc.RestoreOldState();
 
-                    rc.CurrentScope &= ~ResolveScopes.AccessOperation;
                     return Right;
                 }
             }
             else if (Namespace != null) // NS::Value
             {
+                // backup
+                rc.CreateNewState();
+                if (Namespace.Name == "global")
+                    ResolveContext.Report.Error(0, Location, "Global namespace cannot be used for access");
+                
                 Namespace ns = rc.Resolver.ResolveNS(Namespace.Name);
 
                 if (Namespace.Default == ns && Namespace.Name != "global")
                 {
                     // check child
-                     ns = rc.Resolver.ResolveNS(rc.CurrentNamespace.Name+"::"+Namespace.Name);
-                     if (Namespace.Default == ns)
-                         ResolveContext.Report.Error(0, Location, "Global namespace cannot be used for access");
-
-                     else Namespace = ns;
+                    ns = rc.Resolver.ResolveNS(rc.CurrentNamespace.Name + "::" + Namespace.Name);
+                    Namespace = ns;
 
                 }
 
+                  if (Namespace.Default == Namespace)
+                        ResolveContext.Report.Error(0, Location, "Unknown namespace");
 
-                Namespace lastns = rc.HighPriorityNamespace;
-               
-                rc.CurrentScope |= ResolveScopes.ByNameAccess;
-                rc.HighPriorityNamespace = Namespace;
+                rc.CurrentGlobalScope |= ResolveScopes.ByNameAccess;
+                rc.CurrentNamespace = Namespace;
 
                 Right = (Expr)Right.DoResolve(rc);
 
                
-                rc.HighPriorityNamespace = lastns;
-                rc.CurrentScope &= ~ResolveScopes.AccessOperation;
-                rc.CurrentScope &= ~ResolveScopes.ByNameAccess;
+                // restore
+                rc.RestoreOldState();
+
                 return Right;
             }
 
-            rc.CurrentScope &= ~ResolveScopes.AccessOperation;
+          
             return this;
         }
         public override bool Emit(EmitContext ec)

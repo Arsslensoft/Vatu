@@ -11,7 +11,7 @@ namespace VTC
         public AssemblyWriter Asmw { get; set; }
         public DependencyParsing DefaultDependency { get; set; }
         public TimeSpan CompileTime { get; set; }
-
+      
         public override string ToString()
         {
             return DefaultDependency.File;

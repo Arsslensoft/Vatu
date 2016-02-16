@@ -37,34 +37,31 @@ namespace VTC
         public bool ResolveExtension(ResolveContext rc)
         {
             // back up 
-            TypeSpec oldext = rc.CurrentExtensionLookup;
-            Expr extvar = rc.ExtensionVar;
+            rc.CreateNewState();
 
-            rc.CurrentScope |= ResolveScopes.ExtensionAccess;
-            rc.HighPriorityExtensionLookup = Left.Type.BaseType;
-            rc.HighPriorityStaticExtensionLookup = false;
-            rc.HighPriorityExtensionVar = Left;
+            rc.CurrentExtensionLookup = Left.Type.BaseType;
+            rc.StaticExtensionLookup = false;
+            rc.ExtensionVar = Left;
+            if((Right is VariableExpression) || (Right is DeclaredExpression && (Right as DeclaredExpression).Expression is VariableExpression))
+                rc.CurrentGlobalScope |= ResolveScopes.VariableExtensionAccess;
+            else 
+                rc.CurrentGlobalScope |= ResolveScopes.MethodExtensionAccess;
 
             Right = (Expr)Right.DoResolve(rc);
             if (Right is VariableExpression && (Right as VariableExpression).variable == null)
             {
 
                 ResolveContext.Report.Error(0, Location, "Unresolved extended field");
-                rc.CurrentScope &= ~ResolveScopes.ExtensionAccess;
-                rc.HighPriorityExtensionVar = extvar;
-                rc.HighPriorityExtensionLookup = oldext;
+                rc.RestoreOldState();
                 return false;
             }
             else if (Right is MethodExpression && (Right as MethodExpression).Method == null)
             {
-                rc.HighPriorityExtensionVar = extvar;
-                rc.CurrentScope &= ~ResolveScopes.ExtensionAccess;
-                rc.HighPriorityExtensionLookup = oldext;
+            
+            rc.RestoreOldState();
                 return false;
             }
-            rc.HighPriorityExtensionVar = extvar;
-            rc.HighPriorityExtensionLookup = oldext;
-            rc.CurrentScope &= ~ResolveScopes.ExtensionAccess;
+            rc.RestoreOldState();
             return true;
         }
 
@@ -84,9 +81,11 @@ namespace VTC
                 else if (mem.MemberType.IsStruct)
                 {
                     StructTypeSpec stp = null;
-                    if (Left is AccessExpression && (Left as AccessExpression).IsByIndex)
-                        stp = (StructTypeSpec)mem.MemberType.BaseType.BaseType;
-                    else stp = (StructTypeSpec)mem.MemberType.BaseType;
+                  
+                        if (Left is AccessExpression && (Left as AccessExpression).IsByIndex)
+                            stp = (StructTypeSpec)mem.MemberType.BaseType.BaseType;
+                        else stp = (StructTypeSpec)mem.MemberType.BaseType;
+                 
 
                     tmp = stp.ResolveMember(rv.Name);
                     if (tmp == null)
@@ -102,9 +101,11 @@ namespace VTC
                 else
                 {
                     UnionTypeSpec stp = null;
-                    if (Left is AccessExpression && (Left as AccessExpression).IsByIndex)
-                        stp = (UnionTypeSpec)mem.MemberType.BaseType.BaseType;
-                    else stp = (UnionTypeSpec)mem.MemberType.BaseType;
+          
+                        if (Left is AccessExpression && (Left as AccessExpression).IsByIndex)
+                            stp = (UnionTypeSpec)mem.MemberType.BaseType.BaseType;
+                        else stp = (UnionTypeSpec)mem.MemberType.BaseType;
+                  
                     tmp = stp.ResolveMember(rv.Name);
                     if (tmp == null)
                         ResolveContext.Report.Error(16, Location, rv.Name + " is not defined in union " + stp.Name);
@@ -133,10 +134,11 @@ namespace VTC
                 else
                 {
                     ClassTypeSpec stp = null;
-                    if (Left is AccessExpression && (Left as AccessExpression).IsByIndex)
-                        stp = (ClassTypeSpec)mem.MemberType.BaseType.BaseType;
-                    else stp = (ClassTypeSpec)mem.MemberType.BaseType;
-
+               
+                        if (Left is AccessExpression && (Left as AccessExpression).IsByIndex)
+                            stp = (ClassTypeSpec)mem.MemberType.BaseType.BaseType;
+                       else stp = (ClassTypeSpec)mem.MemberType.BaseType;
+                    
                     tmp = stp.ResolveMember(rv.Name);
                     if (tmp == null)
                         ResolveContext.Report.Error(16, Location, rv.Name + " is not defined in class " + stp.Name);

@@ -42,11 +42,14 @@ namespace VTC.Core
         }
  public override SimpleToken DoResolve(ResolveContext rc)
         {
+            rc.CurrentStatementState = ResolverState.Create(rc);
+
             if (current != null)
                 current = (Statement)current.DoResolve(rc);
             if (_next != null)
                 _next = (Statement)_next.DoResolve(rc);
-           
+
+          
             return this;
         }
      

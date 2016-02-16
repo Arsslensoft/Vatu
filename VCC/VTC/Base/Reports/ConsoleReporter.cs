@@ -33,9 +33,9 @@ namespace VTC
 
 
 
-                Console.Error.WriteLine("Error:VC{4}:{0}:{1},{2}:{3}", FilePath, location.Row, location.Column, message, "0000");
+                Console.Error.WriteLine("Error:VC{4}:{0}:{1},{2}:{3}", location.FullPath, location.Row, location.Column, message, "0000");
             }
-            else Console.Error.WriteLine("Error:0000:default:0,0:{0}", message);
+            else Console.Error.WriteLine("Error:0000:{1}:0,0:{0}", message,FilePath);
         }
         public override void Error(int code, Location location, string message)
         {
@@ -45,9 +45,9 @@ namespace VTC
 
 
 
-                Console.Error.WriteLine("Error:{4}:{0}:{1},{2}:{3}", FilePath, location.Row, location.Column, message, code.ToString("0000"));
+                Console.Error.WriteLine("Error:{4}:{0}:{1},{2}:{3}", location.FullPath, location.Row, location.Column, message, code.ToString("0000"));
             }
-            else Console.Error.WriteLine("Error:{1}:default:0,0:{0}", message, code.ToString("0000"));
+            else Console.Error.WriteLine("Error:{1}:{2}:0,0:{0}", message, code.ToString("0000"),FilePath);
         }
         public override void Warning(Location location, string message)
         {
@@ -57,9 +57,9 @@ namespace VTC
                 return;
             }
             if (!location.IsNull)
-                Console.Error.WriteLine("Warning:0:{0}:{1},{2}:{3}", FilePath, location.Row, location.Column, message);
+                Console.Error.WriteLine("Warning:0:{0}:{1},{2}:{3}", location.FullPath, location.Row, location.Column, message);
 
-            else Console.Error.WriteLine("Warning:0:default:0,0:{0}", message);
+            else Console.Error.WriteLine("Warning:0:{1}:0,0:{0}", message,FilePath);
         }
 
         public override void Message(string message)

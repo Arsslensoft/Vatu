@@ -16,7 +16,19 @@ namespace VTC
         public ReferenceSpec Emitter { get; set; }
         public int RegisterIndex { get { return Emitter.Offset; } set { Emitter.Offset = value; } }
         public RegistersEnum Register { get { return Emitter.Register; } set { Emitter.Register = value; } }
+        public int InitialRegisterIndex
+        {
+            get
+            {
+                return Emitter.InitialIndex;
 
+            }
+            set
+            {
+
+                Emitter.InitialIndex = value;
+            }
+        }
 
         public RegisterSpec(TypeSpec type, RegistersEnum rg, Location loc,int index,bool access =false)
             : base(rg.ToString(), new MemberSignature(Namespace.Default, rg.ToString(), loc), Modifiers.NoModifier, ReferenceKind.LocalVariable)
@@ -24,37 +36,8 @@ namespace VTC
           
             memberType = type;
 
-            if (memberType.IsMultiDimensionArray)
-            {
-                if (!access)
-                    Emitter = new MatrixEmitter(this, index, ReferenceKind.Register);
-                else Emitter = new HostedMatrixEmitter(this, index, ReferenceKind.Register);
-            }
-          else  if (memberType.IsArray)
-            {
-                if(!access)
-                Emitter = new ArrayEmitter(this, index, ReferenceKind.Register);
-                else Emitter = new HostedArrayEmitter(this, index, ReferenceKind.Register);
-            }
-            else if (memberType.IsBuiltinType || memberType.IsDelegate || memberType.IsTemplate)
-            {
-                if (memberType.IsFloat && !memberType.IsPointer)
-                    Emitter = new FloatEmitter(this, index, ReferenceKind.Register);
-                else if (memberType.IsSigned && memberType.Size == 1)
-                    Emitter = new SByteEmitter(this, index, ReferenceKind.Register);
-
-                else if (memberType.Size == 2)
-                    Emitter = new WordEmitter(this, index, ReferenceKind.Register);
-                else if (memberType.Size == 1)
-                    Emitter = new ByteEmitter(this, index, ReferenceKind.Register);
-                else if (memberType.IsTemplate && memberType.Size > 2)
-                    Emitter = new StructEmitter(this, 0, ReferenceKind.Register);
-            }
-            else if (memberType.IsClass)
-                Emitter = new ClassEmitter(this, 0, ReferenceKind.Register);
-            else if (memberType.IsForeignType)
-                Emitter = new StructEmitter(this, index, ReferenceKind.Register);
-
+            Emitter = ReferenceSpec.GetEmitter(this, memberType,index, ReferenceKind.Register, access);
+            InitialRegisterIndex = index;
             Register = rg;
         }
         public override string ToString()

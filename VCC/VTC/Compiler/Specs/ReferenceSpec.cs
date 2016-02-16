@@ -12,9 +12,82 @@ namespace VTC
      {
       
          public RegistersEnum Register { get; set; }
-         public ParameterSpec ReferenceParameter { get; set; }
-         public int InitialStackIndex { get; set; }
-         public int Offset { get; set; }
+      
+         public ReferenceSpec BaseEmitter { get; set; }
+
+
+         public static ReferenceSpec GetEmitter(MemberSpec ms, TypeSpec memberType, int idx, ReferenceKind k, bool access, bool reference = false)
+         {
+             ReferenceSpec Emitter = null;
+
+
+             if (reference)
+             {
+
+                 Emitter = new ReferenceEmitter(ms, 4, ReferenceKind.Parameter);
+                 if (!memberType.IsMultiDimensionArray)
+                     Emitter.BaseEmitter = ReferenceSpec.GetEmitter(new ParameterSpec(ms.NS, ms.Name, (ms as ParameterSpec).MethodHost, memberType.MakePointer(), ms.Signature.Location, idx, VTC.Modifiers.NoModifier, access), memberType.MakePointer(), idx, ReferenceKind.Parameter, access);
+
+                         //
+                 else
+                     Emitter.BaseEmitter = ReferenceSpec.GetEmitter(new ParameterSpec(ms.NS, ms.Name, (ms as ParameterSpec).MethodHost, memberType, ms.Signature.Location, idx, VTC.Modifiers.NoModifier, access), memberType, idx, ReferenceKind.Parameter, access);
+
+                 //   ;
+             }
+             else if (memberType is ReferenceTypeSpec)
+             {
+                 Emitter = new AddressableEmitter(ms, idx, k);
+     
+                 if (ms is ParameterSpec)
+                     Emitter.BaseEmitter = ReferenceSpec.GetEmitter(new ParameterSpec(ms.NS, ms.Name, (ms as ParameterSpec).MethodHost, memberType.BaseType.MakePointer(), ms.Signature.Location, idx + 2, VTC.Modifiers.NoModifier, access), memberType.BaseType.MakePointer(), idx + 2, ReferenceKind.Parameter, access);
+                 else if (ms is VarSpec)
+                     Emitter.BaseEmitter = ReferenceSpec.GetEmitter(new VarSpec(ms.NS, ms.Name, (ms as VarSpec).MethodHost, memberType.BaseType.MakePointer(), ms.Signature.Location, idx+2, VTC.Modifiers.NoModifier, access), memberType.BaseType.MakePointer(), idx+2, ReferenceKind.LocalVariable, access);
+                 else if (ms is VarSpec)
+                     Emitter.BaseEmitter = ReferenceSpec.GetEmitter(new RegisterSpec(memberType.BaseType.MakePointer(), (ms as RegisterSpec).Register, ms.Signature.Location, idx + 2, access), memberType.BaseType.MakePointer(), idx + 2, ReferenceKind.Register, access);
+                 else
+                     Emitter.BaseEmitter = ReferenceSpec.GetEmitter(new FieldSpec(ms.NS, ms.Name, Modifiers.NoModifier, memberType.BaseType.MakePointer(), ms.Signature.Location, access), memberType.BaseType.MakePointer(), idx + 2, ReferenceKind.Field, access);
+
+             
+             }
+             else if (memberType.IsMultiDimensionArray)
+             {
+                 if (access)
+                     Emitter = new HostedMatrixEmitter(ms, idx, k);
+                 else
+                     Emitter = new MatrixEmitter(ms, idx, k);
+             }
+             else if (memberType.IsArray)
+             {
+                 if (access)
+                     Emitter = new HostedArrayEmitter(ms, idx, k);
+                 else
+                     Emitter = new ArrayEmitter(ms, idx, k);
+             }
+             else if (memberType.IsBuiltinType || memberType.IsDelegate || memberType.IsTemplate)
+             {
+                 if (memberType.IsFloat && !memberType.IsPointer)
+                     Emitter = new FloatEmitter(ms, idx, k);
+                 else if (memberType.IsSigned && memberType.Size == 1)
+                     Emitter = new SByteEmitter(ms, idx, k);
+
+                 else if (memberType.Size == 2)
+                     Emitter = new WordEmitter(ms, idx, k);
+                 else if (memberType.Size == 1)
+                     Emitter = new ByteEmitter(ms, idx, k);
+                 else if (memberType.IsTemplate && memberType.Size > 2)
+                     Emitter = new StructEmitter(ms, idx, k);
+             }
+         
+             else if (memberType.IsClass)
+                 Emitter = new ClassEmitter(ms, idx, k);
+             else if (memberType.IsForeignType)
+                 Emitter = new StructEmitter(ms, idx, k);
+
+
+             return Emitter;
+         }
+         public int InitialIndex { get; set; }
+         public virtual int Offset { get; set; }
          public MemberSignature Signature
          {
              get { return Member.Signature; }

@@ -11,7 +11,7 @@ namespace VTC
         protected static int mark_count;
         protected static bool quiet;
         /* Current file being processed */
-        protected static string file_path;
+        protected string file_path;
 
         public Report()
         {
@@ -37,7 +37,7 @@ namespace VTC
             set { quiet = value; }
         }
 
-        public string FilePath
+        protected string FilePath
         {
             get { return file_path; }
             set { file_path = value; }

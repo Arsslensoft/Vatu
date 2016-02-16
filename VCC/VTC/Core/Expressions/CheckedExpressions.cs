@@ -20,20 +20,20 @@ namespace VTC.Core.Expressions
 
       public override SimpleToken DoResolve(ResolveContext rc)
       {
-          rc.CurrentScope &= ~ResolveScopes.CheckedArithmetics;
+          
           if (!_checked)
           {
-              ResolveScopes old_scope = rc.CurrentScope;
-              rc.CurrentScope &= ~ResolveScopes.CheckedArithmetics; // uncheked
+              rc.CreateNewState();
+              rc.CurrentGlobalScope &= ~ResolveScopes.CheckedArithmetics; // uncheked
               _expr = (Expr)_expr.DoResolve(rc);
-              rc.CurrentScope = old_scope;
+              rc.RestoreOldState();
           }
           else
           {
-              ResolveScopes old_scope = rc.CurrentScope;
-              rc.CurrentScope |= ResolveScopes.CheckedArithmetics; // cheked
+              rc.CreateNewState();
+              rc.CurrentGlobalScope |= ResolveScopes.CheckedArithmetics; // cheked
               _expr = (Expr)_expr.DoResolve(rc);
-              rc.CurrentScope = old_scope;
+              rc.RestoreOldState();
           }
           return _expr;
       }
