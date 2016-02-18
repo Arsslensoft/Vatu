@@ -69,7 +69,7 @@ namespace VTC.Core
             {
                 RootVar = ms;
                 SetNext();
-                variable = new RegisterSpec(mem, LastUsed, Location, index);
+                variable = new RegisterSpec(ms.memberType.IsReference ? mem.MakeReference() : mem, LastUsed, Location, index);
 
             }
             if (parent != null)

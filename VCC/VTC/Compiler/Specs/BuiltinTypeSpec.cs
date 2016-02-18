@@ -10,7 +10,7 @@ namespace VTC
 	 /// <summary>
     /// Base Type
     /// </summary>
-    public class BuiltinTypeSpec : TypeSpec, IEquatable<TypeSpec>
+    public class BuiltinTypeSpec : TypeSpec, IEquatable<BuiltinTypeSpec>
     {
         public BuiltinTypeSpec( string name, BuiltinTypes bt, TypeSpec baset = null)
             : base(Namespace.Default, name, bt, TypeFlags.Builtin, Modifiers.NoModifier, Location.Null,baset)
@@ -22,11 +22,12 @@ namespace VTC
         {
           
         }
-        public override bool Equals(TypeSpec bt)
+     
+        public bool Equals(BuiltinTypeSpec bt)
         {
-            if (bt.IsArray && this.Name == "string")
-                return true;
-            else
+            //if (bt.IsArray && this.Name == "string")
+            //    return true;
+            //else
             return bt.Signature == Signature;
         }
 

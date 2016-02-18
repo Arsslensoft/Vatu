@@ -227,6 +227,12 @@ namespace Vasm
             get { return mInstructions; }
             set { mInstructions = value; }
         }
+        protected internal List<Instruction> mAnonymousInstructions = new List<Instruction>();
+        public List<Instruction> AnonymousInstructions
+        {
+            get { return mAnonymousInstructions; }
+            set { mAnonymousInstructions = value; }
+        }
         protected internal List<Instruction> mDefInstructions = new List<Instruction>();
         public List<Instruction> DefaultInstructions
         {
@@ -351,6 +357,7 @@ namespace Vasm
        }
        public void MarkLabel(Label lb)
        {
+          
            if(!Instructions.Contains(lb))
            Instructions.Add(lb);
        }
@@ -386,9 +393,12 @@ namespace Vasm
            { DeclaredStructVars.Add(varname, se); return true; }
            else return false;
        }
+       public bool RedirectToAnonymous = false;
        public void Emit(Instruction ins)
        {
-           Instructions.Add(ins);
+           if (RedirectToAnonymous)
+               AnonymousInstructions.Add(ins);
+           else           Instructions.Add(ins);
        }
 
        public void AddExtern(string func)
@@ -459,7 +469,7 @@ namespace Vasm
            {
                if ( IsInterruptOverload && Interrupts.Count > 0)
                    writer.WriteLine("\t\tcall " + interrupt_name);
-               writer.Write("\t\tcall " + EntryPoint);
+               writer.Write("\t\tjmp " + EntryPoint);
            }
          
                writer.WriteLine();
@@ -519,7 +529,37 @@ namespace Vasm
            if (!IsLibrary)
                writer.WriteLine("PROGRAM_END:");
        }
-    
+       void EmitInstructions(List<Instruction> ins,AssemblyWriter writer)
+       {
+           // Write out code
+           for (int i = 0; i < ins.Count; i++)
+           {
+
+               var xOp = ins[i];
+               if (xOp == null)
+                   continue;
+               if (xOp.Emit)
+               {
+                   string prefix = "\t\t\t";
+                   if (xOp is Label)
+                   {
+                       var xLabel = (Label)xOp;
+                       writer.WriteLine();
+                       prefix = "\t\t";
+                       writer.Write(prefix);
+                       xLabel.WriteText(this, writer);
+                       writer.WriteLine();
+                   }
+                   else
+                   {
+                       writer.Write(prefix);
+                       xOp.WriteText(this, writer);
+                       writer.WriteLine();
+                   }
+               }
+           }
+
+       }
        public virtual void Emit(AssemblyWriter writer)
        {
            // Optimize
@@ -595,34 +635,9 @@ namespace Vasm
                writer.Write("\t\t");
                iit.WriteText(this, writer);
            }
-           // Write out code
-           for (int i = 0; i < mInstructions.Count; i++)
-           {
-
-               var xOp = mInstructions[i];
-               if (xOp == null)
-                   continue;
-               if (xOp.Emit)
-               {
-                   string prefix = "\t\t\t";
-                   if (xOp is Label)
-                   {
-                       var xLabel = (Label)xOp;
-                       writer.WriteLine();
-                       prefix = "\t\t";
-                       writer.Write(prefix);
-                       xLabel.WriteText(this, writer);
-                       writer.WriteLine();
-                   }
-                   else
-                   {
-                       writer.Write(prefix);
-                       xOp.WriteText(this, writer);
-                       writer.WriteLine();
-                   }
-               }
-           }
-
+        // Emit Code
+           EmitInstructions(mInstructions,writer);
+           EmitInstructions(AnonymousInstructions,writer);
            // Emit Finalize
            EmitFinalize(writer);
        }

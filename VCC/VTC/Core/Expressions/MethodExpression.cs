@@ -28,7 +28,11 @@ namespace VTC.Core
             _param = expr;
         }
 
-
+        public MethodExpression()
+        {
+            _id = null;
+            _param = null;
+        }
         [Rule(@"<Method Expr>       ::= this ~'(' <PARAM EXPR> ~')'")]
         [Rule(@"<Method Expr>       ::= super ~'(' <PARAM EXPR> ~')'")]
         public MethodExpression(SimpleToken id, ParameterSequence<Expr> expr)
@@ -328,6 +332,10 @@ namespace VTC.Core
 
                     rc.RestoreOldState();
                 }
+                else if (Method.Parameters[i].memberType.IsReference && Parameters[i] is VariableExpression)
+                    Parameters[i] = new ReferenceExpression((Parameters[i] as VariableExpression).variable);
+
+                
                
             }
             return true;
@@ -341,7 +349,7 @@ namespace VTC.Core
 
             return true;
         }
-        CallingConventionsHandler ccvh;
+       protected CallingConventionsHandler ccvh;
 
   
         public override bool Emit(EmitContext ec)
@@ -372,6 +380,7 @@ namespace VTC.Core
                 if (Method.MemberType.IsFloat && !Method.MemberType.IsPointer) // pop floating point
                     ec.EmitInstruction(new Vasm.x86.x87.FloatFree() { DestinationReg = RegistersEnum.ST0 });
 
+
             }
 
             return true;
@@ -401,7 +410,7 @@ namespace VTC.Core
                 ccvh.EmitCall(ec, Parameters, Method);
                 if (!(Method.MemberType.IsFloat && !Method.MemberType.IsPointer)) // pop floating point
                     ec.EmitPush(EmitContext.A);
-
+                
             }
 
             return true;

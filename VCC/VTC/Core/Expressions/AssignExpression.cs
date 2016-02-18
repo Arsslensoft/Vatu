@@ -55,6 +55,9 @@ namespace VTC.Core
                 ResolveContext.Report.Error(42, Location, "Target must be a variable");
             else if ((!(_op.Left is AccessOperation)) & !(_op.Left is RegisterExpression) && (!(_op.Left is UnaryOperation)) && (_op.Left as VariableExpression).variable.IsConstant)
                 ResolveContext.Report.Error(43, Location, "Cannot assign a constant variable only in it's declaration");
+
+            if ((_op.Left is VariableExpression) && (_op.Left as VariableExpression).variable is PropertySpec && ((_op.Left as VariableExpression).variable as PropertySpec).Setter == null)
+                ResolveContext.Report.Error(0, Location, "Target property must have a setter declared");
             Type = _op.Left.Type;
             AcceptStatement = true;
             return this;

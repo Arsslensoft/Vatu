@@ -95,7 +95,7 @@ namespace VTC
         }
         public static bool IsReferenceOfOrFor(TypeSpec a, TypeSpec b)
         {
-            if ((a is ReferenceTypeSpec && b == a.BaseType) || (b is ReferenceTypeSpec && b.BaseType == a))
+            if ((a.IsReference && b == a.BaseType) || (b.IsReference && b.BaseType == a))
                 return true;
             else return false;
 

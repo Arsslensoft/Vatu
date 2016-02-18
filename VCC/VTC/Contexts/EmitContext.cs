@@ -47,7 +47,8 @@ namespace VTC
     public class EmitContext
     {
 
-    
+
+        
        
         public const byte FALSE = 0;
         public const byte TRUE = 1;
@@ -145,10 +146,15 @@ namespace VTC
         {
             ag = ac;
         }
-
+        public bool RedirectToAnonymous
+        {
+            get { return ag.RedirectToAnonymous; }
+            set { ag.RedirectToAnonymous = value; }
+        }
         public void EmitInstruction(Vasm.Instruction ins)
         {
             ag.Emit(ins);
+
         }
         #region Stack
         public void EmitPop(RegistersEnum rg, byte size = 80, bool adr = false, int off = 0)

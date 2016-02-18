@@ -32,7 +32,20 @@ namespace VTC
           
         }
 
+        public override TypeSpec MakeReference()
+        {
+            // new sts update
+            StructTypeSpec newsts = new StructTypeSpec(NS, Name, Members, Inherited,Templates, Signature.Location);
+            newsts.Signature = Signature;
+            newsts.UpdateSize();
+            newsts.Name = newsts.Signature.NoNamespaceTypeSignature;
+            newsts.Primitive = this;
+            newsts.ExtendedFields = ExtendedFields;
+
+            newsts.IsReference = true;
        
+            return newsts;
+        }
         public void UpdateSize()
         {
             Size = 0;

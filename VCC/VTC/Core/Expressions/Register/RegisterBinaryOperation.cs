@@ -56,6 +56,12 @@ namespace VTC.Core
             if(src != dst)
                 ec.EmitInstruction(new Mov() { SourceReg = src, DestinationReg = dst, Size = 16 });
         }
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+             Left.DoFlowAnalysis(fc);
+             Right.DoFlowAnalysis(fc);
+             return FlowState.Valid;
+        }
         public override bool Emit(EmitContext ec)
         {
             ec.EmitComment(LR.ToString()+ "=" +LR.ToString() + Operator.Name + RR.ToString());

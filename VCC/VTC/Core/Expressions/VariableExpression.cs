@@ -62,10 +62,23 @@ namespace VTC.Core
                 if (variable != null)
                     Type = variable.memberType;
                                 bool isaccess = ((rc.CurrentGlobalScope & ResolveScopes.VariableExtensionAccess) == ResolveScopes.VariableExtensionAccess) ;
+                                bool isanonymous = ((rc.CurrentGlobalScope & ResolveScopes.AnonymousMethod) == ResolveScopes.AnonymousMethod);
 
                 if (variable == null && !isaccess)
                     ResolveContext.Report.Error(14, Location, "Unresolved variable '" + Name + "'");
-              
+
+                if (variable != null && isanonymous)
+                {
+                    if (variable is VarSpec && (variable as VarSpec).MethodHost.Signature != rc.CurrentMethod.Signature)
+                    {
+                        ParameterSpec p = new ParameterSpec(rc.CurrentNamespace, variable.Name, rc.CurrentMethod, variable.MemberType, Location, 0, Modifiers.NoModifier);
+                        rc.KnowVar(p);
+                        rc.AnonymousParameters.Add(this);
+                        VariableExpression v= new VariableExpression(p);
+                        v.Type = p.memberType;
+                        return v;
+                    }
+                }
                   //  ResolveContext.Report.Error(0, Location, variable.Signature.NormalSignature + " is inaccessible due to its protection level");
             }
             else Type = variable.memberType;
@@ -90,46 +103,23 @@ namespace VTC.Core
         }
         public virtual bool LoadEffectiveAddress(EmitContext ec)
         {
-            if (variable is VarSpec)
                 return variable.LoadEffectiveAddress(ec);
-            else if (variable is FieldSpec)
-                return variable.LoadEffectiveAddress(ec);
-            else if (variable is ParameterSpec)
-                return variable.LoadEffectiveAddress(ec);
-            else if (variable is RegisterSpec)
-                return variable.LoadEffectiveAddress(ec);
-            return true;
+         
         }
 
 
         public override bool EmitFromStack(EmitContext ec)
         {
-            if (variable is VarSpec)
-             return   variable.EmitFromStack(ec);
-            else if (variable is FieldSpec)
                 return variable.EmitFromStack(ec);
-            else if (variable is ParameterSpec)
-                return variable.EmitFromStack(ec);
-            else if (variable is RegisterSpec)
-                return variable.EmitFromStack(ec);
-            return true;
+   
         }
         public override bool EmitToStack(EmitContext ec)
         {
 
 
-            if (variable is VarSpec)
+   
                 return variable.EmitToStack(ec);
-            else if (variable is FieldSpec)
-                return variable.EmitToStack(ec);
-            else if (variable is EnumMemberSpec)
-                return variable.EmitToStack(ec);
-            else if (variable is ParameterSpec)
-                return variable.EmitToStack(ec);
-            else if (variable is RegisterSpec)
-                return variable.EmitToStack(ec);
-            return true;
-        }
+           }
 
         public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
         {

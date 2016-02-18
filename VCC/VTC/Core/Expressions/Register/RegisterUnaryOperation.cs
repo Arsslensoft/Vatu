@@ -30,7 +30,10 @@ namespace VTC.Core
             Right = right;
             Operator = binop.Operator;
         }
-
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            return Right.DoFlowAnalysis(fc);
+        }
         byte size = 16;
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -96,6 +99,10 @@ namespace VTC.Core
             Right = right;
             ispush = ((binop.Operator & BinaryOperator.Addition) == BinaryOperator.Addition);
         }
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            return Right.DoFlowAnalysis(fc);
+        }
 
         byte size = 16;
         public override SimpleToken DoResolve(ResolveContext rc)
@@ -159,7 +166,18 @@ namespace VTC.Core
             Right = right;
             IsVarAssign = true;
         }
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            if (LeftExpr != null)
+                LeftExpr.DoFlowAnalysis(fc);
 
+            if (LeftVar != null)
+            {
+                fc.MarkAsAssigned(LeftVar.variable);
+                LeftVar.DoFlowAnalysis(fc);
+            }
+            return Right.DoFlowAnalysis(fc);
+        }
         byte size = 16;
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -234,7 +252,20 @@ namespace VTC.Core
             Register = right;
 
         }
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            if (LeftLit != null)
+                LeftLit.DoFlowAnalysis(fc);
 
+            if (LeftExpr != null)
+          
+                LeftExpr.DoFlowAnalysis(fc);
+         
+            if (Register != null)
+                Register.DoFlowAnalysis(fc);
+
+            return FlowState.Valid;
+        }
 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -340,7 +371,15 @@ namespace VTC.Core
             TrueVal = tr;
             FalseVal = fl;
         }
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            Source.DoFlowAnalysis(fc);
+            Target.DoFlowAnalysis(fc);
+            TrueVal.DoFlowAnalysis(fc);
+            FalseVal.DoFlowAnalysis(fc);
 
+            return FlowState.Valid;
+        }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             Target = (RegisterExpression)Target.DoResolve(rc);

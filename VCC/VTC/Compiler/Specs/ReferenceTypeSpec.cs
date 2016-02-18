@@ -17,17 +17,17 @@ namespace VTC
         public ReferenceTypeSpec(Namespace ns, TypeSpec _basetype)
             : this(ns, _basetype, 0)
         {
-
+            IsReference = true;
             _size = 4;
         }
         public ReferenceTypeSpec(Namespace ns, TypeSpec _basetype, TypeFlags _flags)
-            : base(ns, _basetype.Name + "&", _basetype.Size, _basetype.BuiltinType, _basetype.Flags | TypeFlags.Reference| _flags, _basetype.Modifiers, _basetype.Signature.Location, _basetype)
+            : base(ns, _basetype.Name , _basetype.Size, _basetype.BuiltinType, _basetype.Flags| _flags, _basetype.Modifiers, _basetype.Signature.Location, _basetype)
         {
             _size = 4;
         }
 
         public ReferenceTypeSpec(Namespace ns, TypeSpec _basetype, TypeFlags _flags, int size)
-            : base(ns, _basetype.Name + "&" + size.ToString(), _basetype.Size, _basetype.BuiltinType, _basetype.Flags | TypeFlags.Reference | _flags, _basetype.Modifiers, _basetype.Signature.Location, _basetype)
+            : base(ns, _basetype.Name , _basetype.Size, _basetype.BuiltinType, _basetype.Flags | _flags, _basetype.Modifiers, _basetype.Signature.Location, _basetype)
         {
             _size = 4;
         }

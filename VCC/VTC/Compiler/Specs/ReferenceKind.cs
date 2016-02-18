@@ -17,7 +17,8 @@ namespace VTC
         Member,
         Method,
         Operator,
-         Register
+         Register,
+         Property
     }
   
 	

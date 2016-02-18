@@ -47,23 +47,23 @@ namespace VTC
            if (ReferenceType == ReferenceKind.Field)
            {
                ec.EmitComment("Save Segment Field @" + Signature.ToString() + " " + Offset);
-               ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceRef = ElementReference.New(Signature.ToString()), SourceDisplacement = Offset, SourceIsIndirect = true, Size = 16 });
+               ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceRef = ElementReference.New(Signature.ToString()), SourceDisplacement = InitialIndex, SourceIsIndirect = true, Size = 16 });
            }
            else if (ReferenceType == ReferenceKind.LocalVariable)
            {
                ec.EmitComment("Save Segment Var @BP" + Offset);
-               ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceReg = EmitContext.BP, SourceDisplacement = Offset, SourceIsIndirect = true, Size = 16 });
+               ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceReg = EmitContext.BP, SourceDisplacement = InitialIndex, SourceIsIndirect = true, Size = 16 });
            }
            else if (ReferenceType == ReferenceKind.Register)
            {
                ec.EmitComment("Save Segment Var @" + Register.ToString() + Offset);
-               ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceReg = Register, SourceDisplacement = Offset, SourceIsIndirect = true, Size = 16 });
+               ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceReg = Register, SourceDisplacement = InitialIndex, SourceIsIndirect = true, Size = 16 });
 
            }
            else
            {
                ec.EmitComment("Save Segment Parameter @BP " + Offset);
-               ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceReg = EmitContext.BP, Size = 16, SourceDisplacement = Offset, SourceIsIndirect = true });
+               ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceReg = EmitContext.BP, Size = 16, SourceDisplacement = InitialIndex, SourceIsIndirect = true });
            }
            ec.EmitPush(RegistersEnum.DS);
            ec.EmitMovFromRegister(RegistersEnum.DS, dst);
@@ -84,7 +84,7 @@ namespace VTC
            {
                BaseEmitter.Offset = InitialIndex+2;
 
-               BaseEmitter.ValueOfStackAccess(ec, Offset - InitialIndex - 2, memberType);
+               BaseEmitter.ValueOfStackAccess(ec, Offset - InitialIndex, memberType);
            }
            else
            {
@@ -104,7 +104,7 @@ namespace VTC
            {
                BaseEmitter.Offset = InitialIndex+2;
 
-               BaseEmitter.ValueOfAccess(ec, Offset - InitialIndex - 2, memberType);
+               BaseEmitter.ValueOfAccess(ec, Offset - InitialIndex, memberType);
            }
            else
            {

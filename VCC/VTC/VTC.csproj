@@ -183,7 +183,10 @@
     <Compile Include="Compiler\Specs\BuiltinTypes.cs" />
     <Compile Include="Compiler\Specs\BuiltinTypeSpec.cs" />
     <Compile Include="Compiler\Specs\ClassTypeSpec.cs" />
-    <Compile Include="Compiler\Specs\ReferenceTypeSpec.cs" />
+    <Compile Include="Compiler\Specs\PropertySpec.cs" />
+    <Compile Include="Compiler\Specs\ReferenceTypeSpec.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Compiler\Specs\TemplateTypeSpec.cs" />
     <Compile Include="Compiler\Specs\DelegateTypeSpec.cs" />
     <Compile Include="Compiler\Specs\EnumMemberSpec.cs" />
@@ -223,6 +226,9 @@
     <Compile Include="Core\Constants\PointerConstant.cs" />
     <Compile Include="Core\Constants\FloatConstant.cs" />
     <Compile Include="Core\Constants\IntConstant.cs" />
+    <Compile Include="Core\Declarations\Property\PropertyDeclaration.cs" />
+    <Compile Include="Core\Definitions\BlockOrSemi.cs" />
+    <Compile Include="Core\Definitions\GetterDefinition.cs" />
     <Compile Include="Core\Declarations\OOP\ConstructorDeclaration.cs" />
     <Compile Include="Core\Declarations\OOP\ClassDeclaration.cs" />
     <Compile Include="Core\Declarations\OOP\ConstructorPrototypeDeclaration.cs" />
@@ -230,12 +236,16 @@
     <Compile Include="Core\Declarations\OOP\DestructorDeclaration.cs" />
     <Compile Include="Core\Declarations\RessourceDeclaration.cs" />
     <Compile Include="Core\Declarations\TemplateDeclaration.cs" />
-    <Compile Include="Core\Declarations\WordAccessExpression.cs" />
+    <Compile Include="Core\Definitions\SetterDefinition.cs" />
+    <Compile Include="Core\Expressions\DelegateExpressions.cs" />
+    <Compile Include="Core\Expressions\ForeachIndexerExpression.cs" />
+    <Compile Include="Core\Expressions\WordAccessExpression.cs" />
     <Compile Include="Core\Definitions\TemplateDefinition.cs" />
     <Compile Include="Core\Definitions\VariableInitDefinition.cs" />
     <Compile Include="Core\Definitions\InheritanceDefinition.cs" />
     <Compile Include="Core\Expressions\CheckedExpressions.cs" />
     <Compile Include="Core\Expressions\PolymorphicClassExpression.cs" />
+    <Compile Include="Core\Expressions\ReferenceExpression.cs" />
     <Compile Include="Core\Expressions\SuperExpression.cs" />
     <Compile Include="Core\Expressions\TypedExpressions.cs" />
     <Compile Include="Core\Expressions\DeclaredExpression.cs" />
@@ -369,6 +379,7 @@
     <Compile Include="Core\Statements\NormalStatment.cs" />
     <Compile Include="Core\Statements\Statements\AsmStatement.cs" />
     <Compile Include="Core\Statements\Statements\Case.cs" />
+    <Compile Include="Core\Statements\Statements\ForEachStatement.cs" />
     <Compile Include="Core\Statements\Statements\TryCatchStatement.cs" />
     <Compile Include="Core\Statements\Statements\ForStatement.cs" />
     <Compile Include="Core\Statements\Statements\IfElseStatement.cs" />

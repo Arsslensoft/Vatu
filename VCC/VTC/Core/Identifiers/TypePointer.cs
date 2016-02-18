@@ -55,14 +55,19 @@ namespace VTC.Core
             if (ptr._next == null)
             {
                 if (isref)
+                {
+                    
                     return tp.MakeReference();
+                }
                 else return tp.MakePointer();
             }
             else
             {
 
                 if (isref)
-                    return CreateType(tp.MakeReference(), ptr._next);
+                
+                    return CreateType(tp.MakeReference(),ptr._next);
+                
                 else return CreateType(tp.MakePointer(), ptr._next);
             }
         }

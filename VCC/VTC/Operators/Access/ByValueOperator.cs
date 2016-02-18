@@ -95,6 +95,9 @@ namespace VTC
                     {
                         // Resolve
                         index = tmp.Index;
+                      
+                         
+                   
                         return true;
                     }
 
@@ -158,7 +161,7 @@ namespace VTC
                 VariableExpression lv = (VariableExpression)Left;
                 if (Left.Type.Size == 2)
                     return new ByteAccessExpression(lv.variable, Right);
-                else if (Left.Type.Size == 4 && Left.Type is ReferenceTypeSpec)
+                else if (Left.Type.Size == 4 && Left.Type.IsReference)
                     return new WordAccessExpression(lv.variable, Right);
                 else ResolveContext.Report.Error(0, Location, "Cannot perform (HIGH, LOW) or (SEGMENT, POINTER) operations on non 16 bits , reference types");
 
@@ -241,7 +244,7 @@ namespace VTC
                         {
                             VarSpec v = (VarSpec)struct_var;
 
-                            VarSpec dst = new VarSpec(v.NS, v.Name, v.MethodHost, tmp.MemberType, Location,v.FlowIndex, v.Modifiers,true);
+                            VarSpec dst = new VarSpec(v.NS, v.Name, v.MethodHost, (v.memberType.IsReference) ? tmp.MemberType.MakeReference() : tmp.MemberType, Location, v.FlowIndex, v.Modifiers, true);
                             dst.VariableStackIndex = v.VariableStackIndex + index;
                             dst.InitialStackIndex = v.InitialStackIndex;
                             return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, Left.position);
@@ -251,17 +254,18 @@ namespace VTC
                         {
                             RegisterSpec v = (RegisterSpec)struct_var;
 
-                            RegisterSpec dst = new RegisterSpec(tmp.MemberType, v.Register, Location, 0,true);
+                            RegisterSpec dst = new RegisterSpec((v.memberType.IsReference) ? tmp.MemberType.MakeReference() : tmp.MemberType, v.Register, Location, 0, true);
                             dst.RegisterIndex = v.RegisterIndex + index;
                             dst.InitialRegisterIndex = v.InitialRegisterIndex;
                             return new AccessExpression(dst, (Left is AccessExpression) ? (Left as AccessExpression) : null, Left.position);
 
                         }
+     
                         else if (struct_var is FieldSpec)
                         {
                             FieldSpec v = (FieldSpec)struct_var;
 
-                            FieldSpec dst = new FieldSpec(v.NS, v.Name, v.Modifiers, tmp.MemberType, Location,true);
+                            FieldSpec dst = new FieldSpec(v.NS, v.Name, v.Modifiers, (v.memberType.IsReference) ? tmp.MemberType.MakeReference() : tmp.MemberType, Location, true);
                             dst.FieldOffset = v.FieldOffset + index;
                             dst.InitialFieldIndex = v.InitialFieldIndex;
 
@@ -270,8 +274,8 @@ namespace VTC
                         else if (struct_var is ParameterSpec)
                         {
                             ParameterSpec v = (ParameterSpec)struct_var;
-
-                            ParameterSpec dst = new ParameterSpec(v.NS,v.Name, v.MethodHost, tmp.MemberType, Location, v.InitialStackIndex, v.Modifiers,true);
+                           
+                            ParameterSpec dst = new ParameterSpec(v.NS, v.Name, v.MethodHost, (v.memberType.IsReference) ? tmp.MemberType.MakeReference() : tmp.MemberType, Location, v.InitialStackIndex, v.Modifiers, true);
 
                             dst.StackIdx = v.StackIdx + index;
                       

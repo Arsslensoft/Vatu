@@ -123,7 +123,7 @@ Comment Line  = '//'
 <Method Decl> ::= <Inter Decl>
                  | <Oper Decl>
                  | <Func Decl>
-                 
+                 | <Property Decl>
 
 
   
@@ -158,6 +158,13 @@ Comment Line  = '//'
 ! ===================================================================  
 <Func Decl>  ::= <Func ID> <Func Body>
 
+
+<Property Decl> ::= <Func ID>  '{' <Getter Decl> <Setter Decl> '}'
+                 | <Func ID>  '{' <Setter Decl> '}'
+                 | <Func ID>  '{' <Getter Decl>  '}'
+                 | <Func ID> '{' <Setter Decl> <Getter Decl>  '}'
+                 
+                 
 <Constructor Decl> ::= <Mod> ID <Func Body>
 <Destructor Decl>  ::= <Mod> '~' ID <Func Body>                     
 
@@ -216,7 +223,13 @@ Comment Line  = '//'
 <Func Ext>  ::= extends <Type>
              | static extends <Type>
              | 
-           
+
+
+<Getter Decl> ::= get <Block Or Semi>
+<Setter Decl> ::= set <Block Or Semi>
+               
+ <Block Or Semi> ::= <Block>
+                  | ';'          
 ! ===================================================================
 ! Asm Declaration
 ! ===================================================================
@@ -370,6 +383,8 @@ Comment Line  = '//'
                | use <Name> <Statement>
                | try <Statement> catch '(' <Var Expr> ')' <Statement>
                | loop <Statement>
+               |  foreach  '(' <Var Expr> in <Expression> ')' <Statement> while '(' <Expression> ')' ';'
+               |  foreach  '(' <Var Expr> in <Expression> ')' <Statement> ';'
                | <Normal Stm>
      
  <Then Stm>   ::= if '(' <Expression> ')' <Then Stm> else <Then Stm> 
@@ -527,7 +542,7 @@ Comment Line  = '//'
                | checked '(' <Expression> ')'
                | unchecked '(' <Expression> ')'
                | type '(' <Type> ')'
-              
+               | delegate <Type> <Block>    ! Anonymous method Expression
 
 <Declared Expression> ::=<Method Expr>     
                | <Var Expr>

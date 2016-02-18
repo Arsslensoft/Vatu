@@ -458,7 +458,7 @@ namespace VTC
         }
         bool ReferenceFix()
         {
-            if (_target.Type is ReferenceTypeSpec && Type.Equals(_target.Type.BaseType))
+            if (_target.Type.IsReference && Type.Equals(_target.Type.BaseType))
             {
                 _target.Type = Type;
                 nofix = true;

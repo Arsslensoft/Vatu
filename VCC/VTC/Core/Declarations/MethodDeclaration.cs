@@ -15,7 +15,7 @@ namespace VTC.Core
         CallingConventions ccv = CallingConventions.StdCall;
         CallingConventionsHandler ccvh;
         FunctionBodyDefinition _fbd;
-    
+        
         Specifiers specs;
         public List<ParameterSpec> Parameters;
 

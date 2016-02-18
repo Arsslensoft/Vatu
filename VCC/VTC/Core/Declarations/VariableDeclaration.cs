@@ -132,11 +132,11 @@ namespace VTC.Core
         void ResolveLocalVariable(ResolveContext rc, VariableDefinition vadef)
         {
             TypeSpec mt = vadef.CreateType(Type);
-           
-            if (mt is ReferenceTypeSpec && vadef.expr == null)
+
+            if (mt.IsReference && vadef.expr == null)
                 ResolveContext.Report.Error(0, Location, "Reference variables must be initialized");
-            else if (mt is ReferenceTypeSpec && ( !(vadef.expr is VariableExpression) || vadef.expr.Type != mt.BaseType))
-                ResolveContext.Report.Error(0, Location, "Reference variables must be initialized with a non reference variable");
+            else if (mt.IsReference && ( !(vadef.expr is VariableExpression) || !vadef.expr.Type.Equals(mt)))
+                ResolveContext.Report.Error(0, Location, "Reference variables must be initialized with a non reference variable " );
 
 
 

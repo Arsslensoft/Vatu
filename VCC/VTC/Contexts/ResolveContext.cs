@@ -85,8 +85,9 @@ namespace VTC
         FLOAT_REM,
         TRY_CATCH,
         CHECKED_EXPR,
-        PolymorphicCall
-
+        PolymorphicCall,
+        FOREACH,
+        ANONYMOUS_METHOD_EXPR
     }
     [Flags]
     public enum ResolveScopes
@@ -102,7 +103,8 @@ namespace VTC
         ThisAcces = 1 << 8,
         SuperAccess = 1 << 9 ,
        VariableExtensionAccess = 1 << 10,
-        StateChange = 1 << 11
+        StateChange = 1 << 11,
+        AnonymousMethod = 1 << 12
     }
     public class ResolveContext : IDisposable
     {
@@ -160,7 +162,8 @@ namespace VTC
         }
         public Expr ExtensionVar { get; set; }
         public ResolveScopes CurrentGlobalScope { get; set; }
-
+        public int AnonymousParameterIdx { get; set; }
+        public List<Expr> AnonymousParameters { get; set; }
         public ResolverState CurrentStatementState {get;set;}
 
        
@@ -226,7 +229,7 @@ namespace VTC
             IsInUnion = false;
             IsInEnum = false;
             LocalStackIndex = 0;
-      
+            AnonymousParameterIdx = 4;
         }
         public ResolveContext(List<Namespace> imp, Namespace ns, Block b, MethodSpec cm, Resolver known)
         {
@@ -270,6 +273,7 @@ namespace VTC
             ChildContexts = new List<ResolveContext>();
 
         }
+
         public ResolveContext(List<Namespace> imp, Namespace ns, InterruptDeclaration decl)
         {
       
@@ -288,6 +292,19 @@ namespace VTC
 
             Init();
             Resolver = new Resolver(ns, imp, this, new MethodSpec(ns, decl.OpName, Modifiers.NoModifier, null, CallingConventions.StdCall, null, Location.Null));
+
+            FillKnown();
+            ChildContexts = new List<ResolveContext>();
+
+
+        }
+
+        public ResolveContext(List<Namespace> imp, Namespace ns, MethodSpec decl)
+        {
+
+
+            Init();
+            Resolver = new Resolver(ns, imp, this, decl);
 
             FillKnown();
             ChildContexts = new List<ResolveContext>();
@@ -385,6 +402,19 @@ namespace VTC
         {
             return Resolver.CurrentMethod.Name == "<root-decl-list>";
         }
+
+        public ResolveContext CreateAsChild(List<Namespace> imp, Namespace ns, OperatorDeclaration md)
+        {
+            if (ChildContexts != null)
+            {
+                ResolveContext rc = new ResolveContext(imp, ns, md);
+                rc.FillKnownByKnown(Resolver);
+                ChildContexts.Add(rc);
+                return rc;
+
+            }
+            else return null;
+        }
         public ResolveContext CreateAsChild(List<Namespace> imp, Namespace ns, InterruptDeclaration md)
         {
             if (ChildContexts != null)
@@ -397,11 +427,11 @@ namespace VTC
             }
             else return null;
         }
-        public ResolveContext CreateAsChild(List<Namespace> imp, Namespace ns, OperatorDeclaration md)
+        public ResolveContext CreateAsChild(List<Namespace> imp, Namespace ns,  MethodSpec ms)
         {
             if (ChildContexts != null)
             {
-                ResolveContext rc = new ResolveContext(imp, ns, md);
+                ResolveContext rc = new ResolveContext(imp, ns, ms);
                 rc.FillKnownByKnown(Resolver);
                 ChildContexts.Add(rc);
                 return rc;
@@ -549,6 +579,33 @@ namespace VTC
                 mtd.VariableStackIndex = LocalStackIndex;
                 mtd.InitialStackIndex = LocalStackIndex;
                 Resolver.KnowVar(mtd);
+                return true;
+            }
+            else return false;
+        }
+
+        int GetParameterSize(TypeSpec tp, bool reference)
+        {
+            if (reference)
+                return 2;
+            else if (tp.IsFloat && tp.IsPointer)
+                return 2;
+            else
+            {
+                if (tp.Size != 1 && tp.Size % 2 != 0)
+                    return (tp.Size == 1) ? 2 : tp.Size + 1;
+                else return (tp.Size == 1) ? 2 : tp.Size;
+            }
+        }
+        public bool KnowVar(ParameterSpec mtd)
+        {
+            if (!Exist((MemberSpec)mtd, CurrentMethod.Parameters.Cast<MemberSpec>().ToList<MemberSpec>()))
+            {
+                
+                mtd.StackIdx = AnonymousParameterIdx;
+                mtd.InitialStackIndex = AnonymousParameterIdx;
+                CurrentMethod.Parameters.Add(mtd);
+                AnonymousParameterIdx += GetParameterSize(mtd.MemberType, false);
                 return true;
             }
             else return false;

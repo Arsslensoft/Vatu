@@ -51,7 +51,7 @@ namespace VTC
        public MemberSignature Signature
        {
            get { return _sig; }
-           protected set
+           internal set
            {
                _sig = value;
            }

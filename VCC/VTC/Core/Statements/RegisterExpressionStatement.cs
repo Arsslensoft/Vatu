@@ -37,6 +37,10 @@ namespace VTC.Core
         {
             return _expr.Emit(ec);
         }
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            return _expr.DoFlowAnalysis(fc);
+        }
    
     }
 

@@ -57,7 +57,8 @@ namespace VTC
         {
             get
             {
-               
+                if (IsReference)
+                    return 4;
                 if (IsTypeDef)
                     return GetTypeDefBase(this).Size;
         
@@ -120,12 +121,14 @@ namespace VTC
             }
 
         }
+        bool _isref = false;
         public bool IsReference
         {
             get
             {
-                return ((_flags & TypeFlags.Reference) == TypeFlags.Reference);
+                return _isref;
             }
+            set { _isref = value; }
 
         }
         public bool IsClass
@@ -449,9 +452,11 @@ namespace VTC
         {
             return new PointerTypeSpec(NS, this);
         }
-        public TypeSpec MakeReference()
+        public virtual TypeSpec MakeReference()
         {
-            return new ReferenceTypeSpec(NS, this);
+            TypeSpec tp = new TypeSpec(NS, Name, BuiltinType, Flags, Modifiers, Signature.Location, _base);
+            tp.IsReference = true;
+            return tp;
         }
         public TypeSpec MakeArray(int size)
         {
@@ -463,8 +468,8 @@ namespace VTC
                 return "string";
             else if (tp.BaseType != null  && tp is PointerTypeSpec)
                 return GetTypeName(tp.BaseType) + "*";
-            else if (tp.BaseType != null && tp is ReferenceTypeSpec)
-                return GetTypeName(tp.BaseType) + "&";
+            //else if (tp.BaseType != null && tp.IsReference)
+            //    return GetTypeName(tp.BaseType) + "&";
             else return tp._name;
         }
 
@@ -512,6 +517,9 @@ namespace VTC
       
         public virtual bool Equals(TypeSpec tp)
         {
+            if (tp.IsArray && this.Name == "string")
+                return true;
+            else
             return tp.Signature == Signature;
         }
 

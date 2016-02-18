@@ -34,18 +34,20 @@ namespace VTC
 
                  //   ;
              }
-             else if (memberType is ReferenceTypeSpec)
+             else if (memberType.IsReference)
              {
                  Emitter = new AddressableEmitter(ms, idx, k);
-     
+                 TypeSpec pointer = memberType.MakeReference();
+                 pointer.IsReference = false;
+                 pointer = pointer.MakePointer();
                  if (ms is ParameterSpec)
-                     Emitter.BaseEmitter = ReferenceSpec.GetEmitter(new ParameterSpec(ms.NS, ms.Name, (ms as ParameterSpec).MethodHost, memberType.BaseType.MakePointer(), ms.Signature.Location, idx + 2, VTC.Modifiers.NoModifier, access), memberType.BaseType.MakePointer(), idx + 2, ReferenceKind.Parameter, access);
+                     Emitter.BaseEmitter = ReferenceSpec.GetEmitter(new ParameterSpec(ms.NS, ms.Name, (ms as ParameterSpec).MethodHost, pointer, ms.Signature.Location, idx + 2, VTC.Modifiers.NoModifier, access), pointer, idx + 2, ReferenceKind.Parameter, access);
                  else if (ms is VarSpec)
-                     Emitter.BaseEmitter = ReferenceSpec.GetEmitter(new VarSpec(ms.NS, ms.Name, (ms as VarSpec).MethodHost, memberType.BaseType.MakePointer(), ms.Signature.Location, idx+2, VTC.Modifiers.NoModifier, access), memberType.BaseType.MakePointer(), idx+2, ReferenceKind.LocalVariable, access);
+                     Emitter.BaseEmitter = ReferenceSpec.GetEmitter(new VarSpec(ms.NS, ms.Name, (ms as VarSpec).MethodHost, pointer, ms.Signature.Location, idx + 2, VTC.Modifiers.NoModifier, access), pointer, idx + 2, ReferenceKind.LocalVariable, access);
                  else if (ms is VarSpec)
-                     Emitter.BaseEmitter = ReferenceSpec.GetEmitter(new RegisterSpec(memberType.BaseType.MakePointer(), (ms as RegisterSpec).Register, ms.Signature.Location, idx + 2, access), memberType.BaseType.MakePointer(), idx + 2, ReferenceKind.Register, access);
+                     Emitter.BaseEmitter = ReferenceSpec.GetEmitter(new RegisterSpec(pointer, (ms as RegisterSpec).Register, ms.Signature.Location, idx + 2, access), pointer, idx + 2, ReferenceKind.Register, access);
                  else
-                     Emitter.BaseEmitter = ReferenceSpec.GetEmitter(new FieldSpec(ms.NS, ms.Name, Modifiers.NoModifier, memberType.BaseType.MakePointer(), ms.Signature.Location, access), memberType.BaseType.MakePointer(), idx + 2, ReferenceKind.Field, access);
+                     Emitter.BaseEmitter = ReferenceSpec.GetEmitter(new FieldSpec(ms.NS, ms.Name, Modifiers.NoModifier, pointer, ms.Signature.Location, access), pointer, idx + 2, ReferenceKind.Field, access);
 
              
              }
