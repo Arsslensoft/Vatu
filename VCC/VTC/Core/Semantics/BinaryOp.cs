@@ -10,7 +10,7 @@ namespace VTC.Core
     public class BinaryOp : Operator
     {
         public TypeToken RightType;
-        public MethodSpec OvlrdOp;
+     
         public RegistersEnum? RightRegister { get; set; }
         public RegistersEnum? LeftRegister { get; set; }
         protected bool ConstantOperation = false;
@@ -36,22 +36,20 @@ namespace VTC.Core
             return base.DoFlowAnalysis(fc);
         }
         protected bool unsigned = true;
-
+     
         public virtual bool EmitOverrideOperator(EmitContext ec)
         {
-            Left.EmitToStack(ec);
-            Right.EmitToStack(ec);
+        
             ec.EmitComment("Override Operator : " + Left.CommentString() + " " + Operator.ToString() + " " + Right.CommentString());
-            ec.EmitCall(OvlrdOp);
-            ec.EmitPush(EmitContext.A);
+            ec.EmitCallOperator(Left,Right, OvlrdOp);
             return true;
         }
         public virtual bool EmitOverrideOperatorBranchable(EmitContext ec, Label truecase, bool v, ConditionalTestEnum cond, ConditionalTestEnum acond)
         {
-            Left.EmitToStack(ec);
-            Right.EmitToStack(ec);
+          
+          
             ec.EmitComment("Override Operator : " + Left.CommentString() + " " + Operator.ToString() + " " + Right.CommentString());
-            ec.EmitCall(OvlrdOp);
+            ec.EmitCallOperator(Left, Right, OvlrdOp);
 
             ec.EmitPush(EmitContext.A);
             ec.EmitPop(LeftRegister.Value);

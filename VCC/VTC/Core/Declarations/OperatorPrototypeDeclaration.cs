@@ -13,7 +13,7 @@ namespace VTC.Core
         public string OpName;
 
         Stack<ParameterSpec> Params { get; set; }
-        public List<ParameterSpec> Parameters { get; set; }
+        public List<ParameterSpec> Parameters;
 
         Modifier _mod;
         TypeToken _mtype;
@@ -252,8 +252,8 @@ namespace VTC.Core
                
                 // operator checks
 
-                if (_mtype.Type.IsForeignType && !_mtype.Type.IsPointer)
-                    ResolveContext.Report.Error(45, Location, "Non builtin types cast must return it's pointer type ");
+                if (_mtype.Type is ArrayTypeSpec)
+                    ResolveContext.Report.Error(45, Location, "Array types cast are unsupported");
 
                 if (_mtype.Type.Equals(_casttype.Type))
                     ResolveContext.Report.Error(45, Location, "Cast operators can't have same parameter types");
@@ -263,13 +263,18 @@ namespace VTC.Core
             }
             method = new MethodSpec(rc.CurrentNamespace, OpName, mods, _mtype.Type, CallingConventions.StdCall, tp.ToArray(), this.Location);
             DefaultParams(method, tp.ToArray());
+      
+            CallingConventionsHandler ccvh = new CallingConventionsHandler();
+            int last_param = 4;
+            ccvh.SetParametersIndex(ref Parameters, CallingConventions.StdCall, ref last_param);
+            method.LastParameterEndIdx = (ushort)last_param;
             method.Parameters = Parameters;
             method.IsOperator = true;
             rc.KnowMethod(method);
 
             rc.CurrentMethod = method;
-            if (!method.MemberType.IsBuiltinType && !method.MemberType.IsPointer)
-                ResolveContext.Report.Error(45, Location, "return type must be builtin type " + method.MemberType.ToString() + " is user-defined type.");
+            if (method.memberType is ArrayTypeSpec)
+                ResolveContext.Report.Error(45, Location, "return type must be non array type " + method.MemberType.ToString() + " is user-defined type.");
 
             return this;
         }

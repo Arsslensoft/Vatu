@@ -33,8 +33,8 @@ namespace VTC
             ae = new AssignExpression(Right, new SimpleAssignOperator(), Right);
             ae = (AssignExpression)ae.DoResolve(rc);
             CommonType = Right.Type;
-     
-            rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + Operator.ToString(), ref OvlrdOp, new TypeSpec[1] { Right.Type });
+
+            rc.Resolver.TryResolveMethod(CommonType.NormalizedName + "_" + UnaryOperator.PrefixDecrement, ref OvlrdOp, new TypeSpec[1] { Right.Type });
             if (rc.CurrentMethod == OvlrdOp)
                 OvlrdOp = null;
             return this;
@@ -113,7 +113,9 @@ namespace VTC
             {
                 base.EmitOverrideOperator(ec);
 
-                return Right.EmitFromStack(ec);
+
+                Right.EmitFromStack(ec);
+                return Right.EmitToStack(ec);
             }
 
 

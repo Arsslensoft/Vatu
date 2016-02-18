@@ -49,6 +49,7 @@ namespace VTC
             }
 
         }
+
         public override bool EmitToStack(EmitContext ec)
         {
             if (ReferenceType == ReferenceKind.Field)

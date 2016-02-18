@@ -36,9 +36,20 @@ namespace VTC.Core.Expressions
           ResolveChildContext(rc, rc.CurrentMethod, true);
 
            Method = rc.CurrentMethod;
-            
-              Parameters = resolve.AnonymousParameters;
+
+           if (Method.memberType is ArrayTypeSpec)
+               ResolveContext.Report.Error(45, Location, "return type must be non array type " + Method.MemberType.ToString() + " is user-defined type.");
+          
+
+           Parameters = resolve.AnonymousParameters;
               parameters = Method.Parameters;
+              int last_param = 4;
+              // Calling Convention
+              ccvh.SetParametersIndex(ref parameters,  CallingConventions.Default, ref last_param);
+
+              Method.LastParameterEndIdx = (ushort)last_param;
+              Method.Parameters = parameters;
+    
           List<TypeSpec> tp = new List<TypeSpec>();
           foreach(Expr e in Parameters)
               tp.Add(e.Type);
@@ -67,7 +78,7 @@ namespace VTC.Core.Expressions
           _fbd = (Block)_fbd.DoResolve(childctx);
 
           resolve = childctx;
-          
+       
           foreach(VarSpec v in rc.Resolver.KnownLocalVars)
             resolve.Resolver.KnownLocalVars.Remove(v);
 

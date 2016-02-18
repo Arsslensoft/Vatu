@@ -37,9 +37,7 @@ namespace VTC.Core
       {
           Getter = new MethodSpec(ps.NS, "get_" + ps.Name, ps.Modifiers, ps.memberType, CallingConventions.Default, new List<TypeSpec>().ToArray(), ps.Signature.Location);
           ps.Getter = Getter;
-          if (ps.memberType.Size > 2)
-              ResolveContext.Report.Error(0, Location, "Getters must return a 16 bits value");
-
+       
 
       }
     }

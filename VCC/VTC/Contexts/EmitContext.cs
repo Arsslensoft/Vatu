@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Vasm;
 using Vasm.x86;
+using VTC.Core;
 
 namespace VTC
 {
@@ -47,9 +48,39 @@ namespace VTC
     public class EmitContext
     {
 
+        public void EmitCallOperator(Expr left,Expr right, MethodSpec oper)
+        {
+            CallingConventionsHandler ccvh = new CallingConventionsHandler();
+            List<Expr> exprs = new List<Expr>();
+            exprs.Add(right);
+            exprs.Add(left);
+     
 
-        
-       
+            ccvh.EmitCall(this, exprs, oper, true);
+            EmitSubRoutinePush(this, oper.memberType);
+        }
+        public void EmitCallOperator(Expr exp, MethodSpec oper)
+        {
+            CallingConventionsHandler ccvh = new CallingConventionsHandler();
+            List<Expr> exprs = new List<Expr>();
+            exprs.Add(exp);
+
+            ccvh.EmitCall(this, exprs, oper, true);
+            EmitSubRoutinePush(this, oper.memberType);
+
+        }
+        public void EmitCallOperatorFromStack(MethodSpec oper)
+        {
+            CallingConventionsHandler ccvh = new CallingConventionsHandler();
+            List<Expr> exprs = new List<Expr>();
+
+            ccvh.EmitCall(this, exprs, oper, true);
+            EmitSubRoutinePush(this, oper.memberType);
+
+
+        }
+
+
         public const byte FALSE = 0;
         public const byte TRUE = 1;
         public const RegistersEnum A = RegistersEnum.AX;
@@ -105,6 +136,16 @@ namespace VTC
          {
          return    ag.PeekRegister();
          }*/
+        public void EmitSubRoutinePush(EmitContext ec, TypeSpec ret)
+        {
+            ec.EmitComment("Sub routine push");
+            if (!(ret.IsFloat && !ret.IsPointer)) // pop floating point
+            {
+                int ret_size = ret.GetSize(ret);
+                if (ret_size <= 2)
+                    ec.EmitPush(EmitContext.A);
+            }
+        }
         public ResolveContext CurrentResolve { get; set; }
 
 

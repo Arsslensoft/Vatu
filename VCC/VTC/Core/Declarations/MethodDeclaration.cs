@@ -42,7 +42,7 @@ namespace VTC.Core
                 ok &= _fbd._b.Resolve(rc);
             return ok;
         }
- public override SimpleToken DoResolve(ResolveContext rc)
+       public override SimpleToken DoResolve(ResolveContext rc)
         {
             ccvh = new CallingConventionsHandler();
             _id = (MethodIdentifier)_id.DoResolve(rc);
@@ -87,7 +87,8 @@ namespace VTC.Core
                 Parameters.Insert(0, thisps);
             }
             // Calling Convention
-            ccvh.SetParametersIndex(ref Parameters, ccv);
+            int last_param = 4;
+            ccvh.SetParametersIndex(ref Parameters, ccv,ref last_param);
             if (ccv == CallingConventions.FastCall)
                 ccvh.ReserveFastCall(rc, Parameters);
             else if (ccv == CallingConventions.VatuSysCall && _id.CCV != null)
@@ -120,7 +121,7 @@ namespace VTC.Core
                 //    if (rc.CurrentType == null || (rc.CurrentType != null && !(rc.CurrentType is ClassTypeSpec)))
                        rc.KnowMethod(method);
                 }
-
+                method.LastParameterEndIdx = (ushort)last_param;
             rc.CurrentMethod = method;
             if (method.IsVariadic) // reserve local variable index for variadic
             {
@@ -132,8 +133,8 @@ namespace VTC.Core
             if (specs == Specifiers.Isolated && method.MemberType != BuiltinTypeSpec.Void)
                 ResolveContext.Report.Error(45, Location, "only void methods can be isolated.");
 
-            if (!method.MemberType.IsBuiltinType && !method.memberType.IsPointer && !method.memberType.IsTemplate)
-                ResolveContext.Report.Error(45, Location, "return type must be builtin type " + method.MemberType.ToString() + " is user-defined type.");
+            if (method.memberType is ArrayTypeSpec)
+                ResolveContext.Report.Error(45, Location, "return type must be non array type " + method.MemberType.ToString() + " is user-defined type.");
           
           if (_fbd._b != null)
                 _fbd._b = (Block)_fbd._b.DoResolve(rc);

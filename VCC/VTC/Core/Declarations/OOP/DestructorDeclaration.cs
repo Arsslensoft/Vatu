@@ -42,6 +42,7 @@ namespace VTC.Core
         }
  public override SimpleToken DoResolve(ResolveContext rc)
         {
+     
             ccvh = new CallingConventionsHandler();
             mod = (Modifier)mod.DoResolve(rc);
             ccv = CallingConventions.Default;
@@ -65,9 +66,11 @@ namespace VTC.Core
 
             ParameterSpec thisps = new ParameterSpec(rc.CurrentNamespace, "this", method, rc.CurrentType, Location, 4);
             Parameters.Insert(0, thisps);
-            // Calling Convention
-            ccvh.SetParametersIndex(ref Parameters, ccv);
 
+            int last_param = 4;
+            // Calling Convention
+            ccvh.SetParametersIndex(ref Parameters, ccv, ref last_param);
+            
 
             method.Parameters = Parameters;
 
@@ -80,6 +83,7 @@ namespace VTC.Core
             else if (m == null)
                 rc.KnowMethod(method);
 
+            method.LastParameterEndIdx = (ushort)last_param;
             rc.CurrentMethod = method;
 
 

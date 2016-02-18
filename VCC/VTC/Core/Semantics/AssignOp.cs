@@ -9,7 +9,7 @@ namespace VTC.Core
 {
     public class AssignOp : Operator
     {
-        protected MethodSpec OvlrdOp;
+
         public BinaryOp _op;
         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
         {
@@ -30,27 +30,27 @@ namespace VTC.Core
             else
                 return false;
         }
+   
         public virtual bool EmitOverrideOperatorFromStack(EmitContext ec)
         {
-
+       
             ec.EmitComment("Override Implicit Cast Operator : " + " (" + Left.Type.Name + ")" + Right.CommentString());
-            ec.EmitCall(OvlrdOp);
-            ec.EmitPush(EmitContext.A);
+            ec.EmitCallOperatorFromStack(OvlrdOp);
             return true;
         }
         public virtual bool EmitOverrideOperator(EmitContext ec)
         {
-            Right.EmitToStack(ec);
+      
             ec.EmitComment("Override Cast Operator : " + " (" + Left.Type.Name + ")" + Right.CommentString());
-            ec.EmitCall(OvlrdOp);
-            ec.EmitPush(EmitContext.A);
+            ec.EmitCallOperator(Right, OvlrdOp);
             return true;
         }
         public virtual bool EmitOverrideOperatorBranchable(EmitContext ec, Label truecase, bool v, ConditionalTestEnum cond, ConditionalTestEnum acond)
         {
-            Right.EmitToStack(ec);
+         
+           
             ec.EmitComment("Override Cast Operator : " + " (" + Left.Type.Name + ")" + Right.CommentString());
-            ec.EmitCall(OvlrdOp);
+            ec.EmitCallOperator( Right, OvlrdOp);
 
 
 

@@ -66,8 +66,9 @@ namespace VTC.Core
 
             ParameterSpec thisps = new ParameterSpec(rc.CurrentNamespace, "this", method, rc.CurrentType, Location, 4);
             Parameters.Insert(0, thisps);
+            int last_param = 4;
             // Calling Convention
-            ccvh.SetParametersIndex(ref Parameters, ccv);
+            ccvh.SetParametersIndex(ref Parameters, ccv,ref last_param);
         
 
             method.Parameters = Parameters;
@@ -82,6 +83,7 @@ namespace VTC.Core
             else if (m == null)
                 rc.KnowMethod(method);
 
+            method.LastParameterEndIdx = (ushort)last_param;
             rc.CurrentMethod = method;
          
 

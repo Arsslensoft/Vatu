@@ -19,28 +19,29 @@ namespace VTC
         protected TypeIdentifier _type;
         protected Expr _target;
         protected LoadEffectiveAddressOp FloatAdr;
+     
         #region CAST OVERLOADING
         public virtual bool EmitOverrideOperatorFromStack(EmitContext ec)
         {
- 
+       
             ec.EmitComment("Override Cast Operator : " + " (" + _type.Type.Name + ")" + _target.CommentString());
-            ec.EmitCall(OvlrdOp);
-            ec.EmitPush(EmitContext.A);
+            ec.EmitCallOperatorFromStack( OvlrdOp);
+        
             return true;
         }
         public virtual bool EmitOverrideOperator(EmitContext ec)
         {
-            _target.EmitToStack(ec);
+          
             ec.EmitComment("Override Cast Operator : " + " (" + _type.Type.Name + ")" + _target.CommentString());
-            ec.EmitCall(OvlrdOp);
-            ec.EmitPush(EmitContext.A);
+            ec.EmitCallOperator(_target, OvlrdOp);
             return true;
         }
         public virtual bool EmitOverrideOperatorBranchable(EmitContext ec, Label truecase, bool v, ConditionalTestEnum cond, ConditionalTestEnum acond)
         {
-            _target.EmitToStack(ec);
+           
+         
             ec.EmitComment("Override Cast Operator : " + " (" + _type.Type.Name + ")" + _target.CommentString());
-            ec.EmitCall(OvlrdOp);
+            ec.EmitCallOperator(_target,OvlrdOp);
 
 
 

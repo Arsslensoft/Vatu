@@ -21,7 +21,7 @@ namespace VTC
 
         public ushort VSCInterrupt { get; set; }
         public ushort VSCDescriptor { get; set; }
-
+        public ushort LastParameterEndIdx { get; set; }
 
         public bool IsPrototype
         {
@@ -42,6 +42,8 @@ namespace VTC
             Parameters = new List<ParameterSpec>();
             VSCInterrupt = 0;
             VSCDescriptor = 0;
+            LastParameterEndIdx = 0;
+
         }
         public override string ToString()
         {

@@ -68,14 +68,14 @@ namespace VTC.Core
        {
 
            ec.EmitPush((ushort)_type.Type.GetAllocSize(_type.Type));
-           ec.EmitInstruction(new Call() { DestinationLabel = method.Signature.ToString() });
+           ec.EmitCall(method);
            ec.EmitPush(EmitContext.A);
 
            if (Ctor != null)
            {
                ec.EmitComment("Calling constructor");
                ec.EmitPush(EmitContext.A);
-               ccvh.EmitCall(ec, Parameters, Ctor);
+               ccvh.EmitCall(ec, Parameters, Ctor, false);
            }
            return true;
        }

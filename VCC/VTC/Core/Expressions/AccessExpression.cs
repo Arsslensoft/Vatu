@@ -18,23 +18,32 @@ namespace VTC.Core
             else LastUsed = RegistersEnum.SI;
         }
 
+        public bool IsByIndex = false;
+        bool IsExpr=false;
+        bool IsByAdr = false;
+        bool IsLea = false;
+        bool IsValueOf = false;
+        public bool IsClass = false;
+        bool IsByValue = false;
 
-        bool IsExpr { get; set; }
-        bool IsByAdr { get; set; }
-        int AccessIndex { get; set; }
-        TypeSpec MemberT { get; set; }
         internal MemberSpec RootVar = null;
         internal AccessExpression Parent = null;
         internal AccessExpression Child = null;
-        public bool IsByIndex { get; set; }
-        public bool IsClass = false;
+
+
+        int AccessIndex { get; set; }
+        TypeSpec MemberT { get; set; }
+        public VariableExpression Left { get; set; }
+        public Expr Right { get; set; }
+        public ByIndexOperator Operator { get; set; }
+        
   
-        public override string ToString()
-        {
-            if (variable != null)
-                return variable.Name.ToString();
-            else return "NULL";
-        }
+        /// <summary>
+        /// ByIndex Access for constant index
+        /// </summary>
+        /// <param name="ms"></param>
+        /// <param name="parent"></param>
+        /// <param name="pos"></param>
         public AccessExpression(MemberSpec ms, AccessExpression parent, LineInfo pos)
             : base(ms)
         {
@@ -48,17 +57,18 @@ namespace VTC.Core
             else
             Parent = null;
 
+
+
+
+            IsByValue = true;
          
-
-
-
-            IsByAdr = false;
-            IsExpr = false;
-     
             Type = ms.MemberType;
         }
+
+       
+
         /// <summary>
-        /// ByVal ccess operator
+        /// ByVal, ByAddress Access operator
         /// </summary>
         /// <param name="ms"></param>
         public AccessExpression(MemberSpec ms, AccessExpression parent,LineInfo pos, bool adr = false, int index = 0, TypeSpec mem = null)
@@ -78,21 +88,22 @@ namespace VTC.Core
                 parent.Child = this;
             }
             IsByAdr = adr;
-            IsExpr = false;
+            IsByValue = !adr;
+
+
             AccessIndex = index;
             MemberT = mem;
             Type = mem != null ? mem : ms.MemberType;
         }
 
-        public VariableExpression Left { get; set; }
-        public Expr Right { get; set; }
-        public ByIndexOperator Operator { get; set; }
+       // ByIndex Ctor
         public AccessExpression(VariableExpression left, Expr right, ByIndexOperator op)
             : base(left.variable)
         {
             position = left.position;
             IsByIndex = true;
             IsExpr = true;
+
             Left = left;
             Right = right;
             Operator = op;
@@ -131,10 +142,7 @@ namespace VTC.Core
                 RootVar.EmitToStack(ec);
                 ec.EmitPop((variable as RegisterSpec).Register);
             }
-            //else if (Child == null)
-            //    // is last
-            //    variable.EmitFromStack(ec);
-
+            
 
         }
         public void EmitIndirections(EmitContext ec)
@@ -159,36 +167,7 @@ namespace VTC.Core
              RootVar.EmitToStack(ec);
              ec.EmitPop((variable as RegisterSpec).Register);
          }
-            //else if(Child == null) 
-            //    // is last
-            //    variable.EmitToStack(ec);
   
-            
-/*
-     if (Parent == null && RootVar != null && variable is RegisterSpec) // indirect
-            {
-                RootVar.EmitToStack(ec);
-                ec.EmitPop((variable as RegisterSpec).Register);
-            }
-
-            else if (Parent != null && !Parent.IsByIndex)
-            {
-                if (Parent.Parent != null) 
-                    Parent.EmitIndirections(ec);
-
-                if (IsByAdr)
-                {
-
-                    Parent.variable.EmitToStack(ec);
-                    ec.EmitPop((variable as RegisterSpec).Register);
-                }
-            }
-            else if (Parent != null) // by index
-            {
-                Parent.EmitToStack(ec);
-                ec.EmitPop((variable as RegisterSpec).Register);
-            }
-           */
         }
         public override bool Emit(EmitContext ec)
         {
@@ -245,7 +224,6 @@ namespace VTC.Core
                 return Operator.EmitToStack(ec);
             else throw new NotSupportedException();
         }
-
         public override bool LoadEffectiveAddress(EmitContext ec)
         {
             ec.EmitComment("Indirections ");
@@ -270,16 +248,6 @@ namespace VTC.Core
                 return Operator.LoadEffectiveAddress(ec);
 
         }
-       
-    
-        public override string CommentString()
-        {
-            if (!IsExpr)
-                return base.CommentString();
-            else
-                return Operator.CommentString();
-        }
-
         public override bool EmitBranchable(EmitContext ec, Label truecase, bool v)
         {
             EmitToStack(ec);
@@ -289,6 +257,22 @@ namespace VTC.Core
             ec.EmitBooleanBranch(v, truecase, ConditionalTestEnum.Equal, ConditionalTestEnum.NotEqual);
             return true;
         }
+    
+
+        public override string CommentString()
+        {
+            if (!IsExpr)
+                return base.CommentString();
+            else
+                return Operator.CommentString();
+        }
+        public override string ToString()
+        {
+            if (variable != null)
+                return variable.Name.ToString();
+            else return "NULL";
+        }
+        
 
        
     }

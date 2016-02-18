@@ -129,9 +129,10 @@ namespace VTC.Core
             rc.CurrentMethod = method;
 
 
-            if (!method.MemberType.IsBuiltinType && !method.memberType.IsPointer && !method.memberType.IsTemplate)
-                ResolveContext.Report.Error(45, Location, "return type must be builtin type " + method.MemberType.ToString() + " is user-defined type.");
-          
+            if (method.memberType is ArrayTypeSpec)
+                ResolveContext.Report.Error(45, Location, "return type must be non array type " + method.MemberType.ToString() + " is user-defined type.");
+
+
             if (ext != null && !ext.Static)
                 tp.Insert(0, ext.ExtendedType);
             else if (rc.IsInClass)

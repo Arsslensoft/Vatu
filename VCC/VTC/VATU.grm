@@ -41,8 +41,8 @@ FloatLiteral     = {Literal Prefix}{Digit}*'.'{Digit}+{Float Suffix} | {Digit}*'
 !IncludeLiteral    = '<' ( {Printable} )+ '>'
 Id               = {Id Head}{Id Tail}*    
 TemplateId       = '$'[ABCDEFGHIJKLMNOPQRSTUVWXYZ]
-OperatorLiteralUnary  =  '@' [!&#$%*+-,/<>=?\^_|~£¤µ.:]+
-OperatorLiteralBinary  =  '@@' [!&#$%*+-,/<>=?\^_|~£¤µ.:]+     
+OperatorLiteralUnary  =  '@' [!&%*+-,/<>=?\^_|~£¤µ.:]+
+OperatorLiteralBinary  =  '@@' [!&%*+-,/<>=?\^_|~£¤µ.:]+     
 
                  
 
@@ -259,8 +259,8 @@ Comment Line  = '//'
                  | <Mod> setof enum Id '{' <Enum Def> '}'  ';'
                  | <Mod> typedef setof enum '{' <Enum Def> '}'  Id ';'
 
-<Delegate Decl> ::= <Mod> <CallCV> delegate <Type> ID '(' <Types>  ')' ';'
-                  | <Mod> typedef <CallCV> delegate <Type> '(' <Types>  ')' ID ';'                 
+<Delegate Decl> ::= <Mod> <CallCV> delegate <Type> ID '(' <Params>   ')' ';'
+                  | <Mod> typedef <CallCV> delegate <Type> '(' <Params>   ')' ID ';'                 
                   | <Mod> <CallCV> delegate <Type> ID '(' ')' ';'
                   | <Mod> typedef <CallCV> delegate <Type> '(' ')' ID ';'   
                   

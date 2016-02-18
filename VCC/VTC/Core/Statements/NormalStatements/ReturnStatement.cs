@@ -11,7 +11,7 @@ namespace VTC.Core
 	public class ReturnStatement : NormalStatment
     {
         public Label ReturnLabel { get; set; }
-
+        MethodSpec Method;
         private Expr _expr;
 
         [Rule("<Normal Stm> ::= ~return <Expression> ~';' ")]
@@ -32,8 +32,27 @@ namespace VTC.Core
                 return _expr.Resolve(rc);
             else return true;
         }
+
+
+       public bool PopAllToRegister(EmitContext ec, RegistersEnum rg, int size, int offset = 0)
+       {
+
+           int s = size / 2;
+
+
+           for (int i = 0; i < s; i++)
+               ec.EmitInstruction(new Pop() { DestinationReg = rg, DestinationDisplacement = offset + 2 * i, DestinationIsIndirect = true, Size = 16 });
+           if (size % 2 != 0)
+           {
+               ec.EmitPop(RegistersEnum.DX);
+               ec.EmitInstruction(new Mov() { DestinationReg = rg, DestinationDisplacement = offset - 1 + size, DestinationIsIndirect = true, Size = 8, SourceReg = RegistersEnum.DL });
+
+           }
+           return true;
+       }
  public override SimpleToken DoResolve(ResolveContext rc)
         {
+            Method = rc.CurrentMethod;
             if (_expr != null)
             {
                 _expr = (Expr)_expr.DoResolve(rc);
@@ -65,8 +84,14 @@ namespace VTC.Core
             {
                 
                 ok = _expr.EmitToStack(ec);
-                if (!(_expr.Type.IsFloat && !_expr.Type.IsPointer))
-                      ec.EmitInstruction(new Vasm.x86.Pop() { DestinationReg = EmitContext.A });
+                if (!(Method.memberType.IsFloat && !Method.memberType.IsPointer))
+                {
+                    int ret_size = Method.memberType.GetSize(Method.memberType);
+                    if (ret_size <= 2)
+                        ec.EmitPop(EmitContext.A);
+                    else
+                        PopAllToRegister(ec, EmitContext.BP, ret_size,Method.LastParameterEndIdx);
+                }
             }
             ec.EmitInstruction(new Vasm.x86.Jump() { DestinationLabel = this.ReturnLabel.Name });
             return ok;

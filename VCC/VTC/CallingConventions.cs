@@ -9,6 +9,24 @@ namespace VTC
 {
   public  class CallingConventionsHandler
     {
+     public static void EmitLongReturnRoutine(TypeSpec ret,EmitContext ec, bool will_return)
+      {
+            int return_size = ret.GetSize(ret);
+            if (return_size % 2 != 0)
+                return_size++;
+
+            if (return_size > 2 )
+                ec.EmitInstruction(new Sub() { DestinationReg = EmitContext.SP, SourceValue = (ushort)return_size });
+      }
+     public static void EmitNoReturnPop(TypeSpec ret, EmitContext ec)
+     {
+         int return_size = ret.GetSize(ret);
+         if (return_size % 2 != 0)
+             return_size++;
+
+         if (return_size > 2 )
+             ec.EmitInstruction(new Add() { DestinationReg = EmitContext.SP, SourceValue = (ushort)return_size });
+     }
       int GetParameterSize(TypeSpec tp,bool reference)
       {
           if (reference)
@@ -22,7 +40,7 @@ namespace VTC
               else return (tp.Size == 1) ? 2 : tp.Size ;
           }
       }
-      void HandleLeftToRight(ref List<ParameterSpec> L_R)
+      void HandleLeftToRight(ref List<ParameterSpec> L_R, ref int last_param)
       {     
           int paramidx = 4; // Initial Stack Position
        for(int i = L_R.Count - 1; i >= 0;i--)
@@ -31,11 +49,11 @@ namespace VTC
               L_R[i].InitialStackIndex = paramidx;
 
               paramidx += GetParameterSize(L_R[i].MemberType, L_R[i].IsReference);
-             
+       
           }
-
+     last_param = paramidx;
       }
-      void HandleRightToLeft(ref List<ParameterSpec> L_R, CallingConventions ccv)
+      void HandleRightToLeft(ref List<ParameterSpec> L_R, CallingConventions ccv,ref int last_param)
       {
           if (ccv != CallingConventions.FastCall && ccv != CallingConventions.VatuSysCall)
           {
@@ -48,6 +66,7 @@ namespace VTC
                   paramidx += GetParameterSize(L_R[i].MemberType, L_R[i].IsReference);
               
               }
+              last_param = paramidx;
           }
           else if(L_R.Count > 2 && CallingConventions.FastCall == ccv)
           {
@@ -58,9 +77,11 @@ namespace VTC
                   L_R[i].InitialStackIndex = paramidx;
                   paramidx += GetParameterSize(L_R[i].MemberType, L_R[i].IsReference);
               }
+
+              last_param = paramidx;
           }
-      
-    
+
+          
       }
       public void EmitFastCall(EmitContext ec,int par)
       {
@@ -118,12 +139,12 @@ namespace VTC
 
       }
   
-      public void SetParametersIndex(ref  List<ParameterSpec> L_R, CallingConventions ccv)
+      public void SetParametersIndex(ref  List<ParameterSpec> L_R, CallingConventions ccv,ref int param_idx)
       {
           if (ccv == CallingConventions.StdCall || ccv == CallingConventions.Cdecl || ccv == CallingConventions.FastCall || ccv == CallingConventions.VatuSysCall)
-              HandleRightToLeft(ref L_R,ccv);
+              HandleRightToLeft(ref L_R,ccv,ref param_idx);
           else if (ccv == CallingConventions.Pascal || ccv == CallingConventions.Default)
-              HandleLeftToRight(ref L_R);
+              HandleLeftToRight(ref L_R, ref param_idx);
 
       }
       public void EmitDecl(EmitContext ec,ref  List<ParameterSpec> L_R, CallingConventions ccv)
@@ -131,13 +152,7 @@ namespace VTC
           int size = 0;
           foreach (ParameterSpec p in L_R)
           {
-              //if (p.MemberType.Size > 1 && !p.IsReference)
-              //{
-              //    size += p.MemberType.Size;
-              //    if (p.MemberType.Size % 2 != 0)
-              //        size++;
-              //}
-              //else size += 2;
+             
               size += GetParameterSize(p.MemberType, p.IsReference);
           }
          
@@ -160,9 +175,10 @@ namespace VTC
         
             
       }
-      public void EmitCall(EmitContext ec, List<Expr> exp, MethodSpec method)
+      public void EmitCall(EmitContext ec, List<Expr> exp, MethodSpec method, bool will_return)
       {
-         
+          EmitLongReturnRoutine(method.memberType, ec, will_return);
+
           int size = 0;
           if (method.CallingConvention == CallingConventions.Pascal || method.CallingConvention == CallingConventions.Default)
           {
@@ -183,14 +199,7 @@ namespace VTC
               for (int i = exp.Count - 1; i >= 0; i--)
               {
                   exp[i].EmitToStack(ec);
-                  //if (exp[i].Type.Size > 1)
-                  //{
-
-                  //    size += (exp[i].Type.Size == 1 ) ? 2 : exp[i].Type.Size;
-                  //    if (exp[i].Type.Size % 2 != 0)
-                  //        size++;
-                  //}
-                  //else size += 2;
+        
                   size += GetParameterSize(exp[i].Type, false);
 
                   if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
@@ -208,13 +217,7 @@ namespace VTC
               {
                   
                   exp[i].EmitToStack(ec);
-                  //if (exp[i].Type.Size > 1)
-                  //{
-                  //    size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
-                  //    if (exp[i].Type.Size % 2 != 0)
-                  //        size++;
-                  //}
-                  //else size += 2;
+                 
                   size += GetParameterSize(exp[i].Type, false);
 
 
@@ -262,11 +265,13 @@ namespace VTC
 
           if (method.CallingConvention == CallingConventions.Cdecl || method.CallingConvention == CallingConventions.VatuSysCall && size > 0)
                ec.EmitInstruction(new Add() { DestinationReg = EmitContext.SP, SourceValue = (ushort)size, Size = 80 });
-           
 
+          if(!will_return)
+             EmitNoReturnPop(method.memberType, ec);
       }
-      public void EmitCall(EmitContext ec, List<Expr> exp, MemberSpec  method, CallingConventions ccv)
+      public void EmitCall(EmitContext ec, List<Expr> exp, MemberSpec method, CallingConventions ccv, bool will_return)
       {
+          EmitLongReturnRoutine(method.memberType, ec, will_return);
           int size = 0;
           if (ccv == CallingConventions.Pascal || ccv == CallingConventions.Default)
           {
@@ -287,13 +292,7 @@ namespace VTC
               for (int i = exp.Count - 1; i >= 0; i--)
               {
                   exp[i].EmitToStack(ec);
-                  //if (exp[i].Type.Size > 1)
-                  //{
-                  //    size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
-                  //    if (exp[i].Type.Size % 2 != 0)
-                  //        size++;
-                  //}
-                  //else size += 2;
+             
                   size += GetParameterSize(exp[i].Type, false);
 
 
@@ -312,13 +311,7 @@ namespace VTC
               {
 
                   exp[i].EmitToStack(ec);
-                  //if (exp[i].Type.Size > 1)
-                  //{
-                  //    size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
-                  //    if (exp[i].Type.Size % 2 != 0)
-                  //        size++;
-                  //}
-                  //else size += 2;
+              
                   size += GetParameterSize(exp[i].Type, false);
 
                   if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
@@ -346,10 +339,12 @@ namespace VTC
           if (ccv == CallingConventions.Cdecl || ccv == CallingConventions.VatuSysCall && size > 0)
               ec.EmitInstruction(new Add() { DestinationReg = EmitContext.SP, SourceValue = (ushort)size, Size = 80 });
 
-
+          if (!will_return)
+              EmitNoReturnPop(method.memberType, ec);
       }
-      public void EmitCall(EmitContext ec, List<Expr> exp, Expr ms, CallingConventions ccv)
+      public void EmitCall(EmitContext ec, List<Expr> exp, Expr ms, CallingConventions ccv,bool will_return)
       {
+          EmitLongReturnRoutine((ms.Type as DelegateTypeSpec).ReturnType, ec, will_return);
           int size = 0;
           if (ccv == CallingConventions.Pascal || ccv == CallingConventions.Default)
           {
@@ -370,13 +365,7 @@ namespace VTC
               for (int i = exp.Count - 1; i >= 0; i--)
               {
                   exp[i].EmitToStack(ec);
-                  //if (exp[i].Type.Size > 1)
-                  //{
-                  //    size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
-                  //    if (exp[i].Type.Size % 2 != 0)
-                  //        size++;
-                  //}
-                  //else size += 2;
+                 
                   size += GetParameterSize(exp[i].Type, false);
 
 
@@ -395,13 +384,7 @@ namespace VTC
               {
 
                   exp[i].EmitToStack(ec);
-                  //if (exp[i].Type.Size > 1)
-                  //{
-                  //    size += (exp[i].Type.Size == 1) ? 2 : exp[i].Type.Size;
-                  //    if (exp[i].Type.Size % 2 != 0)
-                  //        size++;
-                  //}
-                  //else size += 2;
+                
                   size += GetParameterSize(exp[i].Type, false);
 
                   if (exp[i].Type.IsFloat && !exp[i].Type.IsPointer) // store floating point to stack
@@ -429,7 +412,8 @@ namespace VTC
           if (ccv == CallingConventions.Cdecl || ccv == CallingConventions.VatuSysCall && size > 0)
               ec.EmitInstruction(new Add() { DestinationReg = EmitContext.SP, SourceValue = (ushort)size, Size = 80 });
 
-
+          if (!will_return)
+              EmitNoReturnPop(ms.Type, ec);
       }
     }
 }

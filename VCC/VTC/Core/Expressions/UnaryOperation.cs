@@ -77,7 +77,7 @@ namespace VTC.Core
                 return t;
 
            AcceptStatement =  (_op is IncrementOperator || _op is DecrementOperator) ;
-            if ((idecop && !_op.Right.Type.IsPointer && !_op.Right.Type.IsNumeric) && !adrop && !TypeChecker.ArtihmeticsAllowed(_op.Right.Type, _op.Right.Type))
+            if ((idecop && !_op.Right.Type.IsPointer && !_op.Right.Type.IsNumeric) && !adrop && !TypeChecker.ArtihmeticsAllowed(_op.Right.Type, _op.Right.Type)   && _op.OvlrdOp == null)
                 ResolveContext.Report.Error(46, Location, "Unary operations are not allowed for this type");
             Type = _op.CommonType;
      

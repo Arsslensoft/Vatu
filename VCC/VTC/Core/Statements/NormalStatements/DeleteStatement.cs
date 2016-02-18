@@ -95,7 +95,7 @@ namespace VTC.Core
             {
                 ec.EmitComment("Calling destructor");
                 SizeExpr.EmitToStack(ec);           
-                ccvh.EmitCall(ec, Parameters, Dtor);
+                ccvh.EmitCall(ec, Parameters, Dtor,false);
             }
 
             if (SizeExpr.Type.IsClass && !SizeExpr.Type.IsPointer)

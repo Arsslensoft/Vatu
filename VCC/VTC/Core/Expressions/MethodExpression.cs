@@ -92,7 +92,7 @@ namespace VTC.Core
                     {
                         isclass = true;
                         Parameters.Add(left);
-                        if (!MatchParameterTypes(tmp.MemberType as DelegateTypeSpec))
+                        if (!MatchParameterTypes(tmp.MemberType as DelegateTypeSpec, rc))
                         {
                             ResolveContext.Report.Error(0, Location, "Member parameters mismatch");
                             return false;
@@ -146,7 +146,7 @@ namespace VTC.Core
                 else
                 {
                     isdelegate = true;
-                    if (MatchParameterTypes(r.MemberType as DelegateTypeSpec))
+                    if (MatchParameterTypes(r.MemberType as DelegateTypeSpec,rc))
                     {
                         DelegateVar = r;
          
@@ -341,12 +341,28 @@ namespace VTC.Core
             return true;
         }
 
-        bool MatchParameterTypes(DelegateTypeSpec t)
+        bool MatchParameterTypes(DelegateTypeSpec t,ResolveContext rc)
         {
             for (int i = 0; i < t.Parameters.Count; i++)
-                if (!TypeChecker.CompatibleTypes(Parameters[i].Type, t.Parameters[i]))
+            {
+                if (!TypeChecker.CompatibleTypes(Parameters[i].Type, t.ParametersSpecs[i].MemberType))
                     return false;
+                else if (t.ParametersSpecs[i].IsReference)
+                {
+                    // restore old state temporarly
+                    rc.BackupCurrentAndSetStatement();
 
+                    LoadEffectiveAddressOp lea = new LoadEffectiveAddressOp();
+                    lea.position = Parameters[i].position;
+                    Parameters[i] = new UnaryOperation(Parameters[i], lea);
+                    Parameters[i].position = lea.position;
+                    Parameters[i] = (Expr)Parameters[i].DoResolve(rc);
+
+                    rc.RestoreOldState();
+                }
+                else if (t.ParametersSpecs[i].memberType.IsReference && Parameters[i] is VariableExpression)
+                    Parameters[i] = new ReferenceExpression((Parameters[i] as VariableExpression).variable);
+            }
             return true;
         }
        protected CallingConventionsHandler ccvh;
@@ -358,7 +374,7 @@ namespace VTC.Core
             {
                 DelegateVar.EmitToStack(ec);
 
-                ccvh.EmitCall(ec, Parameters, DelegateVar,  (DelegateVar.MemberType as DelegateTypeSpec).CCV);
+                ccvh.EmitCall(ec, Parameters, DelegateVar,  (DelegateVar.MemberType as DelegateTypeSpec).CCV,false);
 
                 if ((DelegateVar.MemberType as DelegateTypeSpec).ReturnType.IsFloat && !(DelegateVar.MemberType as DelegateTypeSpec).ReturnType.IsPointer) // pop floating point
                     ec.EmitInstruction(new Vasm.x86.x87.FloatFree() { DestinationReg = RegistersEnum.ST0 });
@@ -367,7 +383,7 @@ namespace VTC.Core
             else if (isclass && classae != null)
             {
 
-                ccvh.EmitCall(ec, Parameters, classae, (tmp.MemberType as DelegateTypeSpec).CCV);
+                ccvh.EmitCall(ec, Parameters, classae, (tmp.MemberType as DelegateTypeSpec).CCV, false);
 
                 if ((tmp.MemberType as DelegateTypeSpec).ReturnType.IsFloat && !(tmp.MemberType as DelegateTypeSpec).ReturnType.IsPointer) // pop floating point
                     ec.EmitInstruction(new Vasm.x86.x87.FloatFree() { DestinationReg = RegistersEnum.ST0 });
@@ -376,7 +392,7 @@ namespace VTC.Core
             else
             {
 
-                ccvh.EmitCall(ec, Parameters, Method);
+                ccvh.EmitCall(ec, Parameters, Method, false);
                 if (Method.MemberType.IsFloat && !Method.MemberType.IsPointer) // pop floating point
                     ec.EmitInstruction(new Vasm.x86.x87.FloatFree() { DestinationReg = RegistersEnum.ST0 });
 
@@ -389,27 +405,25 @@ namespace VTC.Core
         {
             if (isdelegate && DelegateVar != null)
             {
-        
-                ccvh.EmitCall(ec, Parameters, DelegateVar, (DelegateVar.MemberType as DelegateTypeSpec).CCV);
 
-                if (!((DelegateVar.MemberType as DelegateTypeSpec).ReturnType.IsFloat && !(DelegateVar.MemberType as DelegateTypeSpec).ReturnType.IsPointer)) // pop floating point
-                    ec.EmitPush(EmitContext.A);
+                ccvh.EmitCall(ec, Parameters, DelegateVar, (DelegateVar.MemberType as DelegateTypeSpec).CCV, true);
+
+                ec.EmitSubRoutinePush(ec, DelegateVar.memberType);
                
 
             }
             else if (isclass)
             {
-                ccvh.EmitCall(ec, Parameters, classae, (classae.Type as DelegateTypeSpec).CCV);
+                ccvh.EmitCall(ec, Parameters, classae, (classae.Type as DelegateTypeSpec).CCV, true);
 
-                if (!((tmp.MemberType as DelegateTypeSpec).ReturnType.IsFloat && !(tmp.MemberType as DelegateTypeSpec).ReturnType.IsPointer)) // pop floating point
-                    ec.EmitPush(EmitContext.A);
+                ec.EmitSubRoutinePush(ec, tmp.memberType);
             }
             else
             {
 
-                ccvh.EmitCall(ec, Parameters, Method);
-                if (!(Method.MemberType.IsFloat && !Method.MemberType.IsPointer)) // pop floating point
-                    ec.EmitPush(EmitContext.A);
+                ccvh.EmitCall(ec, Parameters, Method, true);
+                ec.EmitSubRoutinePush(ec, Method.memberType);
+
                 
             }
 

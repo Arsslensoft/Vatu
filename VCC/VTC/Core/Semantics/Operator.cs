@@ -9,6 +9,8 @@ namespace VTC.Core
 {
     public abstract class Operator : SimpleToken, IEmit, IEmitExpr
     {
+
+        public MethodSpec OvlrdOp;
         public bool FloatingPointSupported = false;
         public Namespace Namespace { get; set; }
         public Expr Left { get; set; }

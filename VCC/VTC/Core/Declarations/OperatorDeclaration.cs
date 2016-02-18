@@ -244,8 +244,8 @@ namespace VTC.Core
                     hasproto = true;
                 // operator checks
               
-             if(_casttype.Type.IsForeignType && !_casttype.Type.IsPointer)
-                 ResolveContext.Report.Error(45, Location,"Non builtin types cast must return it's pointer type ");
+             if(_casttype.Type is ArrayTypeSpec)
+                 ResolveContext.Report.Error(45, Location,"Array types cast are unsupported");
              
                 if (_casttype.Type.Equals(_fbd.ParamTypes[0]))
                     ResolveContext.Report.Error(45, Location, "Cast operators can't have same parameter types");
@@ -256,8 +256,13 @@ namespace VTC.Core
              method = new MethodSpec(rc.CurrentNamespace, OpName, mods, _mtype.Type, CallingConventions.StdCall, _fbd.ParamTypes.ToArray(), this.Location);
             else
                 method = new MethodSpec(rc.CurrentNamespace, OpName, mods, _casttype.Type, CallingConventions.StdCall, _fbd.ParamTypes.ToArray(), this.Location);
-
-            method.Parameters = Params.ToList<ParameterSpec>();
+            List<ParameterSpec> parameters = Params.ToList<ParameterSpec>();
+ 
+            CallingConventionsHandler ccvh = new CallingConventionsHandler();
+            int last_param = 4;
+            ccvh.SetParametersIndex(ref parameters, CallingConventions.StdCall, ref last_param);
+            method.LastParameterEndIdx = (ushort)last_param;
+            method.Parameters = parameters;
             if (!hasproto)
             {
                 method.IsOperator = true;
@@ -265,8 +270,10 @@ namespace VTC.Core
             }
             rc.CurrentMethod = method;
 
-            if (!method.MemberType.IsBuiltinType && !method.MemberType.IsPointer)
-                ResolveContext.Report.Error(45, Location, "return type must be builtin type " + method.MemberType.ToString() + " is user-defined type.");
+
+            if (method.memberType is ArrayTypeSpec)
+                ResolveContext.Report.Error(45, Location, "return type must be non array type " + method.MemberType.ToString() + " is user-defined type.");
+
             if (_fbd._b != null)
                 _fbd._b = (Block)_fbd._b.DoResolve(rc);
             return this;

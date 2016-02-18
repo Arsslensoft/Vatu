@@ -13,7 +13,7 @@ namespace VTC.Core
     [Terminal("[]")]
     public class UnaryOp : Operator
     {
-        public MethodSpec OvlrdOp;
+   
         internal bool ReturnExpression = false;
         public RegistersEnum? Register { get; set; }
         public UnaryOperator Operator { get; set; }
@@ -26,19 +26,18 @@ namespace VTC.Core
         }
         public virtual bool EmitOverrideOperator(EmitContext ec)
         {
-
-            Right.EmitToStack(ec);
+       
             ec.EmitComment("Override Operator : " + Operator.ToString() + " " + Right.CommentString());
-            ec.EmitCall(OvlrdOp);
-            ec.EmitPush(EmitContext.A);
+            ec.EmitCallOperator(Right, OvlrdOp);
             return true;
         }
+      
         public virtual bool EmitOverrideOperatorBranchable(EmitContext ec, Label truecase, bool v, ConditionalTestEnum cond, ConditionalTestEnum acond)
         {
-
-            Right.EmitToStack(ec);
+        
+       
             ec.EmitComment("Override Operator : " + Operator.ToString() + " " + Right.CommentString());
-            ec.EmitCall(OvlrdOp);
+            ec.EmitCallOperator(Right, OvlrdOp);
 
             ec.EmitPush(EmitContext.A);
             ec.EmitPop(Register.Value);

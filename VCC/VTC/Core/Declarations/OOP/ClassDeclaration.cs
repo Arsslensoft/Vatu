@@ -134,7 +134,7 @@ namespace VTC.Core
            List<TypeSpec> tp = new List<TypeSpec>();
            foreach (ParameterSpec p in ms.Parameters)
                tp.Add(p.memberType);
-           DelegateTypeSpec dt = new DelegateTypeSpec(ms.NS, ms.Name + "_caller", ms.MemberType, tp, ms.CallingConvention, ms.Modifiers, ms.Signature.Location);
+           DelegateTypeSpec dt = new DelegateTypeSpec(ms.NS, ms.Name + "_caller", ms.MemberType, tp, ms.CallingConvention, ms.Modifiers,ms.Parameters, ms.Signature.Location);
 
            return dt;
        }
