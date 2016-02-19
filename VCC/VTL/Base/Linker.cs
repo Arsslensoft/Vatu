@@ -65,17 +65,22 @@ namespace VTL
         {
             ReserveHeader();
             uint org = Origin;
+            bool found = false;
             Size = 0;
             // load object files
             for (int i = 0; i < inobj.Length; i++)
             {
-                ObjectFile<uint> obj = new ObjectFile<uint>(inobj[i], Align, org, EntryPoint, i == 0);
-                if(obj.InterruptSymbol != null && interrupt_enabled) // interrupt
-                         Interrupts.Add(obj.InterruptSymbol);
+                found = false;
+                ObjectFile<uint> obj = new ObjectFile<uint>(inobj[i], Align, org, EntryPoint, i == 0,ref found);
+                if (found)
+                {
+                    if (obj.InterruptSymbol != null && interrupt_enabled) // interrupt
+                        Interrupts.Add(obj.InterruptSymbol);
 
-                org = obj.GetAlign();
-                Size += obj.GetSize();
-                ObjectFiles.Add(obj);
+                    org = obj.GetAlign();
+                    Size += obj.GetSize();
+                    ObjectFiles.Add(obj);
+                }
             }
             if (Interrupts.Count > 1)
                 ObjectFiles[0].Start += (uint)(Interrupts.Count - 1) * Align;

@@ -32,7 +32,7 @@ namespace VTL
         dynamic Zero = 0u;
         string entry;
 
-        public ObjectFile(string file, T align, T org, string entry, bool isfirst)
+        public ObjectFile(string file, T align, T org, string entry, bool isfirst, ref bool found)
         {
 
             ElfObject = ELFReader.Load(file);
@@ -46,7 +46,12 @@ namespace VTL
             End = Zero;
             Align = align;
             dynamic al = 0u;
-            CodeSection = (Section<T>)ElfObject.GetSection(".text");
+            ISection sec = null;
+            found = ElfObject.TryGetSection(".text", out  sec);
+            if (!found)
+                return;
+            CodeSection = (Section<T>)sec;
+
             if (InterruptSymbol != null)
                 al += Align;
 

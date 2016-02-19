@@ -117,7 +117,6 @@ Comment Line  = '//'
                 
 <Prototypes Decl> ::=  <Func Proto>
           | <Oper Proto>
-          | <Var Prototype>
           | <Operator Definition Decl>
          
 <Method Decl> ::= <Inter Decl>
@@ -151,7 +150,7 @@ Comment Line  = '//'
             | <Mod> override <Type> operator <Operator Def> '(' <Types>  ')' ';'   ! operator def (binary & unary)  
             | <Mod> override <Type> operator <Cast Kind> '(' <Type>  ')' ';' ! cast
  
-<Var Prototype> ::= global <Var Decl>
+
 
 ! ===================================================================
 ! Method  Declaration
@@ -244,29 +243,23 @@ Comment Line  = '//'
 
 <Typedef Decl> ::= <Mod> typedef <Type> ID ';'
 
-<Struct Decl>  ::= <Mod> struct Id <Template Def> <Inheritance>  '{' <Struct Def> '}'  ';' 
-                | <Mod> typedef struct <Template Def> <Inheritance>  '{' <Struct Def> '}'  Id ';' 
+<Struct Decl>  ::= <Mod> struct Id <Template Def> <Inheritance>  '{' <Struct Def> '}' 
                 
-<Class Decl>   ::= <Mod> class Id <Template Def> <Inheritance> '{' <Class Element Decl> '}' ';'
-               | <Mod> typedef class <Template Def> <Inheritance>  '{' <Class Element Decl> '}'  Id ';' 
+<Class Decl>   ::= <Mod> class Id <Template Def> <Inheritance> '{' <Class Element Decl> '}' 
       
 
-<Union Decl>   ::= <Mod> union Id <Template Def> '{' <Struct Def> '}'  ';' 
-                | <Mod> typedef union <Template Def> '{' <Struct Def> '}' Id ';' 
+<Union Decl>   ::= <Mod> union Id <Template Def> '{' <Struct Def> '}'  
                 
-<Enum Decl>    ::= <Mod> enum Id '{' <Enum Def> '}'  ';'
-                 | <Mod> typedef enum '{' <Enum Def> '}'  Id ';'
-                 | <Mod> setof enum Id '{' <Enum Def> '}'  ';'
-                 | <Mod> typedef setof enum '{' <Enum Def> '}'  Id ';'
+<Enum Decl>    ::= <Mod> enum Id '{' <Enum Def> '}' 
+                 | <Mod> setof enum Id '{' <Enum Def> '}'  
 
-<Delegate Decl> ::= <Mod> <CallCV> delegate <Type> ID '(' <Params>   ')' ';'
-                  | <Mod> typedef <CallCV> delegate <Type> '(' <Params>   ')' ID ';'                 
+<Delegate Decl> ::= <Mod> <CallCV> delegate <Type> ID '(' <Params>   ')' ';'           
                   | <Mod> <CallCV> delegate <Type> ID '(' ')' ';'
-                  | <Mod> typedef <CallCV> delegate <Type> '(' ')' ID ';'   
                   
                   
 <Template Decl> ::= <Mod> <Template Def> ';'
-                | <Mod> <Template Def> sizeof <Integral Const> ';'                           
+                | <Mod> <Template Def> sizeof <Integral Const> ';'    
+                                       
 <Inheritance> ::= extends <Types>
               | 
 ! ===================================================================

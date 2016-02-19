@@ -442,31 +442,31 @@ namespace VTC
         {
             ag.Emit(ag.AssemblerWriter);
         }
-        public void EmitDataWithConv(string name, MemberSpec v, string value)
+        public void EmitDataWithConv(string name, MemberSpec v, string value,bool isglobal = false)
         {
-            DataMember dm = new DataMember(name, value.ToString());
+            DataMember dm = new DataMember(name, value.ToString()) { IsGlobal = isglobal };
             EmitData(dm, v, false);
         }
-        public void EmitDataWithConv(string name, object value, MemberSpec v, bool constant = false,bool verbatim = false)
+        public void EmitDataWithConv(string name, object value, MemberSpec v, bool constant = false,bool verbatim = false,bool isglobal = false)
         {
             DataMember dm;
             if (value is string)
             {
                 if (constant)
-                    dm = new DataMember(name, value.ToString(), true, verbatim);
-                else dm = new DataMember(name, value.ToString(), false, verbatim);
+                    dm = new DataMember(name, value.ToString(), true, verbatim) { IsGlobal = isglobal };
+                else dm = new DataMember(name, value.ToString(), false, verbatim) { IsGlobal = isglobal };
             }
             else if (value is float)
-                dm = new DataMember(name, BitConverter.GetBytes((float)value));
+                dm = new DataMember(name, BitConverter.GetBytes((float)value)) { IsGlobal = isglobal };
             else if (value is byte[])
-                dm = new DataMember(name, (byte[])value);
+                dm = new DataMember(name, (byte[])value) { IsGlobal = isglobal };
             else if (value is bool)
-                dm = new DataMember(name, ((bool)value) ? (new byte[1] { EmitContext.TRUE }) : (new byte[1] { 0 }));
+                dm = new DataMember(name, ((bool)value) ? (new byte[1] { EmitContext.TRUE }) : (new byte[1] { 0 })) { IsGlobal = isglobal };
             else if (value is byte)
-                dm = new DataMember(name, new byte[1] { (byte)value });
+                dm = new DataMember(name, new byte[1] { (byte)value }) { IsGlobal = isglobal };
             else if (value is ushort)
-                dm = new DataMember(name, new ushort[1] { (ushort)value });
-            else dm = new DataMember(name, new object[1] { value });
+                dm = new DataMember(name, new ushort[1] { (ushort)value }) { IsGlobal = isglobal };
+            else dm = new DataMember(name, new object[1] { value }) { IsGlobal = isglobal };
 
             EmitData(dm, v, constant);
         }

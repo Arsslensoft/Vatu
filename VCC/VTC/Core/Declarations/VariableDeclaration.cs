@@ -307,11 +307,15 @@ namespace VTC.Core
         }
         public bool EmitField(EmitContext ec, VariableDefinition vadef)
         {
+
+
             FieldSpec f = (FieldSpec)vadef.FieldOrLocal;
+            bool isglobal = ((mods & Modifiers.Static) == Modifiers.Static);
+       
             if (ArraySize <= 0)
             {
                 if (vadef.expr == null && Type.IsForeignType)
-                    ec.EmitData(new DataMember(f.Signature.ToString(), new byte[f.MemberType.Size]), f);
+                    ec.EmitData(new DataMember(f.Signature.ToString(), new byte[f.MemberType.Size]) { IsGlobal = isglobal}, f);
              
                 //   ec.AddInstanceOfStruct(FieldOrLocal.Signature.ToString(), f.MemberType);
                 // assign struct
@@ -323,12 +327,12 @@ namespace VTC.Core
                         if (f.MemberType.Equals(BuiltinTypeSpec.String))
                         {
                             if (((mods & Modifiers.Const) == Modifiers.Const))
-                                ec.EmitDataWithConv(f.Signature.ToString(), val, f, ((mods & Modifiers.Const) == Modifiers.Const), (vadef.expr is StringConstant)?(vadef.expr as StringConstant).Verbatim:false);
+                                ec.EmitDataWithConv(f.Signature.ToString(), val, f, ((mods & Modifiers.Const) == Modifiers.Const), (vadef.expr is StringConstant)?(vadef.expr as StringConstant).Verbatim:false, isglobal);
                             else
                             {
                                 string datasig = f.Signature.ToString() + "_data_value";
                                 ec.EmitDataWithConv(datasig, val, f, ((mods & Modifiers.Const) == Modifiers.Const), (vadef.expr is StringConstant)?(vadef.expr as StringConstant).Verbatim:false);
-                                ec.EmitDataWithConv(f.Signature.ToString(), f, datasig);
+                                ec.EmitDataWithConv(f.Signature.ToString(), f, datasig,  isglobal);
                             }
                             // ec.ag.InitInstructions.Add(new Mov() { SourceRef = ElementReference.New(datasig), DestinationRef = ElementReference.New(f.Signature.ToString()), DestinationIsIndirect = true, Size = 16 });
 
@@ -336,38 +340,38 @@ namespace VTC.Core
                       
                         else
                         {
-                            ec.EmitDataWithConv(f.Signature.ToString(), val, f, ((mods & Modifiers.Const) == Modifiers.Const));
+                            ec.EmitDataWithConv(f.Signature.ToString(), val, f, ((mods & Modifiers.Const) == Modifiers.Const), false, isglobal);
                         }
                     }
                     else if (f.MemberType.Equals( BuiltinTypeSpec.String))
                     {
                         string datasig = f.Signature.ToString() + "_data_value";
                         ec.EmitDataWithConv(datasig, "", f, ((mods & Modifiers.Const) == Modifiers.Const), (vadef.expr is StringConstant) ? (vadef.expr as StringConstant).Verbatim : false);
-                        ec.EmitDataWithConv(f.Signature.ToString(), f, datasig);
+                        ec.EmitDataWithConv(f.Signature.ToString(), f, datasig,isglobal);
                     }
-                    else ec.EmitDataWithConv(f.Signature.ToString(), new byte[f.MemberType.Size], f, ((mods & Modifiers.Const) == Modifiers.Const));
+                    else ec.EmitDataWithConv(f.Signature.ToString(), new byte[f.MemberType.Size], f, ((mods & Modifiers.Const) == Modifiers.Const), false, isglobal);
 
                 }
             }
             else if (vadef.expr is InitializerConstant)
             {
                 DataMember data = (vadef.expr as InitializerConstant).GetData(ec,f.Signature.ToString());
+                data.IsGlobal = isglobal;
                 ec.EmitData(data, f);
             }
             else if (vadef.expr is MultiDimInitializerConstant)
             {
                 DataMember data = (vadef.expr as MultiDimInitializerConstant).GetData(ec, f.Signature.ToString());
+                data.IsGlobal = isglobal;
                 ec.EmitData(data, f);
             }
-            else ec.EmitData(new DataMember(f.Signature.ToString(), new byte[f.MemberType.GetSize(f.MemberType)]), f);
+            else ec.EmitData(new DataMember(f.Signature.ToString(), new byte[f.MemberType.GetSize(f.MemberType)]) {  IsGlobal = isglobal}, f);
             return true;
         }
         public override bool Emit(EmitContext ec)
         {
             VariableListDefinition val = _valist;
-            if ((mods & Modifiers.Extern) == Modifiers.Extern)
-                ec.DefineGlobal(_vadef.FieldOrLocal);
-            else if (IsAbstract)
+          if ((mods & Modifiers.Extern) == Modifiers.Extern)
             {
                 ec.DefineExtern(_vadef.FieldOrLocal);
 

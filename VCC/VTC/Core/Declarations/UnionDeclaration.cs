@@ -12,9 +12,9 @@ namespace VTC.Core
         public int Size { get; set; }
         StructDefinition _def;
         Modifier _mod;
-        bool istypedef = false;
+
         TemplateDefinition _tdef;
-        [Rule(@"<Union Decl>  ::= <Mod> ~union Id <Template Def> ~'{' <Struct Def> ~'}'  ~';' ")]
+        [Rule(@"<Union Decl>  ::= <Mod> ~union Id <Template Def> ~'{' <Struct Def> ~'}' ")]
         public UnionDeclaration(Modifier mod, Identifier id, TemplateDefinition tdef, StructDefinition sdef)
         {
             _tdef = tdef;
@@ -23,16 +23,7 @@ namespace VTC.Core
             _def = sdef;
             Size = 0;
         }
-        [Rule(@"<Union Decl>  ::= <Mod> ~typedef ~union <Template Def>  ~'{' <Struct Def> ~'}' Id ~';' ")]
-        public UnionDeclaration(Modifier mod, TemplateDefinition tdef, StructDefinition sdef, Identifier id)
-        {
-            _tdef = tdef;
-            istypedef = true;
-            _mod = mod;
-            _name = id;
-            _def = sdef;
-            Size = 0;
-        }
+     
        public override bool Resolve(ResolveContext rc)
         {
 

@@ -13,7 +13,7 @@ namespace VTC.Core
         public bool IsFlags = false;
         Modifier _mod;
         EnumDefinition _def;
-        [Rule(@"<Enum Decl>    ::= <Mod> ~enum Id ~'{' <Enum Def> ~'}'  ~';'")]
+        [Rule(@"<Enum Decl>    ::= <Mod> ~enum Id ~'{' <Enum Def> ~'}'")]
         public EnumDeclaration(Modifier mod, Identifier id, EnumDefinition edef)
         {
             _mod = mod;
@@ -21,16 +21,9 @@ namespace VTC.Core
             _def = edef;
 
         }
-        [Rule(@"<Enum Decl>    ::= <Mod> ~typedef ~enum ~'{' <Enum Def> ~'}' Id ~';'")]
-        public EnumDeclaration(Modifier mod, EnumDefinition edef, Identifier id)
-        {
-            _mod = mod;
-            _name = id;
-            _def = edef;
+   
 
-        }
-
-        [Rule(@"<Enum Decl>    ::= <Mod> setof ~enum Id ~'{' <Enum Def> ~'}'  ~';'")]
+        [Rule(@"<Enum Decl>    ::= <Mod> setof ~enum Id ~'{' <Enum Def> ~'}' ")]
         public EnumDeclaration(Modifier mod, SimpleToken t, Identifier id, EnumDefinition edef)
         {
             IsFlags = true;
@@ -39,15 +32,7 @@ namespace VTC.Core
             _def = edef;
 
         }
-        [Rule(@"<Enum Decl>    ::= <Mod> ~typedef setof ~enum ~'{' <Enum Def> ~'}' Id ~';'")]
-        public EnumDeclaration(Modifier mod, SimpleToken t, EnumDefinition edef, Identifier id)
-        {
-            IsFlags = true;
-            _mod = mod;
-            _name = id;
-            _def = edef;
-
-        }
+      
         void UpdateTypes(List<EnumMemberSpec> mem,TypeSpec tp)
         {
             foreach (EnumMemberSpec em in _def.Members)

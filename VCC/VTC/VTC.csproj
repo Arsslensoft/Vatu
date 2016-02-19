@@ -279,7 +279,6 @@
     <Compile Include="Core\Declarations\StructDeclaration.cs" />
     <Compile Include="Core\Declarations\UnionDeclaration.cs" />
     <Compile Include="Core\Declarations\VariableDeclaration.cs" />
-    <Compile Include="Core\Declarations\VarPrototypeDeclaration.cs" />
     <Compile Include="Core\Definitions\ArrayVariableDefinition.cs" />
     <Compile Include="Core\Definitions\EnumDefinition.cs" />
     <Compile Include="Core\Definitions\EnumValue.cs" />

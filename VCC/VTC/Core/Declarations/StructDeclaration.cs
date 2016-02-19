@@ -14,8 +14,8 @@ namespace VTC.Core
         InheritanceDefinition _ihd;
         Modifier _mod;
         TemplateDefinition _tdef;
-        bool istypedef = false;
-        [Rule(@"<Struct Decl>  ::= <Mod> ~struct Id <Template Def> <Inheritance> ~'{' <Struct Def> ~'}'  ~';' ")]
+     
+        [Rule(@"<Struct Decl>  ::= <Mod> ~struct Id <Template Def> <Inheritance> ~'{' <Struct Def> ~'}'   ")]
         public StructDeclaration(Modifier mod, Identifier id, TemplateDefinition tdef, InheritanceDefinition ihd, StructDefinition sdef)
         {
             _tdef = tdef;
@@ -25,18 +25,7 @@ namespace VTC.Core
             Size = 0;
             _ihd = ihd;
         }
-        [Rule(@"<Struct Decl>  ::= <Mod> ~typedef ~struct <Template Def>  <Inheritance>  ~'{' <Struct Def> ~'}' Id ~';' ")]
-        public StructDeclaration(Modifier mod,TemplateDefinition tdef,InheritanceDefinition ihd, StructDefinition sdef, Identifier id)
-        {
-            istypedef = true;
-            _mod = mod;
-            _name = id;
-            _def = sdef;
-            Size = 0;
-            _ihd = ihd;
-            _tdef = tdef;
-        }
-
+     
        
        public override bool Resolve(ResolveContext rc)
         {

@@ -26,18 +26,9 @@ namespace VTC.Core.Declarations
             _tdl = tid;
             _ret = ret;
         }
-        [Rule(@"<Delegate Decl>  ::=  <Mod> ~typedef <CallCV> ~delegate <Type> ~'(' <Params>  ~')' Id ~';' ")]
-        public DelegateDeclaration(Modifier mod, CallingCV ccv, TypeToken ret, ParameterListDefinition tid, Identifier id)
-        {
-            _ccv = ccv;
-            _name = id;
-            _mod = mod;
-            _tdl = tid;
-            _ret = ret;
-        }
+    
 
         [Rule(@"<Delegate Decl>  ::=  <Mod> <CallCV> ~delegate <Type> Id ~'('  ~')' ~';' ")]
-        [Rule(@"<Delegate Decl>  ::=  <Mod> ~typedef <CallCV> ~delegate <Type> ~'('   ~')' Id ~';' ")]
         public DelegateDeclaration(Modifier mod, CallingCV ccv, TypeToken ret,  Identifier id)
         {
             _ccv = ccv;

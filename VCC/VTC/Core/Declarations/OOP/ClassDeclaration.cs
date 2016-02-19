@@ -17,7 +17,7 @@ namespace VTC.Core
         Modifier _mod;
         TemplateDefinition _tdef;
         bool istypedef = false;
-        [Rule(@"<Class Decl>  ::= <Mod> ~class Id <Template Def> <Inheritance> ~'{' <Class Element Decl>  ~'}'  ~';' ")]
+        [Rule(@"<Class Decl>  ::= <Mod> ~class Id <Template Def> <Inheritance> ~'{' <Class Element Decl>  ~'}' ")]
         public ClassDeclaration(Modifier mod, Identifier id, TemplateDefinition tdef, InheritanceDefinition ihd, ClassElementSequence sdef)
         {
             _tdef = tdef;
@@ -27,17 +27,7 @@ namespace VTC.Core
             Size = 0;
             _ihd = ihd;
         }
-        [Rule(@"<Class Decl>  ::= <Mod> ~typedef ~class <Template Def>  <Inheritance>  ~'{' <Class Element Decl> ~'}' Id ~';' ")]
-        public ClassDeclaration(Modifier mod, TemplateDefinition tdef, InheritanceDefinition ihd, ClassElementSequence sdef, Identifier id)
-        {
-            istypedef = true;
-            _mod = mod;
-            _name = id;
-            _def = sdef;
-            Size = 0;
-            _ihd = ihd;
-            _tdef = tdef;
-        }
+   
 
        
        public override bool Resolve(ResolveContext rc)
