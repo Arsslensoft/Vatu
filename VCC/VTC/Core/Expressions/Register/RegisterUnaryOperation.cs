@@ -30,10 +30,7 @@ namespace VTC.Core
             Right = right;
             Operator = binop.Operator;
         }
-        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
-        {
-            return Right.DoFlowAnalysis(fc);
-        }
+
         byte size = 16;
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -99,10 +96,6 @@ namespace VTC.Core
             Right = right;
             ispush = ((binop.Operator & BinaryOperator.Addition) == BinaryOperator.Addition);
         }
-        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
-        {
-            return Right.DoFlowAnalysis(fc);
-        }
 
         byte size = 16;
         public override SimpleToken DoResolve(ResolveContext rc)
@@ -166,18 +159,7 @@ namespace VTC.Core
             Right = right;
             IsVarAssign = true;
         }
-        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
-        {
-            if (LeftExpr != null)
-                LeftExpr.DoFlowAnalysis(fc);
 
-            if (LeftVar != null)
-            {
-                fc.MarkAsAssigned(LeftVar.variable);
-                LeftVar.DoFlowAnalysis(fc);
-            }
-            return Right.DoFlowAnalysis(fc);
-        }
         byte size = 16;
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -210,7 +192,11 @@ namespace VTC.Core
             if (!IsVarAssign)
             {
                 ec.EmitComment(LeftExpr.CommentString() + " := " + RR.ToString());
-                LeftExpr.EmitMoveToRegister(ec, RR, size);
+                if (Registers.IsSegment(RR))
+                {
+                    LeftExpr.Emit(ec);
+                    ec.EmitPop(RR);
+                }else LeftExpr.EmitMoveToRegister(ec, RR, size);
 
             }
             else
@@ -252,20 +238,7 @@ namespace VTC.Core
             Register = right;
 
         }
-        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
-        {
-            if (LeftLit != null)
-                LeftLit.DoFlowAnalysis(fc);
 
-            if (LeftExpr != null)
-          
-                LeftExpr.DoFlowAnalysis(fc);
-         
-            if (Register != null)
-                Register.DoFlowAnalysis(fc);
-
-            return FlowState.Valid;
-        }
 
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -313,11 +286,17 @@ namespace VTC.Core
             }
             else
             {
-             
-                    LeftExpr.EmitToStack(ec);
+                if (LeftExpr.variable is FieldSpec)
+                    ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceRef = ElementReference.New(LeftExpr.variable.Signature.ToString()), SourceIsIndirect = true, Size = size });
+                else if (LeftExpr.variable is VarSpec)
+                    ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceReg = EmitContext.BP, SourceDisplacement = (LeftExpr.variable as VarSpec).VariableStackIndex, SourceIsIndirect = true, Size = size });
+                else if (LeftExpr.variable is ParameterSpec)
+                    ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceReg = EmitContext.BP, SourceDisplacement = (LeftExpr.variable as ParameterSpec).StackIdx, SourceIsIndirect = true, Size = size });
+                else if (LeftExpr.variable is EnumMemberSpec)
+                {
+                    (LeftExpr.variable as EnumMemberSpec).EmitToStack(ec);//AM sign
                     ec.EmitPop(dst);
-                    return;
-               
+                }
 
             }
         }
@@ -371,15 +350,7 @@ namespace VTC.Core
             TrueVal = tr;
             FalseVal = fl;
         }
-        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
-        {
-            Source.DoFlowAnalysis(fc);
-            Target.DoFlowAnalysis(fc);
-            TrueVal.DoFlowAnalysis(fc);
-            FalseVal.DoFlowAnalysis(fc);
 
-            return FlowState.Valid;
-        }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             Target = (RegisterExpression)Target.DoResolve(rc);

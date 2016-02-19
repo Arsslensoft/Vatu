@@ -69,8 +69,8 @@ namespace VTC.Core
             ec.MarkLabel(mlb);
             ec.EmitComment("Interrupt: Number = " + interrupt.ToString());
             // save flags
-            ec.EmitComment("save flags");
-           // ec.EmitInstruction(new Pushad());
+            ec.EmitComment("save registers");
+             ec.EmitInstruction(new Pushad());
             // create stack frame
             ec.EmitComment("create stackframe");
             ec.EmitInstruction(new Push() { DestinationReg = EmitContext.BP, Size = 80 });
@@ -99,8 +99,8 @@ namespace VTC.Core
             ec.EmitInstruction(new Leave());
 
             // restore flags
-            ec.EmitComment("restore flags");
-           // ec.EmitInstruction(new Popad());
+            ec.EmitComment("restore registers");
+          ec.EmitInstruction(new Popad());
             // ret
             ec.EmitInstruction(new IRET());
 

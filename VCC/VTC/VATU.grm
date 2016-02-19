@@ -383,6 +383,7 @@ Comment Line  = '//'
                | use <Name> <Statement>
                | try <Statement> catch '(' <Var Expr> ')' <Statement>
                | loop <Statement>
+              ! | lock '(' <Expression> ')' <Statement>         
                |  foreach  '(' <Var Expr> in <Expression> ')' <Statement> while '(' <Expression> ')' ';'
                |  foreach  '(' <Var Expr> in <Expression> ')' <Statement> ';'
                | <Normal Stm>
@@ -646,6 +647,7 @@ Comment Line  = '//'
              | public
              | internal
              | protected
+             
 
 <INSTRUCTION> ::= StringLiteral ';'
 <INSTRUCTIONS> ::= <INSTRUCTION>  <INSTRUCTIONS> 

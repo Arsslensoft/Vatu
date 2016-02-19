@@ -56,22 +56,13 @@ namespace VTC.Core
             if(src != dst)
                 ec.EmitInstruction(new Mov() { SourceReg = src, DestinationReg = dst, Size = 16 });
         }
-        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
-        {
-             Left.DoFlowAnalysis(fc);
-             Right.DoFlowAnalysis(fc);
-             return FlowState.Valid;
-        }
         public override bool Emit(EmitContext ec)
         {
             ec.EmitComment(LR.ToString()+ "=" +LR.ToString() + Operator.Name + RR.ToString());
-            if(RR != LR)
-               ec.EmitPush(RR);
+            ec.EmitPush(RR);
             if (require_mov)
             {
-                ec.EmitPush(EmitContext.C);
-                ec.EmitPush(EmitContext.A);
-            
+              
                 MoveRegister(ec, LR, EmitContext.A);
                 MoveRegister(ec, RR, EmitContext.C);
             }
@@ -83,26 +74,16 @@ namespace VTC.Core
             {
                 ec.EmitInstruction(new Multiply() { DestinationReg = EmitContext.C });
                 MoveRegister(ec, EmitContext.A, LR);
-                ec.EmitPop(EmitContext.A);
-                ec.EmitPop(EmitContext.C);
             }
             else if (Operator is DivisionOperator)
             {
                 ec.EmitInstruction(new Divide() { DestinationReg = EmitContext.C });
                 MoveRegister(ec, EmitContext.A, LR);
-                ec.EmitPop(EmitContext.A);
-                ec.EmitPop(EmitContext.C);
             }
             else if (Operator is ModulusOperator)
             {
-                ec.EmitPush(EmitContext.D);
                 ec.EmitInstruction(new Divide() { DestinationReg = EmitContext.C });
                 MoveRegister(ec, EmitContext.D, LR);
-                ec.EmitPop(EmitContext.D);
-                ec.EmitPop(EmitContext.A);
-                ec.EmitPop(EmitContext.C);
-          
-             
             }
             else if (Operator is AdditionOperator)
                 ec.EmitInstruction(new Add() { SourceReg = RR, DestinationReg = LR, Size = size });
@@ -147,7 +128,7 @@ namespace VTC.Core
 
 
             }
-            if (RR != LR)
+
             ec.EmitPop(RR);
             return true;
         }
