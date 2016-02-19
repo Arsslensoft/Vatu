@@ -77,16 +77,16 @@ namespace VTC
         }
 
         TypeMemberSpec tmp = null;
-        public bool ResolveStructOrUnionMember(ResolveContext rc, MemberSpec mem, ref TypeMemberSpec tmp, VariableExpression lv, VariableExpression rv)
+        public bool ResolveStructOrUnionMember(ResolveContext rc, TypeSpec mem, ref TypeMemberSpec tmp, VariableExpression rv)
         {
 
-            if (!mem.MemberType.IsPointer)
+            if (!mem.IsPointer)
             {
-                if (!mem.MemberType.IsForeignType)
+                if (!mem.IsForeignType)
                     return false;
-                else if (mem.MemberType.IsStruct)
+                else if (mem.IsStruct)
                 {
-                    StructTypeSpec stp  = (StructTypeSpec)mem.MemberType;
+                    StructTypeSpec stp = (StructTypeSpec)mem;
 
                     tmp = stp.ResolveMember(rv.Name);
                     if (tmp == null)
@@ -95,16 +95,16 @@ namespace VTC
                     {
                         // Resolve
                         index = tmp.Index;
-                      
-                         
-                   
+
+
+
                         return true;
                     }
 
                 }
-                else
+                else if (mem.IsUnion)
                 {
-                    UnionTypeSpec stp  = (UnionTypeSpec)mem.MemberType;
+                    UnionTypeSpec stp = (UnionTypeSpec)mem;
 
 
                     tmp = stp.ResolveMember(rv.Name);
@@ -115,26 +115,27 @@ namespace VTC
                         // Resolve
 
                         index = 0;
-                       
+
                         return true;
                     }
 
                 }
+                else return false;
             }
             else return false;
 
 
         }
-        public bool ResolveClassMember(ResolveContext rc, MemberSpec mem, ref TypeMemberSpec tmp, VariableExpression lv, VariableExpression rv)
+        public bool ResolveClassMember(ResolveContext rc, TypeSpec mem, ref TypeMemberSpec tmp, VariableExpression rv)
         {
 
-            if (!mem.MemberType.IsPointer)
+            if (!mem.IsPointer)
             {
-                if (!mem.MemberType.IsClass)
+                if (!mem.IsClass)
                     return false;
                 else 
                 {
-                    ClassTypeSpec stp = (ClassTypeSpec)mem.MemberType;
+                    ClassTypeSpec stp = (ClassTypeSpec)mem;
                     tmp = stp.ResolveMember(rv.Name);
                     if (tmp == null)
                         return false;
@@ -184,6 +185,7 @@ namespace VTC
                 if (ok)
                     return new AccessExpression(enumval, null, Left.position);
 
+                
                 // struct member
                 if (!ok)
                 {
@@ -191,12 +193,12 @@ namespace VTC
 
                     if (struct_var != null)
                     {
-                        ok = ResolveStructOrUnionMember(rc, struct_var, ref tmp, lv, rv);
+                        ok = ResolveStructOrUnionMember(rc, struct_var.memberType, ref tmp,  rv);
 
                         // class member
                         if (!ok)
                         {
-                            ok = ResolveClassMember(rc, struct_var, ref tmp, lv, rv);
+                            ok = ResolveClassMember(rc, struct_var.memberType, ref tmp, rv);
                             if (ok)
                             {
                                 this.CommonType = tmp.MemberType;
@@ -293,14 +295,58 @@ namespace VTC
                     ResolveContext.Report.Error(19, Location, "Unresolved member access " + lv.Name + "." + rv.Name);
 
             }
+            else if (IsLeftValueOf(rc) && Right is VariableExpression)
+            {
+                VariableExpression rv = (VariableExpression)Right;
+                Expr valueofexpr = ((Left as UnaryOperation)._op as ValueOfOp).Right;
+                bool  ok = ResolveStructOrUnionMember(rc, Left.Type, ref tmp,  rv);
+                AccessExpression vae = new AccessExpression(true, valueofexpr, null, Left.position); // value of 
+                        // class member
+                if (!ok)
+                {
+                    ok = ResolveClassMember(rc, Left.Type, ref tmp, rv);
+                    if (ok)
+                    {
+                        this.CommonType = tmp.MemberType;
 
+                        AccessExpression.SetNext();
+                        RegisterSpec dst = new RegisterSpec((Left.Type.IsReference) ? tmp.MemberType.MakeReference() : tmp.MemberType, AccessExpression.LastUsed, Location, 0, true);
+                        dst.RegisterIndex = index;
+                        dst.InitialRegisterIndex = 0;
+                        return new AccessExpression(dst, vae, Left.position, true, index, tmp.MemberType);
+                    }
+       
+                }
+                else
+                {
+                    AccessExpression.SetNext();
+                    RegisterSpec dst = new RegisterSpec((Left.Type.IsReference) ? tmp.MemberType.MakeReference() : tmp.MemberType, AccessExpression.LastUsed, Location, 0, true);
+                    dst.RegisterIndex =index;
+                    dst.InitialRegisterIndex = 0;
+                    return new AccessExpression(dst, vae, Left.position);
+
+                   
+                }
+
+        
+
+
+            }
             else ResolveContext.Report.Error(20, Location, "'.' operator accepts only variable expressions at both sides (left,right)");
 
             throw new Exception("Failed to create variable");
         }
 
 
+        public bool IsLeftValueOf(ResolveContext rc)
+        {
+            return Left is UnaryOperation && (Left as UnaryOperation)._op is ValueOfOp;
+        }
 
-
+        
+        //public bool IsLeftValueOfHighDegree(ResolveContext rc)
+        //{
+        //    return Left is UnaryOperation && (Left as UnaryOperation)._op is ValueOfOp;
+        //}
     }
 }

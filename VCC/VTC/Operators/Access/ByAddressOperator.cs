@@ -71,20 +71,20 @@ namespace VTC
 
 
         TypeMemberSpec tmp = null;
-        public bool ResolveStructOrUnionMember(ResolveContext rc, MemberSpec mem, ref TypeMemberSpec tmp, VariableExpression lv, VariableExpression rv)
+        public bool ResolveStructOrUnionMember(ResolveContext rc, TypeSpec mem, ref TypeMemberSpec tmp,  VariableExpression rv)
         {
 
-            if (mem.MemberType.IsPointer)
+            if (mem.IsPointer)
             {
-                if (!mem.MemberType.IsForeignType && !mem.MemberType.IsClass)
+                if (!mem.IsForeignType && !mem.IsClass)
                     ResolveContext.Report.Error(15, Location, "'->' operator allowed only with struct union based types");
-                else if (mem.MemberType.IsStruct)
+                else if (mem.IsStruct)
                 {
                     StructTypeSpec stp = null;
                   
                         if (Left is AccessExpression && (Left as AccessExpression).IsByIndex)
-                            stp = (StructTypeSpec)mem.MemberType.BaseType.BaseType;
-                        else stp = (StructTypeSpec)mem.MemberType.BaseType;
+                            stp = (StructTypeSpec)mem.BaseType.BaseType;
+                        else stp = (StructTypeSpec)mem.BaseType;
                  
 
                     tmp = stp.ResolveMember(rv.Name);
@@ -98,13 +98,13 @@ namespace VTC
                     }
 
                 }
-                else
+                else if(mem.IsUnion)
                 {
                     UnionTypeSpec stp = null;
           
                         if (Left is AccessExpression && (Left as AccessExpression).IsByIndex)
-                            stp = (UnionTypeSpec)mem.MemberType.BaseType.BaseType;
-                        else stp = (UnionTypeSpec)mem.MemberType.BaseType;
+                            stp = (UnionTypeSpec)mem.BaseType.BaseType;
+                        else stp = (UnionTypeSpec)mem.BaseType;
                   
                     tmp = stp.ResolveMember(rv.Name);
                     if (tmp == null)
@@ -118,26 +118,27 @@ namespace VTC
                     }
 
                 }
+                else return false;
             }
             else ResolveContext.Report.Error(17, Location, "Cannot use '->' operator with non pointer types use '.' instead");
 
 
             return false;
         }
-        public bool ResolveClassMember(ResolveContext rc, MemberSpec mem, ref TypeMemberSpec tmp, VariableExpression lv, VariableExpression rv)
+        public bool ResolveClassMember(ResolveContext rc, TypeSpec mem, ref TypeMemberSpec tmp, VariableExpression rv)
         {
 
-            if (mem.MemberType.IsPointer)
+            if (mem.IsPointer)
             {
-                if (!mem.MemberType.IsClass && !mem.memberType.IsForeignType)
+                if (!mem.IsClass && !mem.IsForeignType)
                     ResolveContext.Report.Error(15, Location, "'->' operator allowed only with class based types");
                 else
                 {
                     ClassTypeSpec stp = null;
                
                         if (Left is AccessExpression && (Left as AccessExpression).IsByIndex)
-                            stp = (ClassTypeSpec)mem.MemberType.BaseType.BaseType;
-                       else stp = (ClassTypeSpec)mem.MemberType.BaseType;
+                            stp = (ClassTypeSpec)mem.BaseType.BaseType;
+                       else stp = (ClassTypeSpec)mem.BaseType;
                     
                     tmp = stp.ResolveMember(rv.Name);
                     if (tmp == null)
@@ -184,12 +185,12 @@ namespace VTC
                     struct_var = lv.variable;
                     if (struct_var != null)
                     {
-                        ok = ResolveStructOrUnionMember(rc, struct_var, ref tmp, lv, rv);
+                        ok = ResolveStructOrUnionMember(rc, struct_var.memberType, ref tmp,  rv);
 
                         // class member
                         if(!ok)
                         {
-                            ok = ResolveClassMember(rc, struct_var, ref tmp, lv, rv);
+                            ok = ResolveClassMember(rc, struct_var.memberType, ref tmp, rv);
                             if (ok)
                             {
                                 CommonType = tmp.MemberType;
@@ -281,10 +282,52 @@ namespace VTC
                     ResolveContext.Report.Error(19, Location, "Unresolved member access " + lv.Name + "." + rv.Name);
 
             }
+            else if (IsLeftValueOf(rc) && Right is VariableExpression)
+            {
+                VariableExpression rv = (VariableExpression)Right;
+                Expr valueofexpr = ((Left as UnaryOperation)._op as ValueOfOp).Right;
+                bool ok = ResolveStructOrUnionMember(rc, Left.Type, ref tmp, rv);
+                AccessExpression vae = new AccessExpression(true, valueofexpr, null, Left.position); // value of 
+                // class member
+                if (!ok)
+                {
+                    ok = ResolveClassMember(rc, Left.Type, ref tmp, rv);
+                    if (ok)
+                    {
+                        this.CommonType = tmp.MemberType;
 
+                        AccessExpression.SetNext();
+                        RegisterSpec dst = new RegisterSpec((Left.Type.BaseType.IsReference) ? Left.Type.BaseType.MakeReference() : Left.Type.BaseType, AccessExpression.LastUsed, Location, 0, true);
+                        dst.RegisterIndex = 0;
+                        dst.InitialRegisterIndex = 0;
+                        AccessExpression classind = new AccessExpression(dst, vae, Left.position, true, 0, tmp.MemberType);
+
+                    
+                        AccessExpression atmp = new AccessExpression(classind.variable, classind, Left.position, true, index, tmp.MemberType);
+
+                        return atmp;
+                    }
+
+                }
+                else
+                {
+                    AccessExpression.SetNext();
+                    RegisterSpec dst = new RegisterSpec((Left.Type.IsReference) ? tmp.MemberType.MakeReference() : tmp.MemberType, AccessExpression.LastUsed, Location, 0, true);
+                    dst.RegisterIndex = index;
+                    dst.InitialRegisterIndex = 0;
+                    return new AccessExpression(dst, vae, Left.position, true, index, tmp.MemberType);
+
+
+                }
+
+            }
             else ResolveContext.Report.Error(20, Location, "'->' operator accepts only variable expressions at both sides (left,right)");
 
             throw new Exception("Failed to create variable");
+        }
+        public bool IsLeftValueOf(ResolveContext rc)
+        {
+            return Left is UnaryOperation && (Left as UnaryOperation)._op is ValueOfOp;
         }
 
     }

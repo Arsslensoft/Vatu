@@ -36,7 +36,8 @@ namespace VTC.Core
         public VariableExpression Left { get; set; }
         public Expr Right { get; set; }
         public ByIndexOperator Operator { get; set; }
-        
+        public Expr VLExpr { get; set; }
+
   
         /// <summary>
         /// ByIndex Access for constant index
@@ -65,6 +66,28 @@ namespace VTC.Core
             Type = ms.MemberType;
         }
 
+
+
+        public AccessExpression(bool vof,Expr vexpr, AccessExpression parent, LineInfo pos)
+            : base("")
+        {
+            position = pos;
+            // Set Parent & Child
+            if (parent != null)
+            {
+                Parent = parent;
+                Parent.Child = this;
+            }
+            else
+                Parent = null;
+
+
+            VLExpr = vexpr;
+
+             IsValueOf = vof;
+
+            Type = vexpr.Type;
+        }
        
 
         /// <summary>
@@ -113,7 +136,12 @@ namespace VTC.Core
            
         }
 
-   
+        void EmitParent(EmitContext ec)
+        {
+            //if(Parent.IsValueOf )
+            //    Parent.VLExpr.EmitToStack(ec);
+             Parent.variable.EmitToStack(ec);
+        }
         public void EmitIndirectionsPop(EmitContext ec)
         {
             ec.EmitComment("CURRENT IS " + ToString() + " PARENT IS " + (Parent == null ? "NULL" : Parent.Name) + " ISEXPR = " + IsExpr.ToString() + " ISADR = " + IsByAdr.ToString() + "  ISBYIDX = " + IsByIndex.ToString());
@@ -122,27 +150,37 @@ namespace VTC.Core
             {
                 Parent.EmitIndirectionsPop(ec); // go to first
                 // check if is indirection
-                if (IsByAdr)
+                if (IsByAdr || IsByIndex)
                 {
-                    Parent.variable.EmitToStack(ec);
-                    ec.EmitPop((variable as RegisterSpec).Register);
+                    if (!Parent.IsValueOf)
+                    {
+                        EmitParent(ec);
+                        ec.EmitPop((variable as RegisterSpec).Register);
+                    }
+                    else
+                        ec.EmitMovToRegister((variable as RegisterSpec).Register, (variable as RegisterSpec).Register, 16, true);
+
                     return;
                 }
-                if (IsByIndex)
-                {
-                    ec.EmitComment("INDEX INDIRECTION");
-                    Parent.variable.EmitToStack(ec);
-                    ec.EmitPop((variable as RegisterSpec).Register);
+                //if (IsByIndex)
+                //{
+                //    ec.EmitComment("INDEX INDIRECTION");
+                //    EmitParent(ec);
+                //    ec.EmitPop((variable as RegisterSpec).Register);
 
-                }
+                //}
                 // or pass
             }
-            else if (Parent == null && RootVar != null) // by index indirection
+            else if (Parent == null && RootVar != null) // by value indirection
             {
                 RootVar.EmitToStack(ec);
                 ec.EmitPop((variable as RegisterSpec).Register);
             }
-            
+            else if (Parent == null && IsValueOf) // valueof indirection
+            {
+                VLExpr.EmitToStack(ec);
+                ec.EmitPop((Child.variable as RegisterSpec).Register);
+            }
 
         }
         public void EmitIndirections(EmitContext ec)
@@ -155,19 +193,30 @@ namespace VTC.Core
                 // check if is indirection
                 if (IsByAdr)
                 {
-                    Parent.variable.EmitToStack(ec);
-                    ec.EmitPop((variable as RegisterSpec).Register);
+                    if (!Parent.IsValueOf)
+                    {
+                        EmitParent(ec);
+                        ec.EmitPop((variable as RegisterSpec).Register);
+                    }
+                    else
+                        ec.EmitMovToRegister((variable as RegisterSpec).Register, (variable as RegisterSpec).Register, 16, true);
+
                     return;
                 }
-              
+                
                 // or pass
             }
-         else if (Parent == null && RootVar != null) // by index indirection
+         else if (Parent == null && RootVar != null) // by value indirection
          {
              RootVar.EmitToStack(ec);
              ec.EmitPop((variable as RegisterSpec).Register);
          }
-  
+         else if (Parent == null && IsValueOf) // valueof indirection
+         {
+             VLExpr.EmitToStack(ec);
+             ec.EmitPop((Child.variable as RegisterSpec).Register);
+         }
+
         }
         public override bool Emit(EmitContext ec)
         {
@@ -178,7 +227,7 @@ namespace VTC.Core
             ec.EmitComment("Pop Indirections ");
             EmitIndirectionsPop(ec);
             ec.EmitComment("End Pop Indirections ");
-            if (!IsExpr && !IsByAdr)
+            if (!IsExpr && !IsByAdr && !IsValueOf)
                 return base.EmitFromStack(ec);
             else if (IsByAdr)
             {
@@ -203,7 +252,7 @@ namespace VTC.Core
             EmitIndirections(ec);
             ec.EmitComment("End Push Indirections ");
 
-            if (!IsExpr && !IsByAdr) // By Value Access
+            if (!IsExpr && !IsByAdr && !IsValueOf)// By Value Access
 
                 return base.EmitToStack(ec);
 
