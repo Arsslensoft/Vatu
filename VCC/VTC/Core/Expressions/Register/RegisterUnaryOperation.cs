@@ -20,7 +20,8 @@ namespace VTC.Core
 
         public RegisterExpression Right { get; set; }
 
-
+     
+ 
         RegistersEnum RR;
         public UnaryOp Operator { get; set; }
         [Rule(@"<Register Operation> ::= <Unary Operator> <REGISTER>")]
@@ -30,7 +31,10 @@ namespace VTC.Core
             Right = right;
             Operator = binop.Operator;
         }
-
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            return Right.DoFlowAnalysis(fc);
+        }
         byte size = 16;
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -96,6 +100,10 @@ namespace VTC.Core
             Right = right;
             ispush = ((binop.Operator & BinaryOperator.Addition) == BinaryOperator.Addition);
         }
+        public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            return Right.DoFlowAnalysis(fc);
+        }
 
         byte size = 16;
         public override SimpleToken DoResolve(ResolveContext rc)
@@ -141,7 +149,7 @@ namespace VTC.Core
 
         public RegisterExpression Right { get; set; }
         public RegisterTargetExpression LeftExpr { get; set; }
-        public VariableExpression LeftVar { get; set; }
+        public Expr LeftVar { get; set; }
 
         RegistersEnum RR;
         public bool IsVarAssign = false;
@@ -152,14 +160,25 @@ namespace VTC.Core
             Right = right;
         }
 
-        [Rule(@"<Register Expression> ::= <Var Expr> ~':=' <REGISTER>")]
-        public RegisterAssignOperation(VariableExpression left, RegisterExpression right)
+        [Rule(@"<Register Expression> ::= <Expression> ~':=' <REGISTER>")]
+        public RegisterAssignOperation(Expr left, RegisterExpression right)
         {
             LeftVar = left;
             Right = right;
             IsVarAssign = true;
         }
-
+          public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+            if (LeftExpr != null)
+               LeftExpr.DoFlowAnalysis(fc);
+  
+            if (LeftVar != null && LeftVar is VariableExpression)
+           {
+               fc.MarkAsAssigned((LeftVar as VariableExpression).variable);
+               LeftVar.DoFlowAnalysis(fc);
+           }
+           return Right.DoFlowAnalysis(fc);
+       }
         byte size = 16;
         public override SimpleToken DoResolve(ResolveContext rc)
         {
@@ -167,18 +186,20 @@ namespace VTC.Core
             Right = (RegisterExpression)Right.DoResolve(rc);
 
             if (LeftVar != null)
-                LeftVar = (VariableExpression)LeftVar.DoResolve(rc);
+                LeftVar = (Expr)LeftVar.DoResolve(rc);
             else LeftExpr = (RegisterTargetExpression)LeftExpr.DoResolve(rc);
 
-            if (LeftVar != null && LeftVar.Type.IsForeignType)
-                ResolveContext.Report.Error(0, Location, "Incompatible variable type, Registers cannot accept this type");
-
-            RR = Right.Register;
+             RR = Right.Register;
             if (Registers.Is8Bit(RR) == true)
                 size = 8;
 
+            if (LeftVar != null && LeftVar.Type.SizeInBits != size)
+                ResolveContext.Report.Error(0, Location, "Incompatible variable type, Registers cannot accept this type");
+
+           
 
 
+      
 
             return this;
         }
@@ -213,23 +234,16 @@ namespace VTC.Core
     {
 
         public RegisterExpression Register { get; set; }
-        public VariableExpression LeftExpr { get; set; }
-        public SimpleToken LeftLit { get; set; }
+        public Expr LeftExpr { get; set; }
 
-
-        [Rule(@"<REGISTER Target Expression> ::= <Var Expr>")]
-        public RegisterTargetExpression(VariableExpression left)
+        [Rule(@"<REGISTER Target Expression> ::= <Expression>")]
+        public RegisterTargetExpression(Expr left)
         {
             LeftExpr = left;
 
 
         }
-        [Rule(@"<REGISTER Target Expression> ::= <CONSTANT>")]
-        public RegisterTargetExpression(Literal left)
-        {
-            LeftLit = left;
-
-        }
+      
 
         [Rule(@"<REGISTER Target Expression> ::= <REGISTER>")]
         public RegisterTargetExpression(RegisterExpression right)
@@ -239,18 +253,30 @@ namespace VTC.Core
 
         }
 
-
+         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+        {
+          
+            if (LeftExpr != null)
+          
+                LeftExpr.DoFlowAnalysis(fc);
+         
+             if (Register != null)
+                 Register.DoFlowAnalysis(fc);
+  
+             return FlowState.Valid;
+         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             if (Register != null)
                 Register = (RegisterExpression)Register.DoResolve(rc);
-            else if (LeftLit != null)
-                LeftLit = (ConstantExpression)LeftLit.DoResolve(rc);
+           
             else
             {
-                LeftExpr = (VariableExpression)LeftExpr.DoResolve(rc);
-                if (LeftExpr != null && LeftExpr.Type.IsForeignType)
+                LeftExpr = (Expr)LeftExpr.DoResolve(rc);
+                if (LeftExpr != null && LeftExpr.Type.Size > 2)
                     ResolveContext.Report.Error(0, Location, "Registers can't hold this type");
+
+                
             }
 
 
@@ -260,76 +286,44 @@ namespace VTC.Core
         {
             if (Register != null)
                 return Register.Register.ToString();
-            else if (LeftLit != null)
-                return (LeftLit as ConstantExpression).CommentString();
+       
             else return LeftExpr.CommentString();
         }
         public void EmitMoveToRegister(EmitContext ec, RegistersEnum dst, byte size)
         {
             if (Register != null)
                 ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceReg = Register.Register, Size = size });
-            else if (LeftLit != null)
+          
+            else
             {
-                if (Registers.IsSegment(dst))
+                if ((LeftExpr is VariableExpression && !(LeftExpr is AccessExpression) ) )
                 {
-                    (LeftLit as ConstantExpression).EmitToStack(ec);
-                    ec.EmitPop(dst);
+                    VariableExpression v = (VariableExpression)LeftExpr;
+                    if (v.variable is FieldSpec)
+                        ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceRef = ElementReference.New(v.variable.Signature.ToString()), SourceIsIndirect = true, Size = size });
+                    else if (v.variable is VarSpec)
+                        ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceReg = EmitContext.BP, SourceDisplacement = (v.variable as VarSpec).VariableStackIndex, SourceIsIndirect = true, Size = size });
+                    else if (v.variable is ParameterSpec)
+                        ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceReg = EmitContext.BP, SourceDisplacement = (v.variable as ParameterSpec).StackIdx, SourceIsIndirect = true, Size = size });
+                    else if (v.variable is EnumMemberSpec)
+                    {
+                        (v.variable as EnumMemberSpec).EmitToStack(ec);//AM sign
+                        ec.EmitPop(dst);
+                    }
                 }
                 else
                 {
-                    if ((size == 8) && (LeftLit is ByteConstant))
-                        ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceValue = (ushort)(LeftLit as ByteConstant)._value }); // ushort.Parse((LeftLit as ConstantExpression).GetValue().ToString()) });
-                    else if ((size == 8) && (LeftLit is BoolConstant))
-                        ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceValue = (LeftLit as BoolConstant)._value ? (ushort)1 : (ushort)0 });
-                    else (LeftLit as ConstantExpression).EmitToRegister(ec, dst);
-                }
-            }
-            else
-            {
-                if (LeftExpr.variable is FieldSpec)
-                    ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceRef = ElementReference.New(LeftExpr.variable.Signature.ToString()), SourceIsIndirect = true, Size = size });
-                else if (LeftExpr.variable is VarSpec)
-                    ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceReg = EmitContext.BP, SourceDisplacement = (LeftExpr.variable as VarSpec).VariableStackIndex, SourceIsIndirect = true, Size = size });
-                else if (LeftExpr.variable is ParameterSpec)
-                    ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceReg = EmitContext.BP, SourceDisplacement = (LeftExpr.variable as ParameterSpec).StackIdx, SourceIsIndirect = true, Size = size });
-                else if (LeftExpr.variable is EnumMemberSpec)
-                {
-                    (LeftExpr.variable as EnumMemberSpec).EmitToStack(ec);//AM sign
+                    LeftExpr.EmitToStack(ec);
                     ec.EmitPop(dst);
                 }
-
             }
         }
-        public void EmitMoveToRegisterCond(EmitContext ec, RegistersEnum dst, ConditionalTestEnum cnd)
-        {
-            if (Register != null)
-                ec.EmitInstruction(new ConditionalMove() { DestinationReg = dst, SourceReg = Register.Register, Condition = cnd, Size = 80 });
-            else if (LeftLit != null)
-            {
-                ec.ag.SetAsUsed(dst);
-                RegistersEnum r = ec.ag.GetNextRegister();
-                (LeftLit as ConstantExpression).EmitToRegister(ec, r);
-                ec.ag.FreeRegister();
-                ec.ag.FreeRegister();
-                ec.EmitInstruction(new ConditionalMove() { DestinationReg = dst, SourceReg = r, Condition = cnd, Size = 80 });
-            }
-            else
-            {
-                if (LeftExpr.variable is FieldSpec)
-                    ec.EmitInstruction(new ConditionalMove() { DestinationReg = dst, SourceRef = ElementReference.New(LeftExpr.variable.Signature.ToString()), SourceIsIndirect = true, Condition = cnd, Size = 80 });
-                else if (LeftExpr.variable is VarSpec)
-                    ec.EmitInstruction(new ConditionalMove() { DestinationReg = dst, SourceReg = EmitContext.BP, SourceDisplacement = (LeftExpr.variable as VarSpec).VariableStackIndex, SourceIsIndirect = true, Condition = cnd, Size = 80 });
-                else if (LeftExpr.variable is ParameterSpec)
-                    ec.EmitInstruction(new ConditionalMove() { DestinationReg = dst, SourceReg = EmitContext.BP, SourceDisplacement = (LeftExpr.variable as ParameterSpec).StackIdx, SourceIsIndirect = true, Condition = cnd, Size = 80 });
-
-            }
-        }
+       
         public override bool Emit(EmitContext ec)
         {
             if (Register != null)
                 ec.EmitPush(Register.Register);
-            else if (LeftLit != null)
-                (LeftLit as ConstantExpression).EmitToStack(ec);
+         
             else LeftExpr.EmitToStack(ec);
             return true;
         }
@@ -350,7 +344,15 @@ namespace VTC.Core
             TrueVal = tr;
             FalseVal = fl;
         }
-
+         public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+       {
+             Source.DoFlowAnalysis(fc);
+             Target.DoFlowAnalysis(fc);
+             TrueVal.DoFlowAnalysis(fc);
+             FalseVal.DoFlowAnalysis(fc);
+  
+             return FlowState.Valid;
+         }
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             Target = (RegisterExpression)Target.DoResolve(rc);
@@ -365,10 +367,15 @@ namespace VTC.Core
         public override bool Emit(EmitContext ec)
         {
             Source.Emit(ec);
+            Label tr = ec.DefineLabel(LabelType.BOOL_EXPR);
+            Label t = new Label(tr.Name +"_TRUE");
             ec.EmitInstruction(new Compare() { DestinationReg = Source.TargetRegister, SourceValue = 1 });
-            TrueVal.EmitMoveToRegisterCond(ec, Target.Register, ConditionalTestEnum.Equal);
-            FalseVal.EmitMoveToRegisterCond(ec, Target.Register, ConditionalTestEnum.NotEqual);
-
+            ec.EmitBooleanBranch(true, t, ConditionalTestEnum.Equal, ConditionalTestEnum.NotEqual);
+            FalseVal.Emit(ec);
+            ec.EmitInstruction(new Jump() { DestinationLabel = tr.Name });
+            ec.MarkLabel(t);
+            TrueVal.Emit(ec);
+            ec.MarkLabel(tr);
             Target.EmitFromStack(ec);
             return true;
         }

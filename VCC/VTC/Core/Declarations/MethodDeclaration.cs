@@ -45,6 +45,7 @@ namespace VTC.Core
        public override SimpleToken DoResolve(ResolveContext rc)
         {
             ccvh = new CallingConventionsHandler();
+       
             _id = (MethodIdentifier)_id.DoResolve(rc);
             ccv = _id.CV;
             mods = _id.Mods;

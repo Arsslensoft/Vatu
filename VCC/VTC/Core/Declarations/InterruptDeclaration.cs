@@ -19,11 +19,21 @@ namespace VTC.Core
 
         ushort interrupt;
         Block _b;
+        bool _isolated=false;
 
         [Rule(@"<Inter Decl> ::= ~interrupt <Integral Const> <Block>")]
         public InterruptDeclaration(Literal hlit, Block b)
         {
           //  Location = hlit.Location;
+            interrupt = ushort.Parse(hlit.Value.GetValue().ToString());
+            _b = b;
+            ItName = "INTERRUPT_" + interrupt.ToString("X2") + "H";
+        }
+        [Rule(@"<Inter Decl> ::= isolated ~interrupt <Integral Const> <Block>")]
+        public InterruptDeclaration(SimpleToken t,Literal hlit, Block b)
+        {
+            _isolated = true;
+            //  Location = hlit.Location;
             interrupt = ushort.Parse(hlit.Value.GetValue().ToString());
             _b = b;
             ItName = "INTERRUPT_" + interrupt.ToString("X2") + "H";
@@ -69,8 +79,12 @@ namespace VTC.Core
             ec.MarkLabel(mlb);
             ec.EmitComment("Interrupt: Number = " + interrupt.ToString());
             // save flags
-            ec.EmitComment("save registers");
-             ec.EmitInstruction(new Pushad());
+            if (_isolated)
+            {
+
+                ec.EmitComment("save registers");
+                ec.EmitInstruction(new Pushad());
+            }
             // create stack frame
             ec.EmitComment("create stackframe");
             ec.EmitInstruction(new Push() { DestinationReg = EmitContext.BP, Size = 80 });
@@ -99,8 +113,11 @@ namespace VTC.Core
             ec.EmitInstruction(new Leave());
 
             // restore flags
-            ec.EmitComment("restore registers");
-          ec.EmitInstruction(new Popad());
+            if (_isolated)
+            {
+                ec.EmitComment("restore registers");
+                ec.EmitInstruction(new Popad());
+            }
             // ret
             ec.EmitInstruction(new IRET());
 

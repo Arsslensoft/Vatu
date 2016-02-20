@@ -80,6 +80,7 @@ namespace VTC.Core
                if (d is MethodDeclaration)
                {
                    TypeMemberSpec t = CreateMemberForMethod((d as MethodDeclaration).method, idx);
+                   implemented.Add((d as MethodDeclaration).method);
                    if (!Members.Contains(t))
                    {
                        t.Index = idx;
@@ -88,6 +89,8 @@ namespace VTC.Core
                    }
                    else
                    {
+                       if ((Members[Members.IndexOf(t)].Modifiers & Modifiers.Sealed) == Modifiers.Sealed)
+                           ResolveContext.Report.Error(0, Location, "Can't override a sealed method");
                         t = CreateMemberForMethod((d as MethodDeclaration).method,  Members[  Members.IndexOf(t)].Index);
                         Members[Members.IndexOf(t)] = t;
                    }
@@ -97,7 +100,8 @@ namespace VTC.Core
                }
                else if (d is MethodPrototypeDeclaration)
                {
-                   TypeMemberSpec t = CreateMemberForMethod((d as MethodDeclaration).method, idx);
+                   TypeMemberSpec t = CreateMemberForMethod((d as MethodPrototypeDeclaration).method, idx);
+                   implemented.Add((d as MethodDeclaration).method);
                    if ( !Members.Contains(t))
                    {
                        t.Index = idx;
@@ -134,20 +138,52 @@ namespace VTC.Core
            string name = ms.Name.Split('$')[1].Remove(0,1);
            TypeMemberSpec t = new TypeMemberSpec(ms.NS, name, TypeName, dt, ms.Signature.Location, idx);
            t.IsMethod = true;
+
            t.Index = idx;
            t.DefaultMethod = ms;
            return t;
        }
+       bool IsImplemented(List<MethodSpec> method, MethodSpec impl)
+       {
+           foreach (MethodSpec m in method)
+           {
+               string name = m.Name.Split('$')[1].Remove(0, 1);
+               if (name == impl.Name && m.Parameters.Count == (impl.Parameters.Count + 1))
+               {
+                   if (m.Parameters.Count == 1)
+                       return true;
+
+                   if (m.Signature.TypesSignature.Remove(0,m.Signature.TypesSignature.IndexOf(',')) == impl.Signature.TypesSignature && m.memberType.Equals(impl.memberType))
+                       return true;
+               }
+           }
+           return false;
+       }
+       void HasImplementedAll(List<MethodSpec> methods, List<MethodSpec> impl)
+       {
+           foreach(MethodSpec m in impl)
+               if(!IsImplemented(methods,m))
+                   ResolveContext.Report.Error(0, Location, "The class "+_name.Name+" does not implement  "+m.Signature.NormalSignature);
+       }
+       List<MethodSpec> implemented = new List<MethodSpec>();
  public override SimpleToken DoResolve(ResolveContext rc)
        {
+           List<MethodSpec> mustbeimplemented = new List<MethodSpec>();
+
            List<TypeMemberSpec> defmembers = new List<TypeMemberSpec>();
            List<MethodSpec> methods = new List<MethodSpec>();
            List<TypeMemberSpec> methods_members = new List<TypeMemberSpec>();
           List<TypeMemberSpec> members = new List<TypeMemberSpec>();
             List<TemplateTypeSpec> templates = new List<TemplateTypeSpec>();
 
-
+            _mod.AllowSealedModifier = true;
+  
             _mod = (Modifier)_mod.DoResolve(rc);
+            TypeSpec type = null;
+     if(rc.Resolver.TryResolveType(_name.Name, ref type))
+                    ResolveContext.Report.Error(0, Location, "Duplicate type declaration ");
+
+
             if (_tdef != null && _tdef._tid != null)
             {
                 _tdef = (TemplateDefinition)_tdef.DoResolve(rc);
@@ -216,8 +252,10 @@ namespace VTC.Core
                               members.Add(newm);
                         }
                         foreach (MethodSpec m in (st as ClassTypeSpec).Methods)
+                    
                             methods.Add(m);
                     }
+                  
                 }
             }
 
@@ -272,7 +310,7 @@ namespace VTC.Core
            NewType.UpdateSize();
            GetMethods(methods,  defmembers, NewType.ClassSize);
                 // update type for last time
-       
+           HasImplementedAll(implemented, mustbeimplemented);
            // Update Size
            NewType.UpdateSize();
            rc.UpdateType(TypeName, NewType);

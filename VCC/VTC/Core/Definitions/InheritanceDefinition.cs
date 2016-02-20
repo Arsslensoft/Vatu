@@ -35,19 +35,29 @@ namespace VTC.Core
                while (ct != null)
                {
                    if (rc.IsInStruct && ct._id.Type is StructTypeSpec)
+                   {
+                       if ((ct._id.Type.Modifiers & Modifiers.Sealed) == Modifiers.Sealed)
+                           ResolveContext.Report.Error(0, Location, "Can't inherit a sealed struct");
                        Inherited.Add(ct._id.Type as StructTypeSpec);
+                   }
+               
                    else if (rc.IsInClass && ct._id.Type is ClassTypeSpec)
                    {
                        if (ParentClass == null)
                        {
                            ParentClass = ct._id.Type as ClassTypeSpec;
-                           if(InheritedClass.Count > 0)
-                               InheritedClass.Insert(0,ct._id.Type as ClassTypeSpec);
+
+                           if ((ParentClass.Modifiers & Modifiers.Sealed) == Modifiers.Sealed)
+                               ResolveContext.Report.Error(0, Location, "Can't inherit a sealed class");
+
+
+                           if (InheritedClass.Count > 0)
+                               InheritedClass.Insert(0, ct._id.Type as ClassTypeSpec);
                            else InheritedClass.Add(ct._id.Type as ClassTypeSpec);
                        }
-                 
+
                        else ResolveContext.Report.Error(0, Location, "Multiple class inheritance is not supported");
-                     
+
                    }
                    else if (rc.IsInClass && ct._id.Type is StructTypeSpec)
                        InheritedClass.Add(ct._id.Type as StructTypeSpec);

@@ -37,7 +37,11 @@ namespace VTC.Core
         {
             List<TypeMemberSpec> members = new List<TypeMemberSpec>();
             List<TemplateTypeSpec> templates = new List<TemplateTypeSpec>();
+            _mod.AllowSealedModifier = true;
             _mod = (Modifier)_mod.DoResolve(rc);
+            TypeSpec type = null;
+            if (rc.Resolver.TryResolveType(_name.Name, ref type))
+                ResolveContext.Report.Error(0, Location, "Duplicate type declaration ");
             if (_tdef != null && _tdef._tid != null)
             {
                 _tdef = (TemplateDefinition)_tdef.DoResolve(rc);

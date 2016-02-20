@@ -116,7 +116,9 @@ namespace VTC.Core
         public override SimpleToken DoResolve(ResolveContext rc)
         {
             _mod = (Modifier)_mod.DoResolve(rc);
-
+            TypeSpec type = null;
+            if (rc.Resolver.TryResolveType(_name.Name, ref type))
+                ResolveContext.Report.Error(0, Location, "Duplicate type declaration ");
             List<ushort> UsedValues = new List<ushort>();
             List<EnumMemberSpec> mem = new List<EnumMemberSpec>();
             _def = (EnumDefinition)_def.DoResolve(rc);

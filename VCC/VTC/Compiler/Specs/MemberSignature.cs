@@ -28,6 +28,9 @@ namespace VTC
         string _nnts;
         public string NoNamespaceTypeSignature { get { return _nnts; } }
 
+
+        string types;
+        public string TypesSignature { get { return types; } }
         public MemberSignature(Namespace ns, string name,TypeSpec[] param, Location loc)
         {
             _nsig = name;
@@ -40,7 +43,7 @@ namespace VTC
                 _signature = ns.Normalize() + "_" + _signature;
                 _nsig = ns.Normalize() + "." + _nsig;
             }
-            string types = "";
+             types = "";
             
             if (param != null)
             {
@@ -80,6 +83,7 @@ namespace VTC
             _extsig = name;
             _nns = name;
             _nnts = name;
+            types = "";
             if (!ns.IsDefault)
             {
                 _signature = ns.Normalize() + "_" + _signature;

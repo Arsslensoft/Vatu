@@ -423,7 +423,7 @@ namespace VTC.Core
         }
 
     }
-
+ 
     public class FunctionSpecifierSequence: Sequence<FunctionSpecifier>
     {
 

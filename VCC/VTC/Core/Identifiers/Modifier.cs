@@ -10,6 +10,7 @@ namespace VTC.Core
 	
 	public class Modifier : SimpleToken
     {
+        public bool AllowSealedModifier { get; set; }
         public Modifiers ModifierList { get; set; }
 
         /*<Mod>      ::= extern 
@@ -26,10 +27,11 @@ namespace VTC.Core
         [Rule(@"<Modifier>      ::= public")]
        [Rule(@"<Modifier>      ::= protected")]
        [Rule(@"<Modifier>      ::= internal")]
+       [Rule(@"<Modifier>      ::= sealed")]
         public Modifier(SimpleToken mod)
         {
             _mod = mod;
-           
+            AllowSealedModifier = false;
         }
 
         Modifier nmod;
@@ -37,6 +39,7 @@ namespace VTC.Core
         public Modifier(Modifier mod)
         {
             nmod = mod;
+            AllowSealedModifier = false;
 
         }
 
@@ -46,7 +49,8 @@ namespace VTC.Core
          {
              nxt = next;
              _mod = mod;
-
+             AllowSealedModifier = false;
+        
          }
 
 
@@ -78,6 +82,8 @@ namespace VTC.Core
             ModifierList = 0;
             if (nxt != null)
             {
+                nxt.AllowSealedModifier = AllowSealedModifier;
+
                 nxt = (Modifier)nxt.DoResolve(rc);
                 ModifierList |= nxt.ModifierList;
             }
@@ -86,6 +92,7 @@ namespace VTC.Core
             {
                 if (nmod != null)
                 {
+                    nmod.AllowSealedModifier = AllowSealedModifier;
                     nmod = (Modifier)nmod.DoResolve(rc);
                     ModifierList |= nmod.ModifierList;
 
@@ -94,6 +101,7 @@ namespace VTC.Core
             }
             else if (_mod.Name == "Modifier")
             {
+                ((Modifier)_mod).AllowSealedModifier = AllowSealedModifier;
                 nmod = (Modifier)_mod.DoResolve(rc);
                 ModifierList |= nmod.ModifierList;
             }
@@ -111,7 +119,13 @@ namespace VTC.Core
                 ModifierList |= Modifiers.Protected;
             else if (_mod.Name == "internal")
                 ModifierList |= Modifiers.Internal;
-
+           
+            else if (_mod.Name == "sealed")
+            {
+                ModifierList |= Modifiers.Sealed;
+                if (!AllowSealedModifier)
+                    ResolveContext.Report.Error(0, Location, "Sealed modifier must be used with method members or classes");
+            }
 
             if ((ModifierList & Modifiers.Private) == Modifiers.Private && (ModifierList & Modifiers.Extern) == Modifiers.Extern)
                 ResolveContext.Report.Error(0, Location, "A member cannot be private and extern at the same time");

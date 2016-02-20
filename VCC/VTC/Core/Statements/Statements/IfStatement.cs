@@ -92,9 +92,11 @@ namespace VTC.Core
         {
          
             FlowState ok = _expr.DoFlowAnalysis(fc);
+         
+            
             if (!((_stmt is Block) || (_stmt is BlockStatement)))
                 ok = FlowState.Valid;
-   
+             else _stmt.DoFlowAnalysis(fc);
      
             return ok;
         }

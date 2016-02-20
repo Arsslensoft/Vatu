@@ -618,6 +618,7 @@ namespace VTC
                 ispointer = _target.Type.IsPointer;
                 return true;
             }
+         
             return false;
         }
     }

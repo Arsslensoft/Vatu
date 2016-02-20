@@ -113,7 +113,7 @@ Comment Line  = '//'
                 | <Delegate Decl>
                 | <Template Decl>
                 | <Class Decl> 
-  
+               
                 
 <Prototypes Decl> ::=  <Func Proto>
           | <Oper Proto>
@@ -172,7 +172,7 @@ Comment Line  = '//'
                |  <Mod> override <Type> operator <Operator Def> <Func Body>
                
 <Inter Decl>  ::= interrupt <Integral Const> <Block>
-  
+                | isolated interrupt <Integral Const> <Block>
 
 
 <Func Body>  ::= '(' <Params>  ')' <Func Ext> <Block>
@@ -246,7 +246,6 @@ Comment Line  = '//'
 <Struct Decl>  ::= <Mod> struct Id <Template Def> <Inheritance>  '{' <Struct Def> '}' 
                 
 <Class Decl>   ::= <Mod> class Id <Template Def> <Inheritance> '{' <Class Element Decl> '}' 
-      
 
 <Union Decl>   ::= <Mod> union Id <Template Def> '{' <Struct Def> '}'  
                 
@@ -261,7 +260,7 @@ Comment Line  = '//'
                 | <Mod> <Template Def> sizeof <Integral Const> ';'    
                                        
 <Inheritance> ::= extends <Types>
-              | 
+              |        
 ! ===================================================================
 ! Definitions
 ! ===================================================================
@@ -274,7 +273,7 @@ Comment Line  = '//'
                     | <Var Decl>
                     | <Constructor Decl>
                     | <Destructor Decl>
-                    |  <Func Proto>
+                    | <Func Proto>
                     | <Constructor Proto>
                     | <Destructor Proto>
                     
@@ -284,7 +283,9 @@ Comment Line  = '//'
                     | <Destructor Decl> <Class Element Decl> 
                     | <Constructor Proto> <Class Element Decl>
                     | <Destructor Proto> <Class Element Decl>
-                    | <Func Proto> <Class Element Decl>       
+                    | <Func Proto> <Class Element Decl>      
+                    
+
 ! Enumerations & Flags definition               
 <Enum Def>     ::= <Enum Val> ',' <Enum Def>
                  | <Enum Val>
@@ -376,7 +377,7 @@ Comment Line  = '//'
                | use <Name> <Statement>
                | try <Statement> catch '(' <Var Expr> ')' <Statement>
                | loop <Statement>
-              ! | lock '(' <Expression> ')' <Statement>         
+               |  restrict '(' <Expression> ')' <Statement>         
                |  foreach  '(' <Var Expr> in <Expression> ')' <Statement> while '(' <Expression> ')' ';'
                |  foreach  '(' <Var Expr> in <Expression> ')' <Statement> ';'
                | <Normal Stm>
@@ -615,7 +616,7 @@ Comment Line  = '//'
 
 <REGISTER> ::=   <REGISTER ID>            
 <Register Expression> ::= <REGISTER> ':=' <REGISTER Target Expression>  ! Register Assign
-                        | <Var Expr> ':=' <REGISTER> ! Var Assign
+                        | <Expression> ':=' <REGISTER> ! Var Assign
                         | '+' <REGISTER> ! Push
                         | '-' <REGISTER>  ! Pop
                         | <REGISTER> ':='  <Register Operation> '?' <REGISTER Target Expression>  ':' <REGISTER Target Expression>  ! If Expr
@@ -623,8 +624,7 @@ Comment Line  = '//'
 <Register Operation> ::= <REGISTER> <Binary Operator> <REGISTER>
                          | <Unary Operator> <REGISTER>
                          
-<REGISTER Target Expression> ::= <CONSTANT>
-                              | <Var Expr>                      
+<REGISTER Target Expression> ::= <Expression>                      
                               | <REGISTER>
                              
 ! ===================================================================
@@ -640,7 +640,8 @@ Comment Line  = '//'
              | public
              | internal
              | protected
-             
+             | sealed
+
 
 <INSTRUCTION> ::= StringLiteral ';'
 <INSTRUCTIONS> ::= <INSTRUCTION>  <INSTRUCTIONS> 

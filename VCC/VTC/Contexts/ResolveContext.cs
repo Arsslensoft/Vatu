@@ -141,6 +141,7 @@ namespace VTC
         public bool IsInStruct { get; set; }
         public bool IsInUnion { get; set; }
         public bool IsInClass { get; set; }
+
         public bool IsInEnum { get; set; }
         public bool IsInVarDeclaration { get; set; }
 
@@ -347,6 +348,7 @@ namespace VTC
 
             IsInClass = true;
         }
+  
         public ResolveContext(List<Namespace> imp, Namespace ns, UnionDeclaration decl)
         {
        
@@ -476,6 +478,7 @@ namespace VTC
             }
             else return null;
         }
+     
         public ResolveContext CreateAsChild(List<Namespace> imp, Namespace ns, UnionDeclaration md)
         {
             if (ChildContexts != null)

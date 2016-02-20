@@ -13,6 +13,7 @@ namespace VTC
     /// </summary>
     public class MethodSpec : MemberSpec, IEquatable<MethodSpec>
     {
+        public bool IsAbstract = false;
         public ClassTypeSpec ParentClass { get; set; }
         public bool IsVariadic { get; set; }
         public CallingConventions CallingConvention { get; set; }

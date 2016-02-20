@@ -23,7 +23,12 @@ namespace VTC.Core
             Right = right;
             Operator = binop.Operator;
         }
-
+           public override FlowState DoFlowAnalysis(FlowAnalysisContext fc)
+       {
+            Left.DoFlowAnalysis(fc);
+           Right.DoFlowAnalysis(fc);
+             return FlowState.Valid;
+        }
         byte size = 16;
         public override SimpleToken DoResolve(ResolveContext rc)
         {

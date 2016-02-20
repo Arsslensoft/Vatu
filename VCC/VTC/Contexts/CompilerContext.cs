@@ -444,6 +444,7 @@ namespace VTC
                             Resolved.Add(d);
                             ResolveCtx.Add(childctx);
                         }
+                      
                         else if (vstmt is UnionDeclaration)
                         {
                             UnionDeclaration md = (UnionDeclaration)vstmt;

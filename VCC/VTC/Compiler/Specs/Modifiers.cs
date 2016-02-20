@@ -25,7 +25,8 @@ namespace VTC
         Ref = 1 << 5,
         Public = 1 << 6,
         Internal = 1 << 7,
-        Protected = 1 << 8
+        Protected = 1 << 8,
+        Sealed = 1 << 9
     }
 
 	

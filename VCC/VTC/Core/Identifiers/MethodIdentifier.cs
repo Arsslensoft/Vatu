@@ -113,6 +113,7 @@ namespace VTC.Core
         {
             if (_mod != null)
             {
+                _mod.AllowSealedModifier = rc.IsInClass;
                 _mod = (Modifier)_mod.DoResolve(rc);
                 Mods = _mod.ModifierList;
             }

@@ -108,6 +108,8 @@ namespace VTC.Core
 
     [Terminal("foreach")]
     [Terminal("in")]
+    [Terminal("sealed")]
+    [Terminal("restrict")]
     public class SimpleToken : SemanticToken, IResolve
     {
         private Location _loc;

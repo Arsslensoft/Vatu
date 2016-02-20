@@ -26,13 +26,14 @@ namespace VTC.Core
         }
  public override SimpleToken DoResolve(ResolveContext rc)
         {
-            return null;
+            return this;
         }
         public override bool Emit(EmitContext ec)
         {
              ec.EmitInstruction(new Vasm.x86.Noop());
              return true;
         }
+         
       
     }
    

@@ -140,7 +140,7 @@ namespace VTC.Core
 
             if (ext != null && !ext.Static)
                 method = new MethodSpec(rc.CurrentNamespace, ext.ExtendedType.NormalizedName + "$_" + _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, tp.ToArray(), this.Location);
-            else if(rc.IsInClass)
+            else if(rc.IsInClass )
                 method = new MethodSpec(rc.CurrentNamespace, rc.CurrentType.NormalizedName + "$_" + _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, tp.ToArray(), this.Location);
             else
                 method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, tp.ToArray(), this.Location);

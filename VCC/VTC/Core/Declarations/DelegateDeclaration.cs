@@ -61,6 +61,9 @@ namespace VTC.Core.Declarations
         {
             ccvh = new CallingConventionsHandler();
             _mod = (Modifier)_mod.DoResolve(rc);
+            TypeSpec type = null;
+            if (rc.Resolver.TryResolveType(_name.Name, ref type))
+                ResolveContext.Report.Error(0, Location, "Duplicate type declaration ");
             TypeName = new DelegateTypeSpec(rc.CurrentNamespace, _name.Name, _ret.Type, new List<TypeSpec>(), _ccv.CallingConvention, _mod.ModifierList,new List<ParameterSpec>(), Location);
        
             rc.KnowType(TypeName);

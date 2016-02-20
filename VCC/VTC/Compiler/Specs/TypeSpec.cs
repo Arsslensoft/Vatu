@@ -347,9 +347,9 @@ namespace VTC
                         return 0;
                 }
             }
-            else if (type.IsClass && !type.IsPointer)
+            else if (type is ClassTypeSpec)
                 return (type as ClassTypeSpec).ClassSize;
-
+          
             return type.Size;
         }
         protected int GetSizeBt(TypeSpec type)
