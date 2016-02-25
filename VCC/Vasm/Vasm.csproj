@@ -59,6 +59,7 @@
     <Compile Include="Optimizer\Accepted\PushPopO0.cs" />
     <Compile Include="Optimizer\Accepted\MovO1.cs" />
     <Compile Include="Optimizer\IOptimizer.cs" />
+    <None Include="ClassDiagram1.cd" />
     <None Include="Optimizer\JumpOptimizer.cs" />
     <Compile Include="Optimizer\Optimizer.cs" />
     <Compile Include="Optimizer\OptimizeUtils.cs" />

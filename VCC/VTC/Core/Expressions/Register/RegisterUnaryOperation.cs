@@ -293,10 +293,11 @@ namespace VTC.Core
         {
             if (Register != null)
                 ec.EmitInstruction(new Mov() { DestinationReg = dst, SourceReg = Register.Register, Size = size });
-          
+            else if (LeftExpr is ConstantExpression)
+                (LeftExpr as ConstantExpression).EmitToRegister(ec, dst);
             else
             {
-                if ((LeftExpr is VariableExpression && !(LeftExpr is AccessExpression) ) )
+                if ((LeftExpr is VariableExpression && !(LeftExpr is AccessExpression)))
                 {
                     VariableExpression v = (VariableExpression)LeftExpr;
                     if (v.variable is FieldSpec)

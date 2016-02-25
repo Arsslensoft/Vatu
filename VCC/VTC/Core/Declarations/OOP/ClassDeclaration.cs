@@ -77,7 +77,7 @@ namespace VTC.Core
                       AddDefaultDtor = false;
                //    methods.Add((d as DestructorPrototypeDeclaration).method);
 
-               if (d is MethodDeclaration)
+               if (d is MethodDeclaration && ((d as MethodDeclaration).method.Modifiers & Modifiers.Static) != Modifiers.Static)
                {
                    TypeMemberSpec t = CreateMemberForMethod((d as MethodDeclaration).method, idx);
                    implemented.Add((d as MethodDeclaration).method);
@@ -98,10 +98,10 @@ namespace VTC.Core
             methods[methods.Count - 1].ParentClass = TypeName;
           
                }
-               else if (d is MethodPrototypeDeclaration)
+               else if (d is MethodPrototypeDeclaration && ((d as MethodPrototypeDeclaration).method.Modifiers & Modifiers.Static) != Modifiers.Static)
                {
                    TypeMemberSpec t = CreateMemberForMethod((d as MethodPrototypeDeclaration).method, idx);
-                   implemented.Add((d as MethodDeclaration).method);
+                   implemented.Add((d as MethodPrototypeDeclaration).method);
                    if ( !Members.Contains(t))
                    {
                        t.Index = idx;

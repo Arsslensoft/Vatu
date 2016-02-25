@@ -1,0 +1,3175 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="CommandLine.AssemblyLicenseAttribute" Collapsed="true">
+    <Position X="17.5" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Attributes\AssemblyLicenseAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.AssemblyUsageAttribute" Collapsed="true">
+    <Position X="19.75" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Attributes\AssemblyUsageAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.BaseOptionAttribute" Collapsed="true">
+    <Position X="6.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAIAAkAAAAAABAABAAGBCBAAIAwMAAAAAAAkAA=</HashCode>
+      <FileName>Base\ComandLine\Attributes\BaseOptionAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.HelpOptionAttribute" Collapsed="true">
+    <Position X="1" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAAAEAAAAAAAEAAAAAAAAAAAAAAAgAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Attributes\HelpOptionAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.HelpVerbOptionAttribute" Collapsed="true">
+    <Position X="3.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAAAEAAAAAAAEAAAAAAAAAAIAAAAgAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Attributes\HelpVerbOptionAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.MultilineTextAttribute" Collapsed="true">
+    <Position X="18.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAAAAABAIABAAAAAAAgAACgQEAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Attributes\MultiLineTextAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.OptionArrayAttribute" Collapsed="true">
+    <Position X="5.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Attributes\OptionArrayAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.OptionAttribute" Collapsed="true">
+    <Position X="7.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Attributes\OptionAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.OptionListAttribute" Collapsed="true">
+    <Position X="10" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAFAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Attributes\OptionListAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.ParserStateAttribute" Collapsed="true">
+    <Position X="496" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Attributes\ParserStateAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.ValueListAttribute" Collapsed="true">
+    <Position X="508.25" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAACAAAAAAEAAAAAAAAAAIAAAAIBAAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Attributes\ValueListAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.ValueOptionAttribute" Collapsed="true">
+    <Position X="496" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAEAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Attributes\ValueOptionAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.VerbOptionAttribute" Collapsed="true">
+    <Position X="12.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAEAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Attributes\VerbOptionAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.BadOptionInfo" Collapsed="true">
+    <Position X="496" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAEAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\BadOptionInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Parser" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="504.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CgAAAIAAASAEABAFgBAAMAAAAAAIAAJAgAAACAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Parser.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="CommandLine.ParserException" Collapsed="true">
+    <Position X="506.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\ParserException.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.ParserSettings" Collapsed="true">
+    <Position X="508.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAwAgAICAEAIAAAgAAAAIAgAQAAAAIAAAAAAAQAAA=</HashCode>
+      <FileName>Base\ComandLine\ParserSettings.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.ParserState" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="494.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\ParserState.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="CommandLine.ParsingError" Collapsed="true">
+    <Position X="497.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAAAEAAAAAAAAAAAAAAAABAAAAAAAQAAA=</HashCode>
+      <FileName>Base\ComandLine\ParsingError.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Extensions.CharExtensions" Collapsed="true">
+    <Position X="503" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Extensions\CharExtensions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Extensions.StringExtensions" Collapsed="true">
+    <Position X="496" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAIAAg=</HashCode>
+      <FileName>Base\ComandLine\Extensions\StringExtensions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Infrastructure.Assumes" Collapsed="true">
+    <Position X="494.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAEAAAAAAAAAAAAAAAAAAAEAAAAAAAABAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Infrastructure\Assumes.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Infrastructure.Pair&lt;TLeft, TRight&gt;" Collapsed="true">
+    <Position X="501.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAgAAAAAAAAAAAAYgACACAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Infrastructure\Pair.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Infrastructure.PopsicleSetter" Collapsed="true">
+    <Position X="499.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Infrastructure\PopsicleSetter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Infrastructure.ReflectionCache" Collapsed="true">
+    <Position X="504.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAIAAAAAACAAAAAAAAAAAAAEAQAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Infrastructure\ReflectionCache.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Infrastructure.ReflectionHelper" Collapsed="true">
+    <Position X="506.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAIAAAABACAACCAAAAQAAAIAAAAAAAAACAA=</HashCode>
+      <FileName>Base\ComandLine\Infrastructure\ReflectionHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Infrastructure.SR" Collapsed="true">
+    <Position X="508.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AhAAAYAAQAgAAAAgAACABABAAAAQAAoAAACQEAAAAQI=</HashCode>
+      <FileName>Base\ComandLine\Infrastructure\SR.strings.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Parsing.ArgumentParser" Collapsed="true">
+    <Position X="16.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAQQAACAAAIgAgAAACBRAAAQAAMAAAAAABAAgAAA=</HashCode>
+      <FileName>Base\ComandLine\Parsing\ArgumentParser.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Parsing.LongOptionParser" Collapsed="true">
+    <Position X="15.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Parsing\LongOptionParser.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Parsing.OneCharStringEnumerator" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="496" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EgAABAgABAAAAAAAAACgAAAAAAQAAAAAIAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Parsing\OneCharStringEnumerator.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="CommandLine.Parsing.OptionGroupParser" Collapsed="true">
+    <Position X="17.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Parsing\OptionGroupParser.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Parsing.OptionInfo" Collapsed="true">
+    <Position X="497.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAgBBAQAIAEAAwBAAgAAEBACAAgAgIAQGAQAAAACEAA=</HashCode>
+      <FileName>Base\ComandLine\Parsing\OptionInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Parsing.OptionMap" Collapsed="true">
+    <Position X="499.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AFAAIAAAQQAAAAAQiAAAQAAAAAAAAEABAEIAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Parsing\OptionMap.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Parsing.PropertyWriter" Collapsed="true">
+    <Position X="503" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAIAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAQAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Parsing\PropertyWriter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Parsing.StringArrayEnumerator" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="494.25" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EgQAAAgABAAAAAAAAACgAAAAAAQAAAAAIAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Parsing\StringArrayEnumerator.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="CommandLine.Parsing.TargetCapabilitiesExtensions" Collapsed="true">
+    <Position X="499.5" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAEAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Parsing\TargetCapabilitiesExtensions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Parsing.ValueMapper" Collapsed="true">
+    <Position X="494.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAABIACACEAAAgAAAgAAQEAAAAAAAAAABABACAA=</HashCode>
+      <FileName>Base\ComandLine\Parsing\ValueMapper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Text.BaseSentenceBuilder" Collapsed="true">
+    <Position X="19.5" Y="21.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACCAAAAIAAAAAAAAAAAAACAAAAAAAAAAAAAAAgCAAI=</HashCode>
+      <FileName>Base\ComandLine\Text\BaseSentenceBuilder.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Text.CopyrightInfo" Collapsed="true">
+    <Position X="497.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAIABBAAEAAAAEgEAAIAAAAAAAJAAAAAAgBAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Text\CopyrightInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Text.EnglishSentenceBuilder" Collapsed="true">
+    <Position X="19.5" Y="22.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAAAAAIAAAAAAAAAAAAACAAAAAAAAAAAAAAAgCAAI=</HashCode>
+      <FileName>Base\ComandLine\Text\EnglishSentenceBuilder.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Text.FormatOptionHelpTextEventArgs" Collapsed="true">
+    <Position X="494.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAACAAAAgAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Text\FormatOptionHelpTextEventArgs.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Text.HeadingInfo" Collapsed="true">
+    <Position X="501.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAIAAEQYAAIAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Text\HeadingInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CommandLine.Text.HelpText" Collapsed="true">
+    <Position X="503" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAkAIACFEAIWABAEBBBAAAABABgABAKAFKAAAKARACA=</HashCode>
+      <FileName>Base\ComandLine\Text\HelpText.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Error" Collapsed="true">
+    <Position X="504.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAggAAAAAAAAAAAAAEEAAAAAQAAAAABAAA=</HashCode>
+      <FileName>Base\Error.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Location" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="508.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAAAAAAAEgABAAAAAAACAAgAIAAIAAABAAAA=</HashCode>
+      <FileName>Base\location.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="VTC.Report" Collapsed="true">
+    <Position X="3" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAaAAEABgAAQAAAAAAARAAAAAAAAAAAABAIAQAAAA=</HashCode>
+      <FileName>Base\Report.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.InternalErrorException" Collapsed="true">
+    <Position X="504.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\Report.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ConsoleReporter" Collapsed="true">
+    <Position X="0.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAABAAAAAAAAAAAAAAIAQAAAA=</HashCode>
+      <FileName>Base\Reports\ConsoleReporter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.FileReporter" Collapsed="true">
+    <Position X="3" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAABAAAAAAACAAAAAAIAQAAAA=</HashCode>
+      <FileName>Base\Reports\FileReporter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ListReporter" Collapsed="true">
+    <Position X="5.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAABAAAAAAAAAAAAAAIAQAAAA=</HashCode>
+      <FileName>Base\Reports\ListReporter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.FileListAttribute" Collapsed="true">
+    <Position X="506.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\Settings.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Settings" Collapsed="true">
+    <Position X="503" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAGAIBAAKAAUAAQgCAAQACQAgFACFAAAAgAAAQ=</HashCode>
+      <FileName>Base\Settings.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.CallingConventionsHandler" Collapsed="true">
+    <Position X="497.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAIgAIAgAIAggAAAQAAAAACIAAAQAAAAAgA=</HashCode>
+      <FileName>CallingConventions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.AddressableEmitter" Collapsed="true">
+    <Position X="17.5" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAAAAAAAAAJAQAICAAEAAQAAAAAAAQAAAAAgAA=</HashCode>
+      <FileName>Compiler\Emitter\AddressableEmitter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ArrayEmitter" Collapsed="true">
+    <Position X="19.75" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAAAAAAAAAAAAAICAAEAAAAAAAAAAQAAAAAgAA=</HashCode>
+      <FileName>Compiler\Emitter\ArrayEmitter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ByteEmitter" Collapsed="true">
+    <Position X="22" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAAAAAAAAAAAAAICAAEAAAAAAAAAAQAAAAAgAA=</HashCode>
+      <FileName>Compiler\Emitter\ByteEmitter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ClassEmitter" Collapsed="true">
+    <Position X="24.25" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAAAAAAAAAAAAAICAAEAAAAAAAAAAQAAAAAgAA=</HashCode>
+      <FileName>Compiler\Emitter\ClassEmitter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.FloatEmitter" Collapsed="true">
+    <Position X="26.5" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAAAAAAAAAAAAAICAAEAAAAAAAAAAQAAAAAgAA=</HashCode>
+      <FileName>Compiler\Emitter\FloatEmitter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.HostedArrayEmitter" Collapsed="true">
+    <Position X="1.75" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAAAAAAAAAAAAAICAAEAAAAAAAAAAQAAAAAgAA=</HashCode>
+      <FileName>Compiler\Emitter\HostedArrayEmitter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.HostedMatrixEmitter" Collapsed="true">
+    <Position X="4" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAAAAAAAAAAAAAICAAEAAAAAAAAAAQAAAAAgAA=</HashCode>
+      <FileName>Compiler\Emitter\HostedMatrixEmitter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.MatrixEmitter" Collapsed="true">
+    <Position X="6.25" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAAAAAAAAAAAAAICAAEAAAAAAAAAAQAAAAAgAA=</HashCode>
+      <FileName>Compiler\Emitter\MatrixEmitter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ReferenceEmitter" Collapsed="true">
+    <Position X="8.5" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAAAAAAAAAAAAAICAAEAAAAAAAAAAQAAAAAgAA=</HashCode>
+      <FileName>Compiler\Emitter\ReferenceEmitter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.SByteEmitter" Collapsed="true">
+    <Position X="10.75" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAAAAAAAAAAAAAICAAEAAAAAAAAAAQAAAAAgAA=</HashCode>
+      <FileName>Compiler\Emitter\SByteEmitter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.StructEmitter" Collapsed="true">
+    <Position X="13" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAAAAAAAAAAAAAICAAEAAAAAAAAAAQAAAAAgAA=</HashCode>
+      <FileName>Compiler\Emitter\StructEmitter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.WordEmitter" Collapsed="true">
+    <Position X="15.25" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAAAAAAAAAAAAAICAAEAAAAAAAAAAQAAAAAgAA=</HashCode>
+      <FileName>Compiler\Emitter\WordEmitter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ArrayTypeSpec" Collapsed="true">
+    <Position X="15.75" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEgAAACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Compiler\Specs\ArrayTypeSpec.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.BuiltinTypeSpec" Collapsed="true">
+    <Position X="22.5" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIAAAQABBAkwQAAAAAABBAAAAAAAQIAAAAiACA=</HashCode>
+      <FileName>Compiler\Specs\BuiltinTypeSpec.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.ClassTypeSpec" Collapsed="true">
+    <Position X="27" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAgEAAAAEEAAIAAEAAAAAAgAAQEAAEAIAAEkA=</HashCode>
+      <FileName>Compiler\Specs\ClassTypeSpec.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.DelegateTypeSpec" Collapsed="true">
+    <Position X="31.5" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAAAAAEAAAAUAAAAAAAAAAAAAAAAAIAAAAAEAAA=</HashCode>
+      <FileName>Compiler\Specs\DelegateTypeSpec.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.EnumMemberSpec" Collapsed="true">
+    <Position X="9" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAIAAEAAAIAAAAAAAAAAQAAAAgAIAAAAA=</HashCode>
+      <FileName>Compiler\Specs\EnumMemberSpec.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.EnumTypeSpec" Collapsed="true">
+    <Position X="33.75" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAEAEAAAgA=</HashCode>
+      <FileName>Compiler\Specs\EnumTypeSpec.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.FieldSpec" Collapsed="true">
+    <Position X="13.5" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAAAAAAAAgEgAAICAAkBAAAAAAAAAQAAAAAgAA=</HashCode>
+      <FileName>Compiler\Specs\FieldSpec.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.MethodSpec" Collapsed="true">
+    <Position X="40.5" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ADAAAAKQgBAAAIQEgAAAAACAAAAAAAAAAIAACAAAAAA=</HashCode>
+      <FileName>Compiler\Specs\MemberSpec.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.MemberSpecEqualityComparer" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="494.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAgAAAAAAAAAAAAIAAAAAAAAAAAAA=</HashCode>
+      <FileName>Compiler\Specs\MemberSpecEqualityComparer.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="VTC.MemberSpec" Collapsed="true">
+    <Position X="21.5" Y="9.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAJhGAYAIAAAAAAAEICAQMAAAAAAAEAAQAAAQAgAM=</HashCode>
+      <FileName>Compiler\Specs\MethodSpec.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.OperatorSpec" Collapsed="true">
+    <Position X="2.25" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAAAAAAAAEgAAAAAAAAAAAAAAQAAAAAAAACAA=</HashCode>
+      <FileName>Compiler\Specs\OperatorSpec.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.ParameterSpec" Collapsed="true">
+    <Position X="4.5" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IEAAEBAAAAAAACAEkCAICAAEBAAAAAAAAAQAAAAAgAA=</HashCode>
+      <FileName>Compiler\Specs\ParameterSpec.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.PointerTypeSpec" Collapsed="true">
+    <Position X="15.75" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEgAAAAAAAAAgAAAAAAAAAAAAAgAA=</HashCode>
+      <FileName>Compiler\Specs\PointerTypeSpec.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.PropertySpec" Collapsed="true">
+    <Position X="13.5" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAAAAAAAAAEgIAICAAEAAAAAAAAAASACAAAkAA=</HashCode>
+      <FileName>Compiler\Specs\PropertySpec.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.ReferenceSpec" Collapsed="true">
+    <Position X="14" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAhAAAAIAAAFEAAAICIAEAAAJBAAAAAQCAAAIgAE=</HashCode>
+      <FileName>Compiler\Specs\ReferenceSpec.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.ReferenceTypeSpec" Collapsed="true">
+    <Position X="18" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAEgAAAgAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Compiler\Specs\ReferenceTypeSpec.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.RegisterSpec" Collapsed="true">
+    <Position X="6.75" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAAAAAAAAAEgAAICAAEBAABAAAAAAQAJAAAgAA=</HashCode>
+      <FileName>Compiler\Specs\RegisterSpec.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.RegisterTypeSpec" Collapsed="true">
+    <Position X="20.25" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAACAEAAAAAAAAAAAAAAAAAAAAAAAACAA=</HashCode>
+      <FileName>Compiler\Specs\RegisterTypeSpec.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.StructTypeSpec" Collapsed="true">
+    <Position X="24.75" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAFAAAAEEAAIAAEAAAAAAgAAQAAAEAIAAEgA=</HashCode>
+      <FileName>Compiler\Specs\StructTypeSpec.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.TemplateTypeSpec" Collapsed="true">
+    <Position X="29.25" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAEAAAAAEAAAAAAAEAAAAAAAAAAAAAAAAAQA=</HashCode>
+      <FileName>Compiler\Specs\TemplateTypeSpec.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.TypeChecker" Collapsed="true">
+    <Position X="506.5" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAIgAAgEAQAAAEgAIBAAASAAAAAAAk=</HashCode>
+      <FileName>Compiler\Specs\TypeChecker.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.TypeMemberSpec" Collapsed="true">
+    <Position X="11.25" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAEAAEgAAIAAAAAAAAAAQAAAEAAJAAAAA=</HashCode>
+      <FileName>Compiler\Specs\TypeMemberSpec.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.TypeSpec" Collapsed="true">
+    <Position X="26" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CQEABQGAANAAgQTUxIFgoIQIAEqEIRrIkEgIAEIKgAg=</HashCode>
+      <FileName>Compiler\Specs\TypeSpec.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.UnionTypeSpec" Collapsed="true">
+    <Position X="36" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAEAAAAEEAAAAAEAAAAAAgAAQAAAEAIAAAgA=</HashCode>
+      <FileName>Compiler\Specs\UnionTypeSpec.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.VarSpec" Collapsed="true">
+    <Position X="38.25" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAEBAAAAAAACQEgCCICAAEBAAAAAAAAAQAAAAAgAA=</HashCode>
+      <FileName>Compiler\Specs\VarSpec.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.CompiledSource" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="506.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAFgAAAgAAAAAAACAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Contexts\CompiledSource.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="VTC.CompilerContext" Collapsed="true">
+    <Position X="508.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAkAAAhCCAACGBAAABDgEQQAQAGAAARgAEAAjAANA=</HashCode>
+      <FileName>Contexts\CompilerContext.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.DependencyParsing" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="499.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAQQAAAAAEgAAAAAAAABAEABABAAAAAAAAFAA=</HashCode>
+      <FileName>Contexts\DefaultDependency.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="VTC.EmitContext" Collapsed="true">
+    <Position X="503" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CARCZAIBkAIgxgMQAAABQJAAA4BwAYBEFAQArCFLAAA=</HashCode>
+      <FileName>Contexts\EmitContext.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Conversion" Collapsed="true">
+    <Position X="496" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAQCEAAAIAAAAAAAAAAAAAQAAAAAAAAAA=</HashCode>
+      <FileName>Contexts\EmitContext.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.FIFOSemaphore" Collapsed="true">
+    <Position X="6.5" Y="22.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAABAAAAA=</HashCode>
+      <FileName>Contexts\FIFOSemaphore.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Semaphore" Collapsed="true">
+    <Position X="6.5" Y="21.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAAAgAAAAAAAAAAAAAAABAAABAIACA=</HashCode>
+      <FileName>Contexts\FIFOSemaphore.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.SignatureEntry" Collapsed="true">
+    <Position X="506.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARAAAAAA=</HashCode>
+      <FileName>Contexts\FlowAnalysisContext.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.SignatureBitSet" Collapsed="true">
+    <Position X="504.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAIABAAIAAACAQACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Contexts\FlowAnalysisContext.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.FlowAnalysisContext" Collapsed="true">
+    <Position X="508.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQgAAgAAEAAIAAAAAAAAAEBAAJAQIAAAAAIAAAQAAA=</HashCode>
+      <FileName>Contexts\FlowAnalysisContext.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ParallelCompiledSource" Collapsed="true">
+    <Position X="503" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAgAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQA=</HashCode>
+      <FileName>Contexts\ParallelCompiledSource.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ResolverState" Collapsed="true">
+    <Position X="496" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAEAAAAAAAAACAAAIAAAAAEgAAABAAAAAAgA=</HashCode>
+      <FileName>Contexts\ResolveContext.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ResolveContext" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="508.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAEUAAKAAIoAJgdAlAQIBIAGAAEgkAAADXhMADgk=</HashCode>
+      <FileName>Contexts\ResolveContext.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="VTC.Resolver" Collapsed="true">
+    <Position X="494.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>kAARHIBAAAAYAAAUBCAEWg0AIAAwACggQJQAEJNCAkA=</HashCode>
+      <FileName>Contexts\Resolver.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.CompilationUnit" Collapsed="true">
+    <Position X="257.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAQAAAAAAAAAAAAAAAAAAACAAAAAA=</HashCode>
+      <FileName>Core\CompilationUnit.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ByAddressOperator" Collapsed="true">
+    <Position X="152" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIgAAgAACAAABAAAAAAAAAAAAIAAEAAAAAAAgBgAA=</HashCode>
+      <FileName>Operators\Access\ByAddressOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ByIndexOperator" Collapsed="true">
+    <Position X="154.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAgAACAAAAQAAAIABAAAAAAAAAAAgEAAAAAAAA=</HashCode>
+      <FileName>Operators\Access\ByIndexOperator.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.ByNameOperator" Collapsed="true">
+    <Position X="156.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAgAAAAAAAAAAAIABAAAAAAAAAAAAAAAAQAAAA=</HashCode>
+      <FileName>Operators\Access\ByNameOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ByValueOperator" Collapsed="true">
+    <Position X="158.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAYgABgAACAAABAAAAAAAAAAAAIAAEAAAAABAgBgAA=</HashCode>
+      <FileName>Operators\Access\ByValueOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.AddAssignOperator" Collapsed="true">
+    <Position X="167.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAABAAAAAAQBAAACAAAAAAEAA=</HashCode>
+      <FileName>Operators\Assign\AddAssign.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.AndAssignOperator" Collapsed="true">
+    <Position X="170" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAABAAAAAAAAAAACAAAAAAAAA=</HashCode>
+      <FileName>Operators\Assign\AndAssign.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.DivAssignOperator" Collapsed="true">
+    <Position X="172.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAABAAAAAAAAAAACAAAAAAAAA=</HashCode>
+      <FileName>Operators\Assign\Div.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ExchangeOperator" Collapsed="true">
+    <Position X="174.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAgAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Assign\ExchangeAssign.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.LeftShiftAssignOperator" Collapsed="true">
+    <Position X="176.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAABAAAAAAAAAAACAAAAAAAAA=</HashCode>
+      <FileName>Operators\Assign\LeftShiftAssign.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.SimpleAssignOperator" Collapsed="true">
+    <Position X="179" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAgAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Assign\SimpleAssign.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.SubAssignOperator" Collapsed="true">
+    <Position X="181.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAABAAAAAAQBAAACAAAAAAEAA=</HashCode>
+      <FileName>Operators\Assign\SubAssign.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.XorAssignOperator" Collapsed="true">
+    <Position X="183.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAABAAAAAAAAAAACAAAAAAAAA=</HashCode>
+      <FileName>Operators\Assign\XorAssign.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.AdditionOperator" Collapsed="true">
+    <Position X="219.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\AdditionOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.BitwiseAndOperator" Collapsed="true">
+    <Position X="221.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\BitwiseAndOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.BitwiseOrOperator" Collapsed="true">
+    <Position X="224" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\BitwiseOrOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.BitwiseXorOperator" Collapsed="true">
+    <Position X="226.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\BitwiseXorOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.DivisionOperator" Collapsed="true">
+    <Position X="228.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAABAAAAAAAAAACAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\DivisionOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.EqualOperator" Collapsed="true">
+    <Position X="230.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\EqualOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ExtendedBinaryOperator" Collapsed="true">
+    <Position X="233" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgAACAAAAAAAAIABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\ExtendedBinaryOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.GreaterThanOperator" Collapsed="true">
+    <Position X="185.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\GreaterThanOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.GreaterThanOrEqualOperator" Collapsed="true">
+    <Position X="188" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\GreaterThanOrEqualOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.IsOperator" Collapsed="true">
+    <Position X="190.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgAAAAAAAAAAAAAFAAEAAAAAAAQIAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\IsOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.LeftRotateOperator" Collapsed="true">
+    <Position X="192.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAgAAAAAAAAAAAABBAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\LeftRotateOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.LeftShiftOperator" Collapsed="true">
+    <Position X="194.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAgAAAAAAAAAAAAABAAAAAAAAAACAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\LeftShiftOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.LessThanOperator" Collapsed="true">
+    <Position X="197" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\LessThanOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.LessThanOrEqualOperator" Collapsed="true">
+    <Position X="199.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\LessThanOrEqualOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.LogicalAndOperator" Collapsed="true">
+    <Position X="201.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\LogicalAndOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.LogicalOrOperator" Collapsed="true">
+    <Position X="203.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\LogicalOrOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ModulusOperator" Collapsed="true">
+    <Position X="206" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAIABAAAAAAAAAACAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\ModulusOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.MultiplyOperator" Collapsed="true">
+    <Position X="208.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAABAAAAAAAAAACAAAAAAAABA=</HashCode>
+      <FileName>Operators\Binary\MultiplyOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.NotEqualOperator" Collapsed="true">
+    <Position X="210.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\NotEqualOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.RightRotateOperator" Collapsed="true">
+    <Position X="212.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAgAAAAAAAAAAAABBAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\RightRotateOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.RightShiftOperator" Collapsed="true">
+    <Position X="215" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAgAAAAAAAAAAAAABAAAAAAAAAACAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\RightShiftOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.SubtractionOperator" Collapsed="true">
+    <Position X="217.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Binary\SubtractionOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.AddressOfOperator" Collapsed="true">
+    <Position X="131.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgEACAAAAAAABIABAAAAAAQAAAACQAAAAAAAA=</HashCode>
+      <FileName>Operators\Unary\AddressOfOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.CastOperator" Collapsed="true">
+    <Position X="134" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEEBAFAgABCBCQQAgEGIAjBQQACAQAIQAKCEAAQABAE=</HashCode>
+      <FileName>Operators\Unary\CastOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.DecrementOperator" Collapsed="true">
+    <Position X="246.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAIkBAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Unary\DecrementOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ExtendedUnaryOperator" Collapsed="true">
+    <Position X="248.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgAACAAAAAAAAIABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Unary\ExtendedUnaryOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.IncrementOperator" Collapsed="true">
+    <Position X="251" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAIkBAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Unary\IncrementOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.LoadEffectiveAddressOp" Collapsed="true">
+    <Position X="253.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAgAACAAAAAAAAIABAAAAAAQAAAACQAAAAAAAA=</HashCode>
+      <FileName>Operators\Unary\LoadEffectiveAddressOp.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.LogicalNotOperator" Collapsed="true">
+    <Position X="255.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAIABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Unary\LogicalNotOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.NameOfOperator" Collapsed="true">
+    <Position X="26" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Unary\NameOfOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.NegationOperator" Collapsed="true">
+    <Position X="235.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAIABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Unary\NegationOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.OnesComplementOperator" Collapsed="true">
+    <Position X="237.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAIABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Unary\OnesComplementOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ParityTestOperator" Collapsed="true">
+    <Position X="239.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgAACAAAAAAAAIABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Unary\ParityTestOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.SizeOfOperator" Collapsed="true">
+    <Position X="32.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAgAQAAABAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Unary\SizeOfOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ValueOfOp" Collapsed="true">
+    <Position X="242" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAgAgAACAAAAEAAAIAJAAAAAAQAAAACAAAAAAAAA=</HashCode>
+      <FileName>Operators\Unary\ValueOfOp.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.ZeroTestOperator" Collapsed="true">
+    <Position X="244.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgAACAAAAAAAAIABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Operators\Unary\ZeroTestOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Program" Collapsed="true">
+    <Position X="501.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAhAAAAEA=</HashCode>
+      <FileName>Program.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Grammar.CgtReader" Collapsed="true">
+    <Position X="499.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEABAACAAAEAAAgBAAAFACAAAAAQAAAAAAIAAwCgA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\CgtReader.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Grammar.CgtWriter" Collapsed="true">
+    <Position X="501.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQQAAAAAAAAAAAEAAhAAIBAAAAAAAAAAAQAAAACQAgA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\CgtWriter.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Grammar.CompiledGrammar" Collapsed="true">
+    <Position X="504.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>cEMQgFsoAYgNsAUMgGUtRwUBAMQgCBREZQQAQNFACkg=</HashCode>
+      <FileName>Base\GoldParser\Grammar\CompiledGrammar.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Grammar.DfaCharset" Collapsed="true">
+    <Position X="17.25" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEAAABAAAgAAAAIAAAAAAAAAAAAAAAAAAARACQAEA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\DfaCharset.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Grammar.DfaState" Collapsed="true">
+    <Position X="19.5" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAAAgAUCAAAAAAAAAAQACBAAAAAAAQAAAAQA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\DfaState.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Grammar.GrammarObject&lt;TSelf&gt;" Collapsed="true">
+    <Position X="11.5" Y="15.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAAAAAgAAAgAAAAAAAAAAAAIAAAAEAAAABAAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\GrammarObject.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Grammar.GrammarObjectSet&lt;T&gt;" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="496" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAABBAACAAgAAAAAAAAAAAEAAAAAAAQAAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\GrammarObjectSet.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Grammar.Group" Collapsed="true">
+    <Position X="21.75" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAiIAAAAQAgwAAAAIQgAAAEAAhAEAAAAGAAAAg=</HashCode>
+      <FileName>Base\GoldParser\Grammar\Group.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Grammar.LalrAction" Collapsed="true">
+    <Position X="4.75" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAAAAAAAAAQEAAAAACAAAAAAEAAAAAAAAAAACAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\LalrAction.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Grammar.LalrActionAccept" Collapsed="true">
+    <Position X="1.5" Y="18.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAEAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\LalrActionAccept.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Grammar.LalrActionGoto" Collapsed="true">
+    <Position X="6" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAEAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\LalrActionGoto.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Grammar.LalrActionReduce" Collapsed="true">
+    <Position X="3.75" Y="18.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAACAAAAAAEAAACAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\LalrActionReduce.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Grammar.LalrActionShift" Collapsed="true">
+    <Position X="8.25" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAEAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\LalrActionShift.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Grammar.LalrActionWithLalrState" Collapsed="true">
+    <Position X="7" Y="18.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAACAAAAAAAAAEAAAABAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\LalrActionWithLalrState.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Grammar.LalrState" Collapsed="true">
+    <Position X="10.5" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAQAAABAASAEAAAAAAAAAAACAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\LalrState.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Grammar.Rule" Collapsed="true">
+    <Position X="12.75" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABIAAUAAIYIECQAECAEAAAQAgAAAAAAFAAAIAAAAACE=</HashCode>
+      <FileName>Base\GoldParser\Grammar\Rule.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Grammar.Symbol" Collapsed="true">
+    <Position X="15" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAABAAAAEQAAGAAQAAAAMAAAIAAAAAAAAAAg=</HashCode>
+      <FileName>Base\GoldParser\Grammar\Symbol.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Parser.DummyGroup" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="501.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAwAAAIAAgAAAAAABAEAAAACAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Parser\DummyGroup.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Parser.LalrProcessor&lt;T&gt;" Collapsed="true">
+    <Position X="6.75" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAgAAAAgAAAAAgAIAAgARAAAAAgIAAAAgAGAIIAAAg=</HashCode>
+      <FileName>Base\GoldParser\Parser\LalrProcessor.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Parser.LalrProcessor" Collapsed="true">
+    <Position X="7.75" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAAAIAAAAAAAAAgIAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Parser\LalrProcessor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Parser.LalrStack&lt;T&gt;" Collapsed="true">
+    <Position X="506.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAEAAAAQAoAAAAAAACAAAAAAAAAAAAACAA=</HashCode>
+      <FileName>Base\GoldParser\Parser\LalrStack.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Parser.Reduction" Collapsed="true">
+    <Position X="2.75" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAQAAAAEAAAAAkAAAEAAAAAAAAAAAAAAAAAAAACAA=</HashCode>
+      <FileName>Base\GoldParser\Parser\Reduction.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Parser.TextBuffer" Collapsed="true">
+    <Position X="503" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAEAQAAIAAAAAASiGAJEAAAgQAAAAAAgAAhAAAQRgAA=</HashCode>
+      <FileName>Base\GoldParser\Parser\TextBuffer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Parser.TextToken" Collapsed="true">
+    <Position X="0.5" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAAAAAAAAAAkAAAAIAAAAAAAAAAIAAAACAAACAA=</HashCode>
+      <FileName>Base\GoldParser\Parser\TextToken.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Parser.Token" Collapsed="true">
+    <Position X="1.75" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAgAAAAAAAAAAAAAAAAAAAACAAACAA=</HashCode>
+      <FileName>Base\GoldParser\Parser\Token.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Parser.Tokenizer&lt;T&gt;" Collapsed="true">
+    <Position X="19.5" Y="18.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAEAAAAAAAAAEAAIAAAAAAACgAEAAoRAAAAgQAA=</HashCode>
+      <FileName>Base\GoldParser\Parser\Tokenizer.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Parser.Tokenizer" Collapsed="true">
+    <Position X="19.5" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Parser\Tokenizer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.ParserStringReader" Collapsed="true">
+    <Position X="3.5" Y="21" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\ParserReader.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.ParserReader" Collapsed="true">
+    <Position X="3.5" Y="19.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\ParserReader.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.RuleAttribute" Collapsed="true">
+    <Position X="8.5" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAAAAAAQIgAAAiABAEQAAAJIAAAAAAAIAAAA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\RuleAttribute.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.RuleAttributeBase" Collapsed="true">
+    <Position X="9.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgAgAAAAEAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\RuleAttributeBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.RuleDeclarationParser" Collapsed="true">
+    <Position X="497.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EIAAAAAAAAQAAAAAAAAAAEAAAABAAAAACggAAAAgAAA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\RuleDeclarationParser.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.RuleTrimAttribute" Collapsed="true">
+    <Position X="10.75" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAgAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAASAAIAAA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\RuleTrimAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.SemanticActions&lt;T&gt;" Collapsed="true">
+    <Position X="0.5" Y="19.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAIxABAwAEAAECAAAAAAEKAQAAggQgAAEAAAU=</HashCode>
+      <FileName>Base\GoldParser\Semantic\SemanticActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.SemanticNonterminalFactory&lt;TBase&gt;" Collapsed="true">
+    <Position X="12.75" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAgAAAAAAEAAAAAAAAAAAAAgA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\SemanticNonterminalFactory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.SemanticNonterminalFactory&lt;TBase, TOutput&gt;" Collapsed="true">
+    <Position X="14" Y="21.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAgAAAAAAAAEAAAAAAAAAAAgA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\SemanticNonterminalFactory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.SemanticNonterminalTypeFactory&lt;TBase, TOutput&gt;" Collapsed="true">
+    <Position X="14" Y="22.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAQAAQAAAAEAEAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\SemanticNonterminalTypeFactory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.SemanticNonterminalTypeFactoryHelper&lt;TBase&gt;" Collapsed="true">
+    <Position X="499.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQAgAAAAAAAAAAAAAAAAAAAAAAAEAAAAGAAA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\SemanticNonterminalTypeFactoryHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.SemanticProcessor&lt;T&gt;" Collapsed="true">
+    <Position X="5.5" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAACAAAAAAAAAAAAAgIAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\SemanticProcessor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.SemanticTerminalFactory&lt;TBase&gt;" Collapsed="true">
+    <Position X="16.25" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\SemanticTerminalFactory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.SemanticTerminalFactory&lt;TBase, TOutput&gt;" Collapsed="true">
+    <Position X="16.25" Y="21.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAgAAAAAAAAEAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\SemanticTerminalFactory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.SemanticTerminalTypeFactory&lt;TBase, TOutput&gt;" Collapsed="true">
+    <Position X="16.25" Y="22.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAQAAAAAAAAAEAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\SemanticTerminalTypeFactory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.SemanticTerminalTypeFactoryHelper&lt;TBase&gt;" Collapsed="true">
+    <Position X="501.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAEAAAACAAA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\SemanticTerminalTypeFactoryHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.SemanticToken" Collapsed="true">
+    <Position X="257.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAIAAAAAIAAAQAAAAAAIAAAAAAAAAAAAEAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\SemanticToken.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.SemanticTokenFactory&lt;TBase&gt;" Collapsed="true">
+    <Position X="14" Y="18.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIAAAAAAAAAAAIAAAAAABAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\SemanticTokenFactory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.SemanticTrimFactory&lt;TBase&gt;" Collapsed="true">
+    <Position X="11.75" Y="21.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAIAAAAggAAAAAIAgAAAAAIEAIAAAAAAAAAAAgA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\SemanticTrimFactory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.SemanticTypeActions&lt;T&gt;" Collapsed="true">
+    <Position X="0.5" Y="20.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAUACgAAAAAAAIIAAQEoAAAAAAAAAABAAAE=</HashCode>
+      <FileName>Base\GoldParser\Semantic\SemanticTypeActions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.SymbolTypeMap&lt;T&gt;" Collapsed="true">
+    <Position X="497.75" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAACAAACAACABAACIAAACAAAgAAAAAQAAAABQAAAA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\SymbolTypeMap.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Semantic.TerminalAttribute" Collapsed="true">
+    <Position X="501.25" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAgAAAAACAAgAAgAAAAAAAAQAAAAAAAAAAAAgAAAA=</HashCode>
+      <FileName>Base\GoldParser\Semantic\TerminalAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Xml.GrammarXmlProcessor" Collapsed="true">
+    <Position X="497.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAEAEABAoAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Xml\GrammarXmlProcessor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Base.GoldParser.Xml.TokenXmlReader" Collapsed="true">
+    <Position X="504.75" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIEAACAABAAACSEQAAggQIAjhAgDAIKhAAAkACSABAA=</HashCode>
+      <FileName>Base\GoldParser\Xml\TokenXmlReader.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ArrayConstant" Collapsed="true">
+    <Position X="35" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAgIACAAAAEAAAIABAAAAAAQAAAACAAAAAAAAA=</HashCode>
+      <FileName>Core\Constants\ArrayConstant.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.BoolConstant" Collapsed="true">
+    <Position X="37.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AJAAAAAgIACAAAAEAAAIABAAAAAAQAAAACAAAAQAAAA=</HashCode>
+      <FileName>Core\Constants\BoolConstant.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ByteConstant" Collapsed="true">
+    <Position X="39.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAgIACAAAAEAAAIABAAAAAAQAAAACAAAAQAAAA=</HashCode>
+      <FileName>Core\Constants\ByteConstant.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.FloatConstant" Collapsed="true">
+    <Position X="41.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABABAAAgIACAAAAEAAAIABAAAAAAQAAAACAAAAQAAgA=</HashCode>
+      <FileName>Core\Constants\FloatConstant.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.HalfHelper" Collapsed="true">
+    <Position X="499.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAghgAgAAAAgCgEQAAAAAAAADAIAAwEAQBIAAA=</HashCode>
+      <FileName>Core\Constants\FloatConstant.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.InitializerConstant" Collapsed="true">
+    <Position X="127.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgEAAAgAAAAAAAAAAAAAAMAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Constants\InitializerConstant.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.IntConstant" Collapsed="true">
+    <Position X="44" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAgIACAAAAEAAAIABAAAAAAQAAAACAAAAQAAAA=</HashCode>
+      <FileName>Core\Constants\IntConstant.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.MultiDimInitializerConstant" Collapsed="true">
+    <Position X="136.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQAAAgEAAAgAAAAAAAAAAAAAAMAAAAQAAAAAAAAAA=</HashCode>
+      <FileName>Core\Constants\MultiDimInitializerConstant.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.NullConstant" Collapsed="true">
+    <Position X="46.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAgIACIAAAEAAAIABAAAAAAQAAAACAAAAQAAAA=</HashCode>
+      <FileName>Core\Constants\NullConstant.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.PointerConstant" Collapsed="true">
+    <Position X="53" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgIACAAAAEAAAIABAAAAAAQAAAACAAAAQAAAA=</HashCode>
+      <FileName>Core\Constants\PointerConstant.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.SByteConstant" Collapsed="true">
+    <Position X="48.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAgIACAAAAEAAAIABAAAAAAQAAAACAAAAQAAAA=</HashCode>
+      <FileName>Core\Constants\SByteConstant.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.StringConstant" Collapsed="true">
+    <Position X="50.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABARAAAgIACAAAAEAAAIABAEAAAAQAAAACAAAAAAAgA=</HashCode>
+      <FileName>Core\Constants\StringConstant.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.UIntConstant" Collapsed="true">
+    <Position X="53" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAgIACAAAAEAAAIABAAAAAAQAAAACAAAAQAAAA=</HashCode>
+      <FileName>Core\Constants\UIntConstant.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.AsmDeclaration" Collapsed="true">
+    <Position X="408.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAgAAAAAAAAAAAAgBAAAAAIAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Declarations\AsmDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.EnumDeclaration" Collapsed="true">
+    <Position X="413" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgIAAAgAAAAAAAAAIAAAAAQBAEAACAAMAAAAA=</HashCode>
+      <FileName>Core\Declarations\EnumDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.Global" Collapsed="true">
+    <Position X="260" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAAAAgQAAAEAAAAAAAAAAAAAAAYAAAAAAAAAAAAEA=</HashCode>
+      <FileName>Core\Declarations\Global.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ImportDeclaration" Collapsed="true">
+    <Position X="264.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAIAAAAAAAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Declarations\ImportDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.Imports" Collapsed="true">
+    <Position X="269" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAEAAAAAAAAAAAAAAAAAAgAAAAAAAAAEA=</HashCode>
+      <FileName>Core\Declarations\Imports.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.IncludeDeclaration" Collapsed="true">
+    <Position X="273.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAABAAAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Declarations\IncludeDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.InterruptDeclaration" Collapsed="true">
+    <Position X="415.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIgAADAACAAgCAAIBAAAAAAQAAAAIIAAAAAAAA=</HashCode>
+      <FileName>Core\Declarations\InterruptDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.MethodDeclaration" Collapsed="true">
+    <Position X="417.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAEAAgAACAACgAACBAABAAAAAAQAgAAIAAAAAAEAA=</HashCode>
+      <FileName>Core\Declarations\MethodDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.MethodPrototypeDeclaration" Collapsed="true">
+    <Position X="419.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAIgIACAACiAACBAABAAAAAAQAAAAIAAAAAAAgA=</HashCode>
+      <FileName>Core\Declarations\MethodPrototypeDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.NamespaceDeclaration" Collapsed="true">
+    <Position X="293.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAIAAAAAAAAAIAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Declarations\NamespaceDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ClassDeclaration" Collapsed="true">
+    <Position X="422" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QEKAAAAgIACAgAAACQAAABIAAAAMQBAEAAAABAAEAAA=</HashCode>
+      <FileName>Core\Declarations\OOP\ClassDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ConstructorDeclaration" Collapsed="true">
+    <Position X="424.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAEAAgAACAACAAACAABBAAAAAEQAgAAIAAAAAAEAA=</HashCode>
+      <FileName>Core\Declarations\OOP\ConstructorDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ConstructorPrototypeDeclaration" Collapsed="true">
+    <Position X="426.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAIgIACAACCAACAABBAAAAAAQAAAAIAAAAAAAAA=</HashCode>
+      <FileName>Core\Declarations\OOP\ConstructorPrototypeDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.DestructorDeclaration" Collapsed="true">
+    <Position X="428.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAEAAgAACAACAAACAABBAAAAAEQAgAAIAAAAAAEAA=</HashCode>
+      <FileName>Core\Declarations\OOP\DestructorDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.DestructorPrototypeDeclaration" Collapsed="true">
+    <Position X="431" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAIgIACAACCAACAABBAAAAAAQAAAAIAAAAAAAAA=</HashCode>
+      <FileName>Core\Declarations\OOP\DestructorPrototypeDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.OperatorDeclaration" Collapsed="true">
+    <Position X="433.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACIgICSAACAAACAAABAAAAAAQAgEAIAAAEAAAAA=</HashCode>
+      <FileName>Core\Declarations\OperatorDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.OperatorPrototypeDeclaration" Collapsed="true">
+    <Position X="437.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACIiICSAgCAAACAAABAAAAAAQAAEAIAAAEAAAAA=</HashCode>
+      <FileName>Core\Declarations\OperatorPrototypeDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.PropertyDeclaration" Collapsed="true">
+    <Position X="442.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAEAAgAACAAAkEACRAABgAAAAAQAACAAAAABAAUAE=</HashCode>
+      <FileName>Core\Declarations\Property\PropertyDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.RessourceDeclaration" Collapsed="true">
+    <Position X="273.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAAAQAAAAAQAAAAAAAAAAAAAI=</HashCode>
+      <FileName>Core\Declarations\RessourceDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.StructDeclaration" Collapsed="true">
+    <Position X="446.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAgAACAgAAAAAAAABIAAAAAQBAEAAAABAAAAAA=</HashCode>
+      <FileName>Core\Declarations\StructDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.TypeDefDeclaration" Collapsed="true">
+    <Position X="449" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAABAAAAAAQBAEAAAAAAACAAA=</HashCode>
+      <FileName>Core\Declarations\TypeDefDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.UnionDeclaration" Collapsed="true">
+    <Position X="451.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAgAACAgAAAAAAAABIAAAAAQBAEAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Declarations\UnionDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.VariableDeclaration" Collapsed="true">
+    <Position X="410.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CgAAAAAgABCBAACAACAAABAAABAAQBAEAAQECBAABQA=</HashCode>
+      <FileName>Core\Declarations\VariableDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ArrayVariableDefinition" Collapsed="true">
+    <Position X="455.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAgAAAAAAAABAAAAAAQAAAAAQAAAAAABA=</HashCode>
+      <FileName>Core\Definitions\ArrayVariableDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.BlockOrSemi" Collapsed="true">
+    <Position X="458" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEAAAgAACAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAQA=</HashCode>
+      <FileName>Core\Definitions\BlockOrSemi.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.EnumValue" Collapsed="true">
+    <Position X="460.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAgAACAAAAAAABAABAAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>Core\Definitions\EnumDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.EnumDefinition" Collapsed="true">
+    <Position X="462.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAggACAgAAAAAAAABAAAAAAAAAAACAEAAAAAAA=</HashCode>
+      <FileName>Core\Definitions\EnumValue.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.FunctionBodyDefinition" Collapsed="true">
+    <Position X="464.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIgAACAAAAAAAAAIBAAAAAgQAAAAIAAQAAABAA=</HashCode>
+      <FileName>Core\Definitions\FunctionBodyDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.FunctionExtensionDefinition" Collapsed="true">
+    <Position X="467" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAgAAAAAAAAAAAAEAAAAAAAAAAEAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Definitions\FunctionExtensionDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.GetterDefinition" Collapsed="true">
+    <Position X="469.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEQAAgAACAAAAAAIAAAAAAAAAIQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Definitions\GetterDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.InheritanceDefinition" Collapsed="true">
+    <Position X="471.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAggAAAgAAAAAIAAAAAAAAAAAAQAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Definitions\InheritanceDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ParameterDefinition" Collapsed="true">
+    <Position X="473.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAADAAIQAAABAABAAAAAAABAAAAAIAAAAAAA=</HashCode>
+      <FileName>Core\Definitions\ParameterDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ParameterListDefinition" Collapsed="true">
+    <Position X="476" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAABAABAAAIAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Definitions\ParameterListDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.SetterDefinition" Collapsed="true">
+    <Position X="478.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAEQAAgAACAAAAAAAAAAAAAAAAAQAAAAAAACAAAAAA=</HashCode>
+      <FileName>Core\Definitions\SetterDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.StructDefinition" Collapsed="true">
+    <Position X="480.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAgAAAAAAAAhAAAAAEAAAAAAAEAAAAAAA=</HashCode>
+      <FileName>Core\Definitions\StructDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.TemplateDefinition" Collapsed="true">
+    <Position X="482.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAECAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Definitions\TemplateDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.TypeIdentifierListDefinition" Collapsed="true">
+    <Position X="485" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAgAACAAAAAAABAABAAAIAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Definitions\TypeIdentifierListDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.VariableDefinition" Collapsed="true">
+    <Position X="487.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAgABCAIQIAAABAABAAAAAIQAAAAwAAAAgAAAA=</HashCode>
+      <FileName>Core\Definitions\VariableDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.VariableInitDefinition" Collapsed="true">
+    <Position X="138.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAABAAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Definitions\VariableInitDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.VariableItemDefinition" Collapsed="true">
+    <Position X="489.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgABCAAAIAAAAAgBAAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Definitions\VariableItemDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.VariableListDefinition" Collapsed="true">
+    <Position X="491.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgABCQAAAAAAAAgBAAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Definitions\VariableListDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.AccessExpression" Collapsed="true">
+    <Position X="111.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AsAAABggAAAAAIAEQAAIcBAAAAAoAIBgCCCEEEABIgA=</HashCode>
+      <FileName>Core\Expressions\AccessExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.AccessOperation" Collapsed="true">
+    <Position X="145.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AMAAAAAgAACAAAAAAAAIABAAAAAIUAAAAAAAAAAAgAA=</HashCode>
+      <FileName>Core\Expressions\AccessOperation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.AssignExpression" Collapsed="true">
+    <Position X="149.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAgAACAAAAAAAAAABAAAAAAUAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Expressions\AssignExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.BinaryOperation" Collapsed="true">
+    <Position X="28.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAEgAACAAAAAAAAIABAAAAAAUEAAACAAAAAAAAA=</HashCode>
+      <FileName>Core\Expressions\BinaryOperation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ConstantFolding" Collapsed="true">
+    <Position X="494.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAIAgAAAAAAAgIABAAAEIIAkAAAQAAgAAAAAAA=</HashCode>
+      <FileName>Core\Expressions\BinaryOperation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.BitAccessExpression" Collapsed="true">
+    <Position X="95.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AMAAAAAAAAAAAACAACAIABAAAAAAAAAAACACAAAACAA=</HashCode>
+      <FileName>Core\Expressions\BitAccessExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ByteAccessExpression" Collapsed="true">
+    <Position X="98" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AMAABAAAAAQAQgAAACAIABAAAAAAAAAAAiAAAAAABEA=</HashCode>
+      <FileName>Core\Expressions\ByteAccessExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ConstantExpression" Collapsed="true">
+    <Position X="44" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAAIAAIAIAAAAgICAAAAQAAAAAAAAAgAAAACAA=</HashCode>
+      <FileName>Core\Expressions\ConstantExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.DeclaredExpression" Collapsed="true">
+    <Position X="55.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AMAAAAAgAACAAAAAAAAIABAAAAAAQAAQACAAAAQAAAA=</HashCode>
+      <FileName>Core\Expressions\DeclaredExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ForeachIndexerExpression" Collapsed="true">
+    <Position X="102.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Expressions\ForeachIndexerExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.IfExpression" Collapsed="true">
+    <Position X="57.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAgAACAIAAAAAAAABQAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Expressions\IfExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.InstanceExpression" Collapsed="true">
+    <Position X="89" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAwAAAAACQAAAAIABAAAAAAQIAAAIAAAAAAEAA=</HashCode>
+      <FileName>Core\Expressions\InstanceExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.MethodExpression" Collapsed="true">
+    <Position X="120.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AMAAgAAwAACgQAAAAABsgBAAAAAAQACAwKAAAAAjEAg=</HashCode>
+      <FileName>Core\Expressions\MethodExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ParamsExpression" Collapsed="true">
+    <Position X="104.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Expressions\ParamsExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.PolymorphicClassExpression" Collapsed="true">
+    <Position X="107" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAIAAAgAACAAAAAAAAIABAAAAAAAAAEAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Expressions\PolymorphicClassExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ReferenceExpression" Collapsed="true">
+    <Position X="109.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAIABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Expressions\ReferenceExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.RegisterBinaryOperation" Collapsed="true">
+    <Position X="316.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAEAAAAAAIAgQBAAQAAQQAAACACAAAAAIAA=</HashCode>
+      <FileName>Core\Expressions\Register\RegisterBinaryOperation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.RegisterExpression" Collapsed="true">
+    <Position X="116" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEBAAAAgAACAAAgAAAAIABAAAAABAIAAACAAAAQCAAA=</HashCode>
+      <FileName>Core\Expressions\Register\RegisterExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.RegisterExpr" Collapsed="true">
+    <Position X="313" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Expressions\Register\RegisterUnaryOperation.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.RegisterUnaryOperation" Collapsed="true">
+    <Position X="318.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAIAAQBAAQAAAQAAAAACAAAAAIAA=</HashCode>
+      <FileName>Core\Expressions\Register\RegisterUnaryOperation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.RegisterStackOperation" Collapsed="true">
+    <Position X="307.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAMAAQBAAQAAAQAAAAACAAAAAAAA=</HashCode>
+      <FileName>Core\Expressions\Register\RegisterUnaryOperation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.RegisterAssignOperation" Collapsed="true">
+    <Position X="309.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAABAEAACIAAQBAAQAAAQAAAAACAAAAAAAA=</HashCode>
+      <FileName>Core\Expressions\Register\RegisterUnaryOperation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.RegisterTargetExpression" Collapsed="true">
+    <Position X="311.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAABAAAAAAAAABAQAAABQAAAACAAAAAAAAA=</HashCode>
+      <FileName>Core\Expressions\Register\RegisterUnaryOperation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.RegisterIfExpression" Collapsed="true">
+    <Position X="314" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAgAAAAAgAAAAADAAAAAAQAAAAAAAAABAAAA=</HashCode>
+      <FileName>Core\Expressions\Register\RegisterUnaryOperation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.RegisterOperation" Collapsed="true">
+    <Position X="317.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Expressions\Register\RegisterUnaryOperation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.SuperExpression" Collapsed="true">
+    <Position X="91.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAIAEAgAACAAAAAAAAIABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Expressions\SuperExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ThisExpression" Collapsed="true">
+    <Position X="93.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Expressions\ThisExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.UnaryOperation" Collapsed="true">
+    <Position X="30.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AMAAAAAgAACAAAAAAAAIABAAAAAAUAAAACAAAAAAAAA=</HashCode>
+      <FileName>Core\Expressions\UnaryOperation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.VariableExpression" Collapsed="true">
+    <Position X="101.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AMAAABAgAACAAAAAAAAIABAAAAAAQAAAACAAAAAEAAA=</HashCode>
+      <FileName>Core\Expressions\VariableExpression.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.WordAccessExpression" Collapsed="true">
+    <Position X="100.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ANAAAAAAAAAAAAAAACAIABAAAAIAAAAAADAAAAAAgCE=</HashCode>
+      <FileName>Core\Expressions\WordAccessExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.BaseTypeIdentifier" Collapsed="true">
+    <Position X="323" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgBACAgAAAAAAAAAAAAAAAQAAAAAIAAAAAAgA=</HashCode>
+      <FileName>Core\Identifiers\BaseTypeIdentifier.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.CallingCV" Collapsed="true">
+    <Position X="275.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAgAECAAAAAAAAAAAAAAAAAAAAEAAAAAAACAAA=</HashCode>
+      <FileName>Core\Identifiers\CallingCV.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.FunctionSpecifier" Collapsed="true">
+    <Position X="280.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgCAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Identifiers\FunctionSpecifier.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.Identifier" Collapsed="true">
+    <Position X="104.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Identifiers\Identifier.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.MethodIdentifier" Collapsed="true">
+    <Position X="113.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAgCACAIAAQAAAAAAAAAAAAAAAEoAAACAAAAAA=</HashCode>
+      <FileName>Core\Identifiers\MethodIdentifier.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.Modifier" Collapsed="true">
+    <Position X="298.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEAAAgAACAAAAAAAAAAAAAAAAAAABEAAIACAAAABA=</HashCode>
+      <FileName>Core\Identifiers\Modifier.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.NameIdentifier" Collapsed="true">
+    <Position X="122.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Identifiers\NameIdentifier.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.QualifiedNameIdentifier" Collapsed="true">
+    <Position X="125" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Identifiers\QualifiedNameIdentifier.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ScalarTypeIdentifier" Collapsed="true">
+    <Position X="325.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAQAAAAAAAAAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Identifiers\ScalarTypeIdentifier.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.TemplateIdentifier" Collapsed="true">
+    <Position X="129.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Identifiers\TemplateIdentifier.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.TypeIdentifier" Collapsed="true">
+    <Position X="327.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAAAAAACAAQAQAAAAIAAAAAAA=</HashCode>
+      <FileName>Core\Identifiers\TypeIdentifier.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.TypePointer" Collapsed="true">
+    <Position X="320.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAgAAAAAQAAAAAAAAAAAAAAAAAgAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Identifiers\TypePointer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.TypeToken" Collapsed="true">
+    <Position X="325.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAAAAAAgAAQAAAAQAAAAAAAAA=</HashCode>
+      <FileName>Core\Identifiers\TypeToken.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ValuePosIdentifier" Collapsed="true">
+    <Position X="140.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Identifiers\ValuePosIdentifier.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.RegisterIdentifier" Collapsed="true">
+    <Position X="118.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAgAACAAAIAAAAAAAAAAAABAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\InlineAsm.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.AsmInstruction" Collapsed="true">
+    <Position X="406.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>Core\InlineAsm.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.AsmInstructions" Collapsed="true">
+    <Position X="453.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABA=</HashCode>
+      <FileName>Core\InlineAsm.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.RegisterToken" Collapsed="true">
+    <Position X="23.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\InlineAsm.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.BinaryLiteral" Collapsed="true">
+    <Position X="64.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Literals\BinaryLiteral.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.BooleanLiteral" Collapsed="true">
+    <Position X="59.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Literals\BooleanLiteral.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.CharLiteral" Collapsed="true">
+    <Position X="66.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Literals\CharLiteral.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.DecLiteral" Collapsed="true">
+    <Position X="68.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Literals\DecLiteral.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.HexLiteral" Collapsed="true">
+    <Position X="71" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Literals\HexLiteral.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.IntegralConst" Collapsed="true">
+    <Position X="70" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Literals\IntegralConst.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.Literal" Collapsed="true">
+    <Position X="73.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAJACAgAACAgACIAACAAAAAAAAYAAAAACAgAAACAAA=</HashCode>
+      <FileName>Core\Literals\Literal.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.MultilineStringLiteral" Collapsed="true">
+    <Position X="77.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Literals\MultilineStringLiteral.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.NullLiteral" Collapsed="true">
+    <Position X="80" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Literals\NullLiteral.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.OctLiteral" Collapsed="true">
+    <Position X="73.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Literals\OctLiteral.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.OperatorLiteralBinary" Collapsed="true">
+    <Position X="82.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Literals\OperatorLiteralBinary.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.OperatorLiteralUnary" Collapsed="true">
+    <Position X="84.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Literals\OperatorLiteralUnary.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.StringLiteral" Collapsed="true">
+    <Position X="86.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Literals\StringLiteral.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.AccessOp" Collapsed="true">
+    <Position X="155.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>hAAAABAAAAAAAAAAAAAAAAAAAAAJUAAAAAAAAAAAkBA=</HashCode>
+      <FileName>Core\Semantics\AccessOp.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.AssignOp" Collapsed="true">
+    <Position X="172.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAABAAAAAAAAAAAAAAAAAQAAAAUIAAAAAEAAAAAAA=</HashCode>
+      <FileName>Core\Semantics\AssignOp.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.BinaryOp" Collapsed="true">
+    <Position X="209.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQABAAAAAAQAAAAAAAEAAQAAAAQAQAAAAAAAAAIBA=</HashCode>
+      <FileName>Core\Semantics\BinaryOp.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.Declaration" Collapsed="true">
+    <Position X="430" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAEgAAKAAAQAEAAAABIAAgAAQAAAgQgAQAAAAAA=</HashCode>
+      <FileName>Core\Semantics\Declaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.DeclarationToken" Collapsed="true">
+    <Position X="430" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Semantics\DeclarationToken.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.Definition" Collapsed="true">
+    <Position X="473.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Semantics\Definition.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.Expr" Collapsed="true">
+    <Position X="88" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AMAAAAAgAACAAAAAAAAIABAAgAABQAAAASAAAAQAAQA=</HashCode>
+      <FileName>Core\Semantics\Expr.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.Operator" Collapsed="true">
+    <Position X="203.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ANAAAEAgAACgAAAAAAAIADAEAAAAIAAACCCAAAQAEAA=</HashCode>
+      <FileName>Core\Semantics\Operator.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.BinaryOperatorDefinition" Collapsed="true">
+    <Position X="262.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAA=</HashCode>
+      <FileName>Core\Semantics\OverloadOperators\BinaryOperatorDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.CastKind" Collapsed="true">
+    <Position X="266.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Semantics\OverloadOperators\CastKind.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.DefinedOperator" Collapsed="true">
+    <Position X="271.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEBAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Semantics\OverloadOperators\DefinedOperator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.OperatorDefinition" Collapsed="true">
+    <Position X="62" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEBAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Semantics\OverloadOperators\OperatorDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.UnaryOperatorDefinition" Collapsed="true">
+    <Position X="278" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAA=</HashCode>
+      <FileName>Core\Semantics\OverloadOperators\UnaryOperatorDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.Sequence&lt;T&gt;" Collapsed="true">
+    <Position X="286" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAABAAAAQAAAAAAAAAAAAEAAAAAAIAAAA=</HashCode>
+      <FileName>Core\Semantics\Sequences.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.DeclarationSequence&lt;T&gt;" Collapsed="true">
+    <Position X="291.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAABAAAAQAAAAAAAAAAAAEAAAAAAIAAAA=</HashCode>
+      <FileName>Core\Semantics\Sequences.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.GlobalSequence&lt;T&gt;" Collapsed="true">
+    <Position X="296" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAABAAAAQAAAAAAAAAAAAEAAAAAAIAAAA=</HashCode>
+      <FileName>Core\Semantics\Sequences.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.ParameterSequence&lt;T&gt;" Collapsed="true">
+    <Position X="300.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAABAAAAQAAAAAAAAAAAAEAAAAAAIAAAA=</HashCode>
+      <FileName>Core\Semantics\Sequences.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.IncludeSequence&lt;T&gt;" Collapsed="true">
+    <Position X="302.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAABAAAAQAAAAAAAAAAAAEAAAAAAIAAAA=</HashCode>
+      <FileName>Core\Semantics\Sequences.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.CaseSequence&lt;T&gt;" Collapsed="true">
+    <Position X="305" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAABAAAAQAAAAAAAAAAAAEAAAAAAIAAAA=</HashCode>
+      <FileName>Core\Semantics\Sequences.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.MultiDimInitializerSequence" Collapsed="true">
+    <Position X="282.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAkAAAAA=</HashCode>
+      <FileName>Core\Semantics\Sequences.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.InitializerSequence" Collapsed="true">
+    <Position X="284.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAA=</HashCode>
+      <FileName>Core\Semantics\Sequences.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ClassElementSequence" Collapsed="true">
+    <Position X="291.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgQAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Semantics\Sequences.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.FunctionSpecifierSequence" Collapsed="true">
+    <Position X="287" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Semantics\Sequences.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.TemplateSequence" Collapsed="true">
+    <Position X="289.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Semantics\Sequences.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.SimpleToken" Collapsed="true">
+    <Position X="257.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAEAAIAAAQAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Semantics\SimpleToken.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.Statement" Collapsed="true">
+    <Position X="367" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAABAAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Semantics\Statement.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.UnaryOp" Collapsed="true">
+    <Position X="245.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQABAAAAAAAAAAAAAABAAQAAABQAAAAAAAAAAAIAA=</HashCode>
+      <FileName>Core\Semantics\UnaryOp.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.BaseStatement" Collapsed="true">
+    <Position X="342.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAABAAAAAAQAAAgAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\BaseStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.Block" Collapsed="true">
+    <Position X="356.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAABAAAAAARAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>Core\Statements\Block.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.BlockStatement" Collapsed="true">
+    <Position X="359" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAIAAAAAAABAAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\BlockStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.EmptyStatement" Collapsed="true">
+    <Position X="361.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\EmptyStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ExpressionStatement" Collapsed="true">
+    <Position X="363.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAABAAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\ExpressionStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.BreakStatement" Collapsed="true">
+    <Position X="365.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAABAAAAAAQAAAIAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\NormalStatements\BreakStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ContinueStatement" Collapsed="true">
+    <Position X="368" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\NormalStatements\ContinueStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.DeleteStatement" Collapsed="true">
+    <Position X="372.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAwAACAAIAAAAAAABAAAAAAQAAAAIBAAAAAEAA=</HashCode>
+      <FileName>Core\Statements\NormalStatements\DeleteStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.DoWhile" Collapsed="true">
+    <Position X="374.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAgBEAAAAAQACIEoAAAAAAAAE=</HashCode>
+      <FileName>Core\Statements\NormalStatements\DoWhile.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.ExitStatement" Collapsed="true">
+    <Position X="377" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAABAAAAAAQAAAIAAAAAAAAAE=</HashCode>
+      <FileName>Core\Statements\NormalStatements\ExitStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.GotoStatement" Collapsed="true">
+    <Position X="379.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAIAAAABAABAAAAAAQAAAAAgAABAAAAA=</HashCode>
+      <FileName>Core\Statements\NormalStatements\GotoStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.InterruptParamStatement" Collapsed="true">
+    <Position X="381.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAgAACAAAAAAAAAABAAAAAAQACAAAAAAAIAAAA=</HashCode>
+      <FileName>Core\Statements\NormalStatements\InterruptParamStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.InterruptStatement" Collapsed="true">
+    <Position X="383.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAABAAAAAAQACAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\NormalStatements\InterruptStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.NextStatement" Collapsed="true">
+    <Position X="386" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAABAAAAAAQAAAIAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\NormalStatements\NextStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.PassStatement" Collapsed="true">
+    <Position X="395" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAABAAAAAAQAAAIAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\NormalStatements\PassStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ReturnStatement" Collapsed="true">
+    <Position X="397.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAEAAAgABAAAAAAQAAAQAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\NormalStatements\ReturnStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ThrowStatement" Collapsed="true">
+    <Position X="399.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAABgAABAQAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\NormalStatements\ThrowStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.NormalStatment" Collapsed="true">
+    <Position X="367" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAABAAgAAAQAAgAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\NormalStatment.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.RegisterExpressionStatement" Collapsed="true">
+    <Position X="401.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAABAAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\RegisterExpressionStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.AsmStatement" Collapsed="true">
+    <Position X="352.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAgBAAAAAIAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\Statements\AsmStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.Case" Collapsed="true">
+    <Position X="404" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAQHgIACAAEEBAAAAABAIAAAAQABAQQEAAAABAAQ=</HashCode>
+      <FileName>Core\Statements\Statements\Case.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.ForEachStatement" Collapsed="true">
+    <Position X="354.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgQACAgAgAAAgAgBUAAAAAQACIEoAiAAAAACE=</HashCode>
+      <FileName>Core\Statements\Statements\ForEachStatement.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.ForStatement" Collapsed="true">
+    <Position X="329.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAgAgBUAAAAAQACIEoAiAAAAACE=</HashCode>
+      <FileName>Core\Statements\Statements\ForStatement.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.IfElseStatement" Collapsed="true">
+    <Position X="332" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABgAACAAAAAAAABgBAIAAAAQAAAAAAAACABAAA=</HashCode>
+      <FileName>Core\Statements\Statements\IfElseStatement.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.IfStatement" Collapsed="true">
+    <Position X="334.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABgAACAAAAAAAAAgBQIAAAAQAAAAAAAAAABAAA=</HashCode>
+      <FileName>Core\Statements\Statements\IfStatement.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.LabelStatement" Collapsed="true">
+    <Position X="336.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgEACAAAAAABAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\Statements\LabelStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.LoopStatement" Collapsed="true">
+    <Position X="338.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAgBEAAAAAQACIAgAAAAAAAAE=</HashCode>
+      <FileName>Core\Statements\Statements\LoopStatement.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.RestrictStatement" Collapsed="true">
+    <Position X="341" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAgBAAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\Statements\RestrictStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.Switch" Collapsed="true">
+    <Position X="370.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAAgQACAAAAAAAAAABECCAABUCAAAAAAAQAAAAA=</HashCode>
+      <FileName>Core\Statements\Statements\Switch.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.TryCatchStatement" Collapsed="true">
+    <Position X="343.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAEAAgAACABICAQAAAgDAAAAAEQAAAAAAAAgAAAAA=</HashCode>
+      <FileName>Core\Statements\Statements\TryCatchStatement.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.UseStatement" Collapsed="true">
+    <Position X="345.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAgBAAAAAAQAAAgAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\Statements\UseStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.VarDeclStatement" Collapsed="true">
+    <Position X="347.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgQACAAAAAAAAAABAAAAABQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\Statements\VarDeclStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.WhileStatement" Collapsed="true">
+    <Position X="350" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAgBEAAAAAQACIEoAAAAAAAAE=</HashCode>
+      <FileName>Core\Statements\Statements\WhileStatement.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="VTC.Core.ForThenStatement" Collapsed="true">
+    <Position X="388.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAABAAIAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\Then Statements\ForThenStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.IfThenStatement" Collapsed="true">
+    <Position X="390.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAABABAAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\Then Statements\IfThenStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.ThenStatement" Collapsed="true">
+    <Position X="390.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAABAAAAAAQAAAgAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\Then Statements\ThenStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.WhileThenStatement" Collapsed="true">
+    <Position X="392.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAABBAAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Statements\Then Statements\WhileThenStatement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.Declarations.DelegateDeclaration" Collapsed="true">
+    <Position X="435.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIgIACAAAAAAIAAABAAQAAgQBAEAIAAAAAAEAA=</HashCode>
+      <FileName>Core\Declarations\DelegateDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.Declarations.OperatorDefinitionDeclaration" Collapsed="true">
+    <Position X="440" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAgAACAAAAAAAAAABAAAAAAQAAEAAAIAABAIAA=</HashCode>
+      <FileName>Core\Declarations\OperatorDefinitionDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.Declarations.TemplateDeclaration" Collapsed="true">
+    <Position X="444.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgIACAAAAAAIAAABAAAAAAQBAEAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Declarations\TemplateDeclaration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.Expressions.CheckedExpressions" Collapsed="true">
+    <Position X="143" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAABAAAAAAAAAAAAAAAAIAAAA=</HashCode>
+      <FileName>Core\Expressions\CheckedExpressions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.Expressions.DelegateExpressions" Collapsed="true">
+    <Position X="120.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgAACAAAQAggBIABAAAAAAACgAACAAABCAAAA=</HashCode>
+      <FileName>Core\Expressions\DelegateExpressions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.Expressions.TypedExpressions" Collapsed="true">
+    <Position X="147.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAIABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Expressions\TypedExpressions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Core.Literals.FloatLiteral" Collapsed="true">
+    <Position X="75.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core\Literals\FloatLiteral.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Operators.Assign.MulAssignOperator" Collapsed="true">
+    <Position X="161" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAABAAAAAAAAAAACAAAAAAAAA=</HashCode>
+      <FileName>Operators\Assign\MulAssign.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Operators.Assign.OrAssignOperator" Collapsed="true">
+    <Position X="163.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAABAAAAAAAAAAACAAAAAAAAA=</HashCode>
+      <FileName>Operators\Assign\OrAssign.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VTC.Operators.Assign.RightShiftAssignOperator" Collapsed="true">
+    <Position X="165.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAABAAAAAAAAAAACAAAAAAAAA=</HashCode>
+      <FileName>Operators\Assign\RightShiftAssign.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="VTC.Namespace" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="501.25" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIQAAAQAAAAAEkAKCIAYQAAAAEIAABAAAAAQAAqA=</HashCode>
+      <FileName>Compiler\Namespace.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Struct>
+  <Struct Name="VTC.MemberSignature" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="499.5" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAQAAAAAAAEgCIAAAAAAAAFAIIgAAAAIAIIAiU=</HashCode>
+      <FileName>Compiler\Specs\MemberSignature.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Struct>
+  <Struct Name="VTC.FlowState" Collapsed="true">
+    <Position X="494.25" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAAAAAAAAAAAACAAAAAgAABIAAAAEABAAAAAA=</HashCode>
+      <FileName>Contexts\FlowAnalysisContext.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="VTC.Reachability" Collapsed="true">
+    <Position X="504.75" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAABAAAAAAACAAAAAAggAIAAAACAAAAAAAA=</HashCode>
+      <FileName>Contexts\FlowAnalysisContext.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="VTC.Base.GoldParser.Parser.LineInfo" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="497.75" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAAAAAAAQEgABAAgAAQAAAAIAABAEAAAABAAA=</HashCode>
+      <FileName>Base\GoldParser\Parser\LineInfo.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Struct>
+  <Struct Name="VTC.Base.GoldParser.Xml.ProcessResult" Collapsed="true">
+    <Position X="503" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEAAAAAAAAEAABAAAAAAgAAAAAAAAAAIBABAAA=</HashCode>
+      <FileName>Base\GoldParser\Xml\ProcessResult.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="VTC.Core.Half" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="496" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EJKggMKgBZABFZ4k8BWDJwJAAGwQQKpIAEEkARAINyg=</HashCode>
+      <FileName>Core\Constants\FloatConstant.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Struct>
+  <Interface Name="CommandLine.IParserState" Collapsed="true">
+    <Position X="497.75" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\IParserState.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="CommandLine.Parsing.IArgumentEnumerator" Collapsed="true">
+    <Position X="494.25" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EgAAAAgAAAAAAAAAAACAAAAAAAQAAAAAIAAAAAAAAAA=</HashCode>
+      <FileName>Base\ComandLine\Parsing\IArgumentEnumerator.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="VTC.ICast" Collapsed="true">
+    <Position X="496" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAACAAAAAAAAACAQAAAAAAAAAAQAAAAAA=</HashCode>
+      <FileName>Cast\Casts.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="VTC.IEmitter" Collapsed="true">
+    <Position X="504.75" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAABAAAAAAAAAAAAAICAAEAAAAAAAAAAQAAAAAgAA=</HashCode>
+      <FileName>Compiler\Emitter\IEmitter.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="VTC.IMember" Collapsed="true">
+    <Position X="494.25" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Compiler\Specs\IMember.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="VTC.IEmitExpr" Collapsed="true">
+    <Position X="503" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AMAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAQAAAA=</HashCode>
+      <FileName>Contexts\EmitContext.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="VTC.IEmitAddress" Collapsed="true">
+    <Position X="501.25" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Contexts\EmitContext.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="VTC.IEmit" Collapsed="true">
+    <Position X="499.5" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Contexts\EmitContext.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="VTC.ISync" Collapsed="true">
+    <Position X="501.25" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAABAAAAA=</HashCode>
+      <FileName>Contexts\FIFOSemaphore.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="VTC.ILoop" Collapsed="true">
+    <Position X="508.25" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAEAAAAAAACIAgAAAAAAAAE=</HashCode>
+      <FileName>Contexts\ResolveContext.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="VTC.ITry" Collapsed="true">
+    <Position X="506.5" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAAABIAAQAAAAAAAAAAEAAAAAAAAAgAAAAA=</HashCode>
+      <FileName>Contexts\ResolveContext.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="VTC.IConditional" Collapsed="true">
+    <Position X="497.75" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAABAAA=</HashCode>
+      <FileName>Contexts\ResolveContext.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="VTC.IResolve" Collapsed="true">
+    <Position X="499.5" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAACAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Contexts\ResolveContext.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="VTC.Base.GoldParser.Grammar.IGroup" Collapsed="true">
+    <Position X="506.5" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAwAAAAAAgAAAAAABAEAAAACAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\IGroup.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="VTC.Base.GoldParser.Grammar.IParser&lt;T&gt;" Collapsed="true">
+    <Position X="496" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEgAAAAgAAAAAAAAAAAAAAAgIAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\IParser.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="VTC.Base.GoldParser.Parser.IToken" Collapsed="true">
+    <Position X="503" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAgAAAAAAAAAAAAAAAAAAAAAAAACAA=</HashCode>
+      <FileName>Base\GoldParser\Parser\IToken.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="VTC.Base.GoldParser.Parser.ITokenizer&lt;T&gt;" Collapsed="true">
+    <Position X="504.75" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Parser\ITokenizer.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Enum Name="CommandLine.Parsing.PresentParserState" Collapsed="true">
+    <Position X="508.25" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAAAAAAgAAAACAAAAAAAAAACA=</HashCode>
+      <FileName>Base\ComandLine\Parsing\PresentParserState.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.ErrorType" Collapsed="true">
+    <Position X="508.25" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\Error.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.Platform" Collapsed="true">
+    <Position X="506.5" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAA=</HashCode>
+      <FileName>Base\Settings.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.Target" Collapsed="true">
+    <Position X="501.25" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAAAAIAAQAAAAAAAAAAAAAAAAAAAAAAAEAAA=</HashCode>
+      <FileName>Base\Settings.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.CallingConventions" Collapsed="true">
+    <Position X="501.25" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAQAAAAAIACAAAQAAAAAAAIAAAAAAAA=</HashCode>
+      <FileName>Compiler\CallingConventions.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.BuiltinTypes" Collapsed="true">
+    <Position X="499.5" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIAAAQAABAgQQAAAAAABAAAAAAAAQAAAAAiADA=</HashCode>
+      <FileName>Compiler\Specs\BuiltinTypes.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.Modifiers" Collapsed="true">
+    <Position X="503" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAIEpAAAAEAAAAAAEAQAAAAABSAA=</HashCode>
+      <FileName>Compiler\Specs\Modifiers.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.ReferenceKind" Collapsed="true">
+    <Position X="494.25" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAAAAAAAAAAAAgAAAAAAAZAIAAAQAAAQAAoAA=</HashCode>
+      <FileName>Compiler\Specs\ReferenceKind.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.Specifiers" Collapsed="true">
+    <Position X="497.75" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAQAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAABA=</HashCode>
+      <FileName>Compiler\Specs\Specifiers.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.TypeFlags" Collapsed="true">
+    <Position X="504.75" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAIAIEAACAAwAAIAAAAAAAABAAAEAAIAAYACAAA=</HashCode>
+      <FileName>Compiler\Specs\TypeFlags.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.MemberState" Collapsed="true">
+    <Position X="501.25" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAAAAQAAAAAAAAAAAAAABAAAAAAAAAA=</HashCode>
+      <FileName>Contexts\FlowAnalysisContext.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.LabelType" Collapsed="true">
+    <Position X="497.75" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQAAACKEAAAAgBQEAAKAAAAQAACAAAIAAAAABQAAA=</HashCode>
+      <FileName>Contexts\ResolveContext.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.ResolveScopes" Collapsed="true">
+    <Position X="496" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>GECgACAIAAAAAAAAAAAAAAIAAAAIAAAAkAgAAAAAACA=</HashCode>
+      <FileName>Contexts\ResolveContext.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.Base.GoldParser.Grammar.CgtEntryType" Collapsed="true">
+    <Position X="503" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAAAAAQAIAAAAABAAAAgAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\CgtEntryType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.Base.GoldParser.Grammar.CgtRecordType" Collapsed="true">
+    <Position X="504.75" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAAEAEAABAAQAABgACAAQAAAAAAIAAAYAAAQAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\CgtRecordType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.Base.GoldParser.Grammar.CgtVersion" Collapsed="true">
+    <Position X="506.5" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAACAIAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\CgtVersion.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.Base.GoldParser.Grammar.GroupAdvanceMode" Collapsed="true">
+    <Position X="494.25" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABCAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\GroupAdvanceMode.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.Base.GoldParser.Grammar.GroupEndingMode" Collapsed="true">
+    <Position X="496" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAACAAAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\GroupEndingMode.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.Base.GoldParser.Grammar.LalrActionType" Collapsed="true">
+    <Position X="499.5" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAQgAAAAAAAAAAAAAAAAAAAAAAAEAAIA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\LalrActionType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.Base.GoldParser.Grammar.ParseMessage" Collapsed="true">
+    <Position X="504.75" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIIABoAQAAAAAAAAAAAhAAAAIAAAAAAAAAAAIAEAQAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\ParseMessage.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.Base.GoldParser.Grammar.SymbolKind" Collapsed="true">
+    <Position X="499.5" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAIAAAAAAAEAJQAAAAAIAAAAAAAAgAAYAQAAAAAAAAA=</HashCode>
+      <FileName>Base\GoldParser\Grammar\SymbolKind.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.Base.GoldParser.Parser.TokenParseResult" Collapsed="true">
+    <Position X="503" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAgAAAAAAAAgAAAIgAAAAgAAAAAAAAAAAAAQAAAA=</HashCode>
+      <FileName>Base\GoldParser\Parser\TokenParseResult.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.Core.AccessOperator" Collapsed="true">
+    <Position X="494.25" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAACAg=</HashCode>
+      <FileName>Core\Semantics\AssignOperator.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.Core.BinaryOperator" Collapsed="true">
+    <Position X="497.75" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QCAAACBBAABACAQAQAkBCEAcABBAIgECCIFFAQhAACA=</HashCode>
+      <FileName>Core\Semantics\BinaryOperator.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.Core.UnaryOperator" Collapsed="true">
+    <Position X="506.5" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAADAAAKBgEAAACCAAAAAAAAAAEBAAACAAAQA=</HashCode>
+      <FileName>Core\Semantics\UnaryOperator.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="VTC.Core.Semantics.AssignOperator" Collapsed="true">
+    <Position X="496" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAgAAAEAgAgAggIAAAAAAAAAAEAQAAAYAAA=</HashCode>
+      <FileName>Core\Semantics\AssignOperators.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

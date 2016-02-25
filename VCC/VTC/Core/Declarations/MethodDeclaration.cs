@@ -66,12 +66,12 @@ namespace VTC.Core
 
             if (_fbd._ext != null && !_fbd._ext.Static)
                 _fbd.ParamTypes.Insert(0, _fbd._ext.ExtendedType);
-            else if (rc.IsInClass)
+            else if (rc.IsInClass && (mods & Modifiers.Static) != Modifiers.Static)
                 _fbd.ParamTypes.Insert(0, rc.CurrentType);
 
-        if (_fbd._ext != null && !_fbd._ext.Static)
+        if (_fbd._ext != null )
             method = new MethodSpec(rc.CurrentNamespace, _fbd._ext.ExtendedType.NormalizedName + "$_" + _id.Name, mods, _id.TType.Type, ccv, _fbd.ParamTypes.ToArray(), this._id.Location);
-            else if(rc.IsInClass)
+        else if (rc.IsInClass)
             method = new MethodSpec(rc.CurrentNamespace, rc.CurrentType.NormalizedName + "$_" + _id.Name, mods, _id.TType.Type, ccv, _fbd.ParamTypes.ToArray(), this._id.Location);
             else
             method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods, _id.TType.Type, ccv, _fbd.ParamTypes.ToArray(), this._id.Location);
@@ -82,7 +82,7 @@ namespace VTC.Core
                 ParameterSpec thisps = new ParameterSpec(rc.CurrentNamespace, "this", method, _fbd._ext.ExtendedType, Location, 4, Modifiers.Ref);
                 Parameters.Insert(0, thisps);
             }
-            else if(rc.IsInClass)
+            else if(rc.IsInClass && (mods & Modifiers.Static) != Modifiers.Static)
             {
                 ParameterSpec thisps = new ParameterSpec(rc.CurrentNamespace, "this", method, rc.CurrentType, Location, 4);
                 Parameters.Insert(0, thisps);

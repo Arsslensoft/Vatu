@@ -224,6 +224,8 @@ Comment Line  = '//'
              | 
 
 
+ 
+
 <Getter Decl> ::= get <Block Or Semi>
 <Setter Decl> ::= set <Block Or Semi>
                
@@ -344,7 +346,7 @@ Comment Line  = '//'
              | TemplateId  
              | typeof Id
              | typeof '(' <Expression> ')'
-            
+             | '<' <Types> '>'
              
 <Scalar>   ::= byte
              | int
@@ -404,8 +406,7 @@ Comment Line  = '//'
                | throw <Var Expr> ';'
                | interrupt <Integral Const> ';'
                | interrupt <Integral Const> '(' <PARAM EXPR> ')' ';'
-               | return <Expression> ';'
-               | return ';'
+               | return <PARAM EXPR>  ';'
                | delete <Var Expr> '(' <PARAM EXPR> ')' ';'
                | delete <Var Expr> ';'
                | <ASM Statement>

@@ -74,9 +74,9 @@ namespace VTC.Core
                 ext = (FunctionExtensionDefinition)ext.DoResolve(rc);
             else ext = null;
 
-            if (ext != null && !ext.Static)
+            if (ext != null )
                 method = new MethodSpec(rc.CurrentNamespace, ext.ExtendedType.NormalizedName + "$_" + _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, null, this._id.Location);
-            else if (rc.IsInClass)
+            else if (rc.IsInClass )
                 method = new MethodSpec(rc.CurrentNamespace, rc.CurrentType.NormalizedName + "$_" + _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, null, this._id.Location);
 
             else
@@ -138,9 +138,9 @@ namespace VTC.Core
             else if (rc.IsInClass)
                 tp.Insert(0, rc.CurrentType);
 
-            if (ext != null && !ext.Static)
+            if (ext != null)
                 method = new MethodSpec(rc.CurrentNamespace, ext.ExtendedType.NormalizedName + "$_" + _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, tp.ToArray(), this.Location);
-            else if(rc.IsInClass )
+            else if (rc.IsInClass)
                 method = new MethodSpec(rc.CurrentNamespace, rc.CurrentType.NormalizedName + "$_" + _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, tp.ToArray(), this.Location);
             else
                 method = new MethodSpec(rc.CurrentNamespace, _id.Name, mods | Modifiers.Prototype, _id.TType.Type, ccv, tp.ToArray(), this.Location);
@@ -165,7 +165,7 @@ namespace VTC.Core
                     Parameters.Insert(0, thisps);
                     method.Parameters = Parameters;
                 }
-                else if(rc.IsInClass)
+                else if (rc.IsInClass && (mods & Modifiers.Static) != Modifiers.Static)
                 {
 
                     ParameterSpec thisps = new ParameterSpec(rc.CurrentNamespace, "this", method, rc.CurrentType, Location, 4);

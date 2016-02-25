@@ -52,7 +52,7 @@ namespace VTC.Core
         }
         public override bool EmitToRegister(EmitContext ec,RegistersEnum rg)
         {
-            ec.EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = (ushort)_value, Size = 16 });
+            ec.EmitInstruction(new Mov() { DestinationReg = rg, SourceValue = (ushort)_value, Size = 8 });
             return true;
         }
         public override string CommentString()

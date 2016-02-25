@@ -76,6 +76,7 @@ namespace VTC
             }
 
         }
+        public bool IsTypeCollection { get; set; }
         public bool IsTemplate
         {
             get
@@ -404,6 +405,8 @@ namespace VTC
             StaticExtendedMethods = new List<MethodSpec>();
             ExtendedFields = new List<FieldSpec>();
             ExtendedMethods = new List<MethodSpec>();
+            IsTypeCollection = false;
+
         }
 
 
@@ -426,6 +429,7 @@ namespace VTC
             StaticExtendedMethods = new List<MethodSpec>();
             ExtendedFields = new List<FieldSpec>();
             ExtendedMethods = new List<MethodSpec>();
+            IsTypeCollection = false;
         }
         public TypeSpec(Namespace ns, string name, int size, BuiltinTypes bt, TypeFlags flags, Modifiers mods, Location loc, TypeSpec basetype = null)
             : base(NormalizeTypeName(name), new MemberSignature(ns, NormalizeTypeName(name), loc), mods, ReferenceKind.Type)
@@ -446,6 +450,7 @@ namespace VTC
             StaticExtendedMethods = new List<MethodSpec>();
             ExtendedFields = new List<FieldSpec>();
             ExtendedMethods = new List<MethodSpec>();
+            IsTypeCollection = false;
         }
 
         public TypeSpec MakePointer()

@@ -61,7 +61,7 @@ namespace VTC.Core
         }
         public override bool EmitToRegister(EmitContext ec, RegistersEnum rg)
         {
-            ec.EmitInstruction(new Mov() { DestinationReg = ec.GetLow(rg), SourceValue = _value ? (ushort)EmitContext.TRUE : (ushort)0, Size = 16 });
+            ec.EmitInstruction(new Mov() { DestinationReg = ec.GetLow(rg), SourceValue = _value ? (ushort)EmitContext.TRUE : (ushort)0, Size = 8 });
             return true;
         }
     }

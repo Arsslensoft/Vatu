@@ -12,20 +12,16 @@ namespace VTC.Core
     {
         public Label ReturnLabel { get; set; }
         MethodSpec Method;
-        private Expr _expr;
-
-        [Rule("<Normal Stm> ::= ~return <Expression> ~';' ")]
-        public ReturnStatement(Expr b)
+        private ParameterSequence<Expr> _expr;
+        public List<Expr> Expressions { get; set; }
+        
+        [Rule("<Normal Stm> ::= ~return <PARAM EXPR> ~';' ")]
+        public ReturnStatement(ParameterSequence<Expr> b)
         {
             _expr = b;
 
         }
-        [Rule("<Normal Stm> ::= ~return ~';' ")]
-        public ReturnStatement()
-        {
-            _expr = null;
-
-        }
+      
        public override bool Resolve(ResolveContext rc)
         {
             if (_expr != null)
@@ -50,20 +46,41 @@ namespace VTC.Core
            }
            return true;
        }
- public override SimpleToken DoResolve(ResolveContext rc)
+        public override SimpleToken DoResolve(ResolveContext rc)
         {
             Method = rc.CurrentMethod;
             if (_expr != null)
             {
-                _expr = (Expr)_expr.DoResolve(rc);
-                if (!TypeChecker.CompatibleTypes(_expr.Type,rc.CurrentMethod.MemberType))
-                    ResolveContext.Report.Error(0, Location, "Return expression type must be " + rc.CurrentMethod.MemberType.Name);
-            
-             
-            }
-            else if(!rc.CurrentMethod.MemberType.Equals(BuiltinTypeSpec.Void))
-                ResolveContext.Report.Error(0, Location, "Empty returns are only used with void methods");
+                Expressions = new List<Expr>();
+                _expr = (ParameterSequence<Expr>)_expr.DoResolve(rc);
+                foreach (Expr p in _expr)
+                {
+                    Expr e = (Expr)p.DoResolve(rc);
+                    Expressions.Add(e);
 
+                }
+                
+
+                if (Expressions.Count == 1 && !TypeChecker.CompatibleTypes(Expressions[0].Type, rc.CurrentMethod.MemberType))
+                                  ResolveContext.Report.Error(0, Location, "Return expression type must be " + rc.CurrentMethod.MemberType.Name);
+                else if(Expressions.Count == 0 && !rc.CurrentMethod.MemberType.Equals(BuiltinTypeSpec.Void))
+                     ResolveContext.Report.Error(0, Location, "Empty returns are only used with void methods");
+                else if (Expressions.Count > 1 && !rc.CurrentMethod.MemberType.IsTypeCollection)
+                    ResolveContext.Report.Error(0, Location, "Group return are only used with type collections");
+                else if (rc.CurrentMethod.MemberType.IsTypeCollection)
+                {
+                    StructTypeSpec st = rc.CurrentMethod.MemberType as StructTypeSpec;
+                    int i = 0;
+                    foreach (TypeMemberSpec tmp in st.Members)
+                    {
+                        if (!TypeChecker.CompatibleTypes(Expressions[i].Type, tmp.MemberType))
+                            ResolveContext.Report.Error(0, Expressions[i].Location, "Group Return expression type must be " + tmp.MemberType.Name);
+                        i++;
+                    }
+                }
+               
+            }
+            
             if (rc.EnclosingTry == null)
                 ReturnLabel = new Label(rc.CurrentMethod.Signature + "_ret");
             else ReturnLabel = rc.EnclosingTry.TryReturn;
@@ -82,8 +99,9 @@ namespace VTC.Core
         {   bool ok=true;
             if (_expr != null )
             {
-                
-                ok = _expr.EmitToStack(ec);
+              for(int i = Expressions.Count-1; i >= 0; i--)
+                  Expressions[i].EmitToStack(ec);
+             
                 if (!(Method.memberType.IsFloat && !Method.memberType.IsPointer))
                 {
                     int ret_size = Method.memberType.GetSize(Method.memberType);
