@@ -11,18 +11,20 @@ Namespaces,
 Global, Local variables,
 Register operations,
 Assembly statements,
-Flow Control Statements (return,goto,goto case,continue,next,break),
+Flow Control Statements (return,goto,goto case,continue,next,break,exit),
 Iteration and Conditional Statements,
-Operators overloading (binary op, cast)
-Struct and Union
+Operators overloading
+Struct, Union, Delegates, Enumerators and Classes
+Multiple return types
+Custom defined operators (new operators ready to be overloaded)
+Arrays
+Properties (getter/setter accessors)
+Anonymous Method Expressions
+
+
 
 ####In The future : 
-Fix a lot of bugs,
-Return check,
-Type check,
-Standard library support,
-Compilation Interface,
-Re-write (Clean code)
+Fix bugs
 
 Language was authored by Arsslen Idadi
 The compiler was developed at Arsslensoft Research by Abd Al Moez and Arsslen
