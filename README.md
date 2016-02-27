@@ -27,7 +27,7 @@ Re-write (Clean code)
 Language was authored by Arsslen Idadi
 The compiler was developed at Arsslensoft Research by Abd Al Moez and Arsslen
 
-####YACC/BISON Grammar :
+####Vatu Grammar :
   See https://github.com/Arsslensoft/Vatu/wiki/Vatu-Language-Grammar
 ####Vatu OS Sample Tutorial
   See https://github.com/Arsslensoft/Vatu/wiki/Testing-Kernel.vt-sample
