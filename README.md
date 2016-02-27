@@ -13,12 +13,12 @@ Register operations,
 Assembly statements,
 Flow Control Statements (return,goto,goto case,continue,next,break,exit),
 Iteration and Conditional Statements,
-Operators overloading
+Operators overloading,
 Struct, Union, Delegates, Enumerators and Classes
-Multiple return types
-Custom defined operators (new operators ready to be overloaded)
-Arrays
-Properties (getter/setter accessors)
+Multiple return types,
+Custom defined operators (new operators ready to be overloaded),
+Arrays,
+Properties (getter/setter accessors),
 Anonymous Method Expressions
 
 
