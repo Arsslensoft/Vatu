@@ -27,7 +27,7 @@ Anonymous Method Expressions
 Fix bugs
 
 Language was authored by Arsslen Idadi
-The compiler was developed at Arsslensoft Research by Abd Al Moez and Arsslen
+The compiler was developed at Arsslensoft Research by Abd Al Moez (Test) and Arsslen
 
 ####Vatu Grammar :
   See https://github.com/Arsslensoft/Vatu/wiki/Vatu-Language-Grammar
