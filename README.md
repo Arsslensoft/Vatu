@@ -34,3 +34,6 @@ The compiler was developed at Arsslensoft Research by Abd Al Moez (Test) and Ars
 ####Vatu OS Sample Tutorial
   See https://github.com/Arsslensoft/Vatu/wiki/Testing-Kernel.vt-sample
 #####The Project development has been delayed to June 2016
+
+# Donate
+<a href="https://www.buymeacoffee.com/arsslensoft" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-blue.png" alt="Buy Me A Coffee" style="height: 31px !important;width: 150px !important;" ></a>
