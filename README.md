@@ -6,7 +6,7 @@ This project was based on Cosmos assembler (some classes of Vasm and BSN Gold Pa
 The compiler simply converts a Vatu input to 16 bits Intel Assembly output (for NASM) ready to be
 assembled.
 
-####Vatu supports :
+#### Vatu supports :
 Namespaces,
 Global, Local variables,
 Register operations,
@@ -23,17 +23,17 @@ Anonymous Method Expressions
 
 
 
-####In The future : 
+#### In The future : 
 Fix bugs
 
 Language was authored by Arsslen Idadi
 The compiler was developed at Arsslensoft Research by Abd Al Moez (Test) and Arsslen
 
-####Vatu Grammar :
+#### Vatu Grammar :
   See https://github.com/Arsslensoft/Vatu/wiki/Vatu-Language-Grammar
-####Vatu OS Sample Tutorial
+#### Vatu OS Sample Tutorial
   See https://github.com/Arsslensoft/Vatu/wiki/Testing-Kernel.vt-sample
-#####The Project development has been delayed to June 2016
+##### The Project development has been delayed to June 2016
 
 # Donate
 <a href="https://www.buymeacoffee.com/arsslensoft" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-blue.png" alt="Buy Me A Coffee" style="height: 31px !important;width: 150px !important;" ></a>
